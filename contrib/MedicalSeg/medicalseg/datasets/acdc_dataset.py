@@ -72,20 +72,22 @@ class ACDCDataset(paddle.io.Dataset):
                  result_dir=None,
                  transforms=None,
                  num_classes=None,
-                 anno_path=None,
                  epoch_batches=1000,
                  mode='train',
                  dataset_json_path=""):
         super(ACDCDataset, self).__init__()
         self.dataset_dir = dataset_root
-        self.anno_path = anno_path
         self.transforms = Compose(transforms, use_std=True)
         self.file_list = list()
         self.mode = mode.lower()
         self.num_classes = num_classes
         self.epoch_batches = epoch_batches
         self.dataset_json_path = dataset_json_path
-        with open(os.path.join(self.dataset_dir, self.anno_path), 'r') as f:
+        if mode == 'train':
+            self.anno_path= os.path.join(self.dataset_dir, 'train_list.txt')
+        elif mode == 'val':
+            self.anno_path = os.path.join(self.dataset_dir, 'val_list.txt')
+        with open(self.anno_path, 'r') as f:
             for line in f:
                 items = line.strip().split()
                 image_path = os.path.join(self.dataset_dir, items[0])

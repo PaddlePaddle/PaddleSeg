@@ -13,6 +13,7 @@
 # limitations under the License.
 import sys
 import os
+from skimage.transform import resize
 
 sys.path.append(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), "../.."))
@@ -67,3 +68,45 @@ def resample(image,
         image, resize_factor, mode='nearest', order=order)
 
     return image_new, new_spacing
+
+def resize_segmentation(segmentation, new_shape, order=3):
+    '''
+    Resizes a segmentation map. Supports all orders (see skimage documentation). Will transform segmentation map to
+    one_hot encoding which is resized and transformed back to a segmentation map.
+    This prevents interpolation artifacts ([0, 0, 2] -> [0, 1, 2])
+    :param segmentation:
+    :param new_shape:
+    :param order:
+    :return:
+    '''
+    tpe = segmentation.dtype
+    unique_labels = np.unique(segmentation)
+    assert len(segmentation.shape) == len(
+        new_shape), "new shape must have same dimensionality as segmentation"
+    if order == 0:
+        return resize(
+            segmentation.astype(float),
+            new_shape,
+            order,
+            mode="edge",
+            clip=True,
+            anti_aliasing=False).astype(tpe)
+    else:
+        reshaped = np.zeros(new_shape, dtype=segmentation.dtype)
+
+        for i, c in enumerate(unique_labels):
+            mask = segmentation == c
+            reshaped_multihot = resize(
+                mask.astype(float),
+                new_shape,
+                order,
+                mode="edge",
+                clip=True,
+                anti_aliasing=False)
+            reshaped[reshaped_multihot >= 0.5] = c
+        return reshaped
+
+
+def resize_image(image, new_shape, order=3, cval=0):
+    kwargs = {'mode': 'edge', 'anti_aliasing': False}
+    return resize(image, new_shape, order, cval=cval, **kwargs)

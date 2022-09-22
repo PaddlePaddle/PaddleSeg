@@ -75,10 +75,7 @@ class Compose:
         if (not self.use_std) and im.max() > 0:
             im = im / im.max()
         else:
-            if std > 0:
-                im = (im - mean) / std
-            else:
-                im = (im - mean) / (std + 1e-8)
+            im = (im - mean) / (std + 1e-10)
 
         return (im, label)
 

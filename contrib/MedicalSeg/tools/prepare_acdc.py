@@ -17,71 +17,14 @@ import argparse
 import shutil
 import numpy as np
 from preprocess_utils.file_and_folder_operations import *
+from preprocess_utils.geometry import *
 from collections import OrderedDict
 from sklearn.model_selection import KFold
-from skimage.transform import resize
+
 from tqdm import tqdm
 
 
-def convert_to_submission(source_dir, target_dir):
-    niftis = subfiles(source_dir, join=False, suffix=".nii.gz")
-    patientids = np.unique([i[:10] for i in niftis])
-    maybe_mkdir_p(target_dir)
-    for p in patientids:
-        files_of_that_patient = subfiles(
-            source_dir, prefix=p, suffix=".nii.gz", join=False)
-        assert len(files_of_that_patient)
-        files_of_that_patient.sort()
-        # first is ED, second is ES
-        shutil.copy(
-            join(source_dir, files_of_that_patient[0]),
-            join(target_dir, p + "_ED.nii.gz"))
-        shutil.copy(
-            join(source_dir, files_of_that_patient[1]),
-            join(target_dir, p + "_ES.nii.gz"))
 
-
-def resize_segmentation(segmentation, new_shape, order=3):
-    '''
-    Resizes a segmentation map. Supports all orders (see skimage documentation). Will transform segmentation map to
-    one_hot encoding which is resized and transformed back to a segmentation map.
-    This prevents interpolation artifacts ([0, 0, 2] -> [0, 1, 2])
-    :param segmentation:
-    :param new_shape:
-    :param order:
-    :return:
-    '''
-    tpe = segmentation.dtype
-    unique_labels = np.unique(segmentation)
-    assert len(segmentation.shape) == len(
-        new_shape), "new shape must have same dimensionality as segmentation"
-    if order == 0:
-        return resize(
-            segmentation.astype(float),
-            new_shape,
-            order,
-            mode="edge",
-            clip=True,
-            anti_aliasing=False).astype(tpe)
-    else:
-        reshaped = np.zeros(new_shape, dtype=segmentation.dtype)
-
-        for i, c in enumerate(unique_labels):
-            mask = segmentation == c
-            reshaped_multihot = resize(
-                mask.astype(float),
-                new_shape,
-                order,
-                mode="edge",
-                clip=True,
-                anti_aliasing=False)
-            reshaped[reshaped_multihot >= 0.5] = c
-        return reshaped
-
-
-def resize_image(image, new_shape, order=3, cval=0):
-    kwargs = {'mode': 'edge', 'anti_aliasing': False}
-    return resize(image, new_shape, order, cval=cval, **kwargs)
 
 
 def preprocess_data(raw_data_path, preprocessed_path, new_spacing):
