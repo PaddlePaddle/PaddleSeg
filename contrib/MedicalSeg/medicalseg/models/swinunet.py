@@ -46,7 +46,6 @@ class SwinUNet(nn.Layer):
         attn_drop_rate (float, optional): Attention dropout rate. Default: 0.0
         drop_path_rate (float, optional): Stochastic depth rate. Default: 0.0
         norm_layer (nn.Layer, optional): Normalization layer.  Default: nn.LayerNorm
-        ape (bool): If True, add absolute position embedding to the patch embedding. Default: False
         patch_norm (bool): If True, add normalization after patch embedding. Default: True
         pretrained: The path of pre-trained model. Default: None
         final_unsample (bool): The fibal sample class. Default: True
@@ -70,7 +69,6 @@ class SwinUNet(nn.Layer):
                  attn_drop_rate=0.,
                  drop_path_rate=0.1,
                  norm_layer=nn.LayerNorm,
-                 ape=False,
                  patch_norm=True,
                  pretrained=None,
                  final_upsample=True,
@@ -82,7 +80,6 @@ class SwinUNet(nn.Layer):
         self.num_layers = len(depths)
         self.mlp_ratio = mlp_ratio
         self.embed_dim = embed_dim
-        self.ape = ape
         self.patch_norm = patch_norm
         self.num_features = int(embed_dim * 2**(self.num_layers - 1))
         self.final_upsample = final_upsample

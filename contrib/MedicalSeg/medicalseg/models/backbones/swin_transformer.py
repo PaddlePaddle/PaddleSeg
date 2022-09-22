@@ -24,17 +24,17 @@ from medicalseg.models.backbones.transformer_utils import *
 
 MODEL_URLS = {
     "SwinTransformer_tiny_patch4_window7_224":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_tiny_patch4_window7_224_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_tiny_patch4_window7_224_pretrained.pdparams",
     "SwinTransformer_small_patch4_window7_224":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_small_patch4_window7_224_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_small_patch4_window7_224_pretrained.pdparams",
     "SwinTransformer_base_patch4_window7_224":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_base_patch4_window7_224_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_base_patch4_window7_224_pretrained.pdparams",
     "SwinTransformer_base_patch4_window12_384":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_base_patch4_window12_384_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_base_patch4_window12_384_pretrained.pdparams",
     "SwinTransformer_large_patch4_window7_224":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_large_patch4_window7_224_22kto1k_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_large_patch4_window7_224_22kto1k_pretrained.pdparams",
     "SwinTransformer_large_patch4_window12_384":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_large_patch4_window12_384_22kto1k_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_large_patch4_window12_384_22kto1k_pretrained.pdparams",
 }
 
 __all__ = list(MODEL_URLS.keys())
@@ -194,7 +194,7 @@ class WindowAttention(nn.Layer):
         q = q * self.scale
         attn = paddle.mm(q, k.transpose([0, 1, 3, 2]))
 
-        if self.training or not hasattr(self, "relative_position_bias"):
+        if self.training:
             index = self.relative_position_index.reshape([-1])
 
             relative_position_bias = paddle.index_select(
@@ -282,7 +282,8 @@ class SwinTransformerBlock(nn.Layer):
             attn_drop=attn_drop,
             proj_drop=drop)
 
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
+        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity(
+        )
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = Mlp(in_features=dim,

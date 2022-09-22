@@ -53,14 +53,6 @@ class DropPath(nn.Layer):
         return drop_path(x, self.drop_prob, self.training)
 
 
-class Identity(nn.Layer):
-    def __init__(self):
-        super(Identity, self).__init__()
-
-    def forward(self, input):
-        return input
-
-
 trunc_normal_ = paddle_init.TruncatedNormal(std=.02)
 zeros_ = paddle_init.Constant(value=0.)
 ones_ = paddle_init.Constant(value=1.)

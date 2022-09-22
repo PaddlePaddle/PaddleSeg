@@ -1,4 +1,4 @@
-_base_: '../synapse/abdomen.yml'
+_base_: 'abdomen.yml'
 
 batch_size: 24
 iters: 14000
@@ -34,4 +34,4 @@ export:
     - type: Resize3D
       size: [ 1 ,224, 224 ]
   inference_helper:
-    type: SwinUNetInferenceHelper
+    type: InferenceHelper2D
