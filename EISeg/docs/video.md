@@ -28,13 +28,13 @@ EISeg视频标注工具以EISeg交互式分割算法及[MIVOS](https://github.co
 
 | 模型类型  | 适用场景                   | 模型结构       | 模型下载地址                                                     | 配套传播模型下载地址 |
 | -------- | -------------------------- | -------------- | ------------------------------------------------------------ |-------------|
-| 高精度模型 | 通用场景的图像标注 | HRNet18_OCR64  | [static_hrnet18_ocr64_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr64_cocolvis.zip) | [static_propagation](https://www.wjx.cn/vm/OrTuFZA.aspx)         |
-| 轻量化模型 | 通用场景的图像标注 | HRNet18s_OCR48 | [static_hrnet18s_ocr48_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_cocolvis.zip) | [static_propagation](https://www.wjx.cn/vm/OrTuFZA.aspx)        |
-| 高精度模型 | 通用图像标注场景      | EdgeFlow | [static_edgeflow_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_edgeflow_cocolvis.zip) | [static_propagation](https://www.wjx.cn/vm/OrTuFZA.aspx)        |
-| 高精度模型 | 人像标注场景      | HRNet18_OCR64  | [static_hrnet18_ocr64_human](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr64_human.zip) | [static_propagation](https://www.wjx.cn/vm/OrTuFZA.aspx)        |
-| 轻量化模型 | 人像标注场景       | HRNet18s_OCR48 | [static_hrnet18s_ocr48_human](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_human.zip) | [static_propagation](https://www.wjx.cn/vm/OrTuFZA.aspx)       |
-| 轻量化模型 | 医疗肝脏标注场景       | HRNet18s_OCR48 | [static_hrnet18s_ocr48_lits](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_lits.zip) | [static_propagation_lits](https://www.wjx.cn/vm/OrTuFZA.aspx)         |
-| 轻量化模型 | CT椎骨图像标注场景       | HRNet18s_OCR48 | [static_hrnet18s_ocr48_MRSpineSeg](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_hrnet18s_ocr48_MRSpineSeg.zip) | [static_propagation_spine](https://www.wjx.cn/vm/OrTuFZA.aspx)        |
+| 高精度模型 | 通用场景的图像标注 | HRNet18_OCR64  | [static_hrnet18_ocr64_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr64_cocolvis.zip) | [static_propagation](https://www.wjx.cn/vm/wWw3pRc.aspx)         |
+| 轻量化模型 | 通用场景的图像标注 | HRNet18s_OCR48 | [static_hrnet18s_ocr48_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_cocolvis.zip) | [static_propagation](https://www.wjx.cn/vm/wWw3pRc.aspx)        |
+| 高精度模型 | 通用图像标注场景      | EdgeFlow | [static_edgeflow_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_edgeflow_cocolvis.zip) | [static_propagation](https://www.wjx.cn/vm/wWw3pRc.aspx)        |
+| 高精度模型 | 人像标注场景      | HRNet18_OCR64  | [static_hrnet18_ocr64_human](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr64_human.zip) | [static_propagation](https://www.wjx.cn/vm/wWw3pRc.aspx)        |
+| 轻量化模型 | 人像标注场景       | HRNet18s_OCR48 | [static_hrnet18s_ocr48_human](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_human.zip) | [static_propagation](https://www.wjx.cn/vm/wWw3pRc.aspx)       |
+| 轻量化模型 | 医疗肝脏标注场景       | HRNet18s_OCR48 | [static_hrnet18s_ocr48_lits](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_lits.zip) | [static_propagation_lits](https://www.wjx.cn/vm/wWw3pRc.aspx)         |
+| 轻量化模型 | CT椎骨图像标注场景       | HRNet18s_OCR48 | [static_hrnet18s_ocr48_MRSpineSeg](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_hrnet18s_ocr48_MRSpineSeg.zip) | [static_propagation_spine](https://www.wjx.cn/vm/wWw3pRc.aspx)        |
 
 ## 数据准备
 - 由于视频处理计算量较大，推荐使用带显卡带机器进行视频分割和3D医疗图片带标注，并且标注图像帧数不宜超过100帧，若视频超过该帧数，可以通过[cut_video.py](../tool/cut_video.py)来进行视频截取。

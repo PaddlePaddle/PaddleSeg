@@ -40,6 +40,7 @@
 
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> 最新动态
+* [2022-09-16] :fire: EISeg使用的X光胸腔标注模型MUSCLE已经被MICCAI 2022接收，具体可参见[MUSCLE](docs/MUSCLE.md), 标注模型下载[地址](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_resnet50_deeplab_chest_xray.zip).
 * [2022-07-20] :fire: EISeg 1.0版本发布！
   - 新增用于通用场景视频交互式分割能力，以EISeg交互式分割模型及[MiVOS](https://github.com/hkchengrex/MiVOS)算法为基础，全面提升视频标注体验。详情使用请参考[视频标注](docs/video.md)。
   - 新增用于腹腔多器官及CT椎骨数据3D分割能力，并提供3D可视化工具，给予医疗领域3D标注新的思路。详情使用请参考[3D标注](docs/video.md)。
