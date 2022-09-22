@@ -84,7 +84,7 @@ class ACDCDataset(paddle.io.Dataset):
         self.epoch_batches = epoch_batches
         self.dataset_json_path = dataset_json_path
         if mode == 'train':
-            self.anno_path= os.path.join(self.dataset_dir, 'train_list.txt')
+            self.anno_path = os.path.join(self.dataset_dir, 'train_list.txt')
         elif mode == 'val':
             self.anno_path = os.path.join(self.dataset_dir, 'val_list.txt')
         with open(self.anno_path, 'r') as f:

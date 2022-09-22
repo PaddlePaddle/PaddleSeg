@@ -69,6 +69,7 @@ def resample(image,
 
     return image_new, new_spacing
 
+
 def resize_segmentation(segmentation, new_shape, order=3):
     '''
     Resizes a segmentation map. Supports all orders (see skimage documentation). Will transform segmentation map to
