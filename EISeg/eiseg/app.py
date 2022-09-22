@@ -47,24 +47,6 @@ from plugin.n2grid import RSGrids, Grids, checkOpenGrid
 from plugin.video import InferenceCore, overlay_davis
 
 
-# TODO: 研究paddle子线程
-class ModelThread(QThread):
-    _signal = Signal(dict)
-
-    def __init__(self, controller, param_path):
-        super().__init__()
-        self.controller = controller
-        self.param_path = param_path
-
-    def run(self):
-        success, res = self.controller.setModel(self.param_path, False)
-        self._signal.emit({
-            "success": success,
-            "res": res,
-            "param_path": self.param_path
-        })
-
-
 class APP_EISeg(QMainWindow, Ui_EISeg):
     IDILE, ANNING, EDITING = 0, 1, 2
     # IDILE：网络，权重，图像三者任一没有加载
@@ -458,6 +440,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             tr("针对每张图片启用宫格检测"),
             checkable=True, )
         self.grid_message.setChecked(True)
+        eiseg_med3D = action(
+            tr("&EISeg-Med3D"),
+            self.enterEISegMed3D,
+            "enterEISegMed3D",
+            "EISegMed3D",
+            tr("3D医疗交互式分割插件"), )
         save_cutout = action(
             tr("&抠图保存"),
             partial(self.toggleSave, "cutout"),
@@ -701,6 +689,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 report_bug,
                 edit_shortcuts,
                 toggle_logging, ),
+            expandMenu=(eiseg_med3D, ),
             toolBar=(
                 finish_object,
                 clear,
@@ -729,6 +718,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         menu(tr("功能"), self.menus.functionMenu)
         menu(tr("显示"), self.menus.showMenu)
         menu(tr("帮助"), self.menus.helpMenu)
+        menu(tr("更多"), self.menus.expandMenu)
         util.addActions(self.toolBar, self.menus.toolBar)
 
     def __setColor(self, action, setting_name):
@@ -746,7 +736,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.ratio = int(20 * float(text[4:-1]))
         if self.timer.isActive():
             self.timer.stop()
-            self.timer.start(1000 / self.ratio)
+            self.timer.start(1000 // self.ratio)
 
     def setCutoutBackground(self):
         self.cutoutBackground = self.__setColor(self.cutoutBackground,
@@ -889,10 +879,24 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.warn(self.tr("参数路径存在中文"), self.tr("请修改参数路径为非中文路径！"))
             return False
 
-        # success, res = self.controller.setModel(param_path)
-        self.load_thread = ModelThread(self.controller, param_path)
-        self.load_thread._signal.connect(self.__change_model_callback)
-        self.load_thread.start()
+        success, res = self.controller.setModel(param_path)
+
+        if success:
+            model_dict = {"param_path": param_path}
+            if model_dict not in self.recentModels:
+                self.recentModels.insert(0, model_dict)
+                if len(self.recentModels) > 10:
+                    del self.recentModels[-1]
+            else:  # 如果存在移动位置，确保加载最近模型的正确
+                self.recentModels.remove(model_dict)
+                self.recentModels.insert(0, model_dict)
+            self.settings.setValue("recent_models", self.recentModels)
+            self.statusbar.showMessage(
+                osp.basename(param_path) + self.tr(" 模型加载成功"), 10000)
+            return True
+        else:
+            self.warnException(res)
+            return False
 
     def changePropgationParam(self, param_path: str=None):
         if not param_path:
@@ -934,27 +938,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                                    self.video_recentModels)
             self.statusbar.showMessage(
                 osp.basename(param_path) + self.tr("视频传播模型加载成功"), 10000)
-            return True
-        else:
-            self.warnException(res)
-            return False
-
-    def __change_model_callback(self, signal_dict: dict):
-        success = signal_dict["success"]
-        res = signal_dict["res"]
-        param_path = signal_dict["param_path"]
-        if success:
-            model_dict = {"param_path": param_path}
-            if model_dict not in self.recentModels:
-                self.recentModels.insert(0, model_dict)
-                if len(self.recentModels) > 10:
-                    del self.recentModels[-1]
-            else:  # 如果存在移动位置，确保加载最近模型的正确
-                self.recentModels.remove(model_dict)
-                self.recentModels.insert(0, model_dict)
-            self.settings.setValue("recent_models", self.recentModels)
-            self.statusbar.showMessage(
-                osp.basename(param_path) + self.tr(" 模型加载成功"), 10000)
             return True
         else:
             self.warnException(res)
@@ -1032,12 +1015,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 options=options, )
         self.controller.exportLabel(savePath)
 
-    def addLabel(self):
+    def addLabel(self, idx=None, txt="", c=None):
         c = self.colorMap.get_color()
         table = self.labelListTable
         idx = table.rowCount()
         table.insertRow(table.rowCount())
-        self.controller.addLabel(idx + 1, "", c)
+        self.controller.addLabel(idx + 1, txt, c)
         numberItem = QTableWidgetItem(str(idx + 1))
         numberItem.setFlags(QtCore.Qt.ItemIsEnabled)
         table.setItem(idx, 0, numberItem)
@@ -1356,6 +1339,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         path = normcase(path)
         if not osp.exists(path):
             return
+        self.imagePath = path
         self.saveImage(True)  # 关闭当前图像
         self.eximgsInit()  # TODO: 将grid的部分整合到saveImage里
 
@@ -1372,6 +1356,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if checkOpenGrid(image, self.thumbnail_min):
                     if self.loadGrid(image, False):
                         image, _ = self.grid.getGrid(0, 0)
+                # 自然图像不进行缩小
             else:
                 if self.dockWidgets["grid"][0].isVisible() is True:
                     self.grid = Grids(image)
@@ -1470,7 +1455,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if not self.dockStatus[8]:
                     return False
             # self.video_masks = None
-            self.video_images = self.video.set_video(path)
+            self.video_images, self.fps = self.video.set_video(path)
             self.video_masks = np.zeros(
                 (self.video.num_frames, self.video.height, self.video.width),
                 dtype=np.uint8)
@@ -1494,7 +1479,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 2. 加载标签
         self.loadLabel(path)
         self.addRecentFile(path)
-        self.imagePath = path
         return True
 
     def loadLabel(self, imgPath):
@@ -1737,7 +1721,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if savePath not in self.labelPaths:
             self.labelPaths.append(savePath)
 
-        # 视频帧保存
+        # 视频帧保存&视频保存
         if self.video_masks is not None:
             if osp.exists(savePath):
                 res = self.warn(
@@ -1761,9 +1745,14 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 progress.setWindowModality(Qt.WindowModal)
                 progress.setRange(0, self.video.num_frames)
 
+                videoname = savePath + "_overlay.mp4"
+                fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+                h, w = self.video_masks[0].shape
+                videoWrite = cv2.VideoWriter(videoname, fourcc, self.fps,
+                                             (w, h))
+
                 for i in range(0, self.video.num_frames):
                     # Save mask
-                    h, w = self.video_masks[i].shape
                     mask = self.video_masks[i].astype('uint8')
                     pseudo = np.zeros([h, w, 3])
                     # mask = self.controller.result_mask
@@ -1772,11 +1761,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                         pseudo[mask == lab.idx, :] = lab.color[::-1]
                     cv2.imwrite(
                         os.path.join(mask_dir, '{:05d}.png'.format(i)), pseudo)
-
                     # Save overlay
                     overlay = overlay_davis(self.video_images[i],
                                             self.video_masks[i], self.opacity,
                                             self.controller.palette)
+                    videoWrite.write(overlay[:, :, ::-1])  # write video
                     overlay = Image.fromarray(overlay)
                     overlay.save(
                         os.path.join(overlay_dir, '{:05d}.png'.format(i)))
@@ -1784,10 +1773,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     if progress.wasCanceled():
                         # QMessageBox.warning(self, "提示", "保存失败")
                         break
-                else:
-                    progress.setValue(self.video.num_frames)
-                    # QMessageBox.information(self, "提示", "保存成功")
 
+                progress.setValue(self.video.num_frames)
+                videoWrite.release()
                 self.setDirty(False)
                 self.statusbar.showMessage(
                     self.tr("视频帧成功保存至") + " " + savePath, 5000)
@@ -1812,7 +1800,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.raster.saveMask(mask_output, tifPath)
                 if self.shpSave.isChecked():
                     shpPath = pathHead + ".shp"
-                    # geocode_list = self.mask2poly(mask_output, False)
                     print(rs.save_shp(shpPath, tifPath))
             else:
                 ext = osp.splitext(savePath)[1]
@@ -1821,27 +1808,26 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
             # 4.2 保存伪彩色
         if self.save_status["pseudo_color"]:
-            if self.raster is None:
-                pseudoPath, ext = osp.splitext(savePath)
-                pseudoPath = pseudoPath + "_pseudo" + ext
-                pseudo = np.zeros([s[0], s[1], 3])
-                # mask = self.controller.result_mask
-                mask = mask_output
-                # print(pseudo.shape, mask.shape)
-                for lab in self.controller.labelList:
-                    pseudo[mask == lab.idx, :] = lab.color[::-1]
-                cv2.imencode(ext, pseudo)[1].tofile(pseudoPath)
+            pseudoPath, ext = osp.splitext(savePath)
+            pseudoPath = pseudoPath + "_pseudo" + ext
+            pseudo = np.zeros([s[0], s[1], 3], dtype="uint8")
+            # mask = self.controller.result_mask
+            mask = mask_output
+            # print(pseudo.shape, mask.shape)
+            for lab in self.controller.labelList:
+                pseudo[mask == lab.idx, :] = lab.color[::-1]
+            cv2.imencode(ext, pseudo)[1].tofile(pseudoPath)
 
         # 4.3 保存前景抠图
         if self.save_status["cutout"]:
-            if self.raster is None:
-                mattingPath, ext = osp.splitext(savePath)
-                mattingPath = mattingPath + "_cutout" + ext
-                img = np.ones([s[0], s[1], 4], dtype="uint8") * 255
-                img[:, :, :3] = self.controller.image.copy()
-                img[mask_output == 0] = self.cutoutBackground
-                img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
-                cv2.imencode(ext, img)[1].tofile(mattingPath)
+            mattingPath, ext = osp.splitext(savePath)
+            mattingPath = mattingPath + "_cutout" + ext
+            img = np.ones([s[0], s[1], 4], dtype="uint8") * 255
+            cim = cv2.resize(self.controller.image.copy(), (s[1], s[0]))
+            img[:, :, :3] = cim
+            img[mask_output == 0] = self.cutoutBackground
+            img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
+            cv2.imencode(ext, img)[1].tofile(mattingPath)
 
         # 4.4 保存json
         if self.save_status["json"]:
@@ -2312,9 +2298,41 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.gridTable.item(0, 0).setBackground(self.GRID_COLOR["overlying"])
         # 事件注册
         self.gridTable.cellClicked.connect(self.changeGrid)
+        # load polygon
+        if self.outputDir is not None:
+            name = osp.splitext(osp.basename(self.imagePath))[0]
+            json_path = osp.join(self.outputDir, name + "_grid_saved.json")
+            if osp.exists(json_path):
+                self.grid.json_labels = json.loads(open(json_path, "r").read())
+            # load label
+            for jlab in self.grid.json_labels:
+                is_add = True
+                for label in self.controller.labelList.labelList:
+                    if jlab["labelIdx"] == label.idx and jlab[
+                            "name"] == label.name:
+                        is_add = False
+                        break
+                if is_add is True:
+                    self.addLabel(jlab["labelIdx"], jlab["name"], jlab["color"])
+        self.changeGrid(0, 0)
+        # load mask
+        for jlab in self.grid.json_labels:
+            pts = np.int32([np.array(jlab["points"])])
+            cv2.fillPoly(
+                self.grid.mask_grids[jlab["row"]][jlab["col"]],
+                pts=pts,
+                color=jlab["labelIdx"])
 
     def changeGrid(self, row, col):
+        def find_in_json(r, c, json_labels):
+            idxs = []
+            for idx, json_label in enumerate(json_labels):
+                if json_label["row"] == r and json_label["col"] == c:
+                    idxs.append(idx)
+            return idxs
+
         # 清除未保存的切换
+        self.finishObject()
         # TODO: 这块应该通过dirty判断?
         if self.grid.curr_idx is not None:
             self.saveGrid()  # 切换时自动保存上一块
@@ -2326,50 +2344,38 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.gridTable.item(
                     last_r, last_c).setBackground(self.GRID_COLOR["finised"])
         self.delAllPolygon()
-        image, mask = self.grid.getGrid(row, col)
+        image, _ = self.grid.getGrid(row, col)
         self.controller.setImage(image)
         self.grid.curr_idx = (row, col)
-        if mask is None:
-            self.gridTable.item(row,
-                                col).setBackground(self.GRID_COLOR["current"])
-        else:
+        idxs = find_in_json(row, col, self.grid.json_labels)
+        if len(idxs) != 0:
+            # 加载之前的标注
             self.gridTable.item(row,
                                 col).setBackground(self.GRID_COLOR["overlying"])
-            self.mask2poly(mask)
+            for idx in idxs:
+                label = self.grid.json_labels[idx]
+                color = label["color"]
+                labelIdx = label["labelIdx"]
+                points = label["points"]
+                poly = PolygonAnnotation(
+                    labelIdx,
+                    self.controller.image.shape,
+                    self.delPolygon,
+                    self.setDirty,
+                    color,
+                    color,
+                    self.opacity, )
+                self.scene.addItem(poly)
+                self.scene.polygon_items.append(poly)
+                for p in points:
+                    poly.addPointLast(QtCore.QPointF(p[0], p[1]))
+            [self.grid.json_labels.remove(celement) for \
+             celement in [self.grid.json_labels[i] for i in idxs]]
+        else:
+            self.gridTable.item(row,
+                                col).setBackground(self.GRID_COLOR["current"])
         # 刷新
         self.updateImage(True)
-
-    def mask2poly(self, mask, show=True):
-        labs = np.unique(mask)[1:]
-        colors = []
-        for i in range(len(labs)):
-            idx = int(labs[i]) - 1
-            if idx < len(self.controller.labelList):
-                c = self.controller.labelList[idx].color
-            else:
-                if self.currLabelIdx != -1:
-                    c = self.controller.labelList[self.currLabelIdx].color
-                else:
-                    c = None
-            colors.append(c)
-        geocode_list = []
-        for idx, (l, c) in enumerate(zip(labs, colors)):
-            if c is not None:
-                curr_polygon = util.get_polygon(
-                    ((mask == l).astype(np.uint8) * 255),
-                    building=self.boundaryRegular.isChecked(), )
-                if show == True:
-                    self.createPoly(curr_polygon, c)
-                    for p in self.scene.polygon_items:
-                        p.setAnning(isAnning=False)
-                else:
-                    for g in curr_polygon:
-                        points = [gi.tolist() for gi in g]
-                        geocode_list.append({
-                            "name": self.controller.labelList[idx].name,
-                            "points": points,
-                        })
-        return geocode_list
 
     def saveGrid(self):
         row, col = self.grid.curr_idx
@@ -2379,14 +2385,35 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                             col).setBackground(self.GRID_COLOR["overlying"])
         # if len(np.unique(self.grid.mask_grids[row][col])) == 1:
         self.grid.mask_grids[row][col] = np.array(self.getMask())
+        # save grid label to load
+        polygons = self.scene.polygon_items
+        for polygon in polygons:
+            l = self.controller.labelList[polygon.labelIndex - 1]
+            label = {
+                "row": row,
+                "col": col,
+                "name": l.name,
+                "labelIdx": l.idx,
+                "color": l.color,
+                "points": [],
+            }
+            for p in polygon.scnenePoints:
+                label["points"].append(p)
+            self.grid.json_labels.append(label)
+        # save every blocks or not
         if self.cheSaveEvery.isChecked():
-            if self.outputDir is None:
-                self.changeOutputDir()
             _, fullflname = osp.split(self.listFiles.currentItem().text())
             fname, _ = os.path.splitext(fullflname)
-            path = osp.join(
+            if self.outputDir is None:
+                if self.changeOutputDir() is False:
+                    self.cheSaveEvery.setChecked(False)
+                    return
+            save_ima_path = osp.join(
                 self.outputDir,
                 (fname + "_data_" + str(row) + "_" + str(col) + ".tif"))
+            save_lab_path = osp.join(
+                self.outputDir,
+                (fname + "_mask_" + str(row) + "_" + str(col) + ".tif"))
             im, tf = self.raster.getGrid(row, col)
             h, w = im.shape[:2]
             geoinfo = edict()
@@ -2395,10 +2422,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             geoinfo.dtype = self.raster.geoinfo.dtype
             geoinfo.crs = self.raster.geoinfo.crs
             geoinfo.geotf = tf
-            self.raster.saveMask(self.grid.mask_grids[row][col],
-                                 path.replace("data", "mask"),
+            self.raster.saveMask(self.grid.mask_grids[row][col], save_lab_path,
                                  geoinfo)  # 保存mask
-            self.raster.saveMask(im, path, geoinfo, 3)  # 保存图像
+            self.raster.saveMask(im, save_ima_path, geoinfo, 3)  # 保存图像
 
     def turnGrid(self, delta):
         # 切换下一个宫格
@@ -2422,6 +2448,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.gridTable.clearContents()
 
     def saveGridLabel(self):
+        if self.grid is None:
+            return
         if self.outputDir is not None:
             name, ext = osp.splitext(osp.basename(self.imagePath))
             if not self.origExt:
@@ -2438,13 +2466,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             pass
         self.delAllPolygon()  # 清理
         mask = self.grid.splicingList(save_path)
+        json_path = save_path.replace(".png", "_grid_saved.json")
+        open(
+            json_path, "w",
+            encoding="utf-8").write(json.dumps(self.grid.json_labels))
         if self.grid.__class__.__name__ == "RSGrids":
-            self.image, is_big = self.raster.getArray()
+            self.image, geo_tf = self.raster.getArray()
+            if geo_tf is None:
+                self.statusbar.showMessage(self.tr("图像过大，已显示缩略图"))
         else:
             self.image = self.grid.detimg
-            is_big = checkOpenGrid(self.image, self.thumbnail_min)
-        if is_big is None:
-            self.statusbar.showMessage(self.tr("图像过大，已显示缩略图"))
         self.controller.image = self.image
         self.controller._result_mask = mask
         self.exportLabel(savePath=save_path, lab_input=mask)
@@ -2567,14 +2598,17 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # sys.exit(0)
 
     def reportBug(self):
+        webbrowser.open("https://github.com/PaddlePaddle/PaddleSeg/issues")
+
+    def enterEISegMed3D(self):
         webbrowser.open(
-            "https://github.com/PaddleCV-SIG/EISeg/issues/new/choose")
+            "https://github.com/PaddlePaddle/PaddleSeg/tree/develop/EISeg/med3d")
 
     def quickStart(self):
         # self.saveImage(True)
         # self.canvas.setStyleSheet(self.note_style)
         webbrowser.open(
-            "https://github.com/PaddleCV-SIG/EISeg/tree/release/0.4.0")
+            "https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.6/EISeg")
 
     def toggleLogging(self, s):
         if s:
@@ -2704,7 +2738,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
         else:
             # self.delAllPolygon()
-            self.timer.start(1000 / self.ratio)
+            self.timer.start(1000 // self.ratio)
             self.videoPlay.setText(self.tr("暂停"))
             self.videoPlay.setIcon(
                 QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))
