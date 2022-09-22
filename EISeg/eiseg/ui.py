@@ -35,33 +35,6 @@ class Ui_EISeg(object):
         super(Ui_EISeg, self).__init__()
         self.tr = partial(QtCore.QCoreApplication.translate, "APP_EISeg")
 
-    def addVideoslider(self, MainWindow, frames):
-        ## 时间轴设置
-        widget = QtWidgets.QWidget()
-        verticalLayout = QtWidgets.QVBoxLayout(widget)
-        self.VideoDock = self.p_create_dock("VideoDock", self.tr("时间轴"), widget)
-        VideoRegion = QtWidgets.QHBoxLayout()
-        VideoRegion.setObjectName("VideoRegion")
-        self.videoPlay = self.p_create_button(
-            "videoPlay",
-            self.tr("播放"),
-            osp.join(pjpath, "resource/Play.png"),
-            "", )
-        VideoRegion.addWidget(self.videoPlay)
-        self.sldTime, self.textTime, _ = self.p_create_slider(
-            "sldTime", "textTime", "", 0, frames, 0, 1, True)
-        VideoRegion.addWidget(
-            create_text(self.CentralWidget, None, self.tr("帧数：")))
-        VideoRegion.addWidget(self.textTime)
-        VideoRegion.addWidget(self.sldTime)
-        verticalLayout.addLayout(VideoRegion)
-        self.VideoDock.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea)
-        MainWindow.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.VideoDock)
-
-        # timer
-        self.timer = QTimer()
-        self.timer.setSingleShot(False)
-
     def setupUi(self, MainWindow):
         ## -- 主窗体设置 --
         MainWindow.setObjectName("MainWindow")
@@ -145,6 +118,9 @@ class Ui_EISeg(object):
         self.cheWithMask.setText(self.tr("使用掩膜"))
         self.cheWithMask.setChecked(True)
         ModelRegion.addWidget(self.cheWithMask)  # with_mask
+        ModelRegion.addSpacerItem(
+            QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum,
+                                  QtWidgets.QSizePolicy.Expanding))
         horizontalLayout.addLayout(ModelRegion)
         MainWindow.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.ModelDock)
         # 数据列表
@@ -158,7 +134,6 @@ class Ui_EISeg(object):
         self.listFiles = QtWidgets.QListWidget(self.CentralWidget)
         self.listFiles.setObjectName("ListFiles")
         ListRegion.addWidget(self.listFiles)
-
         # ListRegion.addWidget(self.btnSave)
         horizontalLayout.addLayout(ListRegion)
         self.DataDock = self.p_create_dock("DataDock", self.tr("数据列表"), widget)
@@ -181,7 +156,6 @@ class Ui_EISeg(object):
         self.labelListTable.clearContents()
         self.labelListTable.setRowCount(0)
         self.labelListTable.setColumnCount(4)
-
         LabelRegion.addWidget(self.labelListTable)
         self.btnAddClass = self.p_create_button(
             "btnAddClass",
@@ -220,6 +194,9 @@ class Ui_EISeg(object):
             osp.join(pjpath, "resource/Save.png"),
             "Ctrl+S", )
         ShowSetRegion.addWidget(self.btnSave)
+        ShowSetRegion.addSpacerItem(
+            QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum,
+                                  QtWidgets.QSizePolicy.Expanding))
         horizontalLayout.addLayout(ShowSetRegion)
         self.SegSettingDock = self.p_create_dock("SegSettingDock",
                                                  self.tr("分割设置"), widget)
@@ -284,6 +261,9 @@ class Ui_EISeg(object):
             "sldWc", "textWc", self.tr("窗位："), 0, 2048, -2048, 1, True)
         MIRegion.addLayout(WcRegion)
         MIRegion.addWidget(self.sldWc)
+        MIRegion.addSpacerItem(
+            QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum,
+                                  QtWidgets.QSizePolicy.Expanding))
         horizontalLayout.addLayout(MIRegion)
         self.MedDock = self.p_create_dock("MedDock", self.tr("医疗设置"), widget)
         MainWindow.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.MedDock)
@@ -354,6 +334,9 @@ class Ui_EISeg(object):
             create_text(self.CentralWidget, None, self.tr("进度：")))
         proLayer.addWidget(self.proPropagete)
         VSTDock.addLayout(proLayer)
+        VSTDock.addSpacerItem(
+            QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum,
+                                  QtWidgets.QSizePolicy.Expanding))
         horizontalLayout.addLayout(VSTDock)
         MainWindow.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.VSTDock)
         # 3d显示
@@ -416,11 +399,9 @@ class Ui_EISeg(object):
         verticalLayout.addLayout(VideoRegion)
         self.VideoDock.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea)
         MainWindow.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.VideoDock)
-
         # timer
         self.timer = QTimer()
         self.timer.setSingleShot(False)
-
         ## -----
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         # log.debug("Set up UI finished")

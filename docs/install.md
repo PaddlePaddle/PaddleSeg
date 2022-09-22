@@ -1,7 +1,7 @@
 English | [简体中文](install_cn.md)
 
 
-## Environment Requirements
+## 1 Environment Requirements
 
 - PaddlePaddle (the version >= 2.2)
 - OS: 64-bit
@@ -10,9 +10,9 @@ English | [简体中文](install_cn.md)
 - CUDA >= 10.1
 - cuDNN >= 7.6
 
-## Installation
+## 2 Installation
 
-### 1. Install PaddlePaddle
+### 2.1 Install PaddlePaddle
 
 Please refer to the [installation doc](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html) to install PaddlePaddle (the version >= 2.2).
 
@@ -39,7 +39,13 @@ In Python interpreter, run the following command to confirm whether PaddlePaddle
 
 ```
 
-### 2. Download Repo
+### 2.2 Install PaddleSeg
+
+If you make modification to `PaddleSeg/paddleseg`, e.g, adding model and loss, you should install PaddleSeg from source.
+
+If you only use PaddleSeg library, please install complied PaddleSeg.
+
+#### 2.2.1 Install PaddleSeg from Source
 
 Clone the PaddleSeg repo from Github.
 
@@ -47,40 +53,31 @@ Clone the PaddleSeg repo from Github.
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-### 3. Install Dependencies
+Run the following command, install PaddleSeg from source. If you make modification to `PaddleSeg/paddleseg`, it will be efficient without reinstallation.
 
 ```
 cd PaddleSeg
-pip install -r requirements.txt
+pip install -v -e .
 ```
+#### 2.2.2 Install Compiled PaddleSeg
 
-If a version error occurs during installation, you can try to delete the old version and re-run the script.
-### 4. Verify Installation
+Run the following command, install the complied PaddleSeg.
 
-In the root of PaddleSeg, run the following command. If there are no error in terminal log, you can use PaddleSeg to train, validate, test and export models with config method.
-
-```
-cd PaddleSeg
-sh tests/run_check_install.sh
-```
-
-### 5. Install PaddleSeg (Optional)
-
-Besides, PaddleSeg also supports api method for flexible development, which requires the PaddleSeg is installed in python libs.
-
-Run the following command to compile and install PaddleSeg from source code.
-
-```
-cd PaddleSeg
-python setup.py install
-```
-
-Or, you can install the release PaddleSeg.
 ```
 pip install paddleseg
 ```
 
-## Use PaddleSeg with Docker
+### 2.3 Verify Installation
+
+In the root of PaddleSeg, run the following command.
+If there are no error in terminal log, you can use PaddleSeg to train, validate, test and export models with config method.
+
+```
+cd PaddleSeg
+sh tests/install/check_predict.sh
+```
+
+## 3 Use PaddleSeg with Docker
 
 Docker is an open-source tool to build, ship, and run distributed applications in an isolated environment. If you  do not have a Docker environment, please refer to [Docker](https://www.docker.com/). If you will use GPU version, you also need to install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 

@@ -260,7 +260,7 @@ class MixVisionTransformer(nn.Layer):
     def __init__(self,
                  img_size=224,
                  patch_size=16,
-                 in_chans=3,
+                 in_channels=3,
                  num_classes=1000,
                  embed_dims=[64, 128, 256, 512],
                  num_heads=[1, 2, 4, 8],
@@ -284,7 +284,7 @@ class MixVisionTransformer(nn.Layer):
             img_size=img_size,
             patch_size=7,
             stride=4,
-            in_chans=in_chans,
+            in_chans=in_channels,
             embed_dim=embed_dims[0])
         self.patch_embed2 = OverlapPatchEmbed(
             img_size=img_size // 4,

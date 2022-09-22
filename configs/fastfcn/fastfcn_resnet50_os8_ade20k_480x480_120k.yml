@@ -10,7 +10,6 @@ train_dataset:
       scale_step_size: 0.25
     - type: RandomPaddingCrop
       crop_size: [480, 480]
-      im_padding_value: [0, 0, 0]
     - type: RandomHorizontalFlip
     - type: RandomDistort
       brightness_range: 0.4

@@ -120,8 +120,9 @@ class PSSLDataset(Dataset):
 
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
+        data = {'img': image_path, 'trans_info': [], 'gt_fields': []}
 
-        # transform label
+        # get class_id by image path
         class_name = (image_path.split('/')[-1]).split('_')[0]
         class_id = self.class_id_dict[class_name]
 
@@ -129,7 +130,9 @@ class PSSLDataset(Dataset):
         gt_semantic_seg = np.zeros_like(pssl_seg, dtype=np.int64) + 1000
         # [0, 999] for imagenet classes, 1000 for background, others(-1) will be ignored during training.
         gt_semantic_seg[pssl_seg == 1] = class_id
+        data['label'] = gt_semantic_seg
 
-        im, label = self.transforms(im=image_path, label=gt_semantic_seg)
-
-        return im, label
+        if self.mode == 'train':
+            data['gt_fields'].append('label')
+        data = self.transforms(data)
+        return data

@@ -30,7 +30,8 @@ def load_video(path, min_side=480):
                 frame, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
         frame_list.append(frame)
     frames = np.stack(frame_list, axis=0)
-    return frames
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    return frames, fps
 
 
 def load_masks(path, min_side=None):

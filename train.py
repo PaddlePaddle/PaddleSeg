@@ -19,7 +19,7 @@ import paddle
 import numpy as np
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check
+from paddleseg.utils import get_sys_env, logger
 from paddleseg.core import train
 
 
@@ -31,13 +31,13 @@ def parse_args():
     parser.add_argument(
         '--iters',
         dest='iters',
-        help='iters for training',
+        help='Iterations in training.',
         type=int,
         default=None)
     parser.add_argument(
         '--batch_size',
         dest='batch_size',
-        help='Mini batch size of one gpu or cpu',
+        help='Mini batch size of one gpu or cpu.',
         type=int,
         default=None)
     parser.add_argument(
@@ -47,6 +47,11 @@ def parse_args():
         type=float,
         default=None)
     parser.add_argument(
+        '--opts',
+        help='Update the key-value pairs of all options.',
+        default=None,
+        nargs='+')
+    parser.add_argument(
         '--save_interval',
         dest='save_interval',
         help='How many iters to save a model snapshot once during training.',
@@ -55,42 +60,42 @@ def parse_args():
     parser.add_argument(
         '--resume_model',
         dest='resume_model',
-        help='The path of resume model',
+        help='The path of the model to resume.',
         type=str,
         default=None)
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
-        help='The directory for saving the model snapshot',
+        help='The directory for saving the model snapshot.',
         type=str,
         default='./output')
     parser.add_argument(
         '--keep_checkpoint_max',
         dest='keep_checkpoint_max',
-        help='Maximum number of checkpoints to save',
+        help='Maximum number of checkpoints to save.',
         type=int,
         default=5)
     parser.add_argument(
         '--num_workers',
         dest='num_workers',
-        help='Num workers for data loader',
+        help='Number of workers for data loader.',
         type=int,
         default=0)
     parser.add_argument(
         '--do_eval',
         dest='do_eval',
-        help='Eval while training',
+        help='Whether to do evaluation while training.',
         action='store_true')
     parser.add_argument(
         '--log_iters',
         dest='log_iters',
-        help='Display logging information at every log_iters',
+        help='Display logging information at every `log_iters`.',
         default=10,
         type=int)
     parser.add_argument(
         '--use_vdl',
         dest='use_vdl',
-        help='Whether to record the data to VisualDL during training',
+        help='Whether to record the data to VisualDL during training.',
         action='store_true')
     parser.add_argument(
         '--seed',
@@ -113,7 +118,7 @@ def parse_args():
         help="Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, the input \
                 data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators \
                 parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel \
-                and batchnorm. Default is O1(amp)")
+                and batchnorm. Default is O1(amp).")
     parser.add_argument(
         '--data_format',
         dest='data_format',
@@ -130,9 +135,16 @@ def parse_args():
     parser.add_argument(
         '--device',
         dest='device',
-        help='Device place to be set, which can be GPU, XPU, NPU, CPU',
+        help='Device place to be set, which can be gpu, xpu, npu, or cpu.',
         default='gpu',
+        choices=['cpu', 'gpu', 'xpu', 'npu'],
         type=str)
+    parser.add_argument(
+        '--repeats',
+        type=int,
+        default=1,
+        help="Repeat the samples in the dataset for `repeats` times in each epoch."
+    )
 
     return parser.parse_args()
 
@@ -168,7 +180,9 @@ def main(args):
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
-        batch_size=args.batch_size)
+        batch_size=args.batch_size,
+        opts=args.opts)
+    cfg.check_sync_info()
 
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
@@ -189,6 +203,10 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
+
+    if args.repeats > 1:
+        train_dataset.file_list *= args.repeats
+
     val_dataset = cfg.val_dataset if args.do_eval else None
     losses = cfg.loss
 
@@ -197,14 +215,14 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
-
+    # convert bn to sync_bn if necessary
     if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
-        # convert bn to sync_bn
-        cfg._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
+        model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
+    else:
+        model = cfg.model
 
     train(
-        cfg.model,
+        model,
         train_dataset,
         val_dataset=val_dataset,
         optimizer=cfg.optimizer,
