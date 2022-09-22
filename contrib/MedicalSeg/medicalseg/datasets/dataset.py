@@ -37,7 +37,7 @@ class MedicalDataset(paddle.io.Dataset):
         result_dir (str): The directory to save the next phase result.
         mode (str, optional): which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
         ignore_index (int, optional): The index that ignore when calculate loss.
-
+        repeat_times (int, optional): Repeat times of dataset.
         Examples:
 
             import medicalseg.transforms as T
@@ -65,7 +65,8 @@ class MedicalDataset(paddle.io.Dataset):
                  mode='train',
                  ignore_index=255,
                  data_URL="",
-                 dataset_json_path=""):
+                 dataset_json_path="",
+                 repeat_times=10):
         self.dataset_root = dataset_root
         self.result_dir = result_dir
         self.transforms = Compose(transforms)
@@ -108,7 +109,7 @@ class MedicalDataset(paddle.io.Dataset):
                 self.file_list.append([image_path, grt_path])
 
         if mode == 'train':
-            self.file_list = self.file_list * 10
+            self.file_list = self.file_list * repeat_times
 
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
