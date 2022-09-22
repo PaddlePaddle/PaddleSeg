@@ -17,6 +17,7 @@ model_name=$(func_parser_value ${lines[1]})
 trainer_list=$(func_parser_value "${lines[14]}")
 
 # MODE be one of ['lite_train_lite_infer']
+
 if [ ${MODE} = "lite_train_lite_infer" ]; then
   mkdir -p ./test_tipc/data
 
@@ -32,4 +33,4 @@ if [ ${MODE} = "lite_train_lite_infer" ]; then
     unzip mini_brainT_dataset.zip  && cd ../../
   fi
 
-fi
+

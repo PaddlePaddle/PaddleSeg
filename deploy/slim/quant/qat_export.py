@@ -34,24 +34,19 @@ from paddleslim import QAT
 def parse_args():
     parser = argparse.ArgumentParser(description='Model export.')
     parser.add_argument(
-        "--config",
-        dest="cfg",
-        help="The config file.",
-        default=None,
-        type=str,
-        required=True)
+        "--config", help="The config file.", type=str, required=True)
+    parser.add_argument(
+        '--model_path', help='The path of model for export', type=str)
     parser.add_argument(
         '--save_dir',
-        dest='save_dir',
         help='The directory for saving the exported model',
         type=str,
-        default='./output')
+        default='./output/inference_model')
     parser.add_argument(
-        '--model_path',
-        dest='model_path',
-        help='The path of model for export',
-        type=str,
-        default=None)
+        '--output_op',
+        choices=['argmax', 'softmax', 'none'],
+        default="argmax",
+        help="Select which op to be appended to output result, default: argmax")
     parser.add_argument(
         '--without_argmax',
         dest='without_argmax',
@@ -68,7 +63,7 @@ def parse_args():
 
 def main(args):
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
-    cfg = Config(args.cfg)
+    cfg = Config(args.config)
     cfg.check_sync_info()
     net = cfg.model
 
@@ -77,15 +72,22 @@ def main(args):
     quantizer.quantize(net)
     logger.info('Quantize the model successfully')
 
-    if args.model_path:
+    if args.model_path is not None:
         utils.load_entire_model(net, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
-    if not args.without_argmax or args.with_softmax:
-        new_net = SavedSegmentationNet(net, args.without_argmax,
-                                       args.with_softmax)
-    else:
-        new_net = net
+    output_op = args.output_op
+    if args.without_argmax:
+        logger.warning(
+            '`--without_argmax` will be deprecated. Please use `--output_op`.')
+        output_op = 'none'
+    if args.with_softmax:
+        logger.warning(
+            '`--with_softmax` will be deprecated. Please use `--output_op`.')
+        output_op = 'softmax'
+
+    new_net = net if output_op == 'none' else SavedSegmentationNet(net,
+                                                                   output_op)
 
     new_net.eval()
     save_path = os.path.join(args.save_dir, 'model')
@@ -109,7 +111,7 @@ def main(args):
         }
         yaml.dump(data, file)
 
-    logger.info(f'Model is saved in {args.save_dir}.')
+    logger.info(f'The quantized inference model is saved in {args.save_dir}.')
 
 
 if __name__ == '__main__':

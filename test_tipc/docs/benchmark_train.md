@@ -109,7 +109,7 @@ ${BENCHMARK_LOG_DIR}/
 |Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|4|24.335|24.527|21.466|0.125|
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|2|||||
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4|||||
-|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|2|4.428|4.444|4.399|0.010|
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|2|5.158|5.170|5.199|0.008|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|2|9.152|9.150|9.247|0.010|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|4|||||
 |PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|2|3.948|3.924|3.987|0.016|
@@ -130,7 +130,7 @@ ${BENCHMARK_LOG_DIR}/
 |Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|4|22.547|23.748|21.415|0.098|
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|2|||||
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4|||||
-|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|2|4.394|4.449|4.418|0.012|
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|2|4.730|4.775|4.704|0.015|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|2|13.659|13.449|13.688|0.017|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|4|||||
 |PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|2|3.969|3.938|3.953|0.008|
@@ -153,7 +153,7 @@ ${BENCHMARK_LOG_DIR}/
 |Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|4|55.381|55.508|55.655|0.005|
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|2|||||
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4|||||
-|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|2|27.936|28.378|28.750|0.028|
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|2|25.229|25.122|25.284|0.006|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|2|50.094|50.166|50.173|0.002|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|4|||||
 |PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|2|||||
@@ -174,7 +174,7 @@ ${BENCHMARK_LOG_DIR}/
 |Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|4|55.406|55.575|55.174|0.007|
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|2|||||
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4|||||
-|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|2|27.547|27.552|27.289|0.010|
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|2|22.075|22.299|22.149|0.010|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|2|56.570|55.315|55.091|0.026|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|4|||||
 |PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|2|||||

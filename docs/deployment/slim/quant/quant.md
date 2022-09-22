@@ -151,11 +151,12 @@ The input params of the script are as follows.
 
 |Input params| Usage | Optional | Default Value|
 |-|-|-|-|
-|config         | The config path of the original model                               | No  |  -                       |
-|save_dir       | The save directory for saving the inference model                   | Yes | ./output                 |
-|model_path     | The path of the quantized weights                                   | Yes | The model_path in config |
-|with_softmax   | Whether to add softmax layer to the last of the inference model     | Yes | False                    |
-|without_argmax | Whether not to add argmax layer to the last of the inference mode   | Yes | False                    |
+|config|The path of config file| Yes |-|
+|model_path|The path of trained weight| No |-|
+|save_dir| The save dir for the inference model| No |`output/inference_model`|
+|output_op | Set the op that is appended to the inference model, should in [`argmax`, `softmax`, `none`]. PaddleSeg models outputs logits (`N*C*H*W`) by default. Adding `argmax` operation, we get the label for every pixel, the dimension of output is `N*H*W`. Adding `softmax` operation, we get the probability of different classes for every pixel. | No | argmax |
+|with_softmax| Deprecated params, please use --output_op. Add softmax operator at the end of the network. Since PaddleSeg networking returns Logits by default, you can set it to True if you want the deployment model to get the probability value| No |False|
+|without_argmax|Deprecated params, please use --output_op. Whether or not to add argmax operator at the end of the network. Since PaddleSeg networking returns Logits by default, we add argmax operator at the end of the network by default in order to directly obtain the prediction results for the deployment model| No |False|
 
 Run the following instructions in the root directory of PaddleSeg. Then, the quantized inference model will be saved in `output_quant_infer`.
 
