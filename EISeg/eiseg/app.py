@@ -440,6 +440,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             tr("针对每张图片启用宫格检测"),
             checkable=True, )
         self.grid_message.setChecked(True)
+        eiseg_med3D = action(
+            tr("&EISeg-Med3D"),
+            self.enterEISegMed3D,
+            "enterEISegMed3D",
+            "EISegMed3D",
+            tr("3D医疗交互式分割插件"),
+        )
         save_cutout = action(
             tr("&抠图保存"),
             partial(self.toggleSave, "cutout"),
@@ -642,11 +649,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 turn_prev,
                 close,
                 None,
-                quit, ),
+                quit,),
             labelMenu=(
                 export_label_list,
                 import_label_list,
-                clear_label_list, ),
+                clear_label_list,),
             functionMenu=(
                 largest_component,
                 del_active_polygon,
@@ -664,7 +671,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 # test
                 self.show_rs_poly,
                 None,
-                self.grid_message, ),
+                self.grid_message,),
             showMenu=(
                 model_widget,
                 data_widget,
@@ -675,14 +682,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 grid_ann_widget,
                 video_play_widget,
                 video_anno_widget,
-                td_widget, ),
+                td_widget,),
             helpMenu=(
                 languages,
                 use_qt_widget,
                 quick_start,
                 report_bug,
                 edit_shortcuts,
-                toggle_logging, ),
+                toggle_logging,),
+            expandMenu=(
+                eiseg_med3D,),
             toolBar=(
                 finish_object,
                 clear,
@@ -698,7 +707,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 save_coco,
                 origional_extension,
                 None,
-                largest_component, ), )
+                largest_component,), )
 
         def menu(title, actions=None):
             menu = self.menuBar().addMenu(title)
@@ -711,6 +720,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         menu(tr("功能"), self.menus.functionMenu)
         menu(tr("显示"), self.menus.showMenu)
         menu(tr("帮助"), self.menus.helpMenu)
+        menu(tr("更多"), self.menus.expandMenu)
         util.addActions(self.toolBar, self.menus.toolBar)
 
     def __setColor(self, action, setting_name):
@@ -847,7 +857,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             return True
         return False
 
-    def changeParam(self, param_path: str=None):
+    def changeParam(self, param_path: str = None):
         if not param_path:
             filters = self.tr("Paddle静态模型权重文件(*.pdiparams)")
             start_path = ("." if len(self.recentModels) == 0 else
@@ -890,12 +900,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.warnException(res)
             return False
 
-    def changePropgationParam(self, param_path: str=None):
+    def changePropgationParam(self, param_path: str = None):
         if not param_path:
             filters = self.tr("Paddle静态模型权重文件(*.pdiparams)")
             start_path = (
                 ".") if len(self.video_recentModels) == 0 else osp.dirname(
-                    self.video_recentModels[-1]["param_path"])
+                self.video_recentModels[-1]["param_path"])
             if self.settings.value("use_qt_widget", False, type=bool):
                 options = QtWidgets.QFileDialog.DontUseNativeDialog
             else:
@@ -981,7 +991,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         logger.info(f"Loaded label list: {self.controller.labelList.labelList}")
         self.refreshLabelList()
 
-    def exportLabelList(self, savePath: str=None):
+    def exportLabelList(self, savePath: str = None):
         if len(self.controller.labelList) == 0:
             self.warn(self.tr("没有需要保存的标签"), self.tr("请先添加标签之后再进行保存！"))
             return
@@ -1216,7 +1226,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.listFiles.setCurrentRow(self.currIdx)  # 移动位置
         self.imagePaths.append(file_path)
 
-    def openImage(self, filePath: str=None):
+    def openImage(self, filePath: str = None):
         # 在triggered.connect中使用不管默认filePath为什么返回值都为False
         if not isinstance(filePath, str) or filePath is False:
             prompts = ["图片", "医学影像", "遥感影像", "视频"]
@@ -1258,7 +1268,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.imagePaths.append(filePath)
         return True
 
-    def openFolder(self, inputDir: str=None):
+    def openFolder(self, inputDir: str = None):
         # 1. 如果没传文件夹，弹框让用户选
         if not isinstance(inputDir, str):
             recentPath = self.settings.value("recent_files", [])
@@ -1390,7 +1400,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         # 遥感图像
         if path.lower().endswith(tuple(self.formats[
-                2])):  # imghdr.what(path) == "tiff":
+                                           2])):  # imghdr.what(path) == "tiff":
             if not self.dockStatus[4]:
                 res = self.warn(
                     self.tr("未打开遥感组件"),
@@ -2123,7 +2133,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.save_status["coco"] = not self.save_status["json"]
             self.actions.save_coco.setChecked(self.save_status["coco"])
 
-    def initCoco(self, coco_path: str=None):
+    def initCoco(self, coco_path: str = None):
         if not coco_path:
             if not self.outputDir or not osp.exists(self.outputDir):
                 coco_path = None
@@ -2135,7 +2145,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.coco = COCO(coco_path)
         if self.clearLabelList():
             self.controller.labelList = util.LabelList(self.coco.dataset[
-                "categories"])
+                                                           "categories"])
             self.refreshLabelList()
 
     def toggleWidget(self, index=None, warn=True):
@@ -2301,7 +2311,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 is_add = True
                 for label in self.controller.labelList.labelList:
                     if jlab["labelIdx"] == label.idx and jlab[
-                            "name"] == label.name:
+                        "name"] == label.name:
                         is_add = False
                         break
                 if is_add is True:
@@ -2362,7 +2372,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 for p in points:
                     poly.addPointLast(QtCore.QPointF(p[0], p[1]))
             [self.grid.json_labels.remove(celement) for \
-                celement in [self.grid.json_labels[i] for i in idxs]]
+             celement in [self.grid.json_labels[i] for i in idxs]]
         else:
             self.gridTable.item(row,
                                 col).setBackground(self.GRID_COLOR["current"])
@@ -2591,6 +2601,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def reportBug(self):
         webbrowser.open("https://github.com/PaddlePaddle/PaddleSeg/issues")
+
+    def enterEISegMed3D(self):
+        webbrowser.open("https://github.com/PaddlePaddle/PaddleSeg/tree/develop/EISeg/med3d")
 
     def quickStart(self):
         # self.saveImage(True)
