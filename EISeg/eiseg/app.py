@@ -440,6 +440,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             tr("针对每张图片启用宫格检测"),
             checkable=True, )
         self.grid_message.setChecked(True)
+        eiseg_med3D = action(
+            tr("&EISeg-Med3D"),
+            self.enterEISegMed3D,
+            "enterEISegMed3D",
+            "EISegMed3D",
+            tr("3D医疗交互式分割插件"), )
         save_cutout = action(
             tr("&抠图保存"),
             partial(self.toggleSave, "cutout"),
@@ -683,6 +689,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 report_bug,
                 edit_shortcuts,
                 toggle_logging, ),
+            expandMenu=(eiseg_med3D, ),
             toolBar=(
                 finish_object,
                 clear,
@@ -711,6 +718,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         menu(tr("功能"), self.menus.functionMenu)
         menu(tr("显示"), self.menus.showMenu)
         menu(tr("帮助"), self.menus.helpMenu)
+        menu(tr("更多"), self.menus.expandMenu)
         util.addActions(self.toolBar, self.menus.toolBar)
 
     def __setColor(self, action, setting_name):
@@ -2362,7 +2370,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 for p in points:
                     poly.addPointLast(QtCore.QPointF(p[0], p[1]))
             [self.grid.json_labels.remove(celement) for \
-                celement in [self.grid.json_labels[i] for i in idxs]]
+             celement in [self.grid.json_labels[i] for i in idxs]]
         else:
             self.gridTable.item(row,
                                 col).setBackground(self.GRID_COLOR["current"])
@@ -2591,6 +2599,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def reportBug(self):
         webbrowser.open("https://github.com/PaddlePaddle/PaddleSeg/issues")
+
+    def enterEISegMed3D(self):
+        webbrowser.open(
+            "https://github.com/PaddlePaddle/PaddleSeg/tree/develop/EISeg/med3d")
 
     def quickStart(self):
         # self.saveImage(True)
