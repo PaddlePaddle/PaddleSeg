@@ -671,7 +671,7 @@ class SwinTransformer(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-def SwinTransformer_tinyer_patch4_window7_224(pretrained=False, **kwargs):
+def SwinTransformer_tinier_patch4_window7_224(pretrained=False, **kwargs):
     model = SwinTransformer(
         embed_dim=96,
         depths=[2, 2, 2, 2],
