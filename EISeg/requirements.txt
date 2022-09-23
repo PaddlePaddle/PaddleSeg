@@ -10,4 +10,4 @@ wget
 requests
 easydict
 scikit-image
-protobuf==3.20.0
+protobuf==3.20.2
