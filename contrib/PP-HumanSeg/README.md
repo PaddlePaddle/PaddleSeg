@@ -313,6 +313,8 @@ The result of background replacement as follows.
 
 PP-HumanSeg V1 provides an online tutorial ([url](https://aistudio.baidu.com/aistudio/projectdetail/2189481)) in AI Studio.
 
+PP-HumanSeg V2 provides an online tutorial ([url](https://aistudio.baidu.com/aistudio/projectdetail/4504982)) in AI Studio.
+
 ## 5 Training and Finetuning
 
 Since the image for segmentation is various, you should evaluate the release model according to the actual scene.
@@ -347,7 +349,7 @@ configs
 ├── human_pp_humansegv1_server.yml
 ```
 
-Run the following command to start finetuning. The full usage of model training in [url](../../docs/train/train.md).
+Run the following command to start finetuning. You should change the details, such as learn rate, according to the actual situation. The full usage of model training in [url](../../docs/train/train.md).
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # Set GPU on Linux
@@ -396,9 +398,14 @@ python ../../export.py \
 When set `--without_argmax --with_softmax`, the last operation of inference model is softmax.
 
 ## 6 Deployment
-### 6.1 Deployment on Mobile Devices
 
-Refer to [deployment on edge dvices](../../docs/deployment/lite/lite.md)
+The PP-Humanseg inference models are deployed in the same way as other models.
+
+Deployment on server with python api, refer to [doc](../../docs/deployment/inference/python_inference.md).
+
+Deployment on server with c++ api, refer to [doc](../../docs/deployment/inference/cpp_inference_cn.md).
+
+Deployment on edge dvices, refer to [doc](../../docs/deployment/lite/lite.md).
 
 <p align="center">
 <img src="../../deploy/lite/example/human_1.png"  height="200">  
@@ -406,9 +413,8 @@ Refer to [deployment on edge dvices](../../docs/deployment/lite/lite.md)
 <img src="../../deploy/lite/example/human_3.png"  height="200">
 </p>
 
-### 6.2 Deployment on Web
 
-Refer to [deployment on web](../../docs/deployment/web/web.md)
+Deployment on web, refer to [doc](../../docs/deployment/web/web.md).
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png"  height="200">
