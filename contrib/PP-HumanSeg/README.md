@@ -28,7 +28,7 @@ The following is demonstration videos (due to the video is large, the loading wi
 
 ## 2 News
 - [2022-7] Release PP-HumanSeg V2 models. **The inference speed of portrait segmentation model is increased by 45.5%, mIoU is increased by 3.03%, and the visualization result is better**. The general human segmentation models also have improvement in accuracy and inference speed.
-- [2022-1] Human segmentation paper [PP-HumanSeg](./paper.md) was published in WACV 2022 Workshop, and open-sourced Connectivity Learning (SCL) method and large-scale video conferencing dataset.
+- [2022-1] Human segmentation paper [PP-HumanSeg](./paper.md) was published in WACV 2022 Workshop, and open-sourced Connectivity Learning (SCL) method and large-scale video conferencing dataset ([PP-HumanSeg-14K](./paper.md)).
 - [2021-7] Baidu Video Conference can realize one-second joining on the web side. The virtual background function adopts our portrait segmentation model to realize real-time background replacement and background blur function, which protects user privacy and increases the fun in the meeting.
 - [2021-7] Release PP-HumanSeg V1 models, which has a portrait segmentation model and three general human segmentation models
 
@@ -57,7 +57,7 @@ PP-HumanSegV2-Lite protrait segmentation model: **The inference speed is increas
 
 <details><summary>Note:</summary>
 
-* Test the segmentation accuracy (mIoU): We test the above models on PP-HumanSeg-14K dataset with the best input shape.
+* Test the segmentation accuracy (mIoU): We test the above models on [PP-HumanSeg-14K](./paper.md) dataset with the best input shape.
 * Test the inference time: Use [PaddleLite](https://www.paddlepaddle.org.cn/lite), xiaomi9 (Snapdragon 855 CPU), single thread, the best input shape.
 * For the best input shape, the ratio of height and width is 16:9, which is the same as the camera of mobile phone and laptop.
 * The checkpoint is the pretrained weight, which is used for finetune.
