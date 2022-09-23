@@ -1,4 +1,4 @@
-# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,29 +18,24 @@
 import numpy as np
 import paddle
 import paddle.nn as nn
-import paddle.nn.functional as F
-from paddle.nn.initializer import TruncatedNormal, Constant
 
 from medicalseg.cvlibs import manager
-from medicalseg.utils import utils
+from medicalseg.utils import load_pretrained_model
 from medicalseg.models.backbones.transformer_utils import *
-#from ..model_zoo.vision_transformer import trunc_normal_, zeros_, ones_, to_2tuple, DropPath, Identity
-#from ..base.theseus_layer import TheseusLayer
-#from ....utils.save_load import load_dygraph_pretrain, load_dygraph_pretrain_from_url
 
 MODEL_URLS = {
     "SwinTransformer_tiny_patch4_window7_224":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_tiny_patch4_window7_224_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_tiny_patch4_window7_224_pretrained.pdparams",
     "SwinTransformer_small_patch4_window7_224":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_small_patch4_window7_224_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_small_patch4_window7_224_pretrained.pdparams",
     "SwinTransformer_base_patch4_window7_224":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_base_patch4_window7_224_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_base_patch4_window7_224_pretrained.pdparams",
     "SwinTransformer_base_patch4_window12_384":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_base_patch4_window12_384_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_base_patch4_window12_384_pretrained.pdparams",
     "SwinTransformer_large_patch4_window7_224":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_large_patch4_window7_224_22kto1k_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_large_patch4_window7_224_22kto1k_pretrained.pdparams",
     "SwinTransformer_large_patch4_window12_384":
-    "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/legendary_models/SwinTransformer_large_patch4_window12_384_22kto1k_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_large_patch4_window12_384_22kto1k_pretrained.pdparams",
 }
 
 __all__ = list(MODEL_URLS.keys())
@@ -93,6 +88,7 @@ def window_reverse(windows, window_size, H, W, C):
         window_size (int): Window size
         H (int): Height of image
         W (int): Width of image
+        C (int): Channel of image
     Returns:
         x: (B, H, W, C)
     """
@@ -105,12 +101,13 @@ def window_reverse(windows, window_size, H, W, C):
 class WindowAttention(nn.Layer):
     r""" Window based multi-head self attention (W-MSA) module with relative position bias.
     It supports both of shifted and non-shifted window.
+    
     Args:
         dim (int): Number of input channels.
         window_size (tuple[int]): The height and width of the window.
         num_heads (int): Number of attention heads.
         qkv_bias (bool, optional):  If True, add a learnable bias to query, key, value. Default: True
-        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set
+        qk_scale (float | None, optional): Override default query and key scale of head_dim ** -0.5 if set. Default None
         attn_drop (float, optional): Dropout ratio of attention weight. Default: 0.0
         proj_drop (float, optional): Dropout ratio of output. Default: 0.0
     """
@@ -128,7 +125,7 @@ class WindowAttention(nn.Layer):
         self.window_size = window_size  # Wh, Ww
         self.num_heads = num_heads
         head_dim = dim // num_heads
-        self.scale = qk_scale or head_dim**-0.5
+        self.scale = qk_scale if qk_scale is not None else head_dim**-0.5
 
         # define a parameter table of relative position bias
         # 2*Wh-1 * 2*Ww-1, nH
@@ -168,7 +165,8 @@ class WindowAttention(nn.Layer):
         trunc_normal_(self.relative_position_bias_table)
         self.softmax = nn.Softmax(axis=-1)
 
-    def eval(self, ):
+    def eval(self):
+        super().eval()
         # this is used to re-param swin for model export
         relative_position_bias_table = self.relative_position_bias_table
         window_size = self.window_size
@@ -226,28 +224,10 @@ class WindowAttention(nn.Layer):
 
         attn = self.attn_drop(attn)
 
-        # x = (attn @ v).transpose(1, 2).reshape([B_, N, C])
         x = paddle.mm(attn, v).transpose([0, 2, 1, 3]).reshape([B_, N, C])
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
-
-    def extra_repr(self):
-        return "dim={}, window_size={}, num_heads={}".format(
-            self.dim, self.window_size, self.num_heads)
-
-    def flops(self, N):
-        # calculate flops for 1 window with token length of N
-        flops = 0
-        # qkv = self.qkv(x)
-        flops += N * self.dim * 3 * self.dim
-        # attn = (q @ k.transpose(-2, -1))
-        flops += self.num_heads * N * (self.dim // self.num_heads) * N
-        #  x = (attn @ v)
-        flops += self.num_heads * N * N * (self.dim // self.num_heads)
-        # x = self.proj(x)
-        flops += N * self.dim * self.dim
-        return flops
 
 
 class SwinTransformerBlock(nn.Layer):
@@ -256,11 +236,11 @@ class SwinTransformerBlock(nn.Layer):
         dim (int): Number of input channels.
         input_resolution (tuple[int]): Input resulotion.
         num_heads (int): Number of attention heads.
-        window_size (int): Window size.
-        shift_size (int): Shift size for SW-MSA.
-        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
+        window_size (int): Window size. Default: 7
+        shift_size (int, optional): Shift size for SW-MSA.
+        mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim.
         qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
-        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set.
+        qk_scale (float | None, optional): Override default query and key scale of head_dim ** -0.5 if set.
         drop (float, optional): Dropout rate. Default: 0.0
         attn_drop (float, optional): Attention dropout rate. Default: 0.0
         drop_path (float, optional): Stochastic depth rate. Default: 0.0
@@ -293,7 +273,7 @@ class SwinTransformerBlock(nn.Layer):
             # if window size is larger than input resolution, we don't partition windows
             self.shift_size = 0
             self.window_size = min(self.input_resolution)
-        assert 0 <= self.shift_size < self.window_size, "shift_size must in 0-window_size"
+        assert 0 <= self.shift_size < self.window_size, "shift_size must be in 0-window_size"
 
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
@@ -305,7 +285,8 @@ class SwinTransformerBlock(nn.Layer):
             attn_drop=attn_drop,
             proj_drop=drop)
 
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
+        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity(
+        )
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = Mlp(in_features=dim,
@@ -391,25 +372,6 @@ class SwinTransformerBlock(nn.Layer):
 
         return x
 
-    def extra_repr(self):
-        return "dim={}, input_resolution={}, num_heads={}, window_size={}, shift_size={}, mlp_ratio={}".format(
-            self.dim, self.input_resolution, self.num_heads, self.window_size,
-            self.shift_size, self.mlp_ratio)
-
-    def flops(self):
-        flops = 0
-        H, W = self.input_resolution
-        # norm1
-        flops += self.dim * H * W
-        # W-MSA/SW-MSA
-        nW = H * W / self.window_size / self.window_size
-        flops += nW * self.attn.flops(self.window_size * self.window_size)
-        # mlp
-        flops += 2 * H * W * self.dim * self.dim * self.mlp_ratio
-        # norm2
-        flops += self.dim * H * W
-        return flops
-
 
 class PatchMerging(nn.Layer):
     r""" Patch Merging Layer.
@@ -450,16 +412,6 @@ class PatchMerging(nn.Layer):
 
         return x
 
-    def extra_repr(self):
-        return "input_resolution={}, dim={}".format(self.input_resolution,
-                                                    self.dim)
-
-    def flops(self):
-        H, W = self.input_resolution
-        flops = H * W * self.dim
-        flops += (H // 2) * (W // 2) * 4 * self.dim * 2 * self.dim
-        return flops
-
 
 class BasicLayer(nn.Layer):
     """ A basic Swin Transformer layer for one stage.
@@ -469,15 +421,14 @@ class BasicLayer(nn.Layer):
         depth (int): Number of blocks.
         num_heads (int): Number of attention heads.
         window_size (int): Local window size.
-        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
+        mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim.
         qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
-        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set.
+        qk_scale (float | None, optional): Override default query and key scale of head_dim ** -0.5 if set.
         drop (float, optional): Dropout rate. Default: 0.0
         attn_drop (float, optional): Attention dropout rate. Default: 0.0
         drop_path (float | tuple[float], optional): Stochastic depth rate. Default: 0.0
         norm_layer (nn.Layer, optional): Normalization layer. Default: nn.LayerNorm
         downsample (nn.Layer | None, optional): Downsample layer at the end of the layer. Default: None
-        use_checkpoint (bool): Whether to use checkpointing to save memory. Default: False.
     """
 
     def __init__(self,
@@ -493,14 +444,12 @@ class BasicLayer(nn.Layer):
                  attn_drop=0.,
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
-                 downsample=None,
-                 use_checkpoint=False):
+                 downsample=None):
 
         super().__init__()
         self.dim = dim
         self.input_resolution = input_resolution
         self.depth = depth
-        self.use_checkpoint = use_checkpoint
 
         # build blocks
         self.blocks = nn.LayerList([
@@ -534,26 +483,14 @@ class BasicLayer(nn.Layer):
             x = self.downsample(x)
         return x
 
-    def extra_repr(self):
-        return "dim={}, input_resolution={}, depth={}".format(
-            self.dim, self.input_resolution, self.depth)
-
-    def flops(self):
-        flops = 0
-        for blk in self.blocks:
-            flops += blk.flops()
-        if self.downsample is not None:
-            flops += self.downsample.flops()
-        return flops
-
 
 class PatchEmbed(nn.Layer):
     """ Image to Patch Embedding
     Args:
-        img_size (int): Image size.  Default: 224.
-        patch_size (int): Patch token size. Default: 4.
-        in_chans (int): Number of input image channels. Default: 3.
-        embed_dim (int): Number of linear projection output channels. Default: 96.
+        img_size (int, optional): Image size.  Default: 224.
+        patch_size (int, optional): Patch token size. Default: 4.
+        in_chans (int, optional): Number of input image channels. Default: 3.
+        embed_dim (int, optional): Number of linear projection output channels. Default: 96.
         norm_layer (nn.Layer, optional): Normalization layer. Default: None
     """
 
@@ -586,8 +523,6 @@ class PatchEmbed(nn.Layer):
 
     def forward(self, x):
         B, C, H, W = x.shape
-        # TODO (littletomatodonkey), uncomment the line will cause failure of jit.save
-        # assert [H, W] == self.img_size[:2], "Input image size ({H}*{W}) doesn't match model ({}*{}).".format(H, W, self.img_size[0], self.img_size[1])
         x = self.proj(x)
 
         x = x.flatten(2).transpose([0, 2, 1])  # B Ph*Pw C
@@ -595,39 +530,31 @@ class PatchEmbed(nn.Layer):
             x = self.norm(x)
         return x
 
-    def flops(self):
-        Ho, Wo = self.patches_resolution
-        flops = Ho * Wo * self.embed_dim * self.in_chans * (self.patch_size[0] *
-                                                            self.patch_size[1])
-        if self.norm is not None:
-            flops += Ho * Wo * self.embed_dim
-        return flops
-
 
 @manager.BACKBONES.add_component
 class SwinTransformer(nn.Layer):
     """ Swin Transformer
-        A PaddlePaddle impl of : `Swin Transformer: Hierarchical Vision Transformer using Shifted Windows`  -
+        A PaddlePaddle implementation of : `Swin Transformer: Hierarchical Vision Transformer using Shifted Windows`  -
           https://arxiv.org/pdf/2103.14030
+
     Args:
-        img_size (int | tuple(int)): Input image size. Default 224
-        patch_size (int | tuple(int)): Patch size. Default: 4
-        in_chans (int): Number of input image channels. Default: 3
-        num_classes (int): Number of classes for classification head. Default: 1000
-        embed_dim (int): Patch embedding dimension. Default: 96
-        depths (tuple(int)): Depth of each Swin Transformer layer.
-        num_heads (tuple(int)): Number of attention heads in different layers.
-        window_size (int): Window size. Default: 7
-        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim. Default: 4
-        qkv_bias (bool): If True, add a learnable bias to query, key, value. Default: True
-        qk_scale (float): Override default qk scale of head_dim ** -0.5 if set. Default: None
-        drop_rate (float): Dropout rate. Default: 0
-        attn_drop_rate (float): Attention dropout rate. Default: 0
-        drop_path_rate (float): Stochastic depth rate. Default: 0.1
-        norm_layer (nn.Layer): Normalization layer. Default: nn.LayerNorm.
-        ape (bool): If True, add absolute position embedding to the patch embedding. Default: False
-        patch_norm (bool): If True, add normalization after patch embedding. Default: True
-        use_checkpoint (bool): Whether to use checkpointing to save memory. Default: False
+        img_size (int | tuple[int], optional): Input image size. Default 224
+        patch_size (int | tuple[int], optional): Patch size. Default: 4
+        in_chans (int, optional): Number of input image channels. Default: 3
+        num_classes (int, optional): Number of classes for classification head. Default: 1000
+        embed_dim (int, optional): Patch embedding dimension. Default: 96
+        depths (tuple[int], optional): Depth of each Swin Transformer layer.
+        num_heads (tuple[int], optional): Number of attention heads in different layers.
+        window_size (int, optional): Window size. Default: 7
+        mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim. Default: 4
+        qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
+        qk_scale (float, optional): Override default query and key scale of head_dim ** -0.5 if set. Default: None
+        drop_rate (float, optional): Dropout rate. Default: 0
+        attn_drop_rate (float, optional): Attention dropout rate. Default: 0
+        drop_path_rate (float, optional): Stochastic depth rate. Default: 0.1
+        norm_layer (nn.Layer, optional): Normalization layer. Default: nn.LayerNorm.
+        ape (bool, optional): If True, add absolute position embedding to the patch embedding. Default: False
+        patch_norm (bool, optional): If True, add normalization after patch embedding. Default: True
     """
 
     def __init__(self,
@@ -648,7 +575,6 @@ class SwinTransformer(nn.Layer):
                  norm_layer=nn.LayerNorm,
                  ape=False,
                  patch_norm=True,
-                 use_checkpoint=False,
                  **kwargs):
         super(SwinTransformer, self).__init__()
 
@@ -702,12 +628,11 @@ class SwinTransformer(nn.Layer):
                 drop_path=dpr[sum(depths[:i_layer]):sum(depths[:i_layer + 1])],
                 norm_layer=norm_layer,
                 downsample=PatchMerging
-                if (i_layer < self.num_layers - 1) else None,
-                use_checkpoint=use_checkpoint)
+                if (i_layer < self.num_layers - 1) else None)
             self.layers.append(layer)
 
         self.norm = norm_layer(self.num_features)
-        self.avgpool = nn.AdaptiveAvgPool1D(1)
+        #self.avgpool = nn.AdaptiveAvgPool1D(1)
         #self.head = nn.Linear(
         #self.num_features,
         #num_classes) if self.num_classes > 0 else nn.Identity()
@@ -729,14 +654,11 @@ class SwinTransformer(nn.Layer):
             x = x + self.absolute_pos_embed
         x = self.pos_drop(x)
         x_downsample = []
-        output = []
         for layer in self.layers:
             x_downsample.append(x)
             x = layer(x)
 
         x = self.norm(x)  # B L C
-        #output.pop() # The final Layer needs norm
-        #output.append(x)
         #x = self.avgpool(x.transpose([0, 2, 1]))  # B C 1
         #x = paddle.flatten(x, 1)
         return x, x_downsample
@@ -747,34 +669,9 @@ class SwinTransformer(nn.Layer):
         # x = self.head(x)
         return out
 
-    def flops(self):
-        flops = 0
-        flops += self.patch_embed.flops()
-        for _, layer in enumerate(self.layers):
-            flops += layer.flops()
-        flops += self.num_features * self.patches_resolution[
-            0] * self.patches_resolution[1] // (2**self.num_layers)
-        flops += self.num_features * self.num_classes
-        return flops
-
-
-def _load_pretrained(pretrained, model, model_url, use_ssld=False):
-    if pretrained is False:
-        pass
-    #elif pretrained is True:
-    #load_dygraph_pretrain_from_url(model, model_url, use_ssld=use_ssld)
-    #elif isinstance(pretrained, str):
-    #load_dygraph_pretrain(model, pretrained)
-    #else:
-    #raise RuntimeError(
-    #"pretrained type is not available. Please use `string` or `boolean` type."
-    #)
-
 
 @manager.BACKBONES.add_component
-def SwinTransformer_tinyer_patch4_window7_224(pretrained=False,
-                                              use_ssld=False,
-                                              **kwargs):
+def SwinTransformer_tinyer_patch4_window7_224(pretrained=False, **kwargs):
     model = SwinTransformer(
         embed_dim=96,
         depths=[2, 2, 2, 2],
@@ -785,9 +682,8 @@ def SwinTransformer_tinyer_patch4_window7_224(pretrained=False,
     return model
 
 
-def SwinTransformer_tiny_patch4_window7_224(pretrained=False,
-                                            use_ssld=False,
-                                            **kwargs):
+@manager.BACKBONES.add_component
+def SwinTransformer_tiny_patch4_window7_224(pretrained=False, **kwargs):
     model = SwinTransformer(
         embed_dim=96,
         depths=[2, 2, 6, 2],
@@ -795,34 +691,28 @@ def SwinTransformer_tiny_patch4_window7_224(pretrained=False,
         window_size=7,
         drop_path_rate=0.2,
         **kwargs)
-    _load_pretrained(
-        pretrained,
-        model,
-        MODEL_URLS["SwinTransformer_tiny_patch4_window7_224"],
-        use_ssld=use_ssld)
+    if pretrained:
+        load_pretrained_model(
+            model, MODEL_URLS["SwinTransformer_tiny_patch4_window7_224"])
     return model
 
 
-def SwinTransformer_small_patch4_window7_224(pretrained=False,
-                                             use_ssld=False,
-                                             **kwargs):
+@manager.BACKBONES.add_component
+def SwinTransformer_small_patch4_window7_224(pretrained=False, **kwargs):
     model = SwinTransformer(
         embed_dim=96,
         depths=[2, 2, 18, 2],
         num_heads=[3, 6, 12, 24],
         window_size=7,
         **kwargs)
-    _load_pretrained(
-        pretrained,
-        model,
-        MODEL_URLS["SwinTransformer_small_patch4_window7_224"],
-        use_ssld=use_ssld)
+    if pretrained:
+        load_pretrained_model(
+            model, MODEL_URLS["SwinTransformer_small_patch4_window7_224"])
     return model
 
 
-def SwinTransformer_base_patch4_window7_224(pretrained=False,
-                                            use_ssld=False,
-                                            **kwargs):
+@manager.BACKBONES.add_component
+def SwinTransformer_base_patch4_window7_224(pretrained=False, **kwargs):
     model = SwinTransformer(
         embed_dim=128,
         depths=[2, 2, 18, 2],
@@ -830,17 +720,14 @@ def SwinTransformer_base_patch4_window7_224(pretrained=False,
         window_size=7,
         drop_path_rate=0.5,
         **kwargs)
-    _load_pretrained(
-        pretrained,
-        model,
-        MODEL_URLS["SwinTransformer_base_patch4_window7_224"],
-        use_ssld=use_ssld)
+    if pretrained:
+        load_pretrained_model(
+            model, MODEL_URLS["SwinTransformer_base_patch4_window7_224"])
     return model
 
 
-def SwinTransformer_base_patch4_window12_384(pretrained=False,
-                                             use_ssld=False,
-                                             **kwargs):
+@manager.BACKBONES.add_component
+def SwinTransformer_base_patch4_window12_384(pretrained=False, **kwargs):
     model = SwinTransformer(
         img_size=384,
         embed_dim=128,
@@ -849,34 +736,28 @@ def SwinTransformer_base_patch4_window12_384(pretrained=False,
         window_size=12,
         drop_path_rate=0.5,  # NOTE: do not appear in offical code
         **kwargs)
-    _load_pretrained(
-        pretrained,
-        model,
-        MODEL_URLS["SwinTransformer_base_patch4_window12_384"],
-        use_ssld=use_ssld)
+    if pretrained:
+        load_pretrained_model(
+            model, MODEL_URLS["SwinTransformer_base_patch4_window12_384"])
     return model
 
 
-def SwinTransformer_large_patch4_window7_224(pretrained=False,
-                                             use_ssld=False,
-                                             **kwargs):
+@manager.BACKBONES.add_component
+def SwinTransformer_large_patch4_window7_224(pretrained=False, **kwargs):
     model = SwinTransformer(
         embed_dim=192,
         depths=[2, 2, 18, 2],
         num_heads=[6, 12, 24, 48],
         window_size=7,
         **kwargs)
-    _load_pretrained(
-        pretrained,
-        model,
-        MODEL_URLS["SwinTransformer_large_patch4_window7_224"],
-        use_ssld=use_ssld)
+    if pretrained:
+        load_pretrained_model(
+            model, MODEL_URLS["SwinTransformer_large_patch4_window7_224"])
     return model
 
 
-def SwinTransformer_large_patch4_window12_384(pretrained=False,
-                                              use_ssld=False,
-                                              **kwargs):
+@manager.BACKBONES.add_component
+def SwinTransformer_large_patch4_window12_384(pretrained=False, **kwargs):
     model = SwinTransformer(
         img_size=384,
         embed_dim=192,
@@ -884,9 +765,7 @@ def SwinTransformer_large_patch4_window12_384(pretrained=False,
         num_heads=[6, 12, 24, 48],
         window_size=12,
         **kwargs)
-    _load_pretrained(
-        pretrained,
-        model,
-        MODEL_URLS["SwinTransformer_large_patch4_window12_384"],
-        use_ssld=use_ssld)
+    if pretrained:
+        load_pretrained_model(
+            model, MODEL_URLS["SwinTransformer_large_patch4_window12_384"])
     return model

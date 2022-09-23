@@ -31,24 +31,24 @@ class SwinUNet(nn.Layer):
     Args:
         backbone: Backbone of SwinUnet
         image_size (int, optional): Image size of input. Default: 224
-        path_size (int): Patch size of Patch Embed. Default: 4
-        in_chans (int): The inchannel of input. Default: 3
-        num_classes (int): Number of class. Default: 1000
-        embed_dim (int): The embed dim. Default: 96
-        depths: Block number of every encoder layer. Default: [2, 2, 2, 2]
-        depths_decoder: Block number of every decoder layer. Default: [1, 2, 2, 2]
-        num_heads (int): Number of attention heads. Default: [3, 6, 12, 24]
-        window_size (int): Window size. Default: 7
-        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim. Default: 4
+        path_size (int, optional): Patch size of Patch Embed. Default: 4
+        in_chans (int, optional): The inchannel of input. Default: 3
+        num_classes (int, optional): Number of class. Default: 1000
+        embed_dim (int, optional): The embed dim. Default: 96
+        depths (list, optional): Block number of every encoder layer. Default: [2, 2, 2, 2]
+        depths_decoder (list, optional): Block number of every decoder layer. Default: [1, 2, 2, 2]
+        num_heads (int, optional): Number of attention heads. Default: [3, 6, 12, 24]
+        window_size (int, optional): Window size. Default: 7
+        mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim. Default: 4
         qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
         qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set. Default: None
         drop_rate (float, optional): Dropout rate. Default: 0.0
         attn_drop_rate (float, optional): Attention dropout rate. Default: 0.0
         drop_path_rate (float, optional): Stochastic depth rate. Default: 0.0
         norm_layer (nn.Layer, optional): Normalization layer.  Default: nn.LayerNorm
-        patch_norm (bool): If True, add normalization after patch embedding. Default: True
-        pretrained: The path of pre-trained model. Default: None
-        final_unsample (bool): The fibal sample class. Default: True
+        patch_norm (bool, optional): If True, add normalization after patch embedding. Default: True
+        pretrained(bool |str, optional): The path of pre-trained model. Default: None
+        final_unsample (bool, optional): The final sample class. Default: True
     """
 
     def __init__(self,
@@ -108,7 +108,7 @@ class SwinUNet(nn.Layer):
                     dim_scale=2,
                     norm_layer=norm_layer)
             else:
-                layer_up = BasicLayerUp(
+                layer_up = BasicUpLayer(
                     dim=int(embed_dim * 2**(self.num_layers - 1 - i_layer)),
                     input_resolution=(patches_resolution[0] //
                                       (2**(self.num_layers - 1 - i_layer)),
@@ -273,7 +273,7 @@ class FinalPatchExpandX4(nn.Layer):
         return x
 
 
-class BasicLayerUp(nn.Layer):
+class BasicUpLayer(nn.Layer):
     """ A basic Swin Transformer layer for one stage
 
     Args:
@@ -282,7 +282,7 @@ class BasicLayerUp(nn.Layer):
         depth (int): Number of blocks
         num_heads (int): Number of attention heads
         window_size (int): Local window size
-        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim
+        mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim
         qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
         qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set
         drop (float, optional): Dropout rate. Default: 0.0

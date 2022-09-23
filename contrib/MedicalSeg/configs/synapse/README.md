@@ -79,14 +79,14 @@ python train.py --config configs/transunet/transunet_abdomen_224_224_1_14k_1e-2.
 
 ### Inference helper User Guide
 
-1. Since the shape of the input and output data of the TransUnet and SwinUnet network is different from other networks, in order to make it compatible with the inference program, it is necessary to preprocess and post-process the data of the network. This part of the work is done by InferenceHelper.
-2. InferenceHelper is an abstract base class that contains two methods, preprocess and postprocess. If you need to add a new InferenceHelper to your own network, you need to customize the class in the medicalseg/inference_helpers package and inherit this base InferenceHelper class.
+1. Since the shape of the input and output data of the TransUnet and SwinUnet networks is different from other networks, it is necessary to define special pre-process and post-process rules for these networks. This is achieved by `InferenceHelper`.
+2. `InferenceHelper` is an abstract base class that contains two methods, `preprocess` and `postprocess`. If you need to add a new inference helper to your own network, you need to customize the class in the `medicalseg/inference_helpers` package and inherit the base `InferenceHelper` class.
 
 ```python
 class InferenceHelper2D(InferenceHelper):
 ```
 
-3. Medical maintains a INFERENCE_HELPERS variable of type ComponentManager. You can add your custom InferenceHelper through the add_component method.
+3. MedicalSeg maintains an `INFERENCE_HELPERS` variable of type `ComponentManager`. You can add your custom inference helper through the `add_component` method.
 
 ```python
 @manager.INFERENCE_HELPERS.add_component
@@ -122,8 +122,7 @@ from .transunet_inference_helper_2D import InferenceHelper2D
         return results
 ```
 
-5. Finally you can reference your Inference helper in your yaml configuration file. This way
-   your InferenceHelper is automatically called in the inference script.
+5. Finally you can reference your inference helper in your yaml configuration file. This way, the customized inference helper will be automatically constructed and invoked in the inference script.
 
 ```shell
 # in yml file of configs
