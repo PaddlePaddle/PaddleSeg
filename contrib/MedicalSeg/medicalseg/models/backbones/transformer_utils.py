@@ -17,8 +17,7 @@ import paddle.nn as nn
 import paddle.nn.initializer as paddle_init
 
 __all__ = [
-    'to_2tuple', 'DropPath', 'Identity', 'trunc_normal_', 'zeros_', 'ones_',
-    'init_weights'
+    'to_2tuple', 'DropPath', 'trunc_normal_', 'zeros_', 'ones_', 'init_weights'
 ]
 
 

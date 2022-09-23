@@ -176,8 +176,7 @@ class SwinUNet(nn.Layer):
     def up_x4(self, x):
         H, W = self.patches_resolution
         B, L, C = paddle.shape(x)[0:3]
-        if L != H * W:
-            raise ValueError("input features has wrong size")
+        assert L == H * W, "input features has wrong size"
 
         if self.final_upsample:
             x = self.up(x)
@@ -201,6 +200,11 @@ class SwinUNet(nn.Layer):
 
         return [x]
 
+    def postprocess(self, logits, labels):
+        logits = [logits]
+        labels = paddle.squeeze(labels, axis=0)
+        return logits, labels
+
 
 class PatchExpand(nn.Layer):
     def __init__(self,
@@ -222,8 +226,7 @@ class PatchExpand(nn.Layer):
         H, W = self.input_resolution
         x = self.expand(x)
         B, L, C = x.shape
-        if L != H * W:
-            raise ValueError("input features has wrong size")
+        assert L == H * W, "input features has wrong size"
 
         x = x.reshape((B, H, W, C))
         x = x.reshape((B, H, W, 2, 2, C // 4))
@@ -256,8 +259,7 @@ class FinalPatchExpandX4(nn.Layer):
         H, W = self.input_resolution
         x = self.expand(x)
         B, L, C = paddle.shape(x)[0:3]
-        if L != H * W:
-            raise ValueError("input features has wrong size")
+        assert L == H * W, "input features has wrong size"
 
         x = x.reshape((B, H, W, C))
         x = x.reshape((B, H, W, self.dim_scale, self.dim_scale,
