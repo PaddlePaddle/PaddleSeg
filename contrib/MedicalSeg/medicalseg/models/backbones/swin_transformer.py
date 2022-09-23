@@ -87,6 +87,7 @@ def window_reverse(windows, window_size, H, W, C):
         window_size (int): Window size
         H (int): Height of image
         W (int): Width of image
+        C (int): Channel of image
     Returns:
         x: (B, H, W, C)
     """
@@ -163,7 +164,8 @@ class WindowAttention(nn.Layer):
         trunc_normal_(self.relative_position_bias_table)
         self.softmax = nn.Softmax(axis=-1)
 
-    def eval(self, ):
+    def eval(self):
+        super().eval()
         # this is used to re-param swin for model export
         relative_position_bias_table = self.relative_position_bias_table
         window_size = self.window_size
