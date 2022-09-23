@@ -401,7 +401,7 @@ python ../../export.py \
 
 服务器端C++部署，请参考[教程](../../docs/deployment/inference/cpp_inference_cn.md)。
 
-移动端部署教程，请参见[教程](../../docs/deployment/lite/lite_cn.md)
+移动端部署教程，请参见[教程](../../docs/deployment/lite/lite_cn.md)。
 
 <p align="center">
 <img src="../../deploy/lite/example/human_1.png"  height="200">  
@@ -410,7 +410,7 @@ python ../../export.py \
 </p>
 
 
-Web端部署教程，请参见[教程](../../docs/deployment/web/web_cn.md)
+Web端部署教程，请参见[教程](../../docs/deployment/web/web_cn.md)。
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png"  height="200">

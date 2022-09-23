@@ -403,7 +403,7 @@ The PP-Humanseg inference models are deployed in the same way as other models.
 
 Deployment on server with python api, refer to [doc](../../docs/deployment/inference/python_inference.md).
 
-Deployment on server with c++ api, refer to [doc](../../docs/deployment/inference/cpp_inference_cn.md).
+Deployment on server with c++ api, refer to [doc](../../docs/deployment/inference/cpp_inference.md).
 
 Deployment on edge dvices, refer to [doc](../../docs/deployment/lite/lite.md).
 
