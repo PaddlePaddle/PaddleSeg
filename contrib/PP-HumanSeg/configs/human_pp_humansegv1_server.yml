@@ -57,7 +57,7 @@ loss:
         - type: CrossEntropyLoss
         - type: LovaszSoftmaxLoss
       coef: [0.8, 0.2]
-  coef: [1, 1, 1]
+  coef: [1]
 
 model:
   type: DeepLabV3P
@@ -71,4 +71,4 @@ model:
   aspp_ratios: [1, 12, 24, 36]
   aspp_out_channels: 256
   align_corners: False
-  pretrained: pretrained: pretrained_models/human_pp_humansegv1_server_512x512_pretrained/model.pdparams
+  pretrained: pretrained_models/human_pp_humansegv1_server_512x512_pretrained/model.pdparams

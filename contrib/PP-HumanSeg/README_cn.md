@@ -306,7 +306,9 @@ python src/seg_demo.py \
 
 ### 4.4 在线运行教程
 
-PP-HumanSeg V1版本提供了基于AI Studio的[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/2189481)，大家可以实践体验。
+基于PP-HumanSeg V1版本的AI Studio[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/2189481)。
+
+基于PP-HumanSeg V2版本的AI Studio[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/4504982)。
 
 ## 5 训练微调
 
@@ -342,7 +344,7 @@ configs
 ├── human_pp_humansegv1_server.yml
 ```
 
-执行如下命令，进行模型微调。模型训练的详细文档，请参考[链接](../../docs/train/train_cn.md)。
+执行如下命令，进行模型微调（大家需要根据实际情况修改配置文件中的超参）。模型训练的详细文档，请参考[链接](../../docs/train/train_cn.md)。
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # Linux下设置1张可用的卡
@@ -392,9 +394,14 @@ python ../../export.py \
 所以，输出是浮点数类型，表示前景的概率，使得图像融合的边缘更为平滑。
 
 ## 6 部署
-### 6.1 移动端部署
 
-参见[移动端部署教程](../../docs/deployment/lite/lite_cn.md)
+导出PP-HumanSeg人像分割模型后，可以和其他分割模型类似，使用预测引擎进行部署，实现更快的推理速度。
+
+服务器端Python部署，请参考[教程](../../docs/deployment/inference/python_inference_cn.md)。
+
+服务器端C++部署，请参考[教程](../../docs/deployment/inference/cpp_inference_cn.md)。
+
+移动端部署教程，请参见[教程](../../docs/deployment/lite/lite_cn.md)。
 
 <p align="center">
 <img src="../../deploy/lite/example/human_1.png"  height="200">  
@@ -402,9 +409,8 @@ python ../../export.py \
 <img src="../../deploy/lite/example/human_3.png"  height="200">
 </p>
 
-### 6.2 Web端部署
 
-参见[Web端部署教程](../../docs/deployment/web/web_cn.md)
+Web端部署教程，请参见[教程](../../docs/deployment/web/web_cn.md)。
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png"  height="200">
