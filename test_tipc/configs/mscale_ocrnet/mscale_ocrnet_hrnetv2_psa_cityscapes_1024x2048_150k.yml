@@ -38,7 +38,9 @@ model:
     type: MscaleOCRNet
     num_classes: 19
     backbone: 
-      type: HRNetV2_PSA
+      type: HRNet_W48
+      use_psa: True
+      padding_same: False
 
 optimizer:
   type: sgd
