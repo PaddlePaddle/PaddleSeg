@@ -41,7 +41,7 @@ class SwinUNet(nn.Layer):
         window_size (int, optional): Window size. Default: 7
         mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim. Default: 4
         qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
-        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set. Default: None
+        qk_scale (float | None, optional): Override default query and key scale of head_dim ** -0.5 if set. Default: None
         drop_rate (float, optional): Dropout rate. Default: 0.0
         attn_drop_rate (float, optional): Attention dropout rate. Default: 0.0
         drop_path_rate (float, optional): Stochastic depth rate. Default: 0.0
@@ -284,7 +284,7 @@ class BasicUpLayer(nn.Layer):
         window_size (int): Local window size
         mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim
         qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
-        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set
+        qk_scale (float | None, optional): Override default query and key scale of head_dim ** -0.5 if set
         drop (float, optional): Dropout rate. Default: 0.0
         attn_drop (float, optional): Attention dropout rate. Default: 0.0
         drop_path (float | tuple[float], optional): Stochastic depth rate. Default: 0.0
