@@ -143,7 +143,12 @@ def parse_args():
 
     parser.add_argument('--use_warmup', default=True, type=eval, help='warmup')
 
-    parser.add_argument('--img_shape', default=128, type=int, help='img_shape')
+    parser.add_argument(
+        '--img_shape',
+        default=[128],
+        nargs='+',
+        help='"A single value or three values to specify the size in each dimension."'
+    )
 
     parser.add_argument('--is_nhwd', default=True, type=eval, help='is_nhwd')
     return parser.parse_args()
@@ -425,9 +430,16 @@ class Predictor:
                 if args.is_nhwd:
                     data = paddle.squeeze(data, axis=1)
 
-                results = sliding_window_inference(
-                    data, (args.img_shape, args.img_shape, args.img_shape), 1,
-                    infer_like_model.infer_model)
+                if len(args.img_shape) == 1:
+                    results = sliding_window_inference(
+                        data, (int(args.img_shape[0]), int(args.img_shape[0]),
+                               int(args.img_shape[0])), 1,
+                        infer_like_model.infer_model)
+                else:
+                    results = sliding_window_inference(
+                        data, (int(args.img_shape[0]), int(args.img_shape[1]),
+                               int(args.img_shape[2])), 1,
+                        infer_like_model.infer_model,"NCDHW")
 
                 results = results[0]
 

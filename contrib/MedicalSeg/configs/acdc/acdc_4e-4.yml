@@ -76,3 +76,7 @@ loss:
         - type: DiceLoss
       coef: [1, 1]
   coef: [0.5714, 0.2857,0.1428]
+
+export:
+  inference_helper:
+    type: nnformerInferenceHelper
