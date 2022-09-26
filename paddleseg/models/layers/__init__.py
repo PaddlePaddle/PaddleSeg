@@ -19,4 +19,4 @@ from .attention import AttentionBlock
 from .nonlocal2d import NonLocal2D
 from .wrap_functions import *
 from .tensor_fusion import UAFM_SpAtten, UAFM_SpAtten_S, UAFM_ChAtten, UAFM_ChAtten_S, UAFM, UAFMMobile, UAFMMobile_SpAtten
-from .polaried_self_attenion import PolarizedSelfAttentionModule
+from .polaried_self_attention import PolarizedSelfAttentionModule
