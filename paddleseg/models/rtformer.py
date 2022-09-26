@@ -119,7 +119,7 @@ class ExternalAttention(nn.Layer):
                  num_params,
                  num_heads=1,
                  use_cross_kv=False):
-        super(ExternalAttention, self).__init__()
+        super().__init__()
         assert planes % num_heads == 0, \
             "planes ({}) should be be a multiple of num_heads ({})".format(planes, num_heads)
         self.inplanes = inplanes
@@ -153,14 +153,14 @@ class ExternalAttention(nn.Layer):
                 constant_(m.bias, 0.)
 
     def _act_sn(self, x, B, H, W):
-        x_shape = x.shape
+        x_shape = paddle.shape(x)
         x = x.reshape([B, self.num_params, H, W]) * (self.num_params**-0.5)
         x = F.softmax(x, axis=1)
         x = x.reshape(x_shape)
         return x
 
     def _act_dn(self, x, B, H, W):
-        x_shape = x.shape
+        x_shape = paddle.shape(x)
         x = x.reshape(
             [B, self.num_heads, self.num_params // self.num_heads, H * W])
         x = F.softmax(x, axis=3)
@@ -211,7 +211,7 @@ class EABlock(nn.Layer):
                  drop_path=0.,
                  has_down=True,
                  use_cross_kv=False):
-        super(EABlock, self).__init__()
+        super().__init__()
         inplanes_h, inplanes_l = inplanes
         planes_h, planes_l = planes
         self.proj_flag_l = inplanes_l != planes_l
@@ -347,7 +347,7 @@ class EABlock(nn.Layer):
 
 class DAPPM(nn.Layer):
     def __init__(self, inplanes, branch_planes, outplanes):
-        super(DAPPM, self).__init__()
+        super().__init__()
         self.scale1 = nn.Sequential(
             nn.AvgPool2D(
                 kernel_size=5, stride=2, padding=2, exclusive=False),
@@ -465,17 +465,18 @@ class SegHead(nn.Layer):
         return out
 
 
+@manager.MODELS.add_component
 class RTFormer(nn.Layer):
     def __init__(self,
-                 block,
-                 layers,
-                 num_classes=19,
+                 num_classes,
+                 block=BasicBlock,
+                 layers=[2, 2, 2, 2],
                  planes=64,
                  spp_planes=128,
                  head_planes=128,
                  drop_rate=0.,
-                 drop_path_rate=0.,
-                 augment=False,
+                 drop_path_rate=0.2,
+                 augment=True,
                  in_channels=3,
                  pretrained=None):
         super().__init__()
@@ -488,7 +489,6 @@ class RTFormer(nn.Layer):
                 planes, planes, kernel_size=3, stride=2, padding=1),
             bn2d(planes),
             nn.ReLU(), )
-        self.conv1.apply(self._init_weights_kaiming)
         self.relu = nn.ReLU()
         highres_planes = planes * 2
 
@@ -498,18 +498,17 @@ class RTFormer(nn.Layer):
         self.layer3 = self._make_layer(
             block, planes * 2, planes * 4, layers[2], stride=2)
         self.layer3_ = self._make_layer(block, planes * 2, highres_planes, 1)
-
         self.compression3 = nn.Sequential(
             bn2d(planes * 4),
             nn.ReLU(),
             nn.Conv2D(
                 planes * 4, highres_planes, kernel_size=1, bias_attr=False), )
-
         self.layer4 = EABlock(
             [highres_planes, planes * 4], [highres_planes, planes * 8],
             num_heads=8,
             drop=drop_rate,
             drop_path=drop_path_rate,
+            has_down=True,
             use_cross_kv=True)
         self.layer5 = EABlock(
             [highres_planes, planes * 8], [highres_planes, planes * 8],
@@ -543,6 +542,7 @@ class RTFormer(nn.Layer):
                 constant_(m.bias, 0)
 
     def init_weight(self):
+        self.conv1.apply(self._init_weights_kaiming)
         self.layer1.apply(self._init_weights_kaiming)
         self.layer2.apply(self._init_weights_kaiming)
         self.layer3.apply(self._init_weights_kaiming)
@@ -587,79 +587,42 @@ class RTFormer(nn.Layer):
             x = np.random.rand(1, 3, 512, 512).astype("float32")
             x = paddle.to_tensor(x)
             print(paddle.mean(x))
-        width_output = x.shape[-1] // 8
-        height_output = x.shape[-2] // 8
-        layers = []
 
-        x = self.conv1(x)
-        x = self.layer1(x)
-        layers.append(x)
+        x1 = self.layer1(self.conv1(x))  # 1/4
+        x2 = self.layer2(self.relu(x1))  # 1/8
+        x3 = self.layer3(self.relu(x2))  # 1/16
+        x3_ = x2 + F.interpolate(
+            self.compression3(x3), size=paddle.shape(x2)[2:], mode='bilinear')
+        x3_ = self.layer3_(self.relu(x3_))  # 1/8
 
-        x = self.layer2(self.relu(x))
-        layers.append(x)
+        x4_, x4 = self.layer4([self.relu(x3_), self.relu(x3)])  # 1/8, 1/16
+        x5_, x5 = self.layer5([self.relu(x4_), self.relu(x4)])  # 1/8, 1/32
 
-        x = self.layer3(self.relu(x))
-        x_ = layers[1] + F.interpolate(
-            self.compression3(x),
-            size=[height_output, width_output],
-            mode='bilinear')
-        x_ = self.layer3_(self.relu(x_))
-        if self.augment:
-            temp = x_
+        x6 = self.spp(x5)
+        x6 = F.interpolate(x6, size=paddle.shape(x2)[2:], mode='bilinear')
 
-        x_, x = self.layer4([self.relu(x_), self.relu(x)])
-        x_, x = self.layer5([self.relu(x_), self.relu(x)])
-
-        x = F.interpolate(
-            self.spp(x), size=[height_output, width_output], mode='bilinear')
-
-        outputs = []
-        x_out = self.seghead(paddle.concat([x_, x], axis=1))
-        outputs.append(x_out)
+        x_out = self.seghead(paddle.concat([x5_, x6], axis=1))  # 1/8
+        logit_list = [x_out]
 
         if self.augment:
-            x_extra = self.seghead_extra(temp)
-            outputs.append(x_extra)
+            x_out_extra = self.seghead_extra(x3_)
+            logit_list.append(x_out_extra)
 
         if debug:
             x_out_mean = paddle.mean(x_out).numpy()
-            x_extra_mean = paddle.mean(x_extra).numpy()
+            x_out_extra_mean = paddle.mean(x_out_extra).numpy()
             print('out', x_out_mean)
-            print('out', x_extra_mean)
+            print('out', x_out_extra_mean)
             assert np.isclose(x_out_mean, -11.117491, 0, 1e-3)
-            assert np.isclose(x_extra_mean, -7.9465437, 0, 1e-3)
+            assert np.isclose(x_out_extra_mean, -7.9465437, 0, 1e-3)
             exit()
 
-        outputs = [
+        logit_list = [
             F.interpolate(
-                i, paddle.shape(x)[2:], mode='bilinear', align_corners=False)
-            for i in outputs
+                logit,
+                paddle.shape(x)[2:],
+                mode='bilinear',
+                align_corners=False) for logit in logit_list
         ]
 
-        return outputs
-
-
-@manager.MODELS.add_component
-def RTFormer23Small(**kwargs):
-    return RTFormer(
-        BasicBlock, [2, 2, 2, 2],
-        planes=32,
-        spp_planes=128,
-        head_planes=64,
-        drop_rate=0.,
-        drop_path_rate=0.2,
-        augment=True,
-        **kwargs)
-
-
-@manager.MODELS.add_component
-def RTFormer23(**kwargs):
-    return RTFormer(
-        BasicBlock, [2, 2, 2, 2],
-        planes=64,
-        spp_planes=128,
-        head_planes=128,
-        drop_rate=0.,
-        drop_path_rate=0.2,
-        augment=True,
-        **kwargs)
+        return logit_list
