@@ -88,7 +88,7 @@ def window_reverse(windows, window_size, H, W, C):
         window_size (int): Window size
         H (int): Height of image
         W (int): Width of image
-        C (int): Channel of image
+        C (int): Channels of image
     Returns:
         x: (B, H, W, C)
     """
@@ -236,7 +236,7 @@ class SwinTransformerBlock(nn.Layer):
         dim (int): Number of input channels.
         input_resolution (tuple[int]): Input resulotion.
         num_heads (int): Number of attention heads.
-        window_size (int): Window size. Default: 7
+        window_size (int, optional): Window size. Default: 7
         shift_size (int, optional): Shift size for SW-MSA.
         mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim.
         qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
@@ -421,7 +421,7 @@ class BasicLayer(nn.Layer):
         depth (int): Number of blocks.
         num_heads (int): Number of attention heads.
         window_size (int): Local window size.
-        mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim.
+        mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim. Default: 4
         qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
         qk_scale (float | None, optional): Override default query and key scale of head_dim ** -0.5 if set.
         drop (float, optional): Dropout rate. Default: 0.0
