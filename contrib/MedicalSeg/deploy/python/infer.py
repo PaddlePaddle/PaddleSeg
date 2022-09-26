@@ -439,7 +439,7 @@ class Predictor:
                     results = sliding_window_inference(
                         data, (int(args.img_shape[0]), int(args.img_shape[1]),
                                int(args.img_shape[2])), 1,
-                        infer_like_model.infer_model,"NCDHW")
+                        infer_like_model.infer_model, "NCDHW")
 
                 results = results[0]
 
