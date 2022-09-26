@@ -87,6 +87,8 @@ class SwinUNet(nn.Layer):
         patches_resolution = [img_size // patch_size] * 2
         self.patches_resolution = patches_resolution
 
+        self.pretrained = pretrained
+
         # stochastic depth
         dpr = np.linspace(0, drop_path_rate,
                           sum(depths)).tolist()  # stochastic depth decay rule
@@ -147,8 +149,6 @@ class SwinUNet(nn.Layer):
                 bias_attr=False)
 
         self._init_weights()
-        if pretrained is not None:
-            load_pretrained_model(self, pretrained)
 
     def _init_weights(self):
         """Initialize the parameters of model parts."""
@@ -161,7 +161,11 @@ class SwinUNet(nn.Layer):
                 zeros_(sublayer.bias)
                 ones_(sublayer.weight)
 
-    #Dencoder and Skip connection
+        if self.pretrained is not None:
+            load_pretrained_model(self, self.pretrained)
+
+#Dencoder and Skip connection
+
     def forward_up_features(self, x, x_downsample):
         for inx, layer_up in enumerate(self.layers_up):
             if inx == 0:

@@ -39,7 +39,7 @@ In the TransUnet model, the labels of the data are reduced to 8, which are:
 
 ### Prepare dataset
 
-If you want to get data suitable for TransUnet, you first need to download RawData.zip from [https://www.synapse.org/#!Synapse:syn3193805/files/](https://www.synapse.org/#!Synapse:syn3193805/files/). Then put it in the MedicalSeg/data/abdomen directory. Then run the `tools/prepare_abdomen.py` program,
+If you want to get data suitable, you first need to download RawData.zip from [https://www.synapse.org/#!Synapse:syn3193805/files/](https://www.synapse.org/#!Synapse:syn3193805/files/). Then put it in the MedicalSeg/data/abdomen directory. Then run the `tools/prepare_abdomen.py` program,
 
 ```
 mkdir data/abdomen
@@ -83,7 +83,7 @@ self.train_val_split(train_split=0.8)
 
 Then you can start the training program, such as the following command for TransUnet:
 
-```
+```shell
 python train.py --config configs/transunet/transunet_abdomen_224_224_1_14k_1e-2.yml --do_eval --save_interval 1000 --has_dataset_json False --is_save_data False --num_workers 4 --log_iters 10 --use_vdl
 ```
 
@@ -100,7 +100,7 @@ class InferenceHelper2D(InferenceHelper):
 
 ```python
 @manager.INFERENCE_HELPERS.add_component
-class TransUNetInferenceHelper(InferenceHelper):
+class InferenceHelper2D(InferenceHelper):
 ```
 
 Also you need to import your class in the \_\_init\_\_.py file of the inference_helper package.
@@ -108,7 +108,7 @@ Also you need to import your class in the \_\_init\_\_.py file of the inference_
 ```python
 # in medicalseg/inference_helpers/__init__.py file
 
-from .transunet_inference_helper_2D import InferenceHelper2D
+from .inference_helper_2d import InferenceHelper2D
 ```
 
 4. You also need to implement preprocess and postprocess methods suitable for your own network, such as the following:
