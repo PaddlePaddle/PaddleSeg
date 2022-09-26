@@ -19,5 +19,3 @@ from .vnet_deepsup import VNetDeepSup
 from .unetr import UNETR
 
 from .nnformer import nnFormer
-
-
