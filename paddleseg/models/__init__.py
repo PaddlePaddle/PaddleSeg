@@ -64,3 +64,4 @@ from .upernet import UPerNet
 from .sinet import SINet
 from .lraspp import LRASPP
 from .topformer import TopFormer
+from .rtformer import RTFormer23Small, RTFormer23
