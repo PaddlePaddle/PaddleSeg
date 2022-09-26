@@ -18,7 +18,7 @@ model:
 
 
 train_dataset:
-  type: ACDCDataset
+  type: ACDC
   dataset_root: mini_acdc/preprocessed
   result_dir:  mini_acdc/preprocessed
   transforms:
@@ -63,7 +63,7 @@ train_dataset:
 
 
 val_dataset:
-  type: ACDCDataset
+  type: ACDC
   dataset_root: mini_acdc/preprocessed
   result_dir:  mini_acdc/preprocessed
   anno_path: val_list_0.txt
@@ -92,3 +92,7 @@ loss:
         - type: DiceLoss
       coef: [1, 1]
   coef: [0.5714, 0.2857,0.1428]
+
+export:
+  inference_helper:
+    type: NnFormerInferenceHelper

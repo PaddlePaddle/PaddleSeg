@@ -5,7 +5,7 @@ iters: 250000
 
 
 train_dataset:
-  type: ACDCDataset
+  type: ACDC
   dataset_root: ACDCDataset/ACDCDataset_phase
   result_dir: ACDCDataset/ACDCDataset_phase
   transforms:
@@ -47,7 +47,7 @@ train_dataset:
 
 
 val_dataset:
-  type: ACDCDataset
+  type: ACDC
   dataset_root: ACDCDataset/ACDCDataset_phase
   result_dir: ACDCDataset/ACDCDataset_phase
   num_classes: 4
@@ -79,4 +79,4 @@ loss:
 
 export:
   inference_helper:
-    type: nnformerInferenceHelper
+    type: NnFormerInferenceHelper

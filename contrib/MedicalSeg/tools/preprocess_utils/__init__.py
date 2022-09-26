@@ -15,5 +15,5 @@ from .uncompress import uncompressor
 from .geometry import *
 from .load_image import *
 from .dataset_json import parse_msd_basic_info
+from .convert_to_decathlon import convert_to_decathlon
 from .file_and_folder_operations import *
-

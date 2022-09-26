@@ -3,7 +3,7 @@ The database is made available to participants through two datasets from the ded
 ## Performance
 
 
-### nnformer
+### nnFormer
 >   Hong-Yu Zhou, Student Member, IEEE, Jiansen Guo, Yinghao Zhang, Xiaoguang Han, Lequan Yu, Liansheng Wang, Member, IEEE, and Yizhou Yu, Fellow, IEEE
 
 | Backbone | Resolution | lr | Training Iters | Dice | Links |

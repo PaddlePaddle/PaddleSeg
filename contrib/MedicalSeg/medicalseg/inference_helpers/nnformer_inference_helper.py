@@ -13,18 +13,12 @@ from tools.preprocess_utils.geometry import resize_image, resize_segmentation
 
 
 @manager.INFERENCE_HELPERS.add_component
-class nnformerInferenceHelper(InferenceHelper):
+class NnFormerInferenceHelper(InferenceHelper):
     def load_medical_data(self, filename):
         self.nimg = nib.load(filename)
         data_array = self.nimg.get_data()
         original_spacing = self.nimg.header["pixdim"][1:4]
         return data_array, original_spacing
-
-    # def save_medical_label(self, result, img_path):
-    #     basename = os.path.basename(img_path)
-    #     nlabel = nib.Nifti1Image(
-    #         result, self.nimg.affine, header=self.nimg.header)
-    #     nib.save(nlabel, os.path.join(self.args.save_dir, basename))
 
     def preprocess(self, cfg, imgs_path, batch_size, batch_id):
         data_array, original_spacing = self.load_medical_data(imgs_path[

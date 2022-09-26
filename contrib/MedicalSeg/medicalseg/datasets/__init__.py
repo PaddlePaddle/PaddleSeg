@@ -16,5 +16,5 @@ from .dataset import MedicalDataset
 from .lung_coronavirus import LungCoronavirus
 from .mri_spine_seg import MRISpineSeg
 from .msd_brain_seg import msd_brain_dataset
-from .acdc_dataset import ACDCDataset
-
+from .abdomen import Abdomen
+from .acdc import ACDC

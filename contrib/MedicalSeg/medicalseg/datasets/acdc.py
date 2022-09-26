@@ -27,7 +27,7 @@ URL = ' '  # todo: add coronavirus url
 
 
 @manager.DATASETS.add_component
-class ACDCDataset(paddle.io.Dataset):
+class ACDC(paddle.io.Dataset):
     """
         ACDC dataset `https://acdc.creatis.insa-lyon.fr/#phase/5846c3ab6a3c7735e84b67f2 `.
         The folder structure is as follow:
