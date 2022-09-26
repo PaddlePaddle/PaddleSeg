@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ class UHRNet(nn.Layer):
 
     The original article refers to
     Jian Wang, et, al. "U-HRNet: Delving into Improving Semantic Representation of High Resolution Network for Dense Prediction"
-    ().
+    (TODO: add arxiv url after releasing).
 
     Args:
         in_channels (int, optional): The channels of input image. Default: 3.
@@ -72,32 +72,32 @@ class UHRNet(nn.Layer):
                  in_channels=3,
                  pretrained=None,
                  stage1_num_modules=1,
-                 stage1_num_blocks=[4],
-                 stage1_num_channels=[64],
+                 stage1_num_blocks=(4, ),
+                 stage1_num_channels=(64, ),
                  stage2_num_modules=1,
-                 stage2_num_blocks=[4, 4],
-                 stage2_num_channels=[18, 36],
+                 stage2_num_blocks=(4, 4),
+                 stage2_num_channels=(18, 36),
                  stage3_num_modules=5,
-                 stage3_num_blocks=[4, 4],
-                 stage3_num_channels=[36, 72],
+                 stage3_num_blocks=(4, 4),
+                 stage3_num_channels=(36, 72),
                  stage4_num_modules=2,
-                 stage4_num_blocks=[4, 4],
-                 stage4_num_channels=[72, 144],
+                 stage4_num_blocks=(4, 4),
+                 stage4_num_channels=(72, 144),
                  stage5_num_modules=2,
-                 stage5_num_blocks=[4, 4],
-                 stage5_num_channels=[144, 288],
+                 stage5_num_blocks=(4, 4),
+                 stage5_num_channels=(144, 288),
                  stage6_num_modules=1,
-                 stage6_num_blocks=[4, 4],
-                 stage6_num_channels=[72, 144],
+                 stage6_num_blocks=(4, 4),
+                 stage6_num_channels=(72, 144),
                  stage7_num_modules=1,
-                 stage7_num_blocks=[4, 4],
-                 stage7_num_channels=[36, 72],
+                 stage7_num_blocks=(4, 4),
+                 stage7_num_channels=(36, 72),
                  stage8_num_modules=1,
-                 stage8_num_blocks=[4, 4],
-                 stage8_num_channels=[18, 36],
+                 stage8_num_blocks=(4, 4),
+                 stage8_num_channels=(18, 36),
                  stage9_num_modules=1,
-                 stage9_num_blocks=[4],
-                 stage9_num_channels=[18],
+                 stage9_num_blocks=(4, ),
+                 stage9_num_channels=(18, ),
                  has_se=False,
                  align_corners=False):
         super(UHRNet, self).__init__()
@@ -337,17 +337,17 @@ class UHRNet(nn.Layer):
         st5 = self.st5(tr4)
         x5 = st5[-1]
 
-        tr5 = self.tr5(st5[0], shape=skip41.shape[-2:])
+        tr5 = self.tr5(st5[0], shape=paddle.shape(skip41)[-2:])
         tr5[0] = self._concat(tr5[0], skip41)
         st6 = self.st6(tr5)
         x4 = st6[-1]
 
-        tr6 = self.tr6(st6[0], shape=skip31.shape[-2:])
+        tr6 = self.tr6(st6[0], shape=paddle.shape(skip31)[-2:])
         tr6[0] = self._concat(tr6[0], skip31)
         st7 = self.st7(tr6)
         x3 = st7[-1]
 
-        tr7 = self.tr7(st7[0], shape=skip21.shape[-2:])
+        tr7 = self.tr7(st7[0], shape=paddle.shape(skip21)[-2:])
         tr7[0] = self._concat(tr7[0], skip21)
         st8 = self.st8(tr7)
         x2 = st8[-1]
@@ -363,11 +363,11 @@ class UHRNet(nn.Layer):
                                                                   1)).squeeze(1)
 
         # upsampling
-        x0_h, x0_w = x[0].shape[-2:]
+        x0_h, x0_w = paddle.shape(x[0])[-2:]
         for i in range(1, len(x)):
             x[i] = F.interpolate(
                 x[i],
-                size=(x0_h, x0_w),
+                size=[x0_h, x0_w],
                 mode='bilinear',
                 align_corners=self.align_corners)
         x = paddle.concat(x, axis=1)
@@ -810,13 +810,18 @@ class FuseLayers(nn.Layer):
                                     bias_attr=False))
                             pre_num_filters = out_channels[j]
                         self.residual_func_list.append(residual_func)
+        if len(self.residual_func_list) == 0:
+            self.residual_func_list.append(
+                self.add_sublayer("identity",
+                                  nn.Identity()))  # for flops calculation
 
     def forward(self, x):
         outs = []
         residual_func_idx = 0
         for i in range(self._actual_ch):
             residual = x[i]
-            residual_shape = residual.shape[-2:]
+            residual_shape = paddle.shape(residual)[-2:]
+
             for j in range(len(self._in_channels)):
                 if j > i:
                     y = self.residual_func_list[residual_func_idx](x[j])
@@ -880,32 +885,32 @@ def UHRNet_W18_Small(**kwargs):
 def UHRNet_W18(**kwargs):
     model = UHRNet(
         stage1_num_modules=1,
-        stage1_num_blocks=[4],
-        stage1_num_channels=[64],
+        stage1_num_blocks=(4, ),
+        stage1_num_channels=(64, ),
         stage2_num_modules=1,
-        stage2_num_blocks=[4, 4],
-        stage2_num_channels=[18, 36],
+        stage2_num_blocks=(4, 4),
+        stage2_num_channels=(18, 36),
         stage3_num_modules=5,
-        stage3_num_blocks=[4, 4],
-        stage3_num_channels=[36, 72],
+        stage3_num_blocks=(4, 4),
+        stage3_num_channels=(36, 72),
         stage4_num_modules=2,
-        stage4_num_blocks=[4, 4],
-        stage4_num_channels=[72, 144],
+        stage4_num_blocks=(4, 4),
+        stage4_num_channels=(72, 144),
         stage5_num_modules=2,
-        stage5_num_blocks=[4, 4],
-        stage5_num_channels=[144, 288],
+        stage5_num_blocks=(4, 4),
+        stage5_num_channels=(144, 288),
         stage6_num_modules=1,
-        stage6_num_blocks=[4, 4],
-        stage6_num_channels=[72, 144],
+        stage6_num_blocks=(4, 4),
+        stage6_num_channels=(72, 144),
         stage7_num_modules=1,
-        stage7_num_blocks=[4, 4],
-        stage7_num_channels=[36, 72],
+        stage7_num_blocks=(4, 4),
+        stage7_num_channels=(36, 72),
         stage8_num_modules=1,
-        stage8_num_blocks=[4, 4],
-        stage8_num_channels=[18, 36],
+        stage8_num_blocks=(4, 4),
+        stage8_num_channels=(18, 36),
         stage9_num_modules=1,
-        stage9_num_blocks=[4],
-        stage9_num_channels=[18],
+        stage9_num_blocks=(4, ),
+        stage9_num_channels=(18, ),
         **kwargs)
     return model
 
@@ -914,31 +919,31 @@ def UHRNet_W18(**kwargs):
 def UHRNet_W48(**kwargs):
     model = UHRNet(
         stage1_num_modules=1,
-        stage1_num_blocks=[4],
-        stage1_num_channels=[64],
+        stage1_num_blocks=(4, ),
+        stage1_num_channels=(64, ),
         stage2_num_modules=1,
-        stage2_num_blocks=[4, 4],
-        stage2_num_channels=[48, 96],
+        stage2_num_blocks=(4, 4),
+        stage2_num_channels=(48, 96),
         stage3_num_modules=5,
-        stage3_num_blocks=[4, 4],
-        stage3_num_channels=[96, 192],
+        stage3_num_blocks=(4, 4),
+        stage3_num_channels=(96, 192),
         stage4_num_modules=2,
-        stage4_num_blocks=[4, 4],
-        stage4_num_channels=[192, 384],
+        stage4_num_blocks=(4, 4),
+        stage4_num_channels=(192, 384),
         stage5_num_modules=2,
-        stage5_num_blocks=[4, 4],
-        stage5_num_channels=[384, 768],
+        stage5_num_blocks=(4, 4),
+        stage5_num_channels=(384, 768),
         stage6_num_modules=1,
-        stage6_num_blocks=[4, 4],
-        stage6_num_channels=[192, 384],
+        stage6_num_blocks=(4, 4),
+        stage6_num_channels=(192, 384),
         stage7_num_modules=1,
-        stage7_num_blocks=[4, 4],
-        stage7_num_channels=[96, 192],
+        stage7_num_blocks=(4, 4),
+        stage7_num_channels=(96, 192),
         stage8_num_modules=1,
-        stage8_num_blocks=[4, 4],
-        stage8_num_channels=[48, 96],
+        stage8_num_blocks=(4, 4),
+        stage8_num_channels=(48, 96),
         stage9_num_modules=1,
-        stage9_num_blocks=[4],
-        stage9_num_channels=[48],
+        stage9_num_blocks=(4, ),
+        stage9_num_channels=(48, ),
         **kwargs)
     return model
