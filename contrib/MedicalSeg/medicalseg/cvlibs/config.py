@@ -318,9 +318,9 @@ class Config(object):
 
         if not self._model:
             self._model = self._load_object(model_cfg)
-
-        self._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(
-            self._model)
+        if paddle.get_device() != 'cpu':
+            self._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(
+                self._model)
 
         return self._model
 

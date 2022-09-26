@@ -104,8 +104,6 @@ for params in ${extra_args[*]}; do
     value=${arr[1]}
     if [ "${key}" = 'log_iters' ]; then
         log_iters="${value}"
-    elif [ "${key}" = "set_cv_threads" ]; then
-        set_cv_threads="${value}"
     elif [ "${key}" = "repeats" ]; then
         repeats="${value}"
     fi
@@ -345,17 +343,6 @@ else
                     cmd="${cmd} --repeats ${repeats}"
                 fi
 
-                if [ -n "${set_cv_threads}" ] && [ "${set_cv_threads}" = "true" ];then
-                    # Take the first word as the training script, which means there should be no blanks in the path of script.
-                    train_script=$(echo "${run_train}" | cut -d ' ' -f1)
-                    # Make a copy
-                    train_script_copy="$(add_suffix ${train_script} '_copy')" 
-                    cp ${train_script} ${train_script_copy}
-                    sed -i '1s/^/import cv2; cv2.setNumThreads(1)\n/' ${train_script_copy}
-                    # Use a global replace!
-                    cmd="${cmd/${train_script}/${train_script_copy}}"
-                fi
-
                 if [ -n "${amp_level}" ];then
                     cmd="${cmd} --amp_level ${amp_level}"
                 fi
@@ -367,10 +354,6 @@ else
 
                 if [[ "$cmd" == *'paddle.distributed.launch'* ]]; then
                     cat log/workerlog.0 >> ${log_path} 
-                fi
-
-                if [ -n "${set_cv_threads}" ] && [ "${set_cv_threads}" = "true" ];then
-                    rm ${train_script_copy}
                 fi
                 
                 # modify model dir if no eval

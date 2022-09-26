@@ -171,6 +171,47 @@ class RandomRotation3D:
 
 
 @manager.TRANSFORMS.add_component
+class RandomQuarterTurn3D:
+    """ Rotate an 3D image 90 degrees with a certain probability.
+    Args:
+        prob (float, optional): A probability of vertical flipping. Default: 0.5.
+        rotate_planes (list, optional): Randomly select rotate planes from this list.
+    """
+
+    def __init__(self, prob=0.5, rotate_planes=[[0, 1], [0, 2], [1, 2]]):
+        """
+        init
+        """
+        self.rotate_planes = rotate_planes
+        self.prob = prob
+        super().__init__()
+
+    def get_params(self):
+        """Get parameters for ``rotate`` for a random rotation.
+        Returns:
+            sequence: params to be passed to ``rotate`` for random rotation.
+        """
+        r_plane = self.rotate_planes[random.randint(
+            0, len(self.rotate_planes) - 1)]
+        return r_plane
+
+    def __call__(self, img, label=None):
+        """
+        Args:
+            img (numpy ndarray): 3D Image to be flipped.
+            label (numpy ndarray): 3D Label to be flipped.
+        Returns:
+            (np.array). Image after transformation.
+        """
+        if random.random() < self.prob:
+            r_plane = self.get_params()
+            img = F.rotate_3d(img, r_plane, 90)
+            if label is not None:
+                label = F.rotate_3d(label, r_plane, 90)
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
 class RandomFlip3D:
     """Flip an 3D image with a certain probability.
     Args:
