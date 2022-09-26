@@ -19,6 +19,16 @@ from paddleseg.cvlibs import param_init
 
 
 class PolarizedSelfAttentionModule(nn.Layer):
+    '''
+    The original article refers to refer to https://arxiv.org/pdf/2107.00782
+    
+    Args:
+        inplanes (int): Input channels of feature.
+        planes (int): Output channels of feature.
+        kernel_size (int, optional): The kernel size of Conv2D. Default: 1
+        stride (int, optional): The stride length of Conv2D. Default: 1
+    '''
+
     def __init__(self, inplanes, planes, kernel_size=1, stride=1):
         super().__init__()
         self.inplanes = inplanes

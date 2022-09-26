@@ -59,13 +59,13 @@ class MscaleOCRNet(nn.Layer):
     def _fwd(self, x):
         x_size = paddle.shape(x)[2:]
         high_level_features = self.backbone(x)
-        cls_out, aux_out, ocr_mid_feats = self.ocr(high_level_features)
+        pred_out, aux_out, ocr_mid_feats = self.ocr(high_level_features)
         attn = self.scale_attn(ocr_mid_feats)
         aux_out = F.interpolate(aux_out, size=x_size, mode='bilinear')
-        cls_out = F.interpolate(cls_out, size=x_size, mode='bilinear')
+        pred_out = F.interpolate(pred_out, size=x_size, mode='bilinear')
         attn = F.interpolate(attn, size=x_size, mode='bilinear')
 
-        return {'cls_out': cls_out, 'aux_out': aux_out, 'logit_attn': attn}
+        return {'pred_out': pred_out, 'aux_out': aux_out, 'logit_attn': attn}
 
     def nscale_forward(self, inputs, scales):
         x_1x = inputs
@@ -83,64 +83,64 @@ class MscaleOCRNet(nn.Layer):
         for s in scales_tensor:
             x = F.interpolate(x_1x, scale_factor=s, mode='bilinear')
             outs = self._fwd(x)
-            cls_out = outs['cls_out']
+            pred_out = outs['pred_out']
             attn_out = outs['logit_attn']
             aux_out = outs['aux_out']
 
-            if is_init is False:
+            if not is_init:
                 is_init = True
-                pred = cls_out
+                pred = pred_out
                 aux = aux_out
             elif s[0] >= 1.0:
                 pred = F.interpolate(
-                    pred, size=paddle.shape(cls_out)[2:4], mode='bilinear')
-                pred = attn_out * cls_out + (1 - attn_out) * pred
+                    pred, size=paddle.shape(pred_out)[2:4], mode='bilinear')
+                pred = attn_out * pred_out + (1 - attn_out) * pred
                 aux = F.interpolate(
-                    aux, size=paddle.shape(cls_out)[2:4], mode='bilinear')
+                    aux, size=paddle.shape(pred_out)[2:4], mode='bilinear')
                 aux = attn_out * aux_out + (1 - attn_out) * aux
             else:
-                cls_out = attn_out * cls_out
+                pred_out = attn_out * pred_out
                 aux_out = attn_out * aux_out
-                cls_out = F.interpolate(
-                    cls_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                pred_out = F.interpolate(
+                    pred_out, size=paddle.shape(pred)[2:4], mode='bilinear')
                 aux_out = F.interpolate(
                     aux_out, size=paddle.shape(pred)[2:4], mode='bilinear')
                 attn_out = F.interpolate(
                     attn_out, size=paddle.shape(pred)[2:4], mode='bilinear')
-                pred = cls_out + (1 - attn_out) * pred
+                pred = pred_out + (1 - attn_out) * pred
                 aux = aux_out + (1 - attn_out) * aux
         logit_list = [aux, pred] if self.training else [pred]
         return logit_list
 
     def two_scale_forward(self, inputs):
-        x_lo = F.interpolate(inputs, scale_factor=0.5, mode='bilinear')
-        lo_outs = self._fwd(x_lo)
-        pred_05x = lo_outs['cls_out']
-        p_lo = pred_05x
-        aux_lo = lo_outs['aux_out']
-        logit_attn = lo_outs['logit_attn']
+        x_lower = F.interpolate(inputs, scale_factor=0.5, mode='bilinear')
+        lower_outs = self._fwd(x_lower)
+        pred_05x = lower_outs['pred_out']
+        pred_lower = pred_05x
+        aux_lower = lower_outs['aux_out']
+        logit_attn = lower_outs['logit_attn']
 
-        hi_outs = self._fwd(inputs)
-        pred_10x = hi_outs['cls_out']
-        p_1x = pred_10x
-        aux_1x = hi_outs['aux_out']
+        higher_outs = self._fwd(inputs)
+        pred_10x = higher_outs['pred_out']
+        pred_higher = pred_10x
+        aux_higher = higher_outs['aux_out']
 
-        p_lo = logit_attn * p_lo
-        aux_lo = logit_attn * aux_lo
-        p_lo = F.interpolate(
-            p_lo, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+        pred_lower = logit_attn * pred_lower
+        aux_lower = logit_attn * aux_lower
+        pred_lower = F.interpolate(
+            pred_lower, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
 
-        aux_lo = F.interpolate(
-            aux_lo, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+        aux_lower = F.interpolate(
+            aux_lower, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
 
         logit_attn = F.interpolate(
-            logit_attn, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+            logit_attn, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
 
-        joint_pred = p_lo + (1 - logit_attn) * p_1x
-        joint_aux = aux_lo + (1 - logit_attn) * aux_1x
+        joint_pred = pred_lower + (1 - logit_attn) * pred_higher
+        joint_aux = aux_lower + (1 - logit_attn) * aux_higher
         if self.training:
             scaled_pred_05x = F.interpolate(
-                pred_05x, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+                pred_05x, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
             logit_list = [joint_aux, joint_pred, scaled_pred_05x, pred_10x]
         else:
             logit_list = [joint_pred]
@@ -354,8 +354,8 @@ class OCRHead(nn.Layer):
         aux_out = self.aux_head(high_level_features)
         context = self.ocr_gather_head(feats, aux_out)
         ocr_feats = self.ocr_distri_head(feats, context)
-        cls_out = self.cls_head(ocr_feats)
-        return cls_out, aux_out, ocr_feats
+        pred_out = self.cls_head(ocr_feats)
+        return pred_out, aux_out, ocr_feats
 
     def init_weight(self):
         """Initialize the parameters of model parts."""
