@@ -146,18 +146,20 @@ class SwinUNet(nn.Layer):
                 kernel_size=1,
                 bias_attr=False)
 
-        self.apply(self._init_weights)
+        self._init_weights()
         if pretrained is not None:
             load_pretrained_model(self, pretrained)
 
-    def _init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                zeros_(m.bias)
-        elif isinstance(m, nn.LayerNorm):
-            zeros_(m.bias)
-            ones_(m.weight)
+    def _init_weights(self):
+        """Initialize the parameters of model parts."""
+        for sublayer in self.sublayers():
+            if isinstance(sublayer, nn.Linear):
+                trunc_normal_(sublayer.weight)
+                if sublayer.bias is not None:
+                    zeros_(sublayer.bias)
+            elif isinstance(sublayer, nn.LayerNorm):
+                zeros_(sublayer.bias)
+                ones_(sublayer.weight)
 
     #Dencoder and Skip connection
     def forward_up_features(self, x, x_downsample):
