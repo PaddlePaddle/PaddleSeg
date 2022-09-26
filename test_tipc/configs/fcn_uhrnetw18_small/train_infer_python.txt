@@ -27,7 +27,7 @@ null:null
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:export.py --config test_tipc/configs/bisenetv2/bisenet_cityscapes_1024x1024_160k.yml
+norm_export:export.py --config test_tipc/configs/fcn_uhrnetw18_small/fcn_uhrnetw18_small_cityscapes_1024x512_80k.yml
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -37,7 +37,7 @@ export2:null
 infer_model:./test_tipc/output/fcn_uhrnetw18_small/model.pdparams
 infer_export:export.py --config test_tipc/configs/fcn_uhrnetw18_small/fcn_uhrnetw18_small_cityscapes_1024x512_80k.yml
 infer_quant:False
-inference:deploy/python/infer.py --save_dir ./test_tipc/output/bisenetv2/
+inference:deploy/python/infer.py --save_dir ./test_tipc/output/fcn_uhrnetw18_small/
 --device:cpu|gpu
 --enable_mkldnn:True
 --cpu_threads:6
