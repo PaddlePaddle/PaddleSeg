@@ -24,7 +24,22 @@ from paddleseg.utils import utils
 from paddleseg.models.backbones.transformer_utils import (
     trunc_normal_, kaiming_normal_, constant_, DropPath, Identity)
 
-conv2d = partial(nn.Conv2D, bias_attr=False)
+
+def conv2d(in_channels,
+           out_channels,
+           kernel_size,
+           stride=1,
+           padding=0,
+           bias_attr=False,
+           **kwargs):
+    return nn.Conv2D(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        bias_attr=bias_attr,
+        **kwargs)
 
 
 def bn2d(in_channels, bn_mom=0.1, **kwargs):
@@ -69,7 +84,7 @@ class MLP(nn.Layer):
                  in_channels,
                  hidden_channels=None,
                  out_channels=None,
-                 drop=0.):
+                 drop_rate=0.):
         super().__init__()
         hidden_channels = hidden_channels or in_channels
         out_channels = out_channels or in_channels
@@ -77,7 +92,7 @@ class MLP(nn.Layer):
         self.conv1 = nn.Conv2D(in_channels, hidden_channels, 3, 1, 1)
         self.act = nn.GELU()
         self.conv2 = nn.Conv2D(hidden_channels, out_channels, 3, 1, 1)
-        self.drop = nn.Dropout(drop)
+        self.drop = nn.Dropout(drop_rate)
 
         self.apply(self._init_weights)
 
@@ -108,7 +123,7 @@ class ExternalAttention(nn.Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 num_params,
+                 inter_channels,
                  num_heads=1,
                  use_cross_kv=False):
         super().__init__()
@@ -116,17 +131,18 @@ class ExternalAttention(nn.Layer):
             "out_channels ({}) should be be a multiple of num_heads ({})".format(out_channels, num_heads)
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.num_params = num_params
+        self.inter_channels = inter_channels
         self.num_heads = num_heads
         self.use_cross_kv = use_cross_kv
+        self.same_in_out_chs = self.in_channels == self.out_channels
 
         self.norm = bn2d(in_channels)
         if not use_cross_kv:
             self.k = self.create_parameter(
-                shape=(num_params, in_channels, 1, 1),
+                shape=(inter_channels, in_channels, 1, 1),
                 default_initializer=paddle.nn.initializer.Normal(std=0.001))
             self.v = self.create_parameter(
-                shape=(out_channels, num_params, 1, 1),
+                shape=(out_channels, inter_channels, 1, 1),
                 default_initializer=paddle.nn.initializer.Normal(std=0.001))
 
         self.apply(self._init_weights)
@@ -146,7 +162,8 @@ class ExternalAttention(nn.Layer):
 
     def _act_sn(self, x, B, H, W):
         x_shape = paddle.shape(x)
-        x = x.reshape([B, self.num_params, H, W]) * (self.num_params**-0.5)
+        x = x.reshape([B, self.inter_channels, H, W]) * (self.inter_channels
+                                                         **-0.5)
         x = F.softmax(x, axis=1)
         x = x.reshape(x_shape)
         return x
@@ -154,7 +171,7 @@ class ExternalAttention(nn.Layer):
     def _act_dn(self, x, B, H, W):
         x_shape = paddle.shape(x)
         x = x.reshape(
-            [B, self.num_heads, self.num_params // self.num_heads, H * W])
+            [B, self.num_heads, self.inter_channels // self.num_heads, H * W])
         x = F.softmax(x, axis=3)
         x = x / (paddle.sum(x, axis=2, keepdim=True) + 1e-06)
         x = x.reshape(x_shape)
@@ -172,7 +189,7 @@ class ExternalAttention(nn.Layer):
                 x,
                 k,
                 bias=None,
-                stride=2 if self.in_channels != self.out_channels else 1,
+                stride=2 if not self.same_in_out_chs else 1,
                 padding=0,
                 groups=B)
             H, W = x.shape[2:]
@@ -185,7 +202,7 @@ class ExternalAttention(nn.Layer):
                 x,
                 k,
                 bias=None,
-                stride=2 if self.in_channels != self.out_channels else 1,
+                stride=2 if not self.same_in_out_chs else 1,
                 padding=0)
             H, W = x.shape[2:]
             x = self._act_dn(x, B, H, W)
@@ -195,22 +212,36 @@ class ExternalAttention(nn.Layer):
 
 
 class EABlock(nn.Layer):
+    """
+    The EABlock implementation based on PaddlePaddle.
+    Args:
+        in_channels (int, optional): The input channels.
+        out_channels (int, optional): The output channels.
+        num_heads (int, optional): The num of heads in attention. Default: 8
+        drop_rate (float, optional): The drop rate in MLP. Default:0.
+        drop_path_rate (float, optional): The drop path rate in EABlock. Default: 0.2
+        use_injection (bool, optional): Whether inject the high feature into low feature. Default: True
+        use_cross_kv (bool, optional): Wheter use cross_kv. Default: False
+        attn_high_inter_channels (int, optional): The inter channels of atten_high module. Default: 144
+    """
+
     def __init__(self,
                  in_channels,
                  out_channels,
-                 num_heads=1,
-                 drop=0.,
-                 drop_path=0.,
-                 has_down=True,
-                 use_cross_kv=False):
+                 num_heads=8,
+                 drop_rate=0.,
+                 drop_path_rate=0.,
+                 use_injection=True,
+                 use_cross_kv=False,
+                 attn_high_inter_channels=144):
         super().__init__()
         in_channels_h, in_channels_l = in_channels
         out_channels_h, out_channels_l = out_channels
-        self.proj_flag_l = in_channels_l != out_channels_l
-        self.has_down = has_down
+        self.proj_flag = in_channels_l != out_channels_l
+        self.use_injection = use_injection
         self.use_cross_kv = use_cross_kv
         # attn
-        if self.proj_flag_l:
+        if self.proj_flag:
             self.attn_shortcut_l = nn.Sequential(
                 bn2d(in_channels_l),
                 conv2d(in_channels_l, out_channels_l, 1, 2, 0))
@@ -218,27 +249,28 @@ class EABlock(nn.Layer):
         self.attn_h = ExternalAttention(
             in_channels_h,
             out_channels_h,
-            num_params=144,
+            inter_channels=attn_high_inter_channels,
             num_heads=num_heads,
             use_cross_kv=use_cross_kv)
         self.attn_l = ExternalAttention(
             in_channels_l,
             out_channels_l,
-            num_params=out_channels_l,
-            num_heads=num_heads)
+            inter_channels=out_channels_l,
+            num_heads=num_heads,
+            use_cross_kv=False)
         # mlp
-        self.mlp_h = MLP(out_channels_h, drop=drop)
-        self.mlp_l = MLP(out_channels_l, drop=drop)
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
+        self.mlp_h = MLP(out_channels_h, drop_rate=drop_rate)
+        self.mlp_l = MLP(out_channels_l, drop_rate=drop_rate)
+        self.drop_path = DropPath(
+            drop_path_rate) if drop_path_rate > 0. else Identity()
         # fusion
-        self.relu = nn.ReLU()
         self.compression = nn.Sequential(
             bn2d(out_channels_l),
             nn.ReLU(),
             conv2d(
-                out_channels_l, out_channels_h, kernel_size=1), )
+                out_channels_l, out_channels_h, kernel_size=1))
         self.compression.apply(self._init_weights_kaiming)
-        if has_down:
+        if use_injection:
             self.down = nn.Sequential(
                 bn2d(out_channels_h),
                 nn.ReLU(),
@@ -294,23 +326,22 @@ class EABlock(nn.Layer):
                 constant_(m.bias, 0)
 
     def forward(self, x):
-        """forward"""
         x_h, x_l = x
 
         # low resolution branch
-        x_l_res = x_l
-        if self.proj_flag_l:
-            x_l_res = self.attn_shortcut_l(x_l)
-
+        x_l_res = self.attn_shortcut_l(x_l) if self.proj_flag else x_l
         x_l = x_l_res + self.drop_path(self.attn_l(x_l))
         x_l = x_l + self.drop_path(self.mlp_l(x_l))
 
         # compression
-        x_h = x_h + F.interpolate(
-            self.compression(x_l), size=x_h.shape[2:], mode='bilinear')
+        x_h_shape = paddle.shape(x_h)[2:]
+        x_l_cp = self.compression(x_l)
+        x_h += F.interpolate(x_l_cp, size=x_h_shape, mode='bilinear')
 
-        # cross attention key value
-        if self.use_cross_kv:
+        # high resolution branch
+        if not self.use_cross_kv:
+            x_h = x_h + self.drop_path(self.attn_h(x_h))
+        else:
             ch_h = paddle.shape(x_h)[1]
             cross_kv = self.cross_kv(x_l)
             cross_k, cross_v = paddle.split(
@@ -321,16 +352,12 @@ class EABlock(nn.Layer):
             cross_v = cross_v.reshape(
                 [-1, self.cross_size * self.cross_size, 1, 1])
 
-        # high resolution branch
-        x_h_res = x_h
+            x_h = x_h + self.drop_path(self.attn_h(x_h, cross_k, cross_v))
 
-        if self.use_cross_kv:
-            x_h = x_h_res + self.drop_path(self.attn_h(x_h, cross_k, cross_v))
-        else:
-            x_h = x_h_res + self.drop_path(self.attn_h(x_h))
         x_h = x_h + self.drop_path(self.mlp_h(x_h))
 
-        if self.has_down:
+        # injection
+        if self.use_injection:
             x_l = x_l + self.down(x_h)
 
         return x_h, x_l
@@ -448,21 +475,41 @@ class SegHead(nn.Layer):
 
 @manager.MODELS.add_component
 class RTFormer(nn.Layer):
+    """
+    The RTFormer implementation based on PaddlePaddle.
+
+    Args:
+        num_classes (int): The unique number of target classes.
+        layer_nums (List, optional): The layer nums of every stage. Default: [2, 2, 2, 2]
+        base_channels (int, optional): The base channels. Default: 64
+        spp_channels (int, optional): The channels of DAPPM. Defualt: 128
+        num_heads (int, optional): The num of heads in EABlock. Default: 8
+        head_channels (int, optional): The channels of head in EABlock. Default: 128
+        drop_rate (float, optional): The drop rate in EABlock. Default:0.
+        drop_path_rate (float, optional): The drop path rate in EABlock. Default: 0.2
+        use_aux_head (bool, optional): Whether use auxiliary head. Default: True
+        use_injection (list[boo], optional): Whether use injection in layer 4 and 5.
+            Default: [True, True]
+        in_channels (int, optional): The channels of input image. Default: 3
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
+
     def __init__(self,
                  num_classes,
-                 block=BasicBlock,
                  layer_nums=[2, 2, 2, 2],
                  base_channels=64,
                  spp_channels=128,
+                 num_heads=8,
                  head_channels=128,
                  drop_rate=0.,
                  drop_path_rate=0.2,
-                 augment=True,
+                 use_aux_head=True,
+                 use_injection=[True, True],
                  in_channels=3,
                  pretrained=None):
         super().__init__()
+        self.base_channels = base_channels
         base_chs = base_channels
-        highres_chs = base_channels * 2
 
         self.conv1 = nn.Sequential(
             nn.Conv2D(
@@ -475,38 +522,42 @@ class RTFormer(nn.Layer):
             nn.ReLU(), )
         self.relu = nn.ReLU()
 
-        self.layer1 = self._make_layer(block, base_chs, base_chs, layer_nums[0])
+        self.layer1 = self._make_layer(BasicBlock, base_chs, base_chs,
+                                       layer_nums[0])
         self.layer2 = self._make_layer(
-            block, base_chs, base_chs * 2, layer_nums[1], stride=2)
+            BasicBlock, base_chs, base_chs * 2, layer_nums[1], stride=2)
         self.layer3 = self._make_layer(
-            block, base_chs * 2, base_chs * 4, layer_nums[2], stride=2)
-        self.layer3_ = self._make_layer(block, base_chs * 2, highres_chs, 1)
+            BasicBlock, base_chs * 2, base_chs * 4, layer_nums[2], stride=2)
+        self.layer3_ = self._make_layer(BasicBlock, base_chs * 2, base_chs * 2,
+                                        1)
         self.compression3 = nn.Sequential(
             bn2d(base_chs * 4),
             nn.ReLU(),
-            nn.Conv2D(
-                base_chs * 4, highres_chs, kernel_size=1, bias_attr=False), )
+            conv2d(
+                base_chs * 4, base_chs * 2, kernel_size=1), )
         self.layer4 = EABlock(
-            [highres_chs, base_chs * 4], [highres_chs, base_chs * 8],
-            num_heads=8,
-            drop=drop_rate,
-            drop_path=drop_path_rate,
-            has_down=True,
+            in_channels=[base_chs * 2, base_chs * 4],
+            out_channels=[base_chs * 2, base_chs * 8],
+            num_heads=num_heads,
+            drop_rate=drop_rate,
+            drop_path_rate=drop_path_rate,
+            use_injection=use_injection[0],
             use_cross_kv=True)
         self.layer5 = EABlock(
-            [highres_chs, base_chs * 8], [highres_chs, base_chs * 8],
-            num_heads=8,
-            drop=drop_rate,
-            drop_path=drop_path_rate,
-            has_down=True,
+            in_channels=[base_chs * 2, base_chs * 8],
+            out_channels=[base_chs * 2, base_chs * 8],
+            num_heads=num_heads,
+            drop_rate=drop_rate,
+            drop_path_rate=drop_path_rate,
+            use_injection=use_injection[1],
             use_cross_kv=True)
 
         self.spp = DAPPM(base_chs * 8, spp_channels, base_chs * 2)
         self.seghead = SegHead(base_chs * 4,
                                int(head_channels * 2), num_classes)
-        self.augment = augment
-        if self.augment:
-            self.seghead_extra = SegHead(highres_chs, head_channels,
+        self.use_aux_head = use_aux_head
+        if self.use_aux_head:
+            self.seghead_extra = SegHead(base_chs * 2, head_channels,
                                          num_classes)
 
         self.pretrained = pretrained
@@ -534,7 +585,7 @@ class RTFormer(nn.Layer):
         self.compression3.apply(self._init_weights_kaiming)
         self.spp.apply(self._init_weights_kaiming)
         self.seghead.apply(self._init_weights_kaiming)
-        if self.augment:
+        if self.use_aux_head:
             self.seghead_extra.apply(self._init_weights_kaiming)
 
         if self.pretrained is not None:
@@ -544,12 +595,8 @@ class RTFormer(nn.Layer):
         downsample = None
         if stride != 1 or in_channels != out_channels:
             downsample = nn.Sequential(
-                nn.Conv2D(
-                    in_channels,
-                    out_channels,
-                    kernel_size=1,
-                    stride=stride,
-                    bias_attr=False),
+                conv2d(
+                    in_channels, out_channels, kernel_size=1, stride=stride),
                 bn2d(out_channels))
 
         layers = []
@@ -575,23 +622,25 @@ class RTFormer(nn.Layer):
             x = paddle.to_tensor(x)
             print(paddle.mean(x))
 
-        x1 = self.layer1(self.conv1(x))  # 1/4
-        x2 = self.layer2(self.relu(x1))  # 1/8
-        x3 = self.layer3(self.relu(x2))  # 1/16
+        x1 = self.layer1(self.conv1(x))  # c, 1/4
+        x2 = self.layer2(self.relu(x1))  # 2c, 1/8
+        x3 = self.layer3(self.relu(x2))  # 4c, 1/16
         x3_ = x2 + F.interpolate(
             self.compression3(x3), size=paddle.shape(x2)[2:], mode='bilinear')
-        x3_ = self.layer3_(self.relu(x3_))  # 1/8
+        x3_ = self.layer3_(self.relu(x3_))  # 2c, 1/8
 
-        x4_, x4 = self.layer4([self.relu(x3_), self.relu(x3)])  # 1/8, 1/16
-        x5_, x5 = self.layer5([self.relu(x4_), self.relu(x4)])  # 1/8, 1/32
+        x4_, x4 = self.layer4(
+            [self.relu(x3_), self.relu(x3)])  # 2c, 1/8; 8c, 1/16
+        x5_, x5 = self.layer5(
+            [self.relu(x4_), self.relu(x4)])  # 2c, 1/8; 8c, 1/32
 
         x6 = self.spp(x5)
-        x6 = F.interpolate(x6, size=paddle.shape(x2)[2:], mode='bilinear')
-
-        x_out = self.seghead(paddle.concat([x5_, x6], axis=1))  # 1/8
+        x6 = F.interpolate(
+            x6, size=paddle.shape(x5_)[2:], mode='bilinear')  # 2c, 1/8
+        x_out = self.seghead(paddle.concat([x5_, x6], axis=1))  # 4c, 1/8
         logit_list = [x_out]
 
-        if self.augment:
+        if self.use_aux_head:
             x_out_extra = self.seghead_extra(x3_)
             logit_list.append(x_out_extra)
 
@@ -600,8 +649,12 @@ class RTFormer(nn.Layer):
             x_out_extra_mean = paddle.mean(x_out_extra).numpy()
             print('out', x_out_mean)
             print('out', x_out_extra_mean)
-            assert np.isclose(x_out_mean, -11.117491, 0, 1e-3)
-            assert np.isclose(x_out_extra_mean, -7.9465437, 0, 1e-3)
+            if self.base_channels == 32:
+                assert np.isclose(x_out_mean, -11.117491, 0, 1e-3)
+                assert np.isclose(x_out_extra_mean, -7.9465437, 0, 1e-3)
+            elif self.base_channels == 64:
+                assert np.isclose(x_out_mean, -21.306246, 0, 1e-3)
+                assert np.isclose(x_out_extra_mean, -17.274418, 0, 1e-3)
             exit()
 
         logit_list = [
