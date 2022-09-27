@@ -23,35 +23,33 @@ from paddleseg.models.backbones.transformer_utils import (
     trunc_normal_, kaiming_normal_, constant_, DropPath, Identity)
 
 
-def conv3x3(in_planes, out_planes, stride=1):
+def conv3x3(in_channels, out_channels, stride=1):
     return nn.Conv2D(
-        in_planes,
-        out_planes,
+        in_channels,
+        out_channels,
         kernel_size=3,
         stride=stride,
         padding=1,
         bias_attr=False)
 
 
-def bn2d(in_planes, bn_mom=0.1, **kwargs):
-    return nn.BatchNorm2D(in_planes, momentum=bn_mom, **kwargs)
+def bn2d(in_channels, bn_mom=0.1, **kwargs):
+    return nn.BatchNorm2D(in_channels, momentum=bn_mom, **kwargs)
 
 
 class BasicBlock(nn.Layer):
-    expansion = 1
-
     def __init__(self,
-                 inplanes,
-                 planes,
+                 in_channels,
+                 out_channels,
                  stride=1,
                  downsample=None,
                  no_relu=False):
         super().__init__()
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = bn2d(planes)
+        self.conv1 = conv3x3(in_channels, out_channels, stride)
+        self.bn1 = bn2d(out_channels)
         self.relu = nn.ReLU()
-        self.conv2 = conv3x3(planes, planes)
-        self.bn2 = bn2d(planes)
+        self.conv2 = conv3x3(out_channels, out_channels)
+        self.bn2 = bn2d(out_channels)
         self.downsample = downsample
         self.stride = stride
         self.no_relu = no_relu
@@ -74,17 +72,17 @@ class BasicBlock(nn.Layer):
 
 class MLP(nn.Layer):
     def __init__(self,
-                 in_features,
-                 hidden_features=None,
-                 out_features=None,
+                 in_channels,
+                 hidden_channels=None,
+                 out_channels=None,
                  drop=0.):
         super().__init__()
-        hidden_features = hidden_features or in_features
-        out_features = out_features or in_features
-        self.norm = bn2d(in_features, epsilon=1e-06)
-        self.conv1 = nn.Conv2D(in_features, hidden_features, 3, 1, 1)
+        hidden_channels = hidden_channels or in_channels
+        out_channels = out_channels or in_channels
+        self.norm = bn2d(in_channels, epsilon=1e-06)
+        self.conv1 = nn.Conv2D(in_channels, hidden_channels, 3, 1, 1)
         self.act = nn.GELU()
-        self.conv2 = nn.Conv2D(hidden_features, out_features, 3, 1, 1)
+        self.conv2 = nn.Conv2D(hidden_channels, out_channels, 3, 1, 1)
         self.drop = nn.Dropout(drop)
 
         self.apply(self._init_weights)
@@ -114,27 +112,27 @@ class MLP(nn.Layer):
 
 class ExternalAttention(nn.Layer):
     def __init__(self,
-                 inplanes,
-                 planes,
+                 in_channels,
+                 out_channels,
                  num_params,
                  num_heads=1,
                  use_cross_kv=False):
         super().__init__()
-        assert planes % num_heads == 0, \
-            "planes ({}) should be be a multiple of num_heads ({})".format(planes, num_heads)
-        self.inplanes = inplanes
-        self.planes = planes
+        assert out_channels % num_heads == 0, \
+            "out_channels ({}) should be be a multiple of num_heads ({})".format(out_channels, num_heads)
+        self.in_channels = in_channels
+        self.out_channels = out_channels
         self.num_params = num_params
         self.num_heads = num_heads
         self.use_cross_kv = use_cross_kv
 
-        self.norm = bn2d(inplanes)
+        self.norm = bn2d(in_channels)
         if not use_cross_kv:
             self.k = self.create_parameter(
-                shape=(num_params, inplanes, 1, 1),
+                shape=(num_params, in_channels, 1, 1),
                 default_initializer=paddle.nn.initializer.Normal(std=0.001))
             self.v = self.create_parameter(
-                shape=(planes, num_params, 1, 1),
+                shape=(out_channels, num_params, 1, 1),
                 default_initializer=paddle.nn.initializer.Normal(std=0.001))
 
         self.apply(self._init_weights)
@@ -180,7 +178,7 @@ class ExternalAttention(nn.Layer):
                 x,
                 k,
                 bias=None,
-                stride=2 if self.inplanes != self.planes else 1,
+                stride=2 if self.in_channels != self.out_channels else 1,
                 padding=0,
                 groups=B)
             H, W = x.shape[2:]
@@ -193,7 +191,7 @@ class ExternalAttention(nn.Layer):
                 x,
                 k,
                 bias=None,
-                stride=2 if self.inplanes != self.planes else 1,
+                stride=2 if self.in_channels != self.out_channels else 1,
                 padding=0)
             H, W = x.shape[2:]
             x = self._act_dn(x, B, H, W)
@@ -204,62 +202,66 @@ class ExternalAttention(nn.Layer):
 
 class EABlock(nn.Layer):
     def __init__(self,
-                 inplanes,
-                 planes,
+                 in_channels,
+                 out_channels,
                  num_heads=1,
                  drop=0.,
                  drop_path=0.,
                  has_down=True,
                  use_cross_kv=False):
         super().__init__()
-        inplanes_h, inplanes_l = inplanes
-        planes_h, planes_l = planes
-        self.proj_flag_l = inplanes_l != planes_l
+        in_channels_h, in_channels_l = in_channels
+        out_channels_h, out_channels_l = out_channels
+        self.proj_flag_l = in_channels_l != out_channels_l
         self.has_down = has_down
         self.use_cross_kv = use_cross_kv
         # attn
         if self.proj_flag_l:
             self.attn_shortcut_l = nn.Sequential(
-                bn2d(inplanes_l),
+                bn2d(in_channels_l),
                 nn.Conv2D(
-                    inplanes_l, planes_l, 1, 2, 0, bias_attr=False), )
+                    in_channels_l, out_channels_l, 1, 2, 0, bias_attr=False), )
             self.attn_shortcut_l.apply(self._init_weights_kaiming)
         self.attn_h = ExternalAttention(
-            inplanes_h,
-            planes_h,
+            in_channels_h,
+            out_channels_h,
             num_params=144,
             num_heads=num_heads,
             use_cross_kv=use_cross_kv)
         self.attn_l = ExternalAttention(
-            inplanes_l, planes_l, num_params=planes_l, num_heads=num_heads)
+            in_channels_l,
+            out_channels_l,
+            num_params=out_channels_l,
+            num_heads=num_heads)
         # mlp
-        self.mlp_h = MLP(planes_h, drop=drop)
-        self.mlp_l = MLP(planes_l, drop=drop)
+        self.mlp_h = MLP(out_channels_h, drop=drop)
+        self.mlp_l = MLP(out_channels_l, drop=drop)
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
         # fusion
         self.relu = nn.ReLU()
         self.compression = nn.Sequential(
-            bn2d(planes_l),
+            bn2d(out_channels_l),
             nn.ReLU(),
             nn.Conv2D(
-                planes_l, planes_h, kernel_size=1, bias_attr=False), )
+                out_channels_l, out_channels_h, kernel_size=1, bias_attr=False),
+        )
         self.compression.apply(self._init_weights_kaiming)
         if has_down:
             self.down = nn.Sequential(
-                bn2d(planes_h),
+                bn2d(out_channels_h),
                 nn.ReLU(),
                 nn.Conv2D(
-                    planes_h,
-                    planes_l // 2,
+                    out_channels_h,
+                    out_channels_l // 2,
                     kernel_size=3,
                     stride=2,
                     padding=1,
                     bias_attr=False),
-                bn2d(planes_l // 2),
+                bn2d(out_channels_l // 2),
                 nn.ReLU(),
                 nn.Conv2D(
-                    planes_l // 2,
-                    planes_l,
+                    out_channels_l // 2,
+                    out_channels_l,
                     kernel_size=3,
                     stride=2,
                     padding=1,
@@ -269,11 +271,16 @@ class EABlock(nn.Layer):
         if use_cross_kv:
             self.cross_size = 12
             self.cross_kv = nn.Sequential(
-                bn2d(planes_l),
+                bn2d(out_channels_l),
                 nn.AdaptiveMaxPool2D(output_size=(self.cross_size,
                                                   self.cross_size)),
                 nn.Conv2D(
-                    planes_l, 2 * planes_h, 1, 1, 0, bias_attr=False))
+                    out_channels_l,
+                    2 * out_channels_h,
+                    1,
+                    1,
+                    0,
+                    bias_attr=False))
             self.cross_kv.apply(self._init_weights)
 
     def _init_weights(self, m):
@@ -320,13 +327,13 @@ class EABlock(nn.Layer):
 
         # cross attention key value
         if self.use_cross_kv:
-            planes_h = paddle.shape(x_h)[1]
+            ch_h = paddle.shape(x_h)[1]
             cross_kv = self.cross_kv(x_l)
             cross_k, cross_v = paddle.split(
                 cross_kv.reshape([cross_kv.shape[0], cross_kv.shape[1], -1]),
                 2,
                 axis=1)
-            cross_k = cross_k.transpose([0, 2, 1]).reshape([-1, planes_h, 1, 1])
+            cross_k = cross_k.transpose([0, 2, 1]).reshape([-1, ch_h, 1, 1])
             cross_v = cross_v.reshape(
                 [-1, self.cross_size * self.cross_size, 1, 1])
 
@@ -346,86 +353,89 @@ class EABlock(nn.Layer):
 
 
 class DAPPM(nn.Layer):
-    def __init__(self, inplanes, branch_planes, outplanes):
+    def __init__(self, in_channels, inter_channels, out_channels):
         super().__init__()
         self.scale1 = nn.Sequential(
             nn.AvgPool2D(
                 kernel_size=5, stride=2, padding=2, exclusive=False),
-            bn2d(inplanes),
+            bn2d(in_channels),
             nn.ReLU(),
             nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+                in_channels, inter_channels, kernel_size=1, bias_attr=False), )
         self.scale2 = nn.Sequential(
             nn.AvgPool2D(
                 kernel_size=9, stride=4, padding=4, exclusive=False),
-            bn2d(inplanes),
+            bn2d(in_channels),
             nn.ReLU(),
             nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+                in_channels, inter_channels, kernel_size=1, bias_attr=False), )
         self.scale3 = nn.Sequential(
             nn.AvgPool2D(
                 kernel_size=17, stride=8, padding=8, exclusive=False),
-            bn2d(inplanes),
+            bn2d(in_channels),
             nn.ReLU(),
             nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+                in_channels, inter_channels, kernel_size=1, bias_attr=False), )
         self.scale4 = nn.Sequential(
             nn.AdaptiveAvgPool2D((1, 1)),
-            bn2d(inplanes),
+            bn2d(in_channels),
             nn.ReLU(),
             nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+                in_channels, inter_channels, kernel_size=1, bias_attr=False), )
         self.scale0 = nn.Sequential(
-            bn2d(inplanes),
+            bn2d(in_channels),
             nn.ReLU(),
             nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+                in_channels, inter_channels, kernel_size=1, bias_attr=False), )
         self.process1 = nn.Sequential(
-            bn2d(branch_planes),
+            bn2d(inter_channels),
             nn.ReLU(),
             nn.Conv2D(
-                branch_planes,
-                branch_planes,
+                inter_channels,
+                inter_channels,
                 kernel_size=3,
                 padding=1,
                 bias_attr=False), )
         self.process2 = nn.Sequential(
-            bn2d(branch_planes),
+            bn2d(inter_channels),
             nn.ReLU(),
             nn.Conv2D(
-                branch_planes,
-                branch_planes,
+                inter_channels,
+                inter_channels,
                 kernel_size=3,
                 padding=1,
                 bias_attr=False), )
         self.process3 = nn.Sequential(
-            bn2d(branch_planes),
+            bn2d(inter_channels),
             nn.ReLU(),
             nn.Conv2D(
-                branch_planes,
-                branch_planes,
+                inter_channels,
+                inter_channels,
                 kernel_size=3,
                 padding=1,
                 bias_attr=False), )
         self.process4 = nn.Sequential(
-            bn2d(branch_planes),
+            bn2d(inter_channels),
             nn.ReLU(),
             nn.Conv2D(
-                branch_planes,
-                branch_planes,
+                inter_channels,
+                inter_channels,
                 kernel_size=3,
                 padding=1,
                 bias_attr=False), )
         self.compression = nn.Sequential(
-            bn2d(branch_planes * 5),
+            bn2d(inter_channels * 5),
             nn.ReLU(),
             nn.Conv2D(
-                branch_planes * 5, outplanes, kernel_size=1, bias_attr=False), )
+                inter_channels * 5,
+                out_channels,
+                kernel_size=1,
+                bias_attr=False), )
         self.shortcut = nn.Sequential(
-            bn2d(inplanes),
+            bn2d(in_channels),
             nn.ReLU(),
             nn.Conv2D(
-                inplanes, outplanes, kernel_size=1, bias_attr=False), )
+                in_channels, out_channels, kernel_size=1, bias_attr=False), )
 
     def forward(self, x):
         x_shape = paddle.shape(x)[2:]
@@ -449,15 +459,23 @@ class DAPPM(nn.Layer):
 
 
 class SegHead(nn.Layer):
-    def __init__(self, inplanes, interplanes, outplanes):
+    def __init__(self, in_channels, inter_channels, out_channels):
         super().__init__()
-        self.bn1 = bn2d(inplanes)
+        self.bn1 = bn2d(in_channels)
         self.conv1 = nn.Conv2D(
-            inplanes, interplanes, kernel_size=3, padding=1, bias_attr=False)
-        self.bn2 = bn2d(interplanes)
+            in_channels,
+            inter_channels,
+            kernel_size=3,
+            padding=1,
+            bias_attr=False)
+        self.bn2 = bn2d(inter_channels)
         self.relu = nn.ReLU()
         self.conv2 = nn.Conv2D(
-            interplanes, outplanes, kernel_size=1, padding=0, bias_attr=True)
+            inter_channels,
+            out_channels,
+            kernel_size=1,
+            padding=0,
+            bias_attr=True)
 
     def forward(self, x):
         x = self.conv1(self.relu(self.bn1(x)))
@@ -470,59 +488,62 @@ class RTFormer(nn.Layer):
     def __init__(self,
                  num_classes,
                  block=BasicBlock,
-                 layers=[2, 2, 2, 2],
-                 planes=64,
-                 spp_planes=128,
-                 head_planes=128,
+                 layer_nums=[2, 2, 2, 2],
+                 base_channels=64,
+                 spp_channels=128,
+                 head_channels=128,
                  drop_rate=0.,
                  drop_path_rate=0.2,
                  augment=True,
                  in_channels=3,
                  pretrained=None):
         super().__init__()
+        base_chs = base_channels
+        highres_chs = base_channels * 2
+
         self.conv1 = nn.Sequential(
             nn.Conv2D(
-                in_channels, planes, kernel_size=3, stride=2, padding=1),
-            bn2d(planes),
+                in_channels, base_chs, kernel_size=3, stride=2, padding=1),
+            bn2d(base_chs),
             nn.ReLU(),
             nn.Conv2D(
-                planes, planes, kernel_size=3, stride=2, padding=1),
-            bn2d(planes),
+                base_chs, base_chs, kernel_size=3, stride=2, padding=1),
+            bn2d(base_chs),
             nn.ReLU(), )
         self.relu = nn.ReLU()
-        highres_planes = planes * 2
 
-        self.layer1 = self._make_layer(block, planes, planes, layers[0])
+        self.layer1 = self._make_layer(block, base_chs, base_chs, layer_nums[0])
         self.layer2 = self._make_layer(
-            block, planes, planes * 2, layers[1], stride=2)
+            block, base_chs, base_chs * 2, layer_nums[1], stride=2)
         self.layer3 = self._make_layer(
-            block, planes * 2, planes * 4, layers[2], stride=2)
-        self.layer3_ = self._make_layer(block, planes * 2, highres_planes, 1)
+            block, base_chs * 2, base_chs * 4, layer_nums[2], stride=2)
+        self.layer3_ = self._make_layer(block, base_chs * 2, highres_chs, 1)
         self.compression3 = nn.Sequential(
-            bn2d(planes * 4),
+            bn2d(base_chs * 4),
             nn.ReLU(),
             nn.Conv2D(
-                planes * 4, highres_planes, kernel_size=1, bias_attr=False), )
+                base_chs * 4, highres_chs, kernel_size=1, bias_attr=False), )
         self.layer4 = EABlock(
-            [highres_planes, planes * 4], [highres_planes, planes * 8],
+            [highres_chs, base_chs * 4], [highres_chs, base_chs * 8],
             num_heads=8,
             drop=drop_rate,
             drop_path=drop_path_rate,
             has_down=True,
             use_cross_kv=True)
         self.layer5 = EABlock(
-            [highres_planes, planes * 8], [highres_planes, planes * 8],
+            [highres_chs, base_chs * 8], [highres_chs, base_chs * 8],
             num_heads=8,
             drop=drop_rate,
             drop_path=drop_path_rate,
             has_down=True,
             use_cross_kv=True)
 
-        self.spp = DAPPM(planes * 8, spp_planes, planes * 2)
-        self.seghead = SegHead(planes * 4, int(head_planes * 2), num_classes)
+        self.spp = DAPPM(base_chs * 8, spp_channels, base_chs * 2)
+        self.seghead = SegHead(base_chs * 4,
+                               int(head_channels * 2), num_classes)
         self.augment = augment
         if self.augment:
-            self.seghead_extra = SegHead(highres_planes, head_planes,
+            self.seghead_extra = SegHead(highres_chs, head_channels,
                                          num_classes)
 
         self.pretrained = pretrained
@@ -556,26 +577,29 @@ class RTFormer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def _make_layer(self, block, inplanes, planes, blocks, stride=1):
+    def _make_layer(self, block, in_channels, out_channels, blocks, stride=1):
         downsample = None
-        if stride != 1 or inplanes != planes * block.expansion:
+        if stride != 1 or in_channels != out_channels:
             downsample = nn.Sequential(
                 nn.Conv2D(
-                    inplanes,
-                    planes * block.expansion,
+                    in_channels,
+                    out_channels,
                     kernel_size=1,
                     stride=stride,
                     bias_attr=False),
-                bn2d(planes * block.expansion), )
+                bn2d(out_channels))
 
         layers = []
-        layers.append(block(inplanes, planes, stride, downsample))
-        inplanes = planes * block.expansion
+        layers.append(block(in_channels, out_channels, stride, downsample))
         for i in range(1, blocks):
             if i == (blocks - 1):
-                layers.append(block(inplanes, planes, stride=1, no_relu=True))
+                layers.append(
+                    block(
+                        out_channels, out_channels, stride=1, no_relu=True))
             else:
-                layers.append(block(inplanes, planes, stride=1, no_relu=False))
+                layers.append(
+                    block(
+                        out_channels, out_channels, stride=1, no_relu=False))
 
         return nn.Sequential(*layers)
 
