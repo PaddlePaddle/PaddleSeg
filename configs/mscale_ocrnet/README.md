@@ -8,9 +8,9 @@
 
 ### Cityscapes
 
-| Model            | Backbone        | Resolution | Training Iters | mIoU   | mIoU (flip) | mIoU (ms+flip) | Links           |
-| ---------------- | --------------- | ---------- | -------------- | ------ | ----------- | -------------- | --------------- |
-| OCRNet-HRNet+psa | HRNETV2_W48+psa | 1024x2048  | 150000         | 84.62% | -           | -              | model\|log\|vdl |
+| Model            | Backbone        | Resolution | Training Iters | mIoU   | mIoU (flip) | mIoU (ms+flip) | Links                                                        |
+| ---------------- | --------------- | ---------- | -------------- | ------ | ----------- | -------------- | ------------------------------------------------------------ |
+| OCRNet-HRNet+psa | HRNETV2_W48+psa | 1024x2048  | 150000         | 84.62% | -           | -              | [model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/msclae_ocrnet_hrnetv2_psa_cityscapes_1024x2048_150k/model.pdparams)\|[log](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/msclae_ocrnet_hrnetv2_psa_cityscapes_1024x2048_150k/train.log)\|vdl |
 
 ### Notes
 
