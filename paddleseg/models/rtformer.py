@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
+
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -22,15 +24,7 @@ from paddleseg.utils import utils
 from paddleseg.models.backbones.transformer_utils import (
     trunc_normal_, kaiming_normal_, constant_, DropPath, Identity)
 
-
-def conv3x3(in_channels, out_channels, stride=1):
-    return nn.Conv2D(
-        in_channels,
-        out_channels,
-        kernel_size=3,
-        stride=stride,
-        padding=1,
-        bias_attr=False)
+conv2d = partial(nn.Conv2D, bias_attr=False)
 
 
 def bn2d(in_channels, bn_mom=0.1, **kwargs):
@@ -45,10 +39,10 @@ class BasicBlock(nn.Layer):
                  downsample=None,
                  no_relu=False):
         super().__init__()
-        self.conv1 = conv3x3(in_channels, out_channels, stride)
+        self.conv1 = conv2d(in_channels, out_channels, 3, stride, 1)
         self.bn1 = bn2d(out_channels)
         self.relu = nn.ReLU()
-        self.conv2 = conv3x3(out_channels, out_channels)
+        self.conv2 = conv2d(out_channels, out_channels, 3, 1, 1)
         self.bn2 = bn2d(out_channels)
         self.downsample = downsample
         self.stride = stride
@@ -219,8 +213,7 @@ class EABlock(nn.Layer):
         if self.proj_flag_l:
             self.attn_shortcut_l = nn.Sequential(
                 bn2d(in_channels_l),
-                nn.Conv2D(
-                    in_channels_l, out_channels_l, 1, 2, 0, bias_attr=False), )
+                conv2d(in_channels_l, out_channels_l, 1, 2, 0))
             self.attn_shortcut_l.apply(self._init_weights_kaiming)
         self.attn_h = ExternalAttention(
             in_channels_h,
@@ -242,30 +235,27 @@ class EABlock(nn.Layer):
         self.compression = nn.Sequential(
             bn2d(out_channels_l),
             nn.ReLU(),
-            nn.Conv2D(
-                out_channels_l, out_channels_h, kernel_size=1, bias_attr=False),
-        )
+            conv2d(
+                out_channels_l, out_channels_h, kernel_size=1), )
         self.compression.apply(self._init_weights_kaiming)
         if has_down:
             self.down = nn.Sequential(
                 bn2d(out_channels_h),
                 nn.ReLU(),
-                nn.Conv2D(
+                conv2d(
                     out_channels_h,
                     out_channels_l // 2,
                     kernel_size=3,
                     stride=2,
-                    padding=1,
-                    bias_attr=False),
+                    padding=1),
                 bn2d(out_channels_l // 2),
                 nn.ReLU(),
-                nn.Conv2D(
+                conv2d(
                     out_channels_l // 2,
                     out_channels_l,
                     kernel_size=3,
                     stride=2,
-                    padding=1,
-                    bias_attr=False), )
+                    padding=1), )
             self.down.apply(self._init_weights_kaiming)
         # cross attention
         if use_cross_kv:
@@ -274,13 +264,7 @@ class EABlock(nn.Layer):
                 bn2d(out_channels_l),
                 nn.AdaptiveMaxPool2D(output_size=(self.cross_size,
                                                   self.cross_size)),
-                nn.Conv2D(
-                    out_channels_l,
-                    2 * out_channels_h,
-                    1,
-                    1,
-                    0,
-                    bias_attr=False))
+                conv2d(out_channels_l, 2 * out_channels_h, 1, 1, 0))
             self.cross_kv.apply(self._init_weights)
 
     def _init_weights(self, m):
@@ -360,82 +344,65 @@ class DAPPM(nn.Layer):
                 kernel_size=5, stride=2, padding=2, exclusive=False),
             bn2d(in_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                in_channels, inter_channels, kernel_size=1, bias_attr=False), )
+            conv2d(
+                in_channels, inter_channels, kernel_size=1), )
         self.scale2 = nn.Sequential(
             nn.AvgPool2D(
                 kernel_size=9, stride=4, padding=4, exclusive=False),
             bn2d(in_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                in_channels, inter_channels, kernel_size=1, bias_attr=False), )
+            conv2d(
+                in_channels, inter_channels, kernel_size=1), )
         self.scale3 = nn.Sequential(
             nn.AvgPool2D(
                 kernel_size=17, stride=8, padding=8, exclusive=False),
             bn2d(in_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                in_channels, inter_channels, kernel_size=1, bias_attr=False), )
+            conv2d(
+                in_channels, inter_channels, kernel_size=1), )
         self.scale4 = nn.Sequential(
             nn.AdaptiveAvgPool2D((1, 1)),
             bn2d(in_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                in_channels, inter_channels, kernel_size=1, bias_attr=False), )
+            conv2d(
+                in_channels, inter_channels, kernel_size=1), )
         self.scale0 = nn.Sequential(
             bn2d(in_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                in_channels, inter_channels, kernel_size=1, bias_attr=False), )
+            conv2d(
+                in_channels, inter_channels, kernel_size=1), )
         self.process1 = nn.Sequential(
             bn2d(inter_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                inter_channels,
-                inter_channels,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False), )
+            conv2d(
+                inter_channels, inter_channels, kernel_size=3, padding=1), )
         self.process2 = nn.Sequential(
             bn2d(inter_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                inter_channels,
-                inter_channels,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False), )
+            conv2d(
+                inter_channels, inter_channels, kernel_size=3, padding=1), )
         self.process3 = nn.Sequential(
             bn2d(inter_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                inter_channels,
-                inter_channels,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False), )
+            conv2d(
+                inter_channels, inter_channels, kernel_size=3, padding=1), )
         self.process4 = nn.Sequential(
             bn2d(inter_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                inter_channels,
-                inter_channels,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False), )
+            conv2d(
+                inter_channels, inter_channels, kernel_size=3, padding=1), )
         self.compression = nn.Sequential(
             bn2d(inter_channels * 5),
             nn.ReLU(),
-            nn.Conv2D(
+            conv2d(
                 inter_channels * 5,
                 out_channels,
-                kernel_size=1,
-                bias_attr=False), )
+                kernel_size=1, ), )
         self.shortcut = nn.Sequential(
             bn2d(in_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                in_channels, out_channels, kernel_size=1, bias_attr=False), )
+            conv2d(
+                in_channels, out_channels, kernel_size=1), )
 
     def forward(self, x):
         x_shape = paddle.shape(x)[2:]
@@ -462,15 +429,11 @@ class SegHead(nn.Layer):
     def __init__(self, in_channels, inter_channels, out_channels):
         super().__init__()
         self.bn1 = bn2d(in_channels)
-        self.conv1 = nn.Conv2D(
-            in_channels,
-            inter_channels,
-            kernel_size=3,
-            padding=1,
-            bias_attr=False)
+        self.conv1 = conv2d(
+            in_channels, inter_channels, kernel_size=3, padding=1)
         self.bn2 = bn2d(inter_channels)
         self.relu = nn.ReLU()
-        self.conv2 = nn.Conv2D(
+        self.conv2 = conv2d(
             inter_channels,
             out_channels,
             kernel_size=1,
