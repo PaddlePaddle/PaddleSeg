@@ -8,6 +8,7 @@ model:
   backbone:
     type: SwinTransformer_tinier_patch4_window7_224
   num_classes: 9
+  pretrained: https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/swinunet_abdomen_224_224_1_14k_5e-2/pretrain_model.pdparams
 
 optimizer:
   type: sgd

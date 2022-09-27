@@ -39,7 +39,7 @@ In the TransUnet model, the labels of the data are reduced to 8, which are:
 
 ### Prepare dataset
 
-If you want to get data suitable, you first need to download RawData.zip from [https://www.synapse.org/#!Synapse:syn3193805/files/](https://www.synapse.org/#!Synapse:syn3193805/files/). Then put it in the MedicalSeg/data/abdomen directory. Then run the `tools/prepare_abdomen.py` program,
+To preprocess the synapse data, you first need to download RawData.zip from [https://www.synapse.org/#!Synapse:syn3193805/files/](https://www.synapse.org/#!Synapse:syn3193805/files/). Then put it in the MedicalSeg/data/abdomen directory. Then run the `tools/prepare_abdomen.py` program,
 
 ```
 mkdir data/abdomen
@@ -158,4 +158,4 @@ export:
 
 | Backbone               | Resolution | lr   | Training Iters | Dice   | Links                  |
 | ---------------------- | ---------- | ---- | -------------- | ------ | ---------------------- |
-| SwinTransformer-tinier | 224x224    | 5e-2 | 14000          | 79.97% | [model]() \| [log]() \| [vdl]() |
+| SwinTransformer-tinier | 224x224    | 5e-2 | 14000          | 79.97% | [model](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/swinunet_abdomen_224_224_1_14k_5e-2/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/swinunet_abdomen_224_224_1_14k_5e-2/train.log) \| [vdl]() |
