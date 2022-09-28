@@ -16,9 +16,7 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.initializer as paddle_init
 
-__all__ = [
-    'to_2tuple', 'DropPath', 'trunc_normal_', 'zeros_', 'ones_', 'init_weights'
-]
+__all__ = ['to_2tuple', 'DropPath', 'trunc_normal_', 'zeros_', 'ones_']
 
 
 def to_2tuple(x):
@@ -51,22 +49,6 @@ class DropPath(nn.Layer):
         return output
 
 
-def init_weights(layer):
-    """
-    Init the weights of transformer.
-    Args:
-        layer(nn.Layer): The layer to init weights.
-    Returns:
-        None
-    """
-    trunc_normal_ = paddle_init.TruncatedNormal(std=.02)
-    zeros_ = paddle_init.Constant(value=0.)
-    ones_ = paddle_init.Constant(value=1.)
-
-    if isinstance(layer, nn.Linear):
-        trunc_normal_(layer.weight)
-        if layer.bias is not None:
-            zeros_(layer.bias)
-    elif isinstance(layer, nn.LayerNorm):
-        zeros_(layer.bias)
-        ones_(layer.weight)
+trunc_normal_ = paddle_init.TruncatedNormal(std=.02)
+zeros_ = paddle_init.Constant(value=0.)
+ones_ = paddle_init.Constant(value=1.)
