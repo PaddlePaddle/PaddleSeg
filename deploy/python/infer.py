@@ -390,7 +390,7 @@ class Predictor:
     def _preprocess(self, img):
         data = {}
         data['img'] = img
-        return self.cfg.transforms(data)['img']
+        return self.cfg.transforms(data['img'])[0]
 
     def _postprocess(self, results):
         if self.args.with_argmax:
