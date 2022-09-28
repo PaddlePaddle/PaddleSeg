@@ -13,7 +13,7 @@ The newly add files need to be self checked, this mainly includes copyright, imp
 After creating an empty file `pspnet.py`, add the following copyright at the top of the file. Each new file in PaddleSeg needs to add corresponding copyright information. Note: The year should be rewritten if it is not correct.
 
 ```python
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -197,7 +197,9 @@ The implementation of backbone is the same as the model, and please refer to `pa
 
 The `__init__` function of backbone must have the params of `in_channels=3`, which denotes the channels of input image.
 
-Generally, the backbone outputs four feature maps, of which the size are 1/4, 1/8, 1/16 and 1/32 of the input image. The class of backbone has `self.feat_channels` attribute, and it denotes the channels of output feature maps.
+Generally, the backbone outputs four feature maps, of which the size are 1/4, 1/8, 1/16 and 1/32 of the input image.
+
+The backbone class must has `self.feat_channels` attribute, and it denotes the channels of output feature maps.
 
 #### 1.3 segmentation head
 
@@ -234,7 +236,7 @@ Loss declaration specification:
 3. Add English notes:
    1. Loss meaning: what does the class do, what is the loss expression, and what is the improvement compare to other losses (optional)
    2. Loss parameters: The loss parameters are flexible, you can specify the weight, `ignore_index`, and etc.
-
+4. Must support setting `ignore_index` to ignore the special vale in label.
     ```python
     @manager.LOSSES.add_component
     class CrossEntropyLoss(nn.Layer):
@@ -306,24 +308,7 @@ This part we takes `paddleseg/dataset/cityscapes.py` as an example. In thi datas
 3. The order of the parameters is consistent with the above example;
 4. By creating ```self.file_list``` in the ```__init__``` method, the dataset can read images according to the path in it.
 
-
-
-## PR checklist
-1. Follow the code submission process according to [Code Submission Specification](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md), including pulling the latest content and switching branches.
-2. Create a subdirectory ```pspnet``` named after the model name in the ```configs``` directory;
-3. Create a `yml` configuration file. The configuration file name should be `model name + backbone + out_stride + data set + training resolution + training iters.yml`, and the parts that is not included should be ignored. For details, please refer to [Configuration Item Document](../../design/use/use_cn.md).
-4. The reference style of the model should adopts Chicago, that is, the names of all authors. For example:```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.`` `
-5. Provide the test accuracy on at least one dataset in the following format. Among them, `mIoU, mIoU(flip), mIoU(ms+flip)` are the results of evaluating the model. `ms` means `multi-scale`, that is, three kinds of `scale` [0.75, 1.0, 1.25] are used; `flip` means horizontal flip. For detailed evaluation, please refer to [Model Evaluation](../../evaluation/evaluate/evaluate_cn.md)
-
-
-    | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
-    |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-    ||||||||[model]() \| [log]() \| [vdl]()|
-
-6. Provide a download link in PR including three parts: trained model parameters, training log, training vdl:
-
-
-## Export and test the model
+## Export and test the inference model
 
 To develop a model, we need to not only pay attention to the accuracy of the model, but also check the correctness of the exported model. Only when the model can be successfully deployed can a model count as truly developed.
 
@@ -338,3 +323,17 @@ To develop a model, we need to not only pay attention to the accuracy of the mod
 2. Test the prediction model
 
     Please refer to [document](../../deployment/inference/python_inference.md) to test model. Use Paddle Inference  API on X86 CPU or NV GPU to load the prediction model, load the image for testing, and check whether the segmentation result image is correct.
+
+
+## PR checklist
+1. Follow the code submission process according to [Code Submission Specification](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md), including pulling the latest content and switching branches.
+2. Create a subdirectory ```pspnet``` named after the model name in the ```configs``` directory;
+3. Create a `yml` configuration file. The configuration file name should be `model name + backbone + out_stride + data set + training resolution + training iters.yml`, and the parts that is not included should be ignored. For details, please refer to [Configuration Item Document](../../design/use/use_cn.md).
+4. The reference style of the model should adopts Chicago, that is, the names of all authors. For example:```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.`` `
+5. Provide the test accuracy on at least one dataset in the following format. Among them, `mIoU, mIoU(flip), mIoU(ms+flip)` are the results of evaluating the model. `ms` means `multi-scale`, that is, three kinds of `scale` [0.75, 1.0, 1.25] are used; `flip` means horizontal flip. For detailed evaluation, please refer to [Model Evaluation](../../evaluation/evaluate/evaluate_cn.md)
+6. Provide a download link in PR including three parts: trained model parameters, training log, training vdl.
+    | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
+    |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+    ||||||||[model]() \| [log]() \| [vdl]()|
+
+7. Export and test the inference model. Feedback the results to reviewer.

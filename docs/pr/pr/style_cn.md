@@ -13,7 +13,7 @@
 创建空文件```pspnet.py```后，在文件顶部添加以下`copyright，PaddleSeg`中每个新增的文件都需要添加相应的版权信息。注：年份按照当前自然年改写。
 
 ```python
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ from paddleseg.utils import utils
 
    1. 添加"`The xxx implementation based on PaddlePaddle.`";
    2. 添加"`The original article refers to` " + 作者名和文章名 + 论文链接；
-   3. 添加参数列表，顺序原则：`num_classes，backbone，backbone_indices，......，align_corners，pretrained`。前面参数若出现，则按照上面的顺序，其他中间参数顺序可以自由调整；
+   3. 添加参数列表，顺序原则：`num_classes，backbone，backbone_indices，......，align_corners，pretrained`。这些参数的具体含义可以参考下面PSPNet示例的注释。前面参数若出现，则按照上面的顺序，其他中间参数顺序可以自由调整；
    4. 参数名需要有含义，尽量避免无明显含义的名字，比如n, m, aa，除非原实现非用不可；
    5. 指名参数类型，若可选则表明 `optional`，然后在该参数注释末尾添加"`Default: xx`"。
    6. 如果可以，可以进一步添加`Returns，Raises`说明函数/方法返回值和可能会有的报错。
@@ -162,7 +162,7 @@ def forward(self, x):
     ]
 ```
 
-##### init_weight规范
+**init_weight规范**
 
 1. 调用```load_entire_model```即可
 2. 不含 backbone 的模型可能涉及模型参数初始化，可调用```paddleseg.cvlib 中的 param_init```实现。
@@ -189,7 +189,9 @@ def init_weight(self):
 
 骨干网络要求`__init__`函数输入参数必须有`in_channels=3`，表示输入图片的通道数。
 
-骨干网络通常输出4个特征图，分别是4、8、16和32倍下采样的特征图。骨干网络类有`self.feat_channels`属性，表示输出特征图的通道数。
+骨干网络通常输出4个特征图，分别是4、8、16和32倍下采样的特征图。
+
+骨干网络类必须有`self.feat_channels`属性，表示输出特征图的通道数。
 
 #### 3）分割头
 
@@ -225,6 +227,7 @@ from .pspnet import *
 3. 添加英文注释：
    1. 损失含义：类主要做什么，损失的表达式是什么，主要针对的优化点是什么（可选）
    2. 损失参数：损失的参数比较灵活，一般可以指定权重，`ignore_index` 等
+4. 必须支持`ignore_index`来设置忽略的label数值。
 
 ```python
 @manager.LOSSES.add_component
@@ -297,24 +300,7 @@ class Cityscapes(Dataset):
 3. 参数顺序和上述参数顺序一致；
 4. 通过在在```__init__```方法中建立 ```self.file_list```，之后就根据其中元素的路径读取对应图片。
 
-
-
-## 三、新增 PR checklist
-1. 根据[代码提交规范](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md)进行代码提交前的准备，包含拉取最新内容、切换分支等。
-2. 在```configs```目录下创建以模型名命名的子目录```pspnet```；
-3. 创建一个`yml`配置文件，`yml`文件命名方式为模型名+`backbone + out_stride`+数据集+训练分辨率+训练单卡iters.yml，不含部分就略去。详细参考[配置项文档](../../design/use/use_cn.md)。
-4. 模型原文参考文献，reference风格采用Chicago，即全部作者名。```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.```
-5. 至少提供在一个数据集上的测试精度，格式如下。其中，`mIoU、mIoU(flip)、mIoU(ms+flip)`是对模型进行评估的结果。`ms` 表示`multi-scale`，即使用三种`scale` [0.75, 1.0, 1.25]；`flip`表示水平翻转。详细评估参考[模型评估](../../evaluation/evaluate/evaluate_cn.md)
-
-
-| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-||||||||[model]() \| [log]() \| [vdl]()|
-
-5. 在PR里提供一个下载链接包括三个部分：训练好的模型参数，训练日志，训练vdl：
-
-
-## 四、导出和测试预测模型
+## 三、导出和测试预测模型
 
 开发模型，我们不仅要关注模型精度的正确性，还需要检查模型导出和预测部署的正确性。只有模型可以顺利部署，才算真正开发完成一个模型。
 
@@ -328,4 +314,16 @@ class Cityscapes(Dataset):
 
 2. 测试预测模型
 
-请参考[文档](../../deployment/inference/python_inference.md)，在X86 CPU或者NV GPU上使用Paddle Inference Python API加载预测模型，读取图片进行测试，查看分割结果图片是否正确。
+请参考[文档](../../deployment/inference/python_inference.md)，在X86 CPU或者NV GPU上使用Paddle Inference Python API加载导出的预测模型，读取图片进行测试，查看分割结果图片是否正确。
+
+## 四、新增模型的 PR checklist
+1. 根据[代码提交规范](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md)进行代码提交前的准备，包含拉取最新内容、切换分支等。
+2. 在```configs```目录下创建以模型名命名的子目录```pspnet```；
+3. 创建一个`yml`配置文件，`yml`文件命名方式为模型名+`backbone + out_stride`+数据集+训练分辨率+训练单卡iters.yml，不含部分就略去。详细参考[配置项文档](../../design/use/use_cn.md)。
+4. 模型原文参考文献，reference风格采用Chicago，即全部作者名。```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.```
+5. 至少提供在一个数据集上的测试精度，格式如下。其中，`mIoU、mIoU(flip)、mIoU(ms+flip)`是对模型进行评估的结果。`ms` 表示`multi-scale`，即使用三种`scale` [0.75, 1.0, 1.25]；`flip`表示水平翻转。详细评估参考[模型评估](../../evaluation/evaluate/evaluate_cn.md)
+6. 在PR里提供一个下载链接包括三个部分：训练好的模型参数，训练日志，训练vdl。
+    | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
+    |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+    ||||||||[model]() \| [log]() \| [vdl]()|
+7. 完成导出和测试预测模型，在PR中反馈给Reviewer。
