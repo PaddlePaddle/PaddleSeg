@@ -31,19 +31,32 @@ def conv2d(in_channels,
            stride=1,
            padding=0,
            bias_attr=False,
+           lr_mult=1.0,
            **kwargs):
+    assert bias_attr in [True, False], "bias_attr should be True or False"
+    weight_attr = paddle.ParamAttr(learning_rate=lr_mult)
+    if bias_attr:
+        bias_attr = paddle.ParamAttr(learning_rate=lr_mult)
     return nn.Conv2D(
         in_channels,
         out_channels,
         kernel_size,
         stride,
         padding,
+        weight_attr=weight_attr,
         bias_attr=bias_attr,
         **kwargs)
 
 
-def bn2d(in_channels, bn_mom=0.1, **kwargs):
-    return nn.BatchNorm2D(in_channels, momentum=bn_mom, **kwargs)
+def bn2d(in_channels, bn_mom=0.1, lr_mult=1.0, **kwargs):
+    assert 'bias_attr' not in kwargs, "bias_attr must not in kwargs"
+    param_attr = paddle.ParamAttr(learning_rate=lr_mult)
+    return nn.BatchNorm2D(
+        in_channels,
+        momentum=bn_mom,
+        weight_attr=param_attr,
+        bias_attr=param_attr,
+        **kwargs)
 
 
 class BasicBlock(nn.Layer):
@@ -364,72 +377,100 @@ class EABlock(nn.Layer):
 
 
 class DAPPM(nn.Layer):
-    def __init__(self, in_channels, inter_channels, out_channels):
+    def __init__(self, in_channels, inter_channels, out_channels, lr_mult):
         super().__init__()
         self.scale1 = nn.Sequential(
             nn.AvgPool2D(
                 kernel_size=5, stride=2, padding=2, exclusive=False),
-            bn2d(in_channels),
+            bn2d(
+                in_channels, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
-                in_channels, inter_channels, kernel_size=1), )
+                in_channels, inter_channels, kernel_size=1, lr_mult=lr_mult))
         self.scale2 = nn.Sequential(
             nn.AvgPool2D(
                 kernel_size=9, stride=4, padding=4, exclusive=False),
-            bn2d(in_channels),
+            bn2d(
+                in_channels, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
-                in_channels, inter_channels, kernel_size=1), )
+                in_channels, inter_channels, kernel_size=1, lr_mult=lr_mult))
         self.scale3 = nn.Sequential(
             nn.AvgPool2D(
                 kernel_size=17, stride=8, padding=8, exclusive=False),
-            bn2d(in_channels),
+            bn2d(
+                in_channels, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
-                in_channels, inter_channels, kernel_size=1), )
+                in_channels, inter_channels, kernel_size=1, lr_mult=lr_mult))
         self.scale4 = nn.Sequential(
             nn.AdaptiveAvgPool2D((1, 1)),
-            bn2d(in_channels),
+            bn2d(
+                in_channels, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
-                in_channels, inter_channels, kernel_size=1), )
+                in_channels, inter_channels, kernel_size=1, lr_mult=lr_mult))
         self.scale0 = nn.Sequential(
-            bn2d(in_channels),
+            bn2d(
+                in_channels, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
-                in_channels, inter_channels, kernel_size=1), )
+                in_channels, inter_channels, kernel_size=1, lr_mult=lr_mult))
         self.process1 = nn.Sequential(
-            bn2d(inter_channels),
+            bn2d(
+                inter_channels, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
-                inter_channels, inter_channels, kernel_size=3, padding=1), )
+                inter_channels,
+                inter_channels,
+                kernel_size=3,
+                padding=1,
+                lr_mult=lr_mult))
         self.process2 = nn.Sequential(
-            bn2d(inter_channels),
+            bn2d(
+                inter_channels, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
-                inter_channels, inter_channels, kernel_size=3, padding=1), )
+                inter_channels,
+                inter_channels,
+                kernel_size=3,
+                padding=1,
+                lr_mult=lr_mult))
         self.process3 = nn.Sequential(
-            bn2d(inter_channels),
+            bn2d(
+                inter_channels, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
-                inter_channels, inter_channels, kernel_size=3, padding=1), )
+                inter_channels,
+                inter_channels,
+                kernel_size=3,
+                padding=1,
+                lr_mult=lr_mult))
         self.process4 = nn.Sequential(
-            bn2d(inter_channels),
+            bn2d(
+                inter_channels, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
-                inter_channels, inter_channels, kernel_size=3, padding=1), )
+                inter_channels,
+                inter_channels,
+                kernel_size=3,
+                padding=1,
+                lr_mult=lr_mult))
         self.compression = nn.Sequential(
-            bn2d(inter_channels * 5),
+            bn2d(
+                inter_channels * 5, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
                 inter_channels * 5,
                 out_channels,
-                kernel_size=1, ), )
+                kernel_size=1,
+                lr_mult=lr_mult))
         self.shortcut = nn.Sequential(
-            bn2d(in_channels),
+            bn2d(
+                in_channels, lr_mult=lr_mult),
             nn.ReLU(),
             conv2d(
-                in_channels, out_channels, kernel_size=1), )
+                in_channels, out_channels, kernel_size=1, lr_mult=lr_mult))
 
     def forward(self, x):
         x_shape = paddle.shape(x)[2:]
@@ -453,19 +494,24 @@ class DAPPM(nn.Layer):
 
 
 class SegHead(nn.Layer):
-    def __init__(self, in_channels, inter_channels, out_channels):
+    def __init__(self, in_channels, inter_channels, out_channels, lr_mult):
         super().__init__()
-        self.bn1 = bn2d(in_channels)
+        self.bn1 = bn2d(in_channels, lr_mult=lr_mult)
         self.conv1 = conv2d(
-            in_channels, inter_channels, kernel_size=3, padding=1)
-        self.bn2 = bn2d(inter_channels)
+            in_channels,
+            inter_channels,
+            kernel_size=3,
+            padding=1,
+            lr_mult=lr_mult)
+        self.bn2 = bn2d(inter_channels, lr_mult=lr_mult)
         self.relu = nn.ReLU()
         self.conv2 = conv2d(
             inter_channels,
             out_channels,
             kernel_size=1,
             padding=0,
-            bias_attr=True)
+            bias_attr=True,
+            lr_mult=lr_mult)
 
     def forward(self, x):
         x = self.conv1(self.relu(self.bn1(x)))
@@ -490,6 +536,7 @@ class RTFormer(nn.Layer):
         use_aux_head (bool, optional): Whether use auxiliary head. Default: True
         use_injection (list[boo], optional): Whether use injection in layer 4 and 5.
             Default: [True, True]
+        lr_mult (float, optional): The multiplier of lr for DAPPM and head module. Default: 10
         in_channels (int, optional): The channels of input image. Default: 3
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
@@ -505,6 +552,7 @@ class RTFormer(nn.Layer):
                  drop_path_rate=0.2,
                  use_aux_head=True,
                  use_injection=[True, True],
+                 lr_mult=10.,
                  in_channels=3,
                  pretrained=None):
         super().__init__()
@@ -552,13 +600,14 @@ class RTFormer(nn.Layer):
             use_injection=use_injection[1],
             use_cross_kv=True)
 
-        self.spp = DAPPM(base_chs * 8, spp_channels, base_chs * 2)
-        self.seghead = SegHead(base_chs * 4,
-                               int(head_channels * 2), num_classes)
+        self.spp = DAPPM(
+            base_chs * 8, spp_channels, base_chs * 2, lr_mult=lr_mult)
+        self.seghead = SegHead(
+            base_chs * 4, int(head_channels * 2), num_classes, lr_mult=lr_mult)
         self.use_aux_head = use_aux_head
         if self.use_aux_head:
-            self.seghead_extra = SegHead(base_chs * 2, head_channels,
-                                         num_classes)
+            self.seghead_extra = SegHead(
+                base_chs * 2, head_channels, num_classes, lr_mult=lr_mult)
 
         self.pretrained = pretrained
         self.init_weight()
