@@ -16,3 +16,4 @@
 
 * This is the MscaleOCRNet that supports PSA.
 * Since we cannot reproduce the training results from [the authors&#39; official repo](https://github.com/DeLightCMU/PSA), we follow the settings in the original paper to train and evaluate our models, and the final accuracy is lower than that reported in the paper.
+* Since the MscaleOCRNet validation itself uses multi-scale methods, multi-scale validation will result in reduced accuracy.
