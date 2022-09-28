@@ -13,7 +13,7 @@ from tools.preprocess_utils.geometry import resize_image, resize_segmentation
 
 
 @manager.INFERENCE_HELPERS.add_component
-class NnFormerInferenceHelper(InferenceHelper):
+class NNFormerInferenceHelper(InferenceHelper):
     def load_medical_data(self, filename):
         self.nimg = nib.load(filename)
         data_array = self.nimg.get_data()

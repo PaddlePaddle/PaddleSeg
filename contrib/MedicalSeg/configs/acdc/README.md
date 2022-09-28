@@ -1,7 +1,7 @@
 # [Automated cardiac diagnosis](https://acdc.creatis.insa-lyon.fr/description/databases.html)
 The database is made available to participants through two datasets from the dedicated online evaluation website after a personal registration: i) a training dataset of 100 patients along with the corresponding manual references based on the analysis of one clinical expert; ii) a testing dataset composed of 50 new patients, without manual annotations but with the patient information given above. The raw input images are provided through the Nifti format.
 ### Prepare dataset
-If you want to get data suitable for nnFormer, you first need to download `training.zip` from https://acdc.creatis.insa-lyon.fr/#phase/5846c3ab6a3c7735e84b67f2
+To preprocess the ACDC data, you first need to download `training.zip` from https://acdc.creatis.insa-lyon.fr/#phase/5846c3ab6a3c7735e84b67f2
 ```
 unzip training.zip
 mkdir data/ACDCDataset

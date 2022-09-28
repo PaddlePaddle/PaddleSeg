@@ -17,6 +17,6 @@ from .transform import Compose, RandomFlip3D,\
     RandomResizedCrop3D, RandomRotation3D, Resize3D,ResizeRangeScaling,\
     GaussianNoiseTransform,GaussianBlurTransform,BrightnessMultiplicativeTransform,\
     ContrastAugmentationTransform,SimulateLowResolutionTransform,GammaTransform,\
-    MirrorTransform,RandomPaddingCrop
+    RandomPaddingCrop,MirrorTransform
 
 from . import functional

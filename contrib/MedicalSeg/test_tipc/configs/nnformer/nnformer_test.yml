@@ -5,7 +5,7 @@ iters: 20
 
 model:
   type: nnFormer
-  crop_size: [14,160,160]
+  crop_size: [14, 160, 160]
   embedding_dim: 96
   input_channels: 1
   num_classes: 4
@@ -16,11 +16,10 @@ model:
   down_stride: [[1, 4, 4], [1, 8, 8], [2, 16, 16], [4, 32, 32]]
   deep_supervision: True
 
-
 train_dataset:
   type: ACDC
-  dataset_root: mini_acdc/preprocessed
-  result_dir:  mini_acdc/preprocessed
+  dataset_root: mini_acdc/ACDCDataset_phase
+  result_dir:  mini_acdc/ACDCDataset_phase
   transforms:
     - type: RandomRotation3D
       degrees: 15
@@ -53,20 +52,16 @@ train_dataset:
     - type: MirrorTransform
       p_per_sample: 0.2
     - type: RandomPaddingCrop
-      crop_size: [14,160,160]
-
+      crop_size: [14, 160, 160]
 
   num_classes: 4
-  anno_path: train_list_0.txt
   mode: train
   epoch_batches: 10
 
-
 val_dataset:
   type: ACDC
-  dataset_root: mini_acdc/preprocessed
-  result_dir:  mini_acdc/preprocessed
-  anno_path: val_list_0.txt
+  dataset_root: mini_acdc/ACDCDataset_phase
+  result_dir:  mini_acdc/ACDCDataset_phase
   num_classes: 4
   transforms: []
   mode: val
@@ -95,4 +90,4 @@ loss:
 
 export:
   inference_helper:
-    type: NnFormerInferenceHelper
+    type: NNFormerInferenceHelper
