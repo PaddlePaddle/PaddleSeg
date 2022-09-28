@@ -31,7 +31,7 @@ train_dataset:
     - type: GaussianNoiseTransform
       p_per_sample: 0.1
     - type: GaussianBlurTransform
-      blur_sigma: [0.5,1.]
+      blur_sigma: [0.5, 1.]
       different_sigma_per_channel: True
       p_per_sample: 0.2
       p_per_channel: 0.5
@@ -86,7 +86,7 @@ loss:
           weight: Null
         - type: DiceLoss
       coef: [1, 1]
-  coef: [0.5714, 0.2857,0.1428]
+  coef: [0.5714, 0.2857, 0.1428]
 
 export:
   inference_helper:
