@@ -186,34 +186,33 @@ def augment_gaussian_noise(data_sample: np.ndarray,
     return data_sample
 
 
-def get_range_val(value, rnd_type="uniform"):
-    if isinstance(value, (list, tuple, np.ndarray)):
-        if len(value) == 2:
-            if value[0] == value[1]:
-                n_val = value[0]
-            else:
-                orig_type = type(value[0])
-                if rnd_type == "uniform":
-                    n_val = random.uniform(value[0], value[1])
-                else:
-                    n_val = random.normalvariate(value[0], value[1])
-                n_val = orig_type(n_val)
-        elif len(value) == 1:
-            n_val = value[0]
-        else:
-            raise RuntimeError(
-                "`value` must be a list/tuple with one or two elements.")
-        return n_val
-    else:
-        return value
-
-
 def augment_gaussian_blur(data_sample: np.ndarray,
                           sigma_range: Tuple[float, float],
                           per_channel: bool=True,
                           p_per_channel: float=1,
                           different_sigma_per_axis: bool=False,
                           p_isotropic: float=0) -> np.ndarray:
+    def get_range_val(value, rnd_type="uniform"):
+        if isinstance(value, (list, tuple, np.ndarray)):
+            if len(value) == 2:
+                if value[0] == value[1]:
+                    n_val = value[0]
+                else:
+                    orig_type = type(value[0])
+                    if rnd_type == "uniform":
+                        n_val = random.uniform(value[0], value[1])
+                    else:
+                        n_val = random.normalvariate(value[0], value[1])
+                    n_val = orig_type(n_val)
+            elif len(value) == 1:
+                n_val = value[0]
+            else:
+                raise RuntimeError(
+                    "`value` must be a list/tuple with one or two elements.")
+            return n_val
+        else:
+            return value
+
     if not per_channel:
         sigma = get_range_val(sigma_range) if ((not different_sigma_per_axis) or
                                                ((np.random.uniform() < p_isotropic) and
