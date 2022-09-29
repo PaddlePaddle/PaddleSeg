@@ -19,7 +19,7 @@ model:
 train_dataset:
   type: ACDC
   dataset_root: mini_acdc/ACDCDataset_phase
-  result_dir:  mini_acdc/ACDCDataset_phase
+  result_dir:  test_tipc/output/mini_acdc/ACDCDataset_phase
   transforms:
     - type: RandomRotation3D
       degrees: 15
@@ -61,7 +61,7 @@ train_dataset:
 val_dataset:
   type: ACDC
   dataset_root: mini_acdc/ACDCDataset_phase
-  result_dir:  mini_acdc/ACDCDataset_phase
+  result_dir:  test_tipc/output/mini_acdc/ACDCDataset_phase
   num_classes: 4
   transforms: []
   mode: val

@@ -75,7 +75,7 @@ class ACDC(paddle.io.Dataset):
                  epoch_batches=1000,
                  mode='train',
                  dataset_json_path=""):
-        super(ACDCDataset, self).__init__()
+        super(ACDC, self).__init__()
         self.dataset_dir = dataset_root
         self.transforms = Compose(transforms, use_std=True)
         self.file_list = list()
