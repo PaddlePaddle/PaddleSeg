@@ -28,7 +28,7 @@ class PrepACDC():
                  dataset_root=f"data/ACDCDataset",
                  raw_dataset_dir=f"training/",
                  clean_dataset_dir=f"clean_data",
-                 phase_dir=f"ACDCDataset_phase"):
+                 phase_dir=f"ACDCDataset_phase0"):
         super().__init__()
 
         self.folder = raw_dataset_dir

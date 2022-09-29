@@ -5,8 +5,8 @@ iters: 250000
 
 train_dataset:
   type: ACDC
-  dataset_root: ACDCDataset/ACDCDataset_phase
-  result_dir: ACDCDataset/ACDCDataset_phase
+  dataset_root: ACDCDataset/ACDCDataset_phase0
+  result_dir: ACDCDataset/ACDCDataset_phase1
   transforms:
     - type: RandomRotation3D
       degrees: 15
@@ -46,8 +46,8 @@ train_dataset:
 
 val_dataset:
   type: ACDC
-  dataset_root: ACDCDataset/ACDCDataset_phase
-  result_dir: ACDCDataset/ACDCDataset_phase
+  dataset_root: ACDCDataset/ACDCDataset_phase0
+  result_dir: ACDCDataset/ACDCDataset_phase1
   num_classes: 4
   transforms: []
   mode: val
