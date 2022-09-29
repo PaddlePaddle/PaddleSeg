@@ -47,7 +47,7 @@ model:
       type: HRNet_W48
       use_psa: True
       padding_same: False
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/cityscapes/mscale_ocrnet_hrnetv2_psa_cityscapes_1024x2048_150k/mappilary_pretrained.pdparams
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/cityscapes/mscale_ocrnet_hrnetv2_psa_cityscapes_1024x2048_150k/mappilary_pretrained/model.pdparams
 
 optimizer:
   type: sgd
