@@ -25,17 +25,17 @@ from medicalseg.models.backbones.transformer_utils import *
 
 MODEL_URLS = {
     "SwinTransformer_tiny_patch4_window7_224":
-    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_tiny_patch4_window7_224_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_tiny_patch4_window7_224_pretrained/model.pdparams",
     "SwinTransformer_small_patch4_window7_224":
-    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_small_patch4_window7_224_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_small_patch4_window7_224_pretrained/model.pdparams",
     "SwinTransformer_base_patch4_window7_224":
-    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_base_patch4_window7_224_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_base_patch4_window7_224_pretrained/model.pdparams",
     "SwinTransformer_base_patch4_window12_384":
-    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_base_patch4_window12_384_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_base_patch4_window12_384_pretrained/model.pdparams",
     "SwinTransformer_large_patch4_window7_224":
-    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_large_patch4_window7_224_22kto1k_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_large_patch4_window7_224_22kto1k_pretrained/model.pdparams",
     "SwinTransformer_large_patch4_window12_384":
-    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_large_patch4_window12_384_22kto1k_pretrained.pdparams",
+    "https://paddleseg.bj.bcebos.com/paddleseg3d/backbone/SwinTransformer_large_patch4_window12_384_22kto1k_pretrained/model.pdparams",
 }
 
 __all__ = list(MODEL_URLS.keys())
