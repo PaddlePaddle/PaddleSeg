@@ -155,7 +155,7 @@ class SwinUNet(nn.Layer):
             if isinstance(sublayer, nn.Linear):
                 param_init.trunc_normal(sublayer.weight)
                 if sublayer.bias is not None:
-                    param_init.constant_init(sublayer.bias, valie=0.0)
+                    param_init.constant_init(sublayer.bias, value=0.0)
             elif isinstance(sublayer, nn.LayerNorm):
                 param_init.constant_init(sublayer.bias, value=0.0)
                 param_init.constant_init(sublayer.weight, value=1.0)
