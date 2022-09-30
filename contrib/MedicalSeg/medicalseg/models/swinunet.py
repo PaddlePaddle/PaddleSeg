@@ -19,10 +19,9 @@ import numpy as np
 import paddle
 import paddle.nn as nn
 
-from medicalseg.cvlibs import manager
+from medicalseg.cvlibs import manager, param_init
 from medicalseg.models.backbones.swin_transformer import SwinTransformerBlock, window_partition
 from medicalseg.utils import load_pretrained_model
-from medicalseg.models.backbones.transformer_utils import *
 
 
 @manager.MODELS.add_component
@@ -154,12 +153,12 @@ class SwinUNet(nn.Layer):
         """Initialize the parameters of model parts."""
         for sublayer in self.sublayers():
             if isinstance(sublayer, nn.Linear):
-                trunc_normal_(sublayer.weight)
+                param_init.trunc_normal(sublayer.weight)
                 if sublayer.bias is not None:
-                    zeros_(sublayer.bias)
+                    param_init.constant_init(sublayer.bias, valie=0.0)
             elif isinstance(sublayer, nn.LayerNorm):
-                zeros_(sublayer.bias)
-                ones_(sublayer.weight)
+                param_init.constant_init(sublayer.bias, value=0.0)
+                param_init.constant_init(sublayer.weight, value=1.0)
 
         if self.pretrained is not None:
             load_pretrained_model(self, self.pretrained)

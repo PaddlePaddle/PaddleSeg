@@ -14,9 +14,8 @@
 
 import paddle
 import paddle.nn as nn
-import paddle.nn.initializer as paddle_init
 
-__all__ = ['to_2tuple', 'DropPath', 'trunc_normal_', 'zeros_', 'ones_']
+__all__ = ['to_2tuple', 'DropPath']
 
 
 def to_2tuple(x):
@@ -47,8 +46,3 @@ class DropPath(nn.Layer):
         random_tensor = paddle.floor(random_tensor)  # binarize
         output = x.divide(keep_prob) * random_tensor
         return output
-
-
-trunc_normal_ = paddle_init.TruncatedNormal(std=.02)
-zeros_ = paddle_init.Constant(value=0.)
-ones_ = paddle_init.Constant(value=1.)

@@ -19,9 +19,9 @@ import numpy as np
 import paddle
 import paddle.nn as nn
 
-from medicalseg.cvlibs import manager
+from medicalseg.cvlibs import manager, param_init
 from medicalseg.utils import load_pretrained_model
-from medicalseg.models.backbones.transformer_utils import *
+from medicalseg.models.backbones.transformer_utils import DropPath, to_2tuple
 
 MODEL_URLS = {
     "SwinTransformer_tiny_patch4_window7_224":
@@ -132,7 +132,7 @@ class WindowAttention(nn.Layer):
         self.relative_position_bias_table = self.create_parameter(
             shape=((2 * window_size[0] - 1) * (2 * window_size[1] - 1),
                    num_heads),
-            default_initializer=zeros_)
+            default_initializer=nn.initializer.Constant(value=0.))
         self.add_parameter("relative_position_bias_table",
                            self.relative_position_bias_table)
 
@@ -162,7 +162,7 @@ class WindowAttention(nn.Layer):
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
 
-        trunc_normal_(self.relative_position_bias_table)
+        param_init.trunc_normal(self.relative_position_bias_table)
         self.softmax = nn.Softmax(axis=-1)
 
     def eval(self):
@@ -600,9 +600,10 @@ class SwinTransformer(nn.Layer):
         # absolute position embedding
         if self.ape:
             self.absolute_pos_embed = self.create_parameter(
-                shape=(1, num_patches, embed_dim), default_initializer=zeros_)
+                shape=(1, num_patches, embed_dim),
+                default_initializer=nn.initializer.Constant(value=0.))
             self.add_parameter("absolute_pos_embed", self.absolute_pos_embed)
-            trunc_normal_(self.absolute_pos_embed)
+            param_init.trunc_normal(self.absolute_pos_embed)
 
         self.pos_drop = nn.Dropout(p=drop_rate)
 
@@ -637,16 +638,18 @@ class SwinTransformer(nn.Layer):
         #self.num_features,
         #num_classes) if self.num_classes > 0 else nn.Identity()
 
-        self.apply(self._init_weights)
+        self.init_weight()
 
-    def _init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                zeros_(m.bias)
-        elif isinstance(m, nn.LayerNorm):
-            zeros_(m.bias)
-            ones_(m.weight)
+    def init_weight(self):
+        """Initialize the parameters of model parts."""
+        for sublayer in self.sublayers():
+            if isinstance(sublayer, nn.Linear):
+                param_init.trunc_normal(sublayer.weight)
+                if sublayer.bias is not None:
+                    param_init.constant_init(sublayer.bias, valie=0.0)
+            elif isinstance(sublayer, nn.LayerNorm):
+                param_init.constant_init(sublayer.bias, value=0.0)
+                param_init.constant_init(sublayer.weight, value=1.0)
 
     def forward_features(self, x):
         x = self.patch_embed(x)
