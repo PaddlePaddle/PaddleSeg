@@ -1,0 +1,53 @@
+===========================train_params===========================
+model_name:nnFormer
+python:python3
+gpu_list:0
+Global.use_gpu:null|null
+--precision:fp32
+--iters:lite_train_lite_infer=20|whole_train_whole_infer=500
+--save_dir:./test_tipc/output/nnformer/
+--batch_size:lite_train_lite_infer=2|whole_train_whole_infer=4
+--model_path:null
+train_model_name:latest
+train_infer_img_dir:./test_tipc/data/mini_acdc/images
+null:null
+##
+trainer:norm_train
+norm_train:./train.py --config test_tipc/configs/nnformer/nnformer_test.yml --save_dir ./test_tipc/output --do_eval --save_interval 20 --num_workers 4 --do_eval --log_iters 5 --sw_num 1 --is_save_data False --has_dataset_json False
+pact_train:null
+fpgm_train:null
+distill_train:null
+null:null
+null:null
+##
+===========================eval_params===========================
+eval:./val.py --config test_tipc/configs/nnformer/nnformer_test.yml --model_path test_tipc/output/best_model/model.pdparams --num_workers 1 --sw_num 1 --is_save_data False --has_dataset_json False
+null:null
+##
+===========================export_params===========================
+--save_dir:
+--model_path:
+norm_export:./export.py --config test_tipc/configs/nnformer/nnformer_test.yml --without_argmax  --input_shape 1 1 14 160 160
+quant_export:null
+fpgm_export:null
+distill_export:null
+export1:null
+export2:null
+===========================infer_params===========================
+infer_model:
+infer_export:./export.py --config test_tipc/configs/nnformer/nnformer_test.yml --without_argmax  --input_shape 1 1 14 160 160
+infer_quant:False
+inference:./deploy/python/infer.py --with_argmax --use_swl True --use_warmup False --img_shape 14 160 160 --is_nhwd False
+--device:gpu
+--enable_mkldnn:True
+--cpu_threads:1
+--batch_size:1
+--use_trt:False
+--precision:fp32
+--config:
+--image_path:test_tipc/data/mini_acdc/images
+--save_log_path:null
+--benchmark:True
+--save_dir:
+--model_name:nnFormer
+
