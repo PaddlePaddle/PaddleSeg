@@ -1,0 +1,52 @@
+===========================train_params===========================
+model_name:SwinUNet
+python:python3
+gpu_list:0
+Global.use_gpu:null|null
+--precision:fp32
+--iters:lite_train_lite_infer=10|whole_train_whole_infer=500
+--save_dir:./test_tipc/output/swinunet/
+--batch_size:lite_train_lite_infer=1|whole_train_whole_infer=4
+--model_path:null
+train_model_name:latest
+train_infer_img_dir:./test_tipc/data/mini_synapse_dataset/test/images
+null:null
+##
+trainer:norm_train
+norm_train:./train.py --config test_tipc/configs/swinunet/swinunet_synapse.yml --save_dir ./test_tipc/output --do_eval --save_interval 10 --log_iters 1  --keep_checkpoint_max 1 --seed 0 --has_dataset_json False --is_save_data False
+pact_train:null
+fpgm_train:null
+distill_train:null
+null:null
+null:null
+##
+===========================eval_params===========================
+eval:./test.py --config test_tipc/configs/swinunet/swinunet_synapse.yml --model_path test_tipc/output/best_model/model.pdparams --has_dataset_json False --is_save_data False
+null:null
+##
+===========================export_params===========================
+--save_dir:
+--model_path:
+norm_export:./export.py --config test_tipc/configs/swinunet/swinunet_synapse.yml --without_argmax  --input_shape 1 -1 1 224 224
+quant_export:null
+fpgm_export:null
+distill_export:null
+export1:null
+export2:null
+===========================infer_params===========================
+infer_model:
+infer_export:./export.py --config test_tipc/configs/swinunet/swinunet_synapse.yml --without_argmax  --input_shape 1 1 1 224 224
+infer_quant:False
+inference:./deploy/python/infer.py --use_warmup False
+--device:gpu
+--enable_mkldnn:False
+--cpu_threads:1
+--batch_size:1
+--use_trt:False
+--precision:fp32
+--config:
+--image_path:test_tipc/data/mini_synapse_dataset/test/images
+--save_log_path:null
+--benchmark:True
+--save_dir:
+--model_name:SwinUNet

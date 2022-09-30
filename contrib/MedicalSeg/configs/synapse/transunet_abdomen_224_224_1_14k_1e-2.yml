@@ -1,7 +1,7 @@
-data_root: test_tipc/data
+_base_: 'abdomen.yml'
 
-batch_size: 1
-iters: 10
+batch_size: 24
+iters: 13950
 
 model:
   type: TransUNet
@@ -24,43 +24,6 @@ model:
   num_classes: 9
   img_size: 224
 
-train_dataset:
-  type: Abdomen
-  dataset_root: mini_synapse_dataset
-  result_dir: tset_tipc/output
-  transforms:
-    - type: RandomFlip3D
-      flip_axis: [1, 2]
-    - type: RandomQuarterTurn3D
-      rotate_planes: [[ 1, 2 ]]
-    - type: RandomRotation3D
-      degrees: 20
-      rotate_planes: [[1, 2]]
-    - type: Resize3D
-      size: [1 ,224, 224]
-  mode: train
-  num_classes: 9
-
-val_dataset:
-  type: Abdomen
-  dataset_root: mini_synapse_dataset
-  result_dir: test_tipc/output
-  num_classes: 9
-  transforms:
-    - type: Resize3D
-      size: [1 ,224, 224]
-  mode: test
-
-test_dataset:
-  type: Abdomen
-  dataset_root: mini_synapse_dataset
-  result_dir: test_tipc/output
-  num_classes: 9
-  transforms:
-    - type: Resize3D
-      size: [1 ,224, 224]
-  mode: test
-
 optimizer:
   type: sgd
   momentum: 0.9
@@ -78,7 +41,6 @@ loss:
     - type: MixedLoss
       losses:
         - type: CrossEntropyLoss
-          weight: Null
         - type: DiceLoss
       coef: [1, 1]
   coef: [1]
@@ -86,6 +48,6 @@ loss:
 export:
   transforms:
     - type: Resize3D
-      size: [ 1 ,224, 224 ]
+      size: [ 1, 224, 224 ]
   inference_helper:
     type: InferenceHelper2D

@@ -25,7 +25,7 @@ if [ ${MODE} = "lite_train_lite_infer" ];then
         cd ./test_tipc/data/
         wget https://bj.bcebos.com/paddleseg/dataset/mini_brainT_dataset.zip
         unzip mini_brainT_dataset.zip  && cd ../../
-    elif [ ${model_name} = "TransUNet" ]; then
+    elif [ ${model_name} = "TransUNet" ] || [ ${model_name} = "SwinUNet" ]; then
         mkdir -p ./test_tipc/data
         rm -rf ./test_tipc/data/mini_synapse_dataset
         cd ./test_tipc/data/

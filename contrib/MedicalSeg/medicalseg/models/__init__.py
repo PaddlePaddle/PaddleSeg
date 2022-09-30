@@ -19,4 +19,5 @@ from .vnet_deepsup import VNetDeepSup
 from .unetr import UNETR
 from .nnunet import NNUNet
 from .transunet import TransUNet
+from .swinunet import SwinUNet
 from .nnformer import nnFormer

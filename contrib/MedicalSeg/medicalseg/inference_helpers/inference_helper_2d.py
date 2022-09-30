@@ -5,7 +5,7 @@ from medicalseg.inference_helpers import InferenceHelper
 
 
 @manager.INFERENCE_HELPERS.add_component
-class TransUNetInferenceHelper(InferenceHelper):
+class InferenceHelper2D(InferenceHelper):
     def preprocess(self, cfg, imgs_path, batch_size, batch_id):
         for img in imgs_path[batch_id:batch_id + batch_size]:
             im_list = []

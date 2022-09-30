@@ -1,12 +1,19 @@
-_base_: '../_base_/global_configs.yml'
+data_root: test_tipc/data
 
-batch_size: 24
-iters: 13950
+batch_size: 1
+iters: 10
+
+model:
+  type: SwinUNet
+  backbone:
+    type: SwinTransformer_tinier_patch4_window7_224
+  num_classes: 9
+  pretrained: https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/swinunet_abdomen_224_224_1_14k_5e-2/swinunet_pretrained.zip
 
 train_dataset:
   type: Abdomen
-  dataset_root: abdomen/abdomen_phase0
-  result_dir: abdomen/abdomen_phase1
+  dataset_root: ./mini_synapse_dataset
+  result_dir: ./output
   transforms:
     - type: RandomFlip3D
       flip_axis: [1, 2]
@@ -22,23 +29,23 @@ train_dataset:
 
 val_dataset:
   type: Abdomen
-  dataset_root: abdomen/abdomen_phase0
-  result_dir: abdomen/abdomen_phase1
+  dataset_root: ./mini_synapse_dataset
+  result_dir: ./output
   num_classes: 9
   transforms:
     - type: Resize3D
-      size: [1 ,224, 224]
-  mode: val
+      size: [1, 224, 224]
+  mode: test
 
 test_dataset:
   type: Abdomen
-  dataset_root:  abdomen/abdomen_phase0
-  result_dir:  abdomen/abdomen_phase0
+  dataset_root: ./mini_synapse_dataset
+  result_dir: ./output
   num_classes: 9
   transforms:
     - type: Resize3D
-      size: [1 ,224, 224]
-  mode: val
+      size: [1, 224, 224]
+  mode: test
 
 optimizer:
   type: sgd
@@ -47,8 +54,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  decay_steps: 13950
-  learning_rate: 0.01
+  learning_rate: 0.05
   end_lr: 0
   power: 0.9
 
@@ -57,6 +63,7 @@ loss:
     - type: MixedLoss
       losses:
         - type: CrossEntropyLoss
+          weight: Null
         - type: DiceLoss
       coef: [1, 1]
   coef: [1]
@@ -64,6 +71,6 @@ loss:
 export:
   transforms:
     - type: Resize3D
-      size: [ 1 ,224, 224 ]
+      size: [ 1, 224, 224 ]
   inference_helper:
-    type: TransUNetInferenceHelper
+    type: InferenceHelper2D
