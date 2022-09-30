@@ -58,26 +58,11 @@
 
 ## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
-* 欢迎大家扫码加入PaddleSeg的微信交流群，可以和小伙伴们一起交流学习，而且有专门同学给大家解答疑问。
+* 欢迎大家扫码加入PaddleSeg的微信交流群，可以和小伙伴们一起交流学习，更有PaddleSeg团队整理的重磅学习大礼包。
 * 如果大家有使用问题、产品建议、功能需求, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issues，我们会及时跟进。
 
 <div align="center">
 <img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
-</div>
-
-❗️重磅❗️飞桨智慧金融行业系列直播课
-
-✅ 覆盖智能风控、智能运维、智能营销、智能客服四大金融主流场景
-
-📆 9月6日-9月29日每周二、四19:00-20.00
-- 智慧金融行业深入洞察
-- 8节理论+实践精品直播课
-- 10+真实产业场景范例教学及实践
-- 更有免费算力+结业证书等礼品等你来拿
-
-扫码报名码住直播链接，与行业精英深度交流！
-<div  align="center">
-  <img src="https://user-images.githubusercontent.com/21275753/188600848-3a0ea123-7783-4271-ad59-93c502ddb322.jpg" width="200"/>
 </div>
 
 ## <img src="./docs/images/model.png" width="20"/> 产品矩阵
