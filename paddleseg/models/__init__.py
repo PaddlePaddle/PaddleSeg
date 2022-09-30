@@ -63,4 +63,5 @@ from .mobileseg import MobileSeg
 from .upernet import UPerNet
 from .sinet import SINet
 from .lraspp import LRASPP
+from .mscale_ocrnet import MscaleOCRNet
 from .topformer import TopFormer

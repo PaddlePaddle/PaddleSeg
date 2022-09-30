@@ -26,8 +26,8 @@ model:
 
 train_dataset:
   type: Abdomen
-  dataset_root: ./mini_synapse_dataset
-  result_dir: ./output
+  dataset_root: mini_synapse_dataset
+  result_dir: tset_tipc/output
   transforms:
     - type: RandomFlip3D
       flip_axis: [1, 2]
@@ -43,8 +43,8 @@ train_dataset:
 
 val_dataset:
   type: Abdomen
-  dataset_root: ./mini_synapse_dataset
-  result_dir: ./output
+  dataset_root: mini_synapse_dataset
+  result_dir: test_tipc/output
   num_classes: 9
   transforms:
     - type: Resize3D
@@ -53,8 +53,8 @@ val_dataset:
 
 test_dataset:
   type: Abdomen
-  dataset_root: ./mini_synapse_dataset
-  result_dir: ./output
+  dataset_root: mini_synapse_dataset
+  result_dir: test_tipc/output
   num_classes: 9
   transforms:
     - type: Resize3D
