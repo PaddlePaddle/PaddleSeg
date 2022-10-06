@@ -56,7 +56,7 @@ python -m paddle.distributed.launch \
 * The starting port of different machines may be different. It is recommended to set the same starting port for multi-machine running in different machines before starting the multi-machine task. The command is `export FLAGS_START_PORT=17000`, and the port value is recommended to be `10000~20000`.
 
 
-## 2. Performance
+## 3. Performance
 
 * We conducted model training on 3x8 V100 GPUs. Accuracy, training time, and multi machine acceleration ratio of different models are shown below.
 
