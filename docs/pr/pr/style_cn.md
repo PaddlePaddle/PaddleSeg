@@ -4,7 +4,7 @@
 模型规范主要分为新增文件自查，可拓展模块编码规范，新增PR checklist，导出和测试预测模型。
 
 
-## 一、新增文件自查
+## 一、新增文件的开发规范
 
 新增文件都需要进行自查，主要包含`copyright，import`，和编码规范`checklist`。
 
@@ -30,7 +30,7 @@
 
 ### 2. `import`
 
-该部分为导入模型所需要的package，按照以下顺序导入三个类型的`package`：
+该部分为导入模型所需要的package，所有Python文件需要按照以下顺序导入三个类型的`package`：
 1. `Python`源生自带`package`；
 2. 第三方`package`，即`pip`或`conda install`的`package`；
 3. `PaddleSeg`中的`package`。
@@ -50,7 +50,7 @@ from paddleseg.utils import utils
 
 ### 3. 编码自查 `checklist`
 
-这部分主要面向 python 说明编码中需要注意的规范，更多可以参考[谷歌编程规范](https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/)。
+这部分主要面向 python 说明编码中需要注意的规范，其中大部分编码规范会有pre-commit进行校验修正，更多可以参考[谷歌编程规范](https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/)。
 
 - [ ] 空行：顶级定义之间空两行，比如函数或者类定义。 方法定义，类定义与第一个方法之间，都应该空一行。函数或方法中，某些地方要是你觉得是合适的逻辑中断，就空一行；
 
@@ -64,13 +64,13 @@ from paddleseg.utils import utils
 
 
 
-## 二、可拓展模块编码规范
+## 二、可拓展模块的开发规范
 
 目前`PaddleSeg`支持`model, loss, backbone, transform, dataset`的组件拓展，其中backbone和模型的规范相近，transform的较为简单，因此下面主要对模型，损失和数据集进行规范说明。
 
 ### 1. 模型实现部分
 
-模型实现部分以PSPNet的开发为例进行说明。开发`PSPNet`，需要在```paddleseg/models```目录下创建```pspnet.py```，文件名的字母均为小写。整个文件内容分为三个部分，`copyright`部分, `import`部分, 模型实现部分，前两部分按照新增文件规范导入。
+模型实现部分以PSPNet的开发为例进行说明。开发`PSPNet`，需要在```paddleseg/models```目录下创建```pspnet.py```，文件名的字母均为小写。整个文件内容分为三个部分，`copyright`部分, `import`部分, 模型实现部分，前两部分参考第一章节的文档说明。
 
 模型实现的结构按顺序分为三个部分，主模型，分割头，辅助模块。若模型没有backbone则只有主模型和辅助模块，这里以三部分为例。
 
@@ -89,13 +89,10 @@ from paddleseg.utils import utils
 2. 继承 nn.Layer；
 
 3. 英文注释添加：
-
-   1. 添加"`The xxx implementation based on PaddlePaddle.`";
-   2. 添加"`The original article refers to` " + 作者名和文章名 + 论文链接；
-   3. 添加参数列表，顺序原则：`num_classes，backbone，backbone_indices，......，align_corners，pretrained`。这些参数的具体含义可以参考下面PSPNet示例的注释。前面参数若出现，则按照上面的顺序，其他中间参数顺序可以自由调整；
-   4. 参数名需要有含义，尽量避免无明显含义的名字，比如n, m, aa，除非原实现非用不可；
-   5. 指名参数类型，若可选则表明 `optional`，然后在该参数注释末尾添加"`Default: xx`"。
-   6. 如果可以，可以进一步添加`Returns，Raises`说明函数/方法返回值和可能会有的报错。
+* 添加"`The xxx implementation based on PaddlePaddle.`";
+* 添加"`The original article refers to` " + 作者名和文章名 + 论文链接；
+* 添加输入参数的说明，需要指名参数类型，若可选则表明 `optional`，然后在该参数注释末尾添加"`Default: xx`"；
+* 如果可以，可以进一步添加`Returns，Raises`说明函数/方法返回值和可能会有的报错。
 
 ```python
 @manager.MODELS.add_component
@@ -122,10 +119,13 @@ class PSPNet(nn.Layer):
 
 **__init__规范**
 
-1. ```__init__```中参数全部显式写出，**不能**包括变长参数比如:`*args, **kwargs`；
-2. ```super().__init__()```保持空参数；
-3. 结尾调用```self.init_weight()```；
-4. 如果模型没有使用backbone，则必须有`in_channels`输入参数，表示输入图片的通道数，设置`in_channels`默认值为3。
+1. `__init__`中，参数列表的建议顺序为：`num_classes, backbone, backbone_indices, ......, align_corners, in_channels, pretrained`。参数的具体含义可以参考前面面PSPNet示例的注释。前面参数若出现，则按照上面的顺序，其他中间参数顺序可以自由调整；
+2. 参数名需要有含义，尽量避免无明显含义的名字，比如n, m, aa，除非原实现非用不可；
+3. 参数全部显式写出，不能包括变长参数，比如:`*args, **kwargs`；
+4. `super().__init__()`保持空参数；
+5. 结尾调用```self.init_weight()```，加载`pretrained`指定的模型参数；
+6. 每个模型必须有`in_channels`输入参数，设置输入图片的通道数。如果主模型没有使用backbone，则需要在主模型的`__init__`中设置`in_channels`（默认值为3）。如果主模型使用了backbone，则不需要在主模型的`__init__`中设置`in_channels`，而是需要在backbone的`__init__`中设置`in_channels`（默认值为3）。
+
 ```python
 def __init__(self,
              num_classes,
@@ -144,9 +144,9 @@ def __init__(self,
 **forward 规范**
 
 1. 逻辑尽量简洁，以组件式的调用呈现。
-2. `resize`到原图大小按列表形式返回，第一个元素为主输出，其他为辅助输出。
-3. 如果模型训练和预测时执行分支不同，使用self.training变量作为if判断，实现不同分支（示例参考bisnetv2模型）。
-4. 获取Tensor的shape，建议使用`paddle.shape(x)`，不要使用`x.shape`。
+2. 结果需要`resize`到原图大小，按列表形式返回，第一个元素为主输出，其他为辅助输出。
+3. 如果模型训练和预测时执行分支不同，使用self.training变量作为if判断，实现不同分支（示例参考PPLiteSeg模型文件）。
+4. 获取Tensor的shape，建议使用`paddle.shape(x)`，不要使用`x.shape`，否则在导出预测模型的时候可能出现动转静失败的问题。
 5. 组网代码统一使用Paddle API，不支持嵌入numpy操作，即不支持tensor->numpy->tensor转换。
 
 ```python
@@ -164,8 +164,8 @@ def forward(self, x):
 
 **init_weight规范**
 
-1. 调用```load_entire_model```即可
-2. 不含 backbone 的模型可能涉及模型参数初始化，可调用```paddleseg.cvlib 中的 param_init```实现。
+1. 调用```utils.load_entire_model```函数即可。
+2. 不含 backbone 的模型可能涉及模型参数初始化，可调用`paddleseg.cvlib` 中的 `param_init`实现。
 
 ```python
 # 带有 backbone 的对整个模型进行加载
@@ -187,11 +187,27 @@ def init_weight(self):
 
 骨干网络Backbone的实现和主模型大体类似，具体可以参考`paddleseg/models/backbones/mobilenetv2.py`的实现。
 
-骨干网络要求`__init__`函数输入参数必须有`in_channels=3`，表示输入图片的通道数。
+骨干网络要求`__init__`函数输入参数必须有`in_channels`，表示输入图片的通道数，默认等于3。
 
-骨干网络通常输出4个特征图，分别是4、8、16和32倍下采样的特征图。
+骨干网络通常有多个输出特征图，比如返回分别是4、8、16和32倍下采样的特征图，便于在主模型中使用`backbone_indices`来选择使用backbone的特定特征图。
 
-骨干网络类必须有`self.feat_channels`属性，表示输出特征图的通道数。
+骨干网络类必须有`self.feat_channels`属性，表示所有输出特征图的通道数。
+
+骨干网络通常有不同尺寸型号，分别通过函数进行定义，使用`@manager.BACKBONES.add_component`注册，示例如下。
+
+```python
+@manager.BACKBONES.add_component
+def MobileNetV2_x0_25(**kwargs):
+    model = MobileNetV2(scale=0.25, **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV2_x0_5(**kwargs):
+    model = MobileNetV2(scale=0.5, **kwargs)
+    return model
+
+```
 
 #### 3）分割头
 
@@ -217,7 +233,7 @@ class PSPNetHead(nn.Layer):
 from .pspnet import *
 ```
 
-### 2. loss 开发规范
+### 2. Loss 开发规范
 
 损失开发的规范以`paddleseg/models/losses/cross_entropy_loss.py`为例:
 
@@ -249,9 +265,14 @@ class CrossEntropyLoss(nn.Layer):
 
 
 
-### 3. dataset 开发规范
+### 3. Dataset 开发规范
 
-数据集开发的规范以`paddleseg/dataset/cityscapes.py`为例，文件中仅声明一个和数据集名字一致的类。建立新的数据集文件，则在`paddleseg/dataset`中创建对应数据集名字的文件。
+不推荐大家直接在`paddleseg/dataset/`目录下新增数据集Class，来实现支持新的数据集。建议大家参考[准备自定义数据集文档](../../data/marker/marker_cn.md)，将数据集整理成PaddleSeg推荐的格式，基于txt文件来配置`DataSet`。
+
+数据集开发的规范以`paddleseg/dataset/cityscapes.py`为例，文件中仅声明一个和数据集名字一致的类。
+
+建立新的数据集文件，则在`paddleseg/dataset`中创建对应数据集名字的文件。
+
 
 #### 1）数据集声明规范
 
@@ -306,7 +327,7 @@ class Cityscapes(Dataset):
 
 1. 导出预测模型
 
-开发模型是使用PaddlePaddle的动态图模式，我们需要将动态图的模型导出为静态图的预测模型。
+开发模型是使用PaddlePaddle的动态图模式，我们需要将动态图的模型导出为静态图的预测模型，实现更快的部署推理速度。
 
 将动态图的模型导出为静态图的预测模型，使用的是动转静技术，此处不展开介绍，具体说明请参考[文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/guides/04_dygraph_to_static/index_cn.html)。
 
@@ -314,16 +335,18 @@ class Cityscapes(Dataset):
 
 2. 测试预测模型
 
-请参考[文档](../../deployment/inference/python_inference.md)，在X86 CPU或者NV GPU上使用Paddle Inference Python API加载导出的预测模型，读取图片进行测试，查看分割结果图片是否正确。
+请参考[文档](../../deployment/inference/python_inference.md)，在X86 CPU或者NV GPU上使用Paddle Inference Python API加载导出的预测模型，读取单/多张图片进行测试，查看分割结果图片是否正确。
 
 ## 四、新增模型的 PR checklist
-1. 根据[代码提交规范](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md)进行代码提交前的准备，包含拉取最新内容、切换分支等。
-2. 在```configs```目录下创建以模型名命名的子目录```pspnet```；
-3. 创建一个`yml`配置文件，`yml`文件命名方式为模型名+`backbone + out_stride`+数据集+训练分辨率+训练单卡iters.yml，不含部分就略去。详细参考[配置项文档](../../design/use/use_cn.md)。
-4. 模型原文参考文献，reference风格采用Chicago，即全部作者名。```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.```
-5. 至少提供在一个数据集上的测试精度，格式如下。其中，`mIoU、mIoU(flip)、mIoU(ms+flip)`是对模型进行评估的结果。`ms` 表示`multi-scale`，即使用三种`scale` [0.75, 1.0, 1.25]；`flip`表示水平翻转。详细评估参考[模型评估](../../evaluation/evaluate/evaluate_cn.md)
-6. 在PR里提供一个下载链接包括三个部分：训练好的模型参数，训练日志，训练vdl。
+* 根据[代码提交规范](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md)，完成代码提交前的准备，包含拉取最新内容、切换分支等。
+* 在```configs```目录下有以模型名命名的子目录，比如```pspnet```，其中包含模型yml配置文件和`README.md`，可以参考[示例](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/pspnet)。
+* 模型yml配置文件的文件命名方式为`模型名+backbone + out_stride+数据集+训练分辨率+训练单卡iters.yml`，不含部分就略去。详细参考[配置项文档](../../design/use/use_cn.md)。
+* `README.md`中模型原文参考文献，reference风格采用Chicago，即全部作者名。```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.```
+* `README.md`中，提供至少一个数据集上的训练和测试结果，格式如下表格。
+    * `Resolution`表示训练是crop的图像尺寸。
+    * `mIoU、mIoU(flip)、mIoU(ms+flip)`是对模型进行评估的结果。`ms` 表示`multi-scale`，即使用三种`scale` [0.75, 1.0, 1.25]；`flip`表示水平翻转。详细评估参考[模型评估](../../evaluation/evaluate/evaluate_cn.md)。
+    * 提供的下载链接包括三个部分：训练好的模型参数，训练日志，训练vdl。
     | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
     |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
     ||||||||[model]() \| [log]() \| [vdl]()|
-7. 完成导出和测试预测模型，在PR中反馈给Reviewer。
+* 新增的代码文件，参考本文档前面介绍的`新增文件的开发规范`和`可拓展模块的开发规范`进行自查和改正，参考`导出和测试预测模型`完成测试并在PR中反馈给Reviewer。

@@ -31,6 +31,8 @@ class RTFormer(nn.Layer):
     """
     The RTFormer implementation based on PaddlePaddle.
 
+    The original article refers to xxx (todo)
+
     Args:
         num_classes (int): The unique number of target classes.
         layer_nums (List, optional): The layer nums of every stage. Default: [2, 2, 2, 2]

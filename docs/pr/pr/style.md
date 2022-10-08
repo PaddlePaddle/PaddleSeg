@@ -30,7 +30,7 @@ After creating an empty file `pspnet.py`, add the following copyright at the top
 
 ### 2. import
 
-This part import the packages the model needs. Three types of package should be imported in the following order:
+This part import the packages the model needs. Three types of package should be imported in the following order for each new file:
 1. Python package;
 2. The third party packages, which include the packages you install through `pip` or `conda install`;
 3. Package in PaddleSeg.
@@ -57,7 +57,7 @@ from paddleseg.utils import utils
 
 ### 3. Self-check coding checklist
 
-This part explains the specifications that need to be paid attention to in python coding. For more information, please refer to [Google Programming Guidelines](https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/) .
+This part explains the specifications that need to be paid attention to in python coding. Most of specifications will be checked and refined by pre-commit. For more information, please refer to [Google Programming Guidelines](https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/) .
 
 - [ ] Blank line: There should be two blank lines between top-level definitions, such as function or class definitions. There should be a blank line between the method definition, the class definition and the first method. In the function or method, if you think there is a logical break, leave a blank line;
 
@@ -100,10 +100,8 @@ This part is the first part of the model after you import models.
 
    1. Add "`The xxx implementation based on PaddlePaddle.`";
    2. Add "`The original article refers to`" + author name and article name + article link;
-   3. Add parameter list, arrage them in the following order: `num_classes, backbone, backbone_indices,..., align_corners, pretrained`. The order of other other intermediate parameters can be adjusted freely;
-   4. Parameter names should have meaning: Try to avoid names with no obvious meaning, such as n, m, aa, unless it follows the original implementation;
-   5. Specify the parameter type. If it is optional, then add `optional` keyward, and then add "`Default: xx`" at the end of the parameter comment.
-   6. If possible, you can further add `Returns, Raises` to explain the return value of the function/method and possible errors.
+   3. Specify the parameter type. If it is optional, then add `optional` keyward, and then add "`Default: xx`" at the end of the parameter comment.
+   4. If possible, you can further add `Returns, Raises` to explain the return value of the function/method and possible errors.
 
 ```python
 @manager.MODELS.add_component
@@ -130,10 +128,12 @@ class PSPNet(nn.Layer):
 
 ##### 1.1.2 __init__ specification
 
-1. All the parameters in ```__init__``` should be written out explicitly, you should not include variable length parameters such as: `*args, **kwargs`;
-2. ```super().__init__()``` should not have parameters;
-3. At the end, call ```self.init_weight()```;
-4. If the model does not have backbone, it must have the input params of `in_channels`, which denotes the channels of input image. The `in_channels` is set as 3 in default.
+1. Add parameter list, arrage them in the following order: `num_classes, backbone, backbone_indices, ......, align_corners, in_channels, pretrained`. The order of other other intermediate parameters can be adjusted freely;
+2. Parameter names should have meaning: Try to avoid names with no obvious meaning, such as n, m, aa, unless it follows the original implementation;
+3. All the parameters in ```__init__``` should be written out explicitly, you should not include variable length parameters such as: `*args, **kwargs`;
+4. ```super().__init__()``` should not have parameters;
+5. At the end, call ```self.init_weight()``` to load the pretrained weight by `pretrained` params;
+6. If the model does not have backbone, it must have the input params of `in_channels`, which denotes the channels of input image. The `in_channels` is set as 3 in default.
     ```python
     def __init__(self,
                 num_classes,
@@ -154,7 +154,7 @@ class PSPNet(nn.Layer):
 1. The logic should be as concise as possible and make as many as component calls.
 2. Resize the output to the original image size and return them in the form of a list. The first element of the list is the main output, and the others are auxiliary outputs.
 3. If the execution branch is different during model training and prediction, use self.training variable in if statement to implement different branches (for example: bisnetv2 model).
-4. To obtain the shape of the Tensor, it is recommended to use `paddle.shape(x)` instead of `x.shape`.
+4. To obtain the shape of the Tensor, it is recommended to use `paddle.shape(x)` instead of `x.shape` to avoid errors in exporting inference model.
 5. The network forward pass dose not support tensor->numpy->tensor operation.
 
     ```python
@@ -197,9 +197,25 @@ The implementation of backbone is the same as the model, and please refer to `pa
 
 The `__init__` function of backbone must have the params of `in_channels=3`, which denotes the channels of input image.
 
-Generally, the backbone outputs four feature maps, of which the size are 1/4, 1/8, 1/16 and 1/32 of the input image.
+Generally, the backbone has several output feature maps, of which the size are 1/4, 1/8, 1/16 and 1/32 of the input image.
 
 The backbone class must has `self.feat_channels` attribute, and it denotes the channels of output feature maps.
+
+The backbone has different size, so we employ several function registerd by `@manager.BACKBONES.add_component` to define them as following.
+
+```python
+@manager.BACKBONES.add_component
+def MobileNetV2_x0_25(**kwargs):
+    model = MobileNetV2(scale=0.25, **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV2_x0_5(**kwargs):
+    model = MobileNetV2(scale=0.5, **kwargs)
+    return model
+
+```
 
 #### 1.3 segmentation head
 
@@ -310,7 +326,7 @@ This part we takes `paddleseg/dataset/cityscapes.py` as an example. In thi datas
 
 ## Export and test the inference model
 
-To develop a model, we need to not only pay attention to the accuracy of the model, but also check the correctness of the exported model. Only when the model can be successfully deployed can a model count as truly developed.
+To develop a model, we need to not only pay attention to the accuracy of the model, but also check the correctness of the exported model to accelerate the inference speed. Only when the model can be successfully deployed can a model count as truly developed.
 
 1. Export the prediction model
 
@@ -326,14 +342,18 @@ To develop a model, we need to not only pay attention to the accuracy of the mod
 
 
 ## PR checklist
-1. Follow the code submission process according to [Code Submission Specification](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md), including pulling the latest content and switching branches.
-2. Create a subdirectory ```pspnet``` named after the model name in the ```configs``` directory;
-3. Create a `yml` configuration file. The configuration file name should be `model name + backbone + out_stride + data set + training resolution + training iters.yml`, and the parts that is not included should be ignored. For details, please refer to [Configuration Item Document](../../design/use/use_cn.md).
-4. The reference style of the model should adopts Chicago, that is, the names of all authors. For example:```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.`` `
-5. Provide the test accuracy on at least one dataset in the following format. Among them, `mIoU, mIoU(flip), mIoU(ms+flip)` are the results of evaluating the model. `ms` means `multi-scale`, that is, three kinds of `scale` [0.75, 1.0, 1.25] are used; `flip` means horizontal flip. For detailed evaluation, please refer to [Model Evaluation](../../evaluation/evaluate/evaluate_cn.md)
-6. Provide a download link in PR including three parts: trained model parameters, training log, training vdl.
+* Follow the code submission process according to [Code Submission Specification](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md), including pulling the latest content and switching branches.
+* Create a subdirectory (```pspnet```) named after the model name in the ```configs``` directory. The subdirectory contsists of yml configuration files and readme.md, please refer to the [demo](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/pspnet)
+* The name of yml configuration file should be `model name + backbone + out_stride + data set + training resolution + training iters.yml`, and the parts that is not included should be ignored. For details, please refer to [Configuration Item Document](../../design/use/use_cn.md).
+* In readme.md, the reference style of the model should adopts Chicago, that is, the names of all authors. For example:```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.`` `
+* In readme.md, provide the training and test performance on at least one dataset in the following format.
+    * `Resolution` denotes the crop_size in training dataset
+    * `mIoU, mIoU(flip), mIoU(ms+flip)` are the results of evaluating the model. `ms` means `multi-scale`, that is, three kinds of `scale` [0.75, 1.0, 1.25] are used; `flip` means horizontal flip. For detailed evaluation, please refer to [Model Evaluation](../../evaluation/evaluate/evaluate_cn.md)
+    * Provide download links including: trained model parameters, training log, training vdl.
     | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
     |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
     ||||||||[model]() \| [log]() \| [vdl]()|
+* * 新增的代码文件，参考本文档前面介绍的`新增文件的开发规范`和`可拓展模块的开发规范`进行自查和改正，参考`导出和测试预测模型`完成测试并在PR中反馈给Reviewer。
 
-7. Export and test the inference model. Feedback the results to reviewer.
+* Refer to the `New file self-inspection` and `Expandable module standard` in the above to check and refactor all new files and expandable modules.
+* Finish the test of `Export and test the inference model` in the above and provide the results in PR for reviewers.
