@@ -1,16 +1,18 @@
-简体中文|[English](infer_benchmark.md)
+简体中文|[English](style.md)
 # PaddleSeg模型开发规范
 
-模型规范主要分为新增文件自查，可拓展模块编码规范，新增PR checklist，导出和测试预测模型。
+模型规范主要分为：新增文件的开发规范，可拓展模块的开发规范，导出和测试预测模型，新增模型的PR checklist。
 
 
-## 一、新增文件的开发规范
+## 1 新增文件的开发规范
 
-新增文件都需要进行自查和修正，主要包含`copyright，import`，和编码规范`checklist`。
+每个新增文件都需要进行自查和修正，主要包含`copyright`部分，`import`部分和编码规范`checklist`。
 
-### 1. `copyright`
+### 1.1 `copyright` 部分
 
-创建空文件```pspnet.py```后，在文件顶部添加以下`copyright，PaddleSeg`中每个新增的文件都需要添加相应的版权信息。注：年份按照当前自然年改写。
+创建空文件```pspnet.py```后，在文件顶部添加以下`copyright`。
+
+`PaddleSeg`中每个新增的文件都需要添加相应的版权信息，注意其中年份按照当前自然年改写。
 
 ```python
 # Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
@@ -28,7 +30,7 @@
 # limitations under the License.
 ```
 
-### 2. `import`
+### 1.2 `import` 部分
 
 该部分为导入模型所需要的package，所有Python文件需要按照以下顺序导入三个类型的`package`：
 1. `Python`源生自带`package`；
@@ -48,7 +50,7 @@ from paddleseg.models import layers
 from paddleseg.utils import utils
 ```
 
-### 3. 编码自查 `checklist`
+### 1.3 编码自查 `checklist`
 
 这部分主要面向 python 说明编码中需要注意的规范，其中大部分编码规范会有pre-commit进行校验修正，更多可以参考[谷歌编程规范](https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/)。
 
@@ -64,13 +66,13 @@ from paddleseg.utils import utils
 
 
 
-## 二、可拓展模块的开发规范
+## 2 可拓展模块的开发规范
 
 目前`PaddleSeg`支持`model, loss, backbone, transform, dataset`的组件拓展，所有新增的组件都需要按照下面规范进行自查和修正。
 
 backbone和模型的规范相近，transform的规范较为简单，因此下面主要对模型，损失和数据集进行规范说明。
 
-### 1. 模型实现部分
+### 2.1 模型实现部分
 
 模型实现部分以PSPNet的开发为例进行说明。
 
@@ -78,7 +80,7 @@ backbone和模型的规范相近，transform的规范较为简单，因此下面
 
 模型实现的结构按顺序分为三个部分，主模型，分割头，辅助模块。若模型没有backbone则只有主模型和辅助模块，这里以三部分为例。
 
-#### 1）主模型
+#### 2.1.1 主模型
 
 **模型声明规范**
 
@@ -187,7 +189,7 @@ def init_weight(self):
           param_init.constant_init(sublayer.bias, value=0.0)
 ```
 
-#### 2）骨干网络
+#### 2.1.2 骨干网络
 
 骨干网络Backbone的实现和主模型大体类似，具体可以参考`paddleseg/models/backbones/mobilenetv2.py`的实现。
 
@@ -211,7 +213,7 @@ def MobileNetV2_x0_5(**kwargs):
     return model
 ```
 
-#### 3）分割头
+#### 2.1.3 分割头
 
 目前`PaddleSeg`里面的模型只有单分割头模型，所以分割头模块直接以主模型名+Head来命名。注释规范与主模型保持一致。
 
@@ -221,7 +223,7 @@ class PSPNetHead(nn.Layer):
 
 如果是轻量级分割模型，没有`backbone`，可以看做是只有分割头的模型，那么为了简洁可以不用写Head，而把逻辑直接写在主模型部分中。
 
-#### 4）辅助模块
+#### 2.1.4 辅助模块
 
 除了主模型，和分割头之外的代码段都称为辅助模块。目前`PaddleSeg`已经提供了常见的辅助模块，例如`SyncBN, ConvBNReLU, FCN (AuxLayer), PPModule, ASPP, AttentionBlock`等等，详细查看```paddleseg/models/layers```。
 1. **必须**优先使用`PaddleSeg`内置辅助模块；
@@ -235,7 +237,7 @@ class PSPNetHead(nn.Layer):
 from .pspnet import *
 ```
 
-### 2. Loss 开发规范
+### 2.2 Loss 开发规范
 
 损失开发的规范以`paddleseg/models/losses/cross_entropy_loss.py`为例:
 
@@ -267,7 +269,7 @@ class CrossEntropyLoss(nn.Layer):
 
 
 
-### 3. Dataset 开发规范
+### 2.3 Dataset 开发规范
 
 不推荐大家直接在`paddleseg/dataset/`目录下新增数据集Class，来实现支持新的数据集。建议大家参考[准备自定义数据集文档](../../data/marker/marker_cn.md)，将数据集整理成PaddleSeg推荐的格式，基于txt文件来配置`DataSet`。
 
@@ -276,7 +278,7 @@ class CrossEntropyLoss(nn.Layer):
 建立新的数据集文件，则在`paddleseg/dataset`中创建对应数据集名字的文件。
 
 
-#### 1）数据集声明规范
+#### 2.3.1 数据集声明规范
 
 1. 在类头部添加装饰器；
 
@@ -316,18 +318,18 @@ class Cityscapes(Dataset):
     """
 ```
 
-#### 2）__init__规范
+#### 2.3.2 __init__规范
 
 1. ```__init__```中参数全部显式写出，**不能**包括变长参数比如:```*args, **kwargs```；
 2. ```super().__init__()```保持空参数；
 3. 参数顺序和上述参数顺序一致；
 4. 通过在在```__init__```方法中建立 ```self.file_list```，之后就根据其中元素的路径读取对应图片。
 
-## 三、导出和测试预测模型
+## 3 导出和测试预测模型
 
 开发模型，我们不仅要关注模型精度的正确性，还需要检查模型导出和预测部署的正确性。只有模型可以顺利部署，才算真正开发完成一个模型。
 
-1. 导出预测模型
+### 3.1 导出预测模型
 
 开发模型是使用PaddlePaddle的动态图模式，我们需要将动态图的模型导出为静态图的预测模型，实现更快的部署推理速度。
 
@@ -335,11 +337,11 @@ class Cityscapes(Dataset):
 
 请参考[文档](../../model_export_cn.md)导出静态图预测模型。如果没有报错，静态图的预测模型会保存到指定目录。如果报错，根据log修改组网代码，再次导出。
 
-2. 测试预测模型
+### 3.2 测试预测模型
 
 请参考[文档](../../deployment/inference/python_inference_cn.md)，在X86 CPU或者NV GPU上使用Paddle Inference Python API加载导出的预测模型，读取单/多张图片进行测试，查看分割结果图片是否正确。
 
-## 四、新增模型的 PR checklist
+## 4 新增模型的 PR checklist
 
 * 参考[代码提交规范](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md)，完成代码提交前的准备，包含拉取最新内容、切换分支等。
 * 在```configs```目录下有以模型名命名的子目录，比如```pspnet```，其中包含模型yml配置文件和`README.md`，详细参考[示例](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/pspnet)。
