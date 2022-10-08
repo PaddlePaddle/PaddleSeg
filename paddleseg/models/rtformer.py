@@ -21,8 +21,9 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
 from paddleseg.utils import utils
-from paddleseg.models.backbones.transformer_utils import (
-    trunc_normal_, kaiming_normal_, constant_, DropPath, Identity)
+from paddleseg.models.backbones.transformer_utils import (DropPath, Identity)
+from paddleseg.cvlibs.param_init import (constant_init, kaiming_normal_init,
+                                         trunc_normal_init)
 
 
 @manager.MODELS.add_component
@@ -120,16 +121,16 @@ class RTFormer(nn.Layer):
 
     def _init_weights_kaiming(self, m):
         if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
+            trunc_normal_init(m.weight, std=.02)
             if m.bias is not None:
-                constant_(m.bias, 0)
+                constant_init(m.bias, value=0)
         elif isinstance(m, (nn.SyncBatchNorm, nn.BatchNorm2D)):
-            constant_(m.weight, 1.0)
-            constant_(m.bias, 0)
+            constant_init(m.weight, value=1.0)
+            constant_init(m.bias, value=0)
         elif isinstance(m, nn.Conv2D):
-            kaiming_normal_(m.weight)
+            kaiming_normal_init(m.weight)
             if m.bias is not None:
-                constant_(m.bias, 0)
+                constant_init(m.bias, value=0)
 
     def init_weight(self):
         self.conv1.apply(self._init_weights_kaiming)
@@ -309,16 +310,16 @@ class MLP(nn.Layer):
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
+            trunc_normal_init(m.weight, std=.02)
             if m.bias is not None:
-                constant_(m.bias, 0)
+                constant_init(m.bias, value=0)
         elif isinstance(m, (nn.SyncBatchNorm, nn.BatchNorm2D)):
-            constant_(m.weight, 1.0)
-            constant_(m.bias, 0)
+            constant_init(m.weight, value=1.0)
+            constant_init(m.bias, value=0)
         elif isinstance(m, nn.Conv2D):
-            kaiming_normal_(m.weight)
+            kaiming_normal_init(m.weight)
             if m.bias is not None:
-                constant_(m.bias, 0)
+                constant_init(m.bias, value=0)
 
     def forward(self, x):
         x = self.norm(x)
@@ -372,16 +373,16 @@ class ExternalAttention(nn.Layer):
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.001)
+            trunc_normal_init(m.weight, std=.001)
             if m.bias is not None:
-                constant_(m.bias, 0.)
+                constant_init(m.bias, value=0.)
         elif isinstance(m, (nn.SyncBatchNorm, nn.BatchNorm2D)):
-            constant_(m.weight, 1.)
-            constant_(m.bias, .0)
+            constant_init(m.weight, value=1.)
+            constant_init(m.bias, value=.0)
         elif isinstance(m, nn.Conv2D):
-            trunc_normal_(m.weight, std=.001)
+            trunc_normal_init(m.weight, std=.001)
             if m.bias is not None:
-                constant_(m.bias, 0.)
+                constant_init(m.bias, value=0.)
 
     def _act_sn(self, x):
         x_shape = paddle.shape(x)
@@ -535,29 +536,29 @@ class EABlock(nn.Layer):
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
+            trunc_normal_init(m.weight, std=.02)
             if m.bias is not None:
-                constant_(m.bias, 0)
+                constant_init(m.bias, value=0)
         elif isinstance(m, (nn.SyncBatchNorm, nn.BatchNorm2D)):
-            constant_(m.weight, 1.0)
-            constant_(m.bias, 0)
+            constant_init(m.weight, value=1.0)
+            constant_init(m.bias, value=0)
         elif isinstance(m, nn.Conv2D):
-            trunc_normal_(m.weight, std=.02)
+            trunc_normal_init(m.weight, std=.02)
             if m.bias is not None:
-                constant_(m.bias, 0)
+                constant_init(m.bias, value=0)
 
     def _init_weights_kaiming(self, m):
         if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
+            trunc_normal_init(m.weight, std=.02)
             if m.bias is not None:
-                constant_(m.bias, 0)
+                constant_init(m.bias, value=0)
         elif isinstance(m, (nn.SyncBatchNorm, nn.BatchNorm2D)):
-            constant_(m.weight, 1.0)
-            constant_(m.bias, 0)
+            constant_init(m.weight, value=1.0)
+            constant_init(m.bias, value=0)
         elif isinstance(m, nn.Conv2D):
-            kaiming_normal_(m.weight)
+            kaiming_normal_init(m.weight)
             if m.bias is not None:
-                constant_(m.bias, 0)
+                constant_init(m.bias, value=0)
 
     def forward(self, x):
         x_h, x_l = x

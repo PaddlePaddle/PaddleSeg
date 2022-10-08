@@ -17,8 +17,8 @@ import paddle.nn as nn
 import paddle.nn.initializer as paddle_init
 
 __all__ = [
-    'to_2tuple', 'DropPath', 'Identity', 'trunc_normal_', 'constant_',
-    'kaiming_normal_', 'zeros_', 'ones_', 'init_weights'
+    'to_2tuple', 'DropPath', 'Identity', 'trunc_normal_', 'zeros_', 'ones_',
+    'init_weights'
 ]
 
 
@@ -61,23 +61,9 @@ class Identity(nn.Layer):
         return input
 
 
+trunc_normal_ = paddle_init.TruncatedNormal(std=.02)
 zeros_ = paddle_init.Constant(value=0.)
 ones_ = paddle_init.Constant(value=1.)
-
-
-def trunc_normal_(weight, mean=0.0, std=0.02):
-    init = paddle_init.TruncatedNormal(mean=mean, std=std)
-    init(weight)
-
-
-def kaiming_normal_(weight, fan_in=None):
-    init = paddle_init.KaimingNormal(fan_in=fan_in)
-    init(weight)
-
-
-def constant_(weight, value):
-    init = paddle_init.Constant(value=value)
-    init(weight)
 
 
 def init_weights(layer):
