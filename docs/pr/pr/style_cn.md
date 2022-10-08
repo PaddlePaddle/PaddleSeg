@@ -346,7 +346,9 @@ class Cityscapes(Dataset):
     * `Resolution`表示训练是crop的图像尺寸。
     * `mIoU、mIoU(flip)、mIoU(ms+flip)`是对模型进行评估的结果。`ms` 表示`multi-scale`，即使用三种`scale` [0.75, 1.0, 1.25]；`flip`表示水平翻转。详细评估参考[模型评估](../../evaluation/evaluate/evaluate_cn.md)。
     * 提供的下载链接包括三个部分：训练好的模型参数，训练日志，训练vdl。
+
     | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
     |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
     ||||||||[model]() \| [log]() \| [vdl]()|
+
 * 新增的代码文件，参考本文档前面介绍的`新增文件的开发规范`和`可拓展模块的开发规范`进行自查和改正，参考`导出和测试预测模型`完成测试并在PR中反馈给Reviewer。

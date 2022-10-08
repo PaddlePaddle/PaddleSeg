@@ -350,10 +350,10 @@ To develop a model, we need to not only pay attention to the accuracy of the mod
     * `Resolution` denotes the crop_size in training dataset
     * `mIoU, mIoU(flip), mIoU(ms+flip)` are the results of evaluating the model. `ms` means `multi-scale`, that is, three kinds of `scale` [0.75, 1.0, 1.25] are used; `flip` means horizontal flip. For detailed evaluation, please refer to [Model Evaluation](../../evaluation/evaluate/evaluate_cn.md)
     * Provide download links including: trained model parameters, training log, training vdl.
+
     | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
     |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
     ||||||||[model]() \| [log]() \| [vdl]()|
-* * 新增的代码文件，参考本文档前面介绍的`新增文件的开发规范`和`可拓展模块的开发规范`进行自查和改正，参考`导出和测试预测模型`完成测试并在PR中反馈给Reviewer。
 
 * Refer to the `New file self-inspection` and `Expandable module standard` in the above to check and refactor all new files and expandable modules.
 * Finish the test of `Export and test the inference model` in the above and provide the results in PR for reviewers.
