@@ -50,7 +50,7 @@ lr_scheduler:
   type: PolynomialDecay
   learning_rate: 4.0e-4
   power: 1.
-  end_lr: 0.
+  end_lr: 1.0e-6
   warmup_iters: 1500
   warmup_start_lr: 1.0e-6
 
@@ -64,5 +64,5 @@ model:
   base_channels: 32
   head_channels: 64
   use_injection: [True, False]
-  pretrained: ./rtformer_small_backbone_pretrained.pdparams
-  #pretrained: ./rtformer_small_from_torch.pdparams
+  pretrained: ./rtformer_slim_backbone_pretrained.pdparams
+  #pretrained: ./rtformer_slim_from_torch.pdparams

@@ -50,7 +50,7 @@ lr_scheduler:
   type: PolynomialDecay
   learning_rate: 4.0e-4
   power: 1.
-  end_lr: 0.
+  end_lr: 1.0e-6
   warmup_iters: 1500
   warmup_start_lr: 1.0e-6
 

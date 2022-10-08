@@ -25,6 +25,204 @@ from paddleseg.models.backbones.transformer_utils import (
     trunc_normal_, kaiming_normal_, constant_, DropPath, Identity)
 
 
+@manager.MODELS.add_component
+class RTFormer(nn.Layer):
+    """
+    The RTFormer implementation based on PaddlePaddle.
+
+    Args:
+        num_classes (int): The unique number of target classes.
+        layer_nums (List, optional): The layer nums of every stage. Default: [2, 2, 2, 2]
+        base_channels (int, optional): The base channels. Default: 64
+        spp_channels (int, optional): The channels of DAPPM. Defualt: 128
+        num_heads (int, optional): The num of heads in EABlock. Default: 8
+        head_channels (int, optional): The channels of head in EABlock. Default: 128
+        drop_rate (float, optional): The drop rate in EABlock. Default:0.
+        drop_path_rate (float, optional): The drop path rate in EABlock. Default: 0.2
+        use_aux_head (bool, optional): Whether use auxiliary head. Default: True
+        use_injection (list[boo], optional): Whether use injection in layer 4 and 5.
+            Default: [True, True]
+        lr_mult (float, optional): The multiplier of lr for DAPPM and head module. Default: 10
+        in_channels (int, optional): The channels of input image. Default: 3
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
+
+    def __init__(self,
+                 num_classes,
+                 layer_nums=[2, 2, 2, 2],
+                 base_channels=64,
+                 spp_channels=128,
+                 num_heads=8,
+                 head_channels=128,
+                 drop_rate=0.,
+                 drop_path_rate=0.2,
+                 use_aux_head=True,
+                 use_injection=[True, True],
+                 lr_mult=10.,
+                 in_channels=3,
+                 pretrained=None):
+        super().__init__()
+        self.base_channels = base_channels
+        base_chs = base_channels
+
+        self.conv1 = nn.Sequential(
+            nn.Conv2D(
+                in_channels, base_chs, kernel_size=3, stride=2, padding=1),
+            bn2d(base_chs),
+            nn.ReLU(),
+            nn.Conv2D(
+                base_chs, base_chs, kernel_size=3, stride=2, padding=1),
+            bn2d(base_chs),
+            nn.ReLU(), )
+        self.relu = nn.ReLU()
+
+        self.layer1 = self._make_layer(BasicBlock, base_chs, base_chs,
+                                       layer_nums[0])
+        self.layer2 = self._make_layer(
+            BasicBlock, base_chs, base_chs * 2, layer_nums[1], stride=2)
+        self.layer3 = self._make_layer(
+            BasicBlock, base_chs * 2, base_chs * 4, layer_nums[2], stride=2)
+        self.layer3_ = self._make_layer(BasicBlock, base_chs * 2, base_chs * 2,
+                                        1)
+        self.compression3 = nn.Sequential(
+            bn2d(base_chs * 4),
+            nn.ReLU(),
+            conv2d(
+                base_chs * 4, base_chs * 2, kernel_size=1), )
+        self.layer4 = EABlock(
+            in_channels=[base_chs * 2, base_chs * 4],
+            out_channels=[base_chs * 2, base_chs * 8],
+            num_heads=num_heads,
+            drop_rate=drop_rate,
+            drop_path_rate=drop_path_rate,
+            use_injection=use_injection[0],
+            use_cross_kv=True)
+        self.layer5 = EABlock(
+            in_channels=[base_chs * 2, base_chs * 8],
+            out_channels=[base_chs * 2, base_chs * 8],
+            num_heads=num_heads,
+            drop_rate=drop_rate,
+            drop_path_rate=drop_path_rate,
+            use_injection=use_injection[1],
+            use_cross_kv=True)
+
+        self.spp = DAPPM(
+            base_chs * 8, spp_channels, base_chs * 2, lr_mult=lr_mult)
+        self.seghead = SegHead(
+            base_chs * 4, int(head_channels * 2), num_classes, lr_mult=lr_mult)
+        self.use_aux_head = use_aux_head
+        if self.use_aux_head:
+            self.seghead_extra = SegHead(
+                base_chs * 2, head_channels, num_classes, lr_mult=lr_mult)
+
+        self.pretrained = pretrained
+        self.init_weight()
+
+    def _init_weights_kaiming(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight, std=.02)
+            if m.bias is not None:
+                constant_(m.bias, 0)
+        elif isinstance(m, (nn.SyncBatchNorm, nn.BatchNorm2D)):
+            constant_(m.weight, 1.0)
+            constant_(m.bias, 0)
+        elif isinstance(m, nn.Conv2D):
+            kaiming_normal_(m.weight)
+            if m.bias is not None:
+                constant_(m.bias, 0)
+
+    def init_weight(self):
+        self.conv1.apply(self._init_weights_kaiming)
+        self.layer1.apply(self._init_weights_kaiming)
+        self.layer2.apply(self._init_weights_kaiming)
+        self.layer3.apply(self._init_weights_kaiming)
+        self.layer3_.apply(self._init_weights_kaiming)
+        self.compression3.apply(self._init_weights_kaiming)
+        self.spp.apply(self._init_weights_kaiming)
+        self.seghead.apply(self._init_weights_kaiming)
+        if self.use_aux_head:
+            self.seghead_extra.apply(self._init_weights_kaiming)
+
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
+    def _make_layer(self, block, in_channels, out_channels, blocks, stride=1):
+        downsample = None
+        if stride != 1 or in_channels != out_channels:
+            downsample = nn.Sequential(
+                conv2d(
+                    in_channels, out_channels, kernel_size=1, stride=stride),
+                bn2d(out_channels))
+
+        layers = []
+        layers.append(block(in_channels, out_channels, stride, downsample))
+        for i in range(1, blocks):
+            if i == (blocks - 1):
+                layers.append(
+                    block(
+                        out_channels, out_channels, stride=1, no_relu=True))
+            else:
+                layers.append(
+                    block(
+                        out_channels, out_channels, stride=1, no_relu=False))
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        debug = False
+        if debug:
+            import numpy as np
+            np.random.seed(0)
+            x = np.random.rand(1, 3, 512, 512).astype("float32")
+            x = paddle.to_tensor(x)
+            print(paddle.mean(x))
+
+        x1 = self.layer1(self.conv1(x))  # c, 1/4
+        x2 = self.layer2(self.relu(x1))  # 2c, 1/8
+        x3 = self.layer3(self.relu(x2))  # 4c, 1/16
+        x3_ = x2 + F.interpolate(
+            self.compression3(x3), size=paddle.shape(x2)[2:], mode='bilinear')
+        x3_ = self.layer3_(self.relu(x3_))  # 2c, 1/8
+
+        x4_, x4 = self.layer4(
+            [self.relu(x3_), self.relu(x3)])  # 2c, 1/8; 8c, 1/16
+        x5_, x5 = self.layer5(
+            [self.relu(x4_), self.relu(x4)])  # 2c, 1/8; 8c, 1/32
+
+        x6 = self.spp(x5)
+        x6 = F.interpolate(
+            x6, size=paddle.shape(x5_)[2:], mode='bilinear')  # 2c, 1/8
+        x_out = self.seghead(paddle.concat([x5_, x6], axis=1))  # 4c, 1/8
+        logit_list = [x_out]
+
+        if self.use_aux_head:
+            x_out_extra = self.seghead_extra(x3_)
+            logit_list.append(x_out_extra)
+
+        if debug:
+            x_out_mean = paddle.mean(x_out).numpy()
+            x_out_extra_mean = paddle.mean(x_out_extra).numpy()
+            print('out', x_out_mean)
+            print('out', x_out_extra_mean)
+            if self.base_channels == 32:
+                assert np.isclose(x_out_mean, -11.117491, 0, 1e-3)
+                assert np.isclose(x_out_extra_mean, -7.9465437, 0, 1e-3)
+            elif self.base_channels == 64:
+                assert np.isclose(x_out_mean, -21.306246, 0, 1e-3)
+                assert np.isclose(x_out_extra_mean, -17.274418, 0, 1e-3)
+            exit()
+
+        logit_list = [
+            F.interpolate(
+                logit,
+                paddle.shape(x)[2:],
+                mode='bilinear',
+                align_corners=False) for logit in logit_list
+        ]
+
+        return logit_list
+
+
 def conv2d(in_channels,
            out_channels,
            kernel_size,
@@ -517,201 +715,3 @@ class SegHead(nn.Layer):
         x = self.conv1(self.relu(self.bn1(x)))
         out = self.conv2(self.relu(self.bn2(x)))
         return out
-
-
-@manager.MODELS.add_component
-class RTFormer(nn.Layer):
-    """
-    The RTFormer implementation based on PaddlePaddle.
-
-    Args:
-        num_classes (int): The unique number of target classes.
-        layer_nums (List, optional): The layer nums of every stage. Default: [2, 2, 2, 2]
-        base_channels (int, optional): The base channels. Default: 64
-        spp_channels (int, optional): The channels of DAPPM. Defualt: 128
-        num_heads (int, optional): The num of heads in EABlock. Default: 8
-        head_channels (int, optional): The channels of head in EABlock. Default: 128
-        drop_rate (float, optional): The drop rate in EABlock. Default:0.
-        drop_path_rate (float, optional): The drop path rate in EABlock. Default: 0.2
-        use_aux_head (bool, optional): Whether use auxiliary head. Default: True
-        use_injection (list[boo], optional): Whether use injection in layer 4 and 5.
-            Default: [True, True]
-        lr_mult (float, optional): The multiplier of lr for DAPPM and head module. Default: 10
-        in_channels (int, optional): The channels of input image. Default: 3
-        pretrained (str, optional): The path or url of pretrained model. Default: None.
-    """
-
-    def __init__(self,
-                 num_classes,
-                 layer_nums=[2, 2, 2, 2],
-                 base_channels=64,
-                 spp_channels=128,
-                 num_heads=8,
-                 head_channels=128,
-                 drop_rate=0.,
-                 drop_path_rate=0.2,
-                 use_aux_head=True,
-                 use_injection=[True, True],
-                 lr_mult=10.,
-                 in_channels=3,
-                 pretrained=None):
-        super().__init__()
-        self.base_channels = base_channels
-        base_chs = base_channels
-
-        self.conv1 = nn.Sequential(
-            nn.Conv2D(
-                in_channels, base_chs, kernel_size=3, stride=2, padding=1),
-            bn2d(base_chs),
-            nn.ReLU(),
-            nn.Conv2D(
-                base_chs, base_chs, kernel_size=3, stride=2, padding=1),
-            bn2d(base_chs),
-            nn.ReLU(), )
-        self.relu = nn.ReLU()
-
-        self.layer1 = self._make_layer(BasicBlock, base_chs, base_chs,
-                                       layer_nums[0])
-        self.layer2 = self._make_layer(
-            BasicBlock, base_chs, base_chs * 2, layer_nums[1], stride=2)
-        self.layer3 = self._make_layer(
-            BasicBlock, base_chs * 2, base_chs * 4, layer_nums[2], stride=2)
-        self.layer3_ = self._make_layer(BasicBlock, base_chs * 2, base_chs * 2,
-                                        1)
-        self.compression3 = nn.Sequential(
-            bn2d(base_chs * 4),
-            nn.ReLU(),
-            conv2d(
-                base_chs * 4, base_chs * 2, kernel_size=1), )
-        self.layer4 = EABlock(
-            in_channels=[base_chs * 2, base_chs * 4],
-            out_channels=[base_chs * 2, base_chs * 8],
-            num_heads=num_heads,
-            drop_rate=drop_rate,
-            drop_path_rate=drop_path_rate,
-            use_injection=use_injection[0],
-            use_cross_kv=True)
-        self.layer5 = EABlock(
-            in_channels=[base_chs * 2, base_chs * 8],
-            out_channels=[base_chs * 2, base_chs * 8],
-            num_heads=num_heads,
-            drop_rate=drop_rate,
-            drop_path_rate=drop_path_rate,
-            use_injection=use_injection[1],
-            use_cross_kv=True)
-
-        self.spp = DAPPM(
-            base_chs * 8, spp_channels, base_chs * 2, lr_mult=lr_mult)
-        self.seghead = SegHead(
-            base_chs * 4, int(head_channels * 2), num_classes, lr_mult=lr_mult)
-        self.use_aux_head = use_aux_head
-        if self.use_aux_head:
-            self.seghead_extra = SegHead(
-                base_chs * 2, head_channels, num_classes, lr_mult=lr_mult)
-
-        self.pretrained = pretrained
-        self.init_weight()
-
-    def _init_weights_kaiming(self, m):
-        if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
-            if m.bias is not None:
-                constant_(m.bias, 0)
-        elif isinstance(m, (nn.SyncBatchNorm, nn.BatchNorm2D)):
-            constant_(m.weight, 1.0)
-            constant_(m.bias, 0)
-        elif isinstance(m, nn.Conv2D):
-            kaiming_normal_(m.weight)
-            if m.bias is not None:
-                constant_(m.bias, 0)
-
-    def init_weight(self):
-        self.conv1.apply(self._init_weights_kaiming)
-        self.layer1.apply(self._init_weights_kaiming)
-        self.layer2.apply(self._init_weights_kaiming)
-        self.layer3.apply(self._init_weights_kaiming)
-        self.layer3_.apply(self._init_weights_kaiming)
-        self.compression3.apply(self._init_weights_kaiming)
-        self.spp.apply(self._init_weights_kaiming)
-        self.seghead.apply(self._init_weights_kaiming)
-        if self.use_aux_head:
-            self.seghead_extra.apply(self._init_weights_kaiming)
-
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
-
-    def _make_layer(self, block, in_channels, out_channels, blocks, stride=1):
-        downsample = None
-        if stride != 1 or in_channels != out_channels:
-            downsample = nn.Sequential(
-                conv2d(
-                    in_channels, out_channels, kernel_size=1, stride=stride),
-                bn2d(out_channels))
-
-        layers = []
-        layers.append(block(in_channels, out_channels, stride, downsample))
-        for i in range(1, blocks):
-            if i == (blocks - 1):
-                layers.append(
-                    block(
-                        out_channels, out_channels, stride=1, no_relu=True))
-            else:
-                layers.append(
-                    block(
-                        out_channels, out_channels, stride=1, no_relu=False))
-
-        return nn.Sequential(*layers)
-
-    def forward(self, x):
-        debug = False
-        if debug:
-            import numpy as np
-            np.random.seed(0)
-            x = np.random.rand(1, 3, 512, 512).astype("float32")
-            x = paddle.to_tensor(x)
-            print(paddle.mean(x))
-
-        x1 = self.layer1(self.conv1(x))  # c, 1/4
-        x2 = self.layer2(self.relu(x1))  # 2c, 1/8
-        x3 = self.layer3(self.relu(x2))  # 4c, 1/16
-        x3_ = x2 + F.interpolate(
-            self.compression3(x3), size=paddle.shape(x2)[2:], mode='bilinear')
-        x3_ = self.layer3_(self.relu(x3_))  # 2c, 1/8
-
-        x4_, x4 = self.layer4(
-            [self.relu(x3_), self.relu(x3)])  # 2c, 1/8; 8c, 1/16
-        x5_, x5 = self.layer5(
-            [self.relu(x4_), self.relu(x4)])  # 2c, 1/8; 8c, 1/32
-
-        x6 = self.spp(x5)
-        x6 = F.interpolate(
-            x6, size=paddle.shape(x5_)[2:], mode='bilinear')  # 2c, 1/8
-        x_out = self.seghead(paddle.concat([x5_, x6], axis=1))  # 4c, 1/8
-        logit_list = [x_out]
-
-        if self.use_aux_head:
-            x_out_extra = self.seghead_extra(x3_)
-            logit_list.append(x_out_extra)
-
-        if debug:
-            x_out_mean = paddle.mean(x_out).numpy()
-            x_out_extra_mean = paddle.mean(x_out_extra).numpy()
-            print('out', x_out_mean)
-            print('out', x_out_extra_mean)
-            if self.base_channels == 32:
-                assert np.isclose(x_out_mean, -11.117491, 0, 1e-3)
-                assert np.isclose(x_out_extra_mean, -7.9465437, 0, 1e-3)
-            elif self.base_channels == 64:
-                assert np.isclose(x_out_mean, -21.306246, 0, 1e-3)
-                assert np.isclose(x_out_extra_mean, -17.274418, 0, 1e-3)
-            exit()
-
-        logit_list = [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=False) for logit in logit_list
-        ]
-
-        return logit_list
