@@ -169,7 +169,7 @@ class RTFormer(nn.Layer):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        debug = False
+        debug = True
         if debug:
             import numpy as np
             np.random.seed(0)
@@ -331,11 +331,21 @@ class MLP(nn.Layer):
 
 
 class ExternalAttention(nn.Layer):
+    """
+    The ExternalAttention implementation based on PaddlePaddle.
+    Args:
+        in_channels (int, optional): The input channels.
+        inter_channels (int, optional): The channels of intermediate feature.
+        out_channels (int, optional): The output channels.
+        num_heads (int, optional): The num of heads in attention. Default: 8
+        use_cross_kv (bool, optional): Wheter use cross_kv. Default: False
+    """
+
     def __init__(self,
                  in_channels,
                  out_channels,
                  inter_channels,
-                 num_heads=1,
+                 num_heads=8,
                  use_cross_kv=False):
         super().__init__()
         assert out_channels % num_heads == 0, \
@@ -345,10 +355,12 @@ class ExternalAttention(nn.Layer):
         self.inter_channels = inter_channels
         self.num_heads = num_heads
         self.use_cross_kv = use_cross_kv
-        self.same_in_out_chs = self.in_channels == self.out_channels
-
         self.norm = bn2d(in_channels)
-        if not use_cross_kv:
+        self.same_in_out_chs = in_channels == out_channels
+
+        if use_cross_kv:
+            assert self.same_in_out_chs, "in_channels is not equal to out_channels when use_cross_kv is True"
+        else:
             self.k = self.create_parameter(
                 shape=(inter_channels, in_channels, 1, 1),
                 default_initializer=paddle.nn.initializer.Normal(std=0.001))
@@ -371,53 +383,59 @@ class ExternalAttention(nn.Layer):
             if m.bias is not None:
                 constant_(m.bias, 0.)
 
-    def _act_sn(self, x, B, H, W):
+    def _act_sn(self, x):
         x_shape = paddle.shape(x)
-        x = x.reshape([B, self.inter_channels, H, W]) * (self.inter_channels
-                                                         **-0.5)
+        x = x.reshape([-1, self.inter_channels, 0, 0]) * (self.inter_channels
+                                                          **-0.5)
         x = F.softmax(x, axis=1)
         x = x.reshape(x_shape)
         return x
 
-    def _act_dn(self, x, B, H, W):
+    def _act_dn(self, x):
         x_shape = paddle.shape(x)
+        h, w = x_shape[2], x_shape[3]
         x = x.reshape(
-            [B, self.num_heads, self.inter_channels // self.num_heads, H * W])
+            [-1, self.num_heads, self.inter_channels // self.num_heads, h * w])
         x = F.softmax(x, axis=3)
         x = x / (paddle.sum(x, axis=2, keepdim=True) + 1e-06)
         x = x.reshape(x_shape)
         return x
 
     def forward(self, x, cross_k=None, cross_v=None):
-        B = x.shape[0]
+        """
+        Args:
+            x (Tensor): The input tensor. 
+            cross_k (Tensor, optional): The dims is (n*144, c_in, 1, 1)
+            cross_v (Tensor, optional): The dims is (n*c_in, 144, 1, 1)
+        """
         x = self.norm(x)
-        if self.use_cross_kv:
+        if not self.use_cross_kv:
+            x = F.conv2d(
+                x,
+                self.k,
+                bias=None,
+                stride=2 if not self.same_in_out_chs else 1,
+                padding=0)  # n,c_in,h,w -> n,c_inter,h,w
+            x = self._act_dn(x)  # n,c_inter,h,w
+            x = F.conv2d(
+                x, self.v, bias=None, stride=1,
+                padding=0)  # n,c_inter,h,w -> n,c_out,h,w
+        else:
             assert (cross_k is not None) and (cross_v is not None), \
                 "cross_k and cross_v should no be None when use_cross_kv"
-            k, v = cross_k, cross_v
-            x = x.reshape([1, -1, x.shape[2], x.shape[3]])
+            x_shape = paddle.shape(x)
+            B = x.shape[0]
+            assert B > 0, "The first dim of x should be greater than 0, but get {}".format(
+                B)
+            x = x.reshape([1, -1, 0, 0])  # n,c_in,h,w -> 1,n*c_in,h,w
             x = F.conv2d(
-                x,
-                k,
-                bias=None,
-                stride=2 if not self.same_in_out_chs else 1,
-                padding=0,
-                groups=B)
-            H, W = x.shape[2:]
-            x = self._act_sn(x, B, H, W)
-            x = F.conv2d(x, v, bias=None, stride=1, padding=0, groups=B)
-            x = x.reshape([B, -1, H, W])
-        else:
-            k, v = self.k, self.v
+                x, cross_k, bias=None, stride=1, padding=0,
+                groups=B)  # 1,n*c_in,h,w -> 1,n*144,h,w  (group=B)
+            x = self._act_sn(x)
             x = F.conv2d(
-                x,
-                k,
-                bias=None,
-                stride=2 if not self.same_in_out_chs else 1,
-                padding=0)
-            H, W = x.shape[2:]
-            x = self._act_dn(x, B, H, W)
-            x = F.conv2d(x, v, bias=None, stride=1, padding=0)
+                x, cross_v, bias=None, stride=1, padding=0,
+                groups=B)  # 1,n*144,h,w -> 1, n*c_in,h,w  (group=B)
+            x = x.reshape(x_shape)  # 1, n*c_in,h,w -> n,c,h,w
 
         return x
 
@@ -432,8 +450,8 @@ class EABlock(nn.Layer):
         drop_rate (float, optional): The drop rate in MLP. Default:0.
         drop_path_rate (float, optional): The drop path rate in EABlock. Default: 0.2
         use_injection (bool, optional): Whether inject the high feature into low feature. Default: True
-        use_cross_kv (bool, optional): Wheter use cross_kv. Default: False
-        attn_high_inter_channels (int, optional): The inter channels of atten_high module. Default: 144
+        use_cross_kv (bool, optional): Wheter use cross_kv. Default: True
+        cross_size (int, optional): The size of pooling in cross_kv. Default: 12
     """
 
     def __init__(self,
@@ -443,44 +461,58 @@ class EABlock(nn.Layer):
                  drop_rate=0.,
                  drop_path_rate=0.,
                  use_injection=True,
-                 use_cross_kv=False,
-                 attn_high_inter_channels=144):
+                 use_cross_kv=True,
+                 cross_size=12):
         super().__init__()
         in_channels_h, in_channels_l = in_channels
         out_channels_h, out_channels_l = out_channels
+        assert in_channels_h == out_channels_h, "in_channels_h is not equal to out_channels_h"
+        self.out_channels_h = out_channels_h
         self.proj_flag = in_channels_l != out_channels_l
         self.use_injection = use_injection
         self.use_cross_kv = use_cross_kv
-        # attn
+        self.cross_size = cross_size
+        # low resolution
         if self.proj_flag:
             self.attn_shortcut_l = nn.Sequential(
                 bn2d(in_channels_l),
                 conv2d(in_channels_l, out_channels_l, 1, 2, 0))
             self.attn_shortcut_l.apply(self._init_weights_kaiming)
-        self.attn_h = ExternalAttention(
-            in_channels_h,
-            out_channels_h,
-            inter_channels=attn_high_inter_channels,
-            num_heads=num_heads,
-            use_cross_kv=use_cross_kv)
         self.attn_l = ExternalAttention(
             in_channels_l,
             out_channels_l,
             inter_channels=out_channels_l,
             num_heads=num_heads,
             use_cross_kv=False)
-        # mlp
-        self.mlp_h = MLP(out_channels_h, drop_rate=drop_rate)
         self.mlp_l = MLP(out_channels_l, drop_rate=drop_rate)
         self.drop_path = DropPath(
             drop_path_rate) if drop_path_rate > 0. else Identity()
-        # fusion
+
+        # compression
         self.compression = nn.Sequential(
             bn2d(out_channels_l),
             nn.ReLU(),
             conv2d(
                 out_channels_l, out_channels_h, kernel_size=1))
         self.compression.apply(self._init_weights_kaiming)
+
+        # high resolution
+        self.attn_h = ExternalAttention(
+            in_channels_h,
+            in_channels_h,
+            inter_channels=cross_size * cross_size,
+            num_heads=num_heads,
+            use_cross_kv=use_cross_kv)
+        self.mlp_h = MLP(out_channels_h, drop_rate=drop_rate)
+        if use_cross_kv:
+            self.cross_kv = nn.Sequential(
+                bn2d(out_channels_l),
+                nn.AdaptiveMaxPool2D(output_size=(self.cross_size,
+                                                  self.cross_size)),
+                conv2d(out_channels_l, 2 * out_channels_h, 1, 1, 0))
+            self.cross_kv.apply(self._init_weights)
+
+        # injection
         if use_injection:
             self.down = nn.Sequential(
                 bn2d(out_channels_h),
@@ -500,15 +532,6 @@ class EABlock(nn.Layer):
                     stride=2,
                     padding=1), )
             self.down.apply(self._init_weights_kaiming)
-        # cross attention
-        if use_cross_kv:
-            self.cross_size = 12
-            self.cross_kv = nn.Sequential(
-                bn2d(out_channels_l),
-                nn.AdaptiveMaxPool2D(output_size=(self.cross_size,
-                                                  self.cross_size)),
-                conv2d(out_channels_l, 2 * out_channels_h, 1, 1, 0))
-            self.cross_kv.apply(self._init_weights)
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
@@ -539,31 +562,29 @@ class EABlock(nn.Layer):
     def forward(self, x):
         x_h, x_l = x
 
-        # low resolution branch
+        # low resolution
         x_l_res = self.attn_shortcut_l(x_l) if self.proj_flag else x_l
         x_l = x_l_res + self.drop_path(self.attn_l(x_l))
-        x_l = x_l + self.drop_path(self.mlp_l(x_l))
+        x_l = x_l + self.drop_path(self.mlp_l(x_l))  # n,out_chs_l,h,w 
 
         # compression
         x_h_shape = paddle.shape(x_h)[2:]
         x_l_cp = self.compression(x_l)
         x_h += F.interpolate(x_l_cp, size=x_h_shape, mode='bilinear')
 
-        # high resolution branch
+        # high resolution
         if not self.use_cross_kv:
-            x_h = x_h + self.drop_path(self.attn_h(x_h))
+            x_h = x_h + self.drop_path(self.attn_h(x_h))  # n,out_chs_h,h,w
         else:
-            ch_h = paddle.shape(x_h)[1]
-            cross_kv = self.cross_kv(x_l)
-            cross_k, cross_v = paddle.split(
-                cross_kv.reshape([cross_kv.shape[0], cross_kv.shape[1], -1]),
-                2,
-                axis=1)
-            cross_k = cross_k.transpose([0, 2, 1]).reshape([-1, ch_h, 1, 1])
+            cross_kv = self.cross_kv(x_l)  # n,2*out_channels_h,12,12
+            cross_k, cross_v = paddle.split(cross_kv, 2, axis=1)
+            cross_k = cross_k.transpose([0, 2, 3, 1]).reshape(
+                [-1, self.out_channels_h, 1, 1])  # n*144,out_channels_h,1,1
             cross_v = cross_v.reshape(
-                [-1, self.cross_size * self.cross_size, 1, 1])
-
-            x_h = x_h + self.drop_path(self.attn_h(x_h, cross_k, cross_v))
+                [-1, self.cross_size * self.cross_size, 1,
+                 1])  # n*out_channels_h,144,1,1
+            x_h = x_h + self.drop_path(self.attn_h(x_h, cross_k,
+                                                   cross_v))  # n,out_chs_h,h,w
 
         x_h = x_h + self.drop_path(self.mlp_h(x_h))
 
