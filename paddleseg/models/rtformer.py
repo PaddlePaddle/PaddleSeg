@@ -46,6 +46,7 @@ class RTFormer(nn.Layer):
         use_injection (list[boo], optional): Whether use injection in layer 4 and 5.
             Default: [True, True]
         lr_mult (float, optional): The multiplier of lr for DAPPM and head module. Default: 10
+        cross_size (int, optional): The size of pooling in cross_kv. Default: 12
         in_channels (int, optional): The channels of input image. Default: 3
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
@@ -62,6 +63,7 @@ class RTFormer(nn.Layer):
                  use_aux_head=True,
                  use_injection=[True, True],
                  lr_mult=10.,
+                 cross_size=12,
                  in_channels=3,
                  pretrained=None):
         super().__init__()
@@ -99,7 +101,8 @@ class RTFormer(nn.Layer):
             drop_rate=drop_rate,
             drop_path_rate=drop_path_rate,
             use_injection=use_injection[0],
-            use_cross_kv=True)
+            use_cross_kv=True,
+            cross_size=cross_size)
         self.layer5 = EABlock(
             in_channels=[base_chs * 2, base_chs * 8],
             out_channels=[base_chs * 2, base_chs * 8],
@@ -107,7 +110,8 @@ class RTFormer(nn.Layer):
             drop_rate=drop_rate,
             drop_path_rate=drop_path_rate,
             use_injection=use_injection[1],
-            use_cross_kv=True)
+            use_cross_kv=True,
+            cross_size=cross_size)
 
         self.spp = DAPPM(
             base_chs * 8, spp_channels, base_chs * 2, lr_mult=lr_mult)
