@@ -172,7 +172,7 @@ class RTFormer(nn.Layer):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        debug = True
+        debug = False
         if debug:
             import numpy as np
             np.random.seed(0)

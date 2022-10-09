@@ -64,5 +64,5 @@ model:
   base_channels: 64
   head_channels: 128
   use_injection: [True, False]
-  #pretrained: ./rtformer_base_backbone_pretrained.pdparams
-  pretrained: ./rtformer_base_from_torch.pdparams
+  pretrained: ./rtformer_base_backbone_pretrained.pdparams
+  #pretrained: ./rtformer_base_from_torch.pdparams
