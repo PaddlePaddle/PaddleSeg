@@ -1,0 +1,5 @@
+_base_: './fcn_uhrnetw18_small_cityscapes_1024x512_80k.yml'
+
+batch_size: 3
+iters: 120000
+
