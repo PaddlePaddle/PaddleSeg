@@ -14,7 +14,7 @@ train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 ##
 trainer:pact_train
 norm_train:null
-pact_train:slim/quant/qat_train.py --config test_tipc/configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml --device gpu --do_eval --save_interval 500 --seed 100
+pact_train:deploy/slim/quant/qat_train.py --config test_tipc/configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml --device gpu --do_eval --save_interval 500 --seed 100
 fpgm_train:null
 distill_train:null
 null:null
@@ -28,14 +28,14 @@ null:null
 --save_dir:
 --model_path:
 norm_export:null
-quant_export:slim/quant/qat_export.py --config test_tipc/configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml
+quant_export:deploy/slim/quant/qat_export.py --config test_tipc/configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml
 fpgm_export:null
 distill_export:null
 export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/ocrnet_hrnetw18/model.pdparams
-infer_export:slim/quant/qat_export.py --config test_tipc/configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml
+infer_export:deploy/slim/quant/qat_export.py --config test_tipc/configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml
 infer_quant:False
 inference:deploy/python/infer.py
 --device:cpu|gpu

@@ -163,23 +163,20 @@ class Prep:
 
         # validate nii.gz on lung and mri with correct spacing_resample
         if filename.endswith((".nii", ".nii.gz", ".dcm")):
-            if "radiopaedia" in filename or "corona" in filename:
-                f_nps = [nib.load(f).get_fdata(dtype=np.float32)]
-            else:
-                itkimage = sitk.ReadImage(f)
-                if itkimage.GetDimension() == 4:
-                    slicer = sitk.ExtractImageFilter()
-                    s = list(itkimage.GetSize())
-                    s[-1] = 0
-                    slicer.SetSize(s)
-                    for slice_idx in range(itkimage.GetSize()[-1]):
-                        slicer.SetIndex([0, 0, 0, slice_idx])
-                        sitk_volume = slicer.Execute(itkimage)
-                        images.append(sitk_volume)
-                else:
-                    images = [itkimage]
+            itkimage = sitk.ReadImage(f)
+            if itkimage.GetDimension() == 4:
+                slicer = sitk.ExtractImageFilter()
+                s = list(itkimage.GetSize())
+                s[-1] = 0
+                slicer.SetSize(s)
+                for slice_idx in range(itkimage.GetSize()[-1]):
+                    slicer.SetIndex([0, 0, 0, slice_idx])
+                    sitk_volume = slicer.Execute(itkimage)
+                    images.append(sitk_volume)
                 images = [sitk.DICOMOrient(img, 'LPS') for img in images]
                 f_nps = [sitk.GetArrayFromImage(img) for img in images]
+            else:
+                f_nps = [nib.load(f).get_fdata(dtype=np.float32)]
 
         elif filename.endswith(
             (".mha", ".mhd", "nrrd"

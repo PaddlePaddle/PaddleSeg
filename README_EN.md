@@ -400,9 +400,9 @@ Note that:
 * [Training Tricks](./docs/train/train_tricks.md)
 
 *  Model Compression
-    * [Quantization](./docs/slim/quant/quant.md)
-    * [Distillation](./docs/slim/distill/distill.md)
-    * [Prune](./docs/slim/prune/prune.md)
+    * [Quantization](./docs/deployment/slim/quant/quant.md)
+    * [Distillation](./docs/deployment/slim/distill/distill.md)
+    * [Prune](./docs/deployment/slim/prune/prune.md)
 
 * [FAQ](./docs/faq/faq/faq.md)
 
