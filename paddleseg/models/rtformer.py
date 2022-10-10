@@ -391,21 +391,20 @@ class ExternalAttention(nn.Layer):
                 constant_init(m.bias, value=0.)
 
     def _act_sn(self, x):
-        x_shape = paddle.shape(x)
         x = x.reshape([-1, self.inter_channels, 0, 0]) * (self.inter_channels
                                                           **-0.5)
         x = F.softmax(x, axis=1)
-        x = x.reshape(x_shape)
+        x = x.reshape([1, -1, 0, 0])
         return x
 
     def _act_dn(self, x):
         x_shape = paddle.shape(x)
         h, w = x_shape[2], x_shape[3]
         x = x.reshape(
-            [-1, self.num_heads, self.inter_channels // self.num_heads, h * w])
+            [0, self.num_heads, self.inter_channels // self.num_heads, -1])
         x = F.softmax(x, axis=3)
         x = x / (paddle.sum(x, axis=2, keepdim=True) + 1e-06)
-        x = x.reshape(x_shape)
+        x = x.reshape([0, self.inter_channels, h, w])
         return x
 
     def forward(self, x, cross_k=None, cross_v=None):
@@ -430,9 +429,8 @@ class ExternalAttention(nn.Layer):
         else:
             assert (cross_k is not None) and (cross_v is not None), \
                 "cross_k and cross_v should no be None when use_cross_kv"
-            x_shape = paddle.shape(x)
             B = x.shape[0]
-            assert B > 0, "The first dim of x should be greater than 0, but get {}".format(
+            assert B > 0, "The first dim of x ({}) should be greater than 0, please set input_shape for export.py".format(
                 B)
             x = x.reshape([1, -1, 0, 0])  # n,c_in,h,w -> 1,n*c_in,h,w
             x = F.conv2d(
@@ -442,8 +440,8 @@ class ExternalAttention(nn.Layer):
             x = F.conv2d(
                 x, cross_v, bias=None, stride=1, padding=0,
                 groups=B)  # 1,n*144,h,w -> 1, n*c_in,h,w  (group=B)
-            x = x.reshape(x_shape)  # 1, n*c_in,h,w -> n,c,h,w
-
+            x = x.reshape([-1, self.in_channels, 0,
+                           0])  # 1, n*c_in,h,w -> n,c_in,h,w  (c_in = c_out)
         return x
 
 
