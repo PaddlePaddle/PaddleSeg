@@ -134,9 +134,6 @@ def parse_args():
 
 
 def main(args):
-    logger.warning("The `val.py` in the root of PaddleSeg will be removed in "
-                   "version 2.8. We recommend you to use `tools/val.py`.")
-
     env_info = get_sys_env()
 
     if args.device == 'gpu' and env_info[

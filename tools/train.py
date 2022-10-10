@@ -150,8 +150,6 @@ def parse_args():
 
 
 def main(args):
-    logger.warning("The `train.py` in the root of PaddleSeg will be removed in "
-                   "version 2.8. We recommend you to use `tools/train.py`.")
 
     if args.seed is not None:
         paddle.seed(args.seed)

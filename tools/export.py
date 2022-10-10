@@ -78,10 +78,6 @@ class SavedSegmentationNet(paddle.nn.Layer):
 
 
 def main(args):
-    logger.warning(
-        "The `export.py` in the root of PaddleSeg will be removed in "
-        "version 2.8. We recommend you to use `tools/export.py`.")
-
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     cfg = Config(args.config)
     cfg.check_sync_info()
