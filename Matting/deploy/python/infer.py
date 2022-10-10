@@ -397,10 +397,10 @@ class Predictor:
 
             self.predictor.run()
 
+            results = output_handle.copy_to_cpu()
+
             if args.benchmark:
                 self.autolog.times.stamp()
-
-            results = output_handle.copy_to_cpu()
 
             results = results.squeeze(1)
             for j in range(args.batch_size):
