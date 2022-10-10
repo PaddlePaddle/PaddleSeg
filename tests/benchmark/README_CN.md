@@ -2,7 +2,7 @@
 
 # Benchmark说明
 
-`PaddleSeg/benchmark`用于监控模型训练的速度。
+`PaddleSeg/tests/benchmark`用于监控模型训练的速度。
 
 
 目录结构如下：
@@ -34,9 +34,10 @@
 
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
-cd PaddleSeg
-bash benchmark/run_all.sh
+cd PaddleSeg/
+bash tests/benchmark/run_all.sh
 ```
+
 ### Profiling开关使用方式
 训练时添加如下参数
  `--profiler_options="batch_range=[50, 60]; profile_path=model.profile`
