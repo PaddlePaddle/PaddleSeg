@@ -140,10 +140,6 @@ def get_test_config(cfg, args):
 
 
 def main(args):
-    logger.warning(
-        "The `predict.py` in the root of PaddleSeg will be removed in "
-        "version 2.8. We recommend you to use `tools/predict.py`.")
-
     env_info = get_sys_env()
 
     if args.device == 'gpu' and env_info[
@@ -183,6 +179,9 @@ def main(args):
         image_dir=image_dir,
         save_dir=args.save_dir,
         **test_config)
+
+    logger.warning("This `predict.py` will be removed in version 2.8, "
+                   "please use `tools/predict.py`.")
 
 
 if __name__ == '__main__':

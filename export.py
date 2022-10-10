@@ -78,10 +78,6 @@ class SavedSegmentationNet(paddle.nn.Layer):
 
 
 def main(args):
-    logger.warning(
-        "The `export.py` in the root of PaddleSeg will be removed in "
-        "version 2.8. We recommend you to use `tools/export.py`.")
-
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     cfg = Config(args.config)
     cfg.check_sync_info()
@@ -137,6 +133,9 @@ def main(args):
         yaml.dump(data, file)
 
     logger.info(f'The inference model is saved in {args.save_dir}')
+
+    logger.warning("This `export.py` will be removed in version 2.8, "
+                   "please use `tools/export.py`.")
 
 
 if __name__ == '__main__':
