@@ -119,7 +119,7 @@ export CUDA_VISIBLE_DEVICES=0 # Linux下设置1张可用的卡
 
 cd PaddleSeg
 
-python train.py \
+python tools/train.py \
        --config configs/smrt/pp_liteseg_stdc2.yml \
        --do_eval \
        --use_vdl \
@@ -142,7 +142,7 @@ python train.py \
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
 
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
        --config configs/smrt/pp_liteseg_stdc2.yml \
        --do_eval \
        --use_vdl \

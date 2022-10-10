@@ -44,7 +44,7 @@ Run the following command in the root directory of PaddleSeg to start training m
 export CUDA_VISIBLE_DEVICES=0 # Use single GPU in Linux
 # set CUDA_VISIBLE_DEVICES=0 # Use single GPU in Windows
 
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --save_interval 500 \
        --do_eval \

@@ -54,7 +54,7 @@ export model=pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k     # test resol
 # export model=pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k
 # export model=pp_liteseg_stdc1_camvid_960x720_10k
 # export model=pp_liteseg_stdc2_camvid_960x720_10k
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
     --config configs/pp_liteseg/${model}.yml \
     --save_dir output/${model} \
     --save_interval 1000 \

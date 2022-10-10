@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/mini_supervisely/test.txt
 --profiler_options:null
 ##
 trainer:norm_train
-norm_train:train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml --device gpu --do_eval --save_interval 500 --seed 100
+norm_train:tools/train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml --device gpu --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
 distill_train:null

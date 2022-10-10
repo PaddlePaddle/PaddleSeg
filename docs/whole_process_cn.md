@@ -149,7 +149,7 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 
 **windows下请执行以下命令**
 **set CUDA_VISIBLE_DEVICES=0**
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --save_interval 500 \
        --do_eval \
@@ -207,7 +207,7 @@ output
 
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
@@ -226,7 +226,7 @@ python -m paddle.distributed.launch train.py \
 单卡和多卡训练，都采用相同的方法设置`resume_model`输入参数，即可恢复训练。
 
 ```
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
@@ -427,8 +427,9 @@ PaddleSeg
         └── utils
             ├── visualize.py
             └── ...
-     ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
-     ├──  predict.py # 预测文件
+     ├──  tools
+          ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
+          ├──  predict.py # 预测文件
      └── ...
 ```
 

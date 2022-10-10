@@ -41,7 +41,7 @@ cd ..
 export CUDA_VISIBLE_DEVICES=0 # Linux下设置1张可用的卡
 # set CUDA_VISIBLE_DEVICES=0 # Windows下设置1张可用的卡
 
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --save_interval 500 \
        --do_eval \

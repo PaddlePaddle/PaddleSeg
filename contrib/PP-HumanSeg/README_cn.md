@@ -349,7 +349,7 @@ configs
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # Linux下设置1张可用的卡
 # set CUDA_VISIBLE_DEVICES=0  # Windows下设置1张可用的卡
-python ../../train.py \
+python ../../tools/train.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --save_dir output/human_pp_humansegv2_lite \
   --save_interval 100 --do_eval --use_vdl

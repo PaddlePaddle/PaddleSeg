@@ -84,7 +84,7 @@ Specifically, run the following instructions in the root directory of PaddleSeg.
 export CUDA_VISIBLE_DEVICES=0  # Set GPU for Linux
 # set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows
 
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \

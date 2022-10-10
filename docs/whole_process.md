@@ -184,7 +184,7 @@ export CUDA_VISIBLE_DEVICES=0 # Set 1 usable card
 
 **Please execute the following command under windows**
 **set CUDA_VISIBLE_DEVICES=0**
-python train.py \
+python tools/train.py \
         --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --do_eval \
         --use_vdl \
@@ -244,7 +244,7 @@ A: As shown by the serial number in the figure, the parameters of the No. 1 yml 
 
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # Set 4 usable cards
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
@@ -255,7 +255,7 @@ python -m paddle.distributed.launch train.py \
 ### **3.8 Resume training**
 
 ```
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
@@ -463,8 +463,9 @@ PaddleSeg
         └── utils
             ├── visualize.py
             └── ...
-     ├── train.py # The training entry file, which describes the analysis of parameters, the starting method of training, and the resources prepared for training.
-     ├── predict.py # Prediction file
+     ├── tools
+        ├── train.py # The training entry file, which describes the analysis of parameters, the starting method of training, and the resources prepared for training.
+        ├── predict.py # Prediction file
      └── ...
 
 

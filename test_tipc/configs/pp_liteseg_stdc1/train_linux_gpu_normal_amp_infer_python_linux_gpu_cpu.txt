@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 null:null
 ##
 trainer:amp_train
-amp_train:train.py --config test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml --precision fp16 --amp_level O1 --do_eval --save_interval 500 --seed 100
+amp_train:tools/train.py --config test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml --precision fp16 --amp_level O1 --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
 distill_train:null
