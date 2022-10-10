@@ -64,4 +64,4 @@ model:
   base_channels: 64
   head_channels: 128
   use_injection: [True, False]
-  pretrained: pretrained_model/rtformer/rtformer_base_backbone_pretrained.pdparams
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/rtformer_base_backbone_imagenet_pretrained.zip

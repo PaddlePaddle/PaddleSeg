@@ -90,9 +90,10 @@ This part is the first part of the model after you import models.
 
    Note: **Only** the main model requires the manager decorator.
 
-   ```python
-   @manager.MODELS.add_component
-   ```
+```python
+@manager.MODELS.add_component
+class PSPNet(nn.Layer):
+```
 
 2. Inherit nn.Layer;
 
@@ -164,7 +165,7 @@ class PSPNet(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -348,7 +349,7 @@ Please refer to [document](../../deployment/inference/python_inference.md) to te
 * In readme.md, the reference style of the model should adopts Chicago, that is, the names of all authors. For example:```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.`` `
 * In readme.md, provide the training and test performance on at least one dataset in the following format.
     * `Resolution` denotes the crop_size in training dataset
-    * `mIoU, mIoU(flip), mIoU(ms+flip)` are the results of evaluating the model. `ms` means `multi-scale`, that is, three kinds of `scale` [0.75, 1.0, 1.25] are used; `flip` means horizontal flip. For detailed evaluation, please refer to [Model Evaluation](../../evaluation/evaluate/evaluate_cn.md)
+    * `mIoU, mIoU(flip), mIoU(ms+flip)` are the results of evaluating the model. `ms` means `multi-scale`, that is, three kinds of `scale` [0.75, 1.0, 1.25] are used; `flip` means horizontal flip. For detailed evaluation, please refer to [Model Evaluation](../../evaluation/evaluate_cn.md)
     * Provide download links including: trained model parameters, training log, training vdl.
 
     | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |

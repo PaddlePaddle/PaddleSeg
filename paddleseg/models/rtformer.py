@@ -31,7 +31,7 @@ class RTFormer(nn.Layer):
     """
     The RTFormer implementation based on PaddlePaddle.
 
-    The original article refers to xxx (todo)
+    TODO(pjc): The original article refers to xxx.
 
     Args:
         num_classes (int): The unique number of target classes.
@@ -176,14 +176,6 @@ class RTFormer(nn.Layer):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        debug = False
-        if debug:
-            import numpy as np
-            np.random.seed(0)
-            x = np.random.rand(1, 3, 512, 512).astype("float32")
-            x = paddle.to_tensor(x)
-            print(paddle.mean(x))
-
         x1 = self.layer1(self.conv1(x))  # c, 1/4
         x2 = self.layer2(self.relu(x1))  # 2c, 1/8
         x3 = self.layer3(self.relu(x2))  # 4c, 1/16
@@ -205,19 +197,6 @@ class RTFormer(nn.Layer):
         if self.use_aux_head:
             x_out_extra = self.seghead_extra(x3_)
             logit_list.append(x_out_extra)
-
-        if debug:
-            x_out_mean = paddle.mean(x_out).numpy()
-            x_out_extra_mean = paddle.mean(x_out_extra).numpy()
-            print('out', x_out_mean)
-            print('out', x_out_extra_mean)
-            if self.base_channels == 32:
-                assert np.isclose(x_out_mean, -11.117491, 0, 1e-3)
-                assert np.isclose(x_out_extra_mean, -7.9465437, 0, 1e-3)
-            elif self.base_channels == 64:
-                assert np.isclose(x_out_mean, -21.306246, 0, 1e-3)
-                assert np.isclose(x_out_extra_mean, -17.274418, 0, 1e-3)
-            exit()
 
         logit_list = [
             F.interpolate(

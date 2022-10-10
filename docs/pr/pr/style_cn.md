@@ -88,9 +88,10 @@ backbone和模型的规范相近，transform的规范较为简单，因此下面
 
 1. 用 manager 完成主模型的添加，即在主模型类定义之前加上下列语句。注意，**只有**主模型需要manager修饰器，不可以通过函数来定义不同型号的主模型，推荐通过模型yml配置文件中的模型输入参数来定义不同型号的主模型。
 
-   ```python
-   @manager.MODELS.add_component
-   ```
+```python
+@manager.MODELS.add_component
+class PSPNet(nn.Layer):
+```
 
 2. 主模型的class，需要继承 nn.Layer；
 
@@ -162,7 +163,7 @@ def forward(self, x):
     return [
         F.interpolate(
             logit,
-            x.shape[2:],
+            paddle.shape(x)[2:],
             mode='bilinear',
             align_corners=self.align_corners) for logit in logit_list
     ]
@@ -345,11 +346,11 @@ class Cityscapes(Dataset):
 
 * 参考[代码提交规范](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md)，完成代码提交前的准备，包含拉取最新内容、切换分支等。
 * 在```configs```目录下有以模型名命名的子目录，比如```pspnet```，其中包含模型yml配置文件和`README.md`，详细参考[示例](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/pspnet)。
-* 模型yml配置文件的文件命名方式为`模型名+backbone + out_stride+数据集+训练分辨率+训练单卡iters.yml`，不含部分就略去，详细参考[配置项文档](../../design/use/use_cn.md)。
-* `README.md`中模型原文参考文献，reference风格采用Chicago，即全部作者名，详细参考[示例](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/pspnet/README.md)
+* 模型yml配置文件的文件命名方式为`模型名+backbone+out_stride+数据集+训练分辨率+训练单卡iters.yml`，不含部分就略去，详细参考[配置项文档](../../design/use/use_cn.md)。
+* `README.md`中模型原文文献的reference风格采用Chicago，即全部作者名，详细参考[示例](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/pspnet/README.md)。
 * `README.md`中，提供至少一个数据集上的训练和测试结果，格式如下表格
     * `Resolution`表示训练数据集预处理时crop的图像尺寸。
-    * `mIoU、mIoU(flip)、mIoU(ms+flip)`是模型在验证集上的评估精度。`flip`表示测试使用水平翻转；`ms` 表示`multi-scale`，即使用三种`scale` [0.75, 1.0, 1.25]进行测试；`ms+flip`表示使用这两种数据处理方式进行测试。详细评估参考[模型评估](../../evaluation/evaluate/evaluate_cn.md)。
+    * `mIoU、mIoU(flip)、mIoU(ms+flip)`是模型在验证集上的评估精度。`flip`表示测试使用水平翻转；`ms` 表示`multi-scale`，即使用三种`scale` [0.75, 1.0, 1.25]进行测试；`ms+flip`表示使用这两种数据处理方式进行测试。模型评估的详细使用方法，请参考[模型评估](../../evaluation/evaluate_cn.md)。
     * 提供的下载链接包括三个部分：训练好的模型参数，训练日志，训练vdl。
 
     | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |

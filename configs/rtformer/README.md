@@ -8,7 +8,15 @@
 
 ### Cityscapes
 
-| Model | Backbone | Resolution | Training Iters | mIoU(slice) | mIoU (flip) | mIoU (ms+flip) | Links |
+| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |-|-|-|-|-|-|-|-|
-|RTFormer-Base|-|1024x512|120000|%|%|-|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/segformer_b0_cityscapes_1024x1024_160k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/segformer_b0_cityscapes_1024x1024_160k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=227e067add44d44383c402ec5aead11b)|
-|RTFormer-Slim|-|1024x512|120000|%|%|-|[model]() \| [log]() \| [vdl]()|
+|RTFormer-Base|-|1024x512|120000|79.24%|79.80%|80.19%|[model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/rtformer_base_cityscapes_1024x512_120k/model.pdparams) \| [log]() \| [vdl]()|
+|RTFormer-Slim|-|1024x512|120000|76.31%|77.05%|77.58%|[model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/rtformer_slim_cityscapes_1024x512_120k/model.pdparams) \| [log]() \| [vdl]()|
+
+
+### ADE20k
+
+| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
+|-|-|-|-|-|-|-|-|
+|RTFormer-Base|-|512x512|160000|42.02%|42.43%|42.72%|[model](https://paddleseg.bj.bcebos.com/dygraph/ade20k/rtformer_base_ade20k_512x512_160k/model.pdparams) \| [log]() \| [vdl]()|
+|RTFormer-Slim|-|512x512|160000|36.67%|37.32%|37.20%|[model](https://paddleseg.bj.bcebos.com/dygraph/ade20k/rtformer_slim_ade20k_512x512_160k/model.pdparams) \| [log]() \| [vdl]()|
