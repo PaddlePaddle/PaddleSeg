@@ -2,7 +2,7 @@ English | [简体中文](README_CN.md)
 
 # Benchmark Introduction
 
-`PaddleSeg/benchmark` is used for monitoring the speed of model training.
+`PaddleSeg/tests/benchmark` is used for monitoring the speed of model training.
 
 The content is as follow:
 
@@ -35,7 +35,7 @@ Use Docker to configure the environment.
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 cd PaddleSeg
-bash benchmark/run_all.sh
+bash tests/benchmark/run_all.sh
 ```
 ### How to Open Profiling
  Add the following parameter when training.
