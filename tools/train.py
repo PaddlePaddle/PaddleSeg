@@ -150,6 +150,7 @@ def parse_args():
 
 
 def main(args):
+
     if args.seed is not None:
         paddle.seed(args.seed)
         np.random.seed(args.seed)
@@ -240,9 +241,6 @@ def main(args):
         amp_level=args.amp_level,
         profiler_options=args.profiler_options,
         to_static_training=cfg.to_static_training)
-
-    logger.warning("This `train.py` will be removed in version 2.8, "
-                   "please use `tools/train.py`.")
 
 
 if __name__ == '__main__':
