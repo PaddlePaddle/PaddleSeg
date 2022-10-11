@@ -23,7 +23,7 @@ English | [简体中文](README_CN.md)
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> News
 <ul class="nobull">
-  <li>[2022-10-11] :fire: Release a real-time semantic segmentation model <a href="https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/rtformer">RTFormer</a> (NeurIPS 2022) developed by Baidu.
+  <li>[2022-10-11] :fire: Release a real-time semantic segmentation model <a href="https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/rtformer">RTFormer</a> (NeurIPS 2022).
   <li>[2022-07-20] :fire: PaddleSeg v2.6 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
     <ul>
         <li>Release <a href="./contrib/PP-HumanSeg">PP-HumanSeg v2</a>, an off-the-shelf human segmentation model. It achieves 64.26 FPS on the mobile device, which is 45.5% faster than before. </li>
