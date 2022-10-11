@@ -27,7 +27,7 @@ URL = "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.ta
 class PascalVOC(Dataset):
     """
     PascalVOC2012 dataset `http://host.robots.ox.ac.uk/pascal/VOC/`.
-    If you want to augment the dataset, please run the voc_augment.py in tools.
+    If you want to augment the dataset, please run the voc_augment.py in tools/data.
 
     Args:
         transforms (list): Transforms for image.

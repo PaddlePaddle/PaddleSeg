@@ -47,7 +47,7 @@ Firstly please download 3 files from [Cityscapes dataset](https://www.cityscapes
 Run the following commands to do the label conversion:
 ```shell
 pip install cityscapesscripts
-python ../../tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num_workers 8
+python ../../tools/data/convert_cityscapes.py --cityscapes_path data/cityscapes --num_workers 8
 ```
 Where 'cityscapes_path' should be adjusted according to the actual dataset path. 'num_workers' determines the number of processes started and the size can be adjusted according to the actual situation.
 
