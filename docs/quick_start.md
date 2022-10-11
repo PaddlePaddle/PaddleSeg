@@ -61,7 +61,7 @@ In the root directory of PaddleSeg, run the following command to evaluate the tr
 
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams
 ```

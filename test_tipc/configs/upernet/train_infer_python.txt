@@ -21,7 +21,7 @@ null:null
 null:null
 ##
 ===========================eval_params===========================
-eval:val.py --config test_tipc/configs/upernet/upernet_resnet101_os8_cityscapes_512x1024_40k.yml --device gpu --num_workers 8
+eval:tools/val.py --config test_tipc/configs/upernet/upernet_resnet101_os8_cityscapes_512x1024_40k.yml --device gpu --num_workers 8
 null:null
 ##
 ===========================export_params===========================

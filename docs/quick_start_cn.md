@@ -56,7 +56,7 @@ python tools/train.py \
 在PaddleSeg根目录下，执行如下命令，使用`val.py`脚本来评估模型的精度，即计算验证数据集的精度。
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams
 ```

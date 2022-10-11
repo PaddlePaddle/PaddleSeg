@@ -21,7 +21,7 @@ null:null
 null:null
 ##
 ===========================eval_params===========================
-eval:val.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml --device gpu --num_workers 8
+eval:tools/val.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml --device gpu --num_workers 8
 null:null
 ##
 ===========================export_params===========================

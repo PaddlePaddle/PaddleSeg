@@ -21,7 +21,7 @@ null:null
 null:null
 ##
 ===========================eval_params===========================
-eval:val.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml --device gpu --num_workers 8
+eval:tools/val.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml --device gpu --num_workers 8
 null:null
 ##
 ===========================export_params===========================

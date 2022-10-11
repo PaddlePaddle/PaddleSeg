@@ -21,7 +21,7 @@ null:null
 null:null
 ##
 ===========================eval_params===========================
-eval:val.py --config test_tipc/configs/sfnet/sfnet_resnet18_os8_cityscapes_1024x1024_80k.yml --device gpu --num_workers 8
+eval:tools/val.py --config test_tipc/configs/sfnet/sfnet_resnet18_os8_cityscapes_1024x1024_80k.yml --device gpu --num_workers 8
 null:null
 ##
 ===========================export_params===========================
