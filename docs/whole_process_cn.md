@@ -346,7 +346,7 @@ python tools/predict.py \
 
 执行如下命令，加载精度最高的模型权重，导出预测模型。
 ```
-python export.py \
+python tools/export.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir output/infer_model

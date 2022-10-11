@@ -27,7 +27,7 @@ null:null
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:export.py --config test_tipc/configs/deeplabv3p_resnet50_cityscapes/deeplabv3p_resnet50_1024x512_cityscapes.yml
+norm_export:tools/export.py --config test_tipc/configs/deeplabv3p_resnet50_cityscapes/deeplabv3p_resnet50_1024x512_cityscapes.yml
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -35,7 +35,7 @@ export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/deeplabv3p_resnet50_cityscapes/deeplabv3p_resnet50_os8_1024x512_100k/model.pdparams
-infer_export:export.py --config test_tipc/configs/deeplabv3p_resnet50_cityscapes/deeplabv3p_resnet50_1024x512_cityscapes.yml
+infer_export:tools/export.py --config test_tipc/configs/deeplabv3p_resnet50_cityscapes/deeplabv3p_resnet50_1024x512_cityscapes.yml
 infer_quant:False
 inference:deploy/python/infer.py
 --device:cpu|gpu

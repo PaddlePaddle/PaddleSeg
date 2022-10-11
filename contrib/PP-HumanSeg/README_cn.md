@@ -382,7 +382,7 @@ python ../../tools/predict.py \
 执行如下命令，加载模型和训练好的权重，导出预测模型。模型导出的详细文档，请参考[链接](../../docs/model_export_cn.md)。
 
 ```shell
-python ../../export.py \
+python ../../tools/export.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --save_dir output/human_pp_humansegv2_lite \

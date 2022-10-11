@@ -27,7 +27,7 @@ null:null
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:export.py --config test_tipc/configs/pfpnnet/pfpn_resnet101_os8_cityscapes_512x1024_40k.yml
+norm_export:tools/export.py --config test_tipc/configs/pfpnnet/pfpn_resnet101_os8_cityscapes_512x1024_40k.yml
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -35,7 +35,7 @@ export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/pfpnnet/model.pdparams
-infer_export:export.py --config test_tipc/configs/pfpnnet/pfpn_resnet101_os8_cityscapes_512x1024_40k.yml
+infer_export:tools/export.py --config test_tipc/configs/pfpnnet/pfpn_resnet101_os8_cityscapes_512x1024_40k.yml
 infer_quant:False
 inference:deploy/python/infer.py --save_dir ./test_tipc/output/pfpnnet/
 --device:cpu|gpu

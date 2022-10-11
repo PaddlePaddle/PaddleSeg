@@ -27,7 +27,7 @@ null:null
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml
+norm_export:tools/export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -35,7 +35,7 @@ export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/fcn_hrnetw18_small/fcn_hrnetw18_small_generic_192x192/model.pdparams
-infer_export:export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml
+infer_export:tools/export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml
 infer_quant:False
 inference:deploy/python/infer.py
 --device:cpu|gpu

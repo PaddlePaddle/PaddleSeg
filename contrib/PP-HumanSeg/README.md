@@ -387,7 +387,7 @@ python ../../tools/predict.py \
 Load model and trained weights and export inference model. The full usage of model exporting in [url](../../docs/model_export.md).
 
 ```shell
-python ../../export.py \
+python ../../tools/export.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --save_dir output/human_pp_humansegv2_lite \
