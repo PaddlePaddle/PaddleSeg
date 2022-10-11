@@ -375,7 +375,7 @@ python ../../tools/val.py \
 Load model and trained weights and start model prediction. The result are saved in `./data/images_result/added_prediction` and `./data/images_result/pseudo_color_prediction`
 
 ```bash
-python ../../predict.py \
+python ../../tools/predict.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --image_path data/images/human.jpg \

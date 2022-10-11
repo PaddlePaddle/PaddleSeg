@@ -72,7 +72,7 @@ python tools/val.py \
 In the root directory of PaddleSeg, run the following command to load trained model, predict the segmentation result and save the result image.
 
 ```
-python predict.py \
+python tools/predict.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0002.jpg \

@@ -321,7 +321,7 @@ python tools/val.py \
 `predict.py`脚本是专门用来可视化预测的，命令格式如下所示。
 
 ```
-python predict.py \
+python tools/predict.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0002.jpg \

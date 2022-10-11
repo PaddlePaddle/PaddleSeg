@@ -66,7 +66,7 @@ python tools/val.py \
 在PaddleSeg根目录下，执行如下命令，使用`predict.py`脚本加载模型，对图像进行预测，并且保存预测结果。
 
 ```
-python predict.py \
+python tools/predict.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0002.jpg \

@@ -349,7 +349,7 @@ In addition to analyzing the IOU, ACC and Kappa indicators of the model, we can 
 The predict.py script is specially used to visualize prediction cases. The command format is as follows
 
 ```
-python predict.py \
+python tools/predict.py \
         --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --model_path output/iter_1000/model.pdparams \
         --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
