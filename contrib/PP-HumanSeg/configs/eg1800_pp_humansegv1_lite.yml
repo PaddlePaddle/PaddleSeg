@@ -1,4 +1,4 @@
-batch_size: 64    # total batch size: 32 * 2
+batch_size: 32    # total batch size: 32 * 2
 iters: 46000
 
 train_dataset:

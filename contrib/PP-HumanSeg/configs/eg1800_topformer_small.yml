@@ -48,6 +48,7 @@ lr_scheduler:
   learning_rate: 0.01
   end_lr: 0
   power: 0.9
+  #end_lr: 1.0e-6
   #warmup_iters: 1500
   #warmup_start_lr: 1.0e-6
 
@@ -58,18 +59,11 @@ loss:
         - type: CrossEntropyLoss
         - type: LovaszSoftmaxLoss
       coef: [0.8, 0.2]
-  coef: [1, 1, 1]
+  coef: [1]
 
 model:
-  type: MobileSeg
-  num_classes: 2
+  type: TopFormer
   backbone:
-    type: MobileNetV3_large_x1_0  # out channels: [24, 40, 112, 160]
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv3_large_x1_0_ssld.tar.gz
-  cm_bin_sizes: [1, 2, 4]
-  backbone_indices: [0, 1, 2]
-  cm_out_ch: 128
-  arm_out_chs: [32, 64, 128]
-  seg_head_inter_chs: [16, 32, 32]
-  use_last_fuse: True
-  #pretrained: pretrained_models/portrait_pp_humansegv2_lite_256x144_pretrained/model.pdparams
+    type: TopTransformer_Small
+    lr_mult: 0.1
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_small_imagenet_pretrained.zip
