@@ -106,13 +106,13 @@ test_tipc/output/[model name]/
 
 其中`results_python.log`中包含了每条指令的运行状态，如果运行成功会输出：
 ```
-Run successfully with command - python3.7 train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
+Run successfully with command - python3.7 tools/train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
 Run successfully with command - python3.7 export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --model_path=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null/best_model/model.pdparams --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null!
 ......
 ```
 如果运行失败，会输出：
 ```
-Run failed with command - python3.7 train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
+Run failed with command - python3.7 tools/train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
 Run failed with command - python3.7 export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --model_path=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null/best_model/model.pdparams --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null!
 ......
 ```

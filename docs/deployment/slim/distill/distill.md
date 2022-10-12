@@ -46,7 +46,7 @@ Run the following instructions in the root directory of PaddleSeg to train the t
 export CUDA_VISIBLE_DEVICES=0  # Set GPU for Linux
 # set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows
 
-python train.py \
+python tools/train.py \
     --config configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
     --do_eval \
     --use_vdl \
@@ -70,7 +70,7 @@ Run the following instructions in the root directory of PaddleSeg to train the s
 export CUDA_VISIBLE_DEVICES=0  # Set GPU for Linux
 # set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows
 
-python train.py \
+python tools/train.py \
     --config configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml \
     --do_eval \
     --use_vdl \

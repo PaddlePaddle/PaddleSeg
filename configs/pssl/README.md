@@ -36,7 +36,6 @@ Make sure that the datasets have structures as follows:
 
 ```
 PaddleSeg
-│   train.py
 │   ...  
 │
 └───data
@@ -72,7 +71,7 @@ Having installed PaddlePaddle and PaddleSeg and prepared datasets (ImageNet and 
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
 path_save="work_dirs_stdc2_pssl"
-python -m paddle.distributed.launch --log_dir $path_save train.py \
+python -m paddle.distributed.launch --log_dir $path_save tools/train.py \
        --config configs/pssl/stdc2_seg_pssl.yml \
        --log_iters 200 \
        --num_workers 12 \
@@ -87,7 +86,7 @@ python -m paddle.distributed.launch --log_dir $path_save train.py \
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
 path_save="work_dirs_pp_liteseg_stdc2_pssl"
-python -m paddle.distributed.launch --log_dir $path_save train.py \
+python -m paddle.distributed.launch --log_dir $path_save tools/train.py \
        --config configs/pssl/pp_liteseg_stdc2_pssl.yml \
        --log_iters 100 \
        --num_workers 12 \

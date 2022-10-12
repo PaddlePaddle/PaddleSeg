@@ -149,7 +149,7 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 
 **windows下请执行以下命令**
 **set CUDA_VISIBLE_DEVICES=0**
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --save_interval 500 \
        --do_eval \
@@ -207,7 +207,7 @@ output
 
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
@@ -226,7 +226,7 @@ python -m paddle.distributed.launch train.py \
 单卡和多卡训练，都采用相同的方法设置`resume_model`输入参数，即可恢复训练。
 
 ```
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
@@ -264,7 +264,7 @@ visualdl --logdir output/
 在PP-LiteSeg示例中，执行如下命令进行模型评估。其中，通过`--model_path`输入参数来指定评估的模型权重。
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams
 ```
@@ -272,7 +272,7 @@ python val.py \
 如果想进行多尺度翻转评估，可以通过传入`--aug_eval`进行开启，然后通过`--scales`传入尺度信息， `--flip_horizontal`开启水平翻转，`--flip_vertical`开启垂直翻转。使用示例如下：
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --aug_eval \
@@ -283,7 +283,7 @@ python val.py \
 如果想进行滑窗评估，可以传入`--is_slide`进行开启， 通过`--crop_size`传入窗口大小， `--stride`传入步长。使用示例如下：
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --is_slide \
@@ -321,7 +321,7 @@ python val.py \
 `predict.py`脚本是专门用来可视化预测的，命令格式如下所示。
 
 ```
-python predict.py \
+python tools/predict.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0002.jpg \
@@ -346,7 +346,7 @@ python predict.py \
 
 执行如下命令，加载精度最高的模型权重，导出预测模型。
 ```
-python export.py \
+python tools/export.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir output/infer_model
@@ -427,8 +427,9 @@ PaddleSeg
         └── utils
             ├── visualize.py
             └── ...
-     ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
-     ├──  predict.py # 预测文件
+     ├──  tools
+          ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
+          ├──  predict.py # 预测文件
      └── ...
 ```
 

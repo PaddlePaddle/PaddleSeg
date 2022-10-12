@@ -354,7 +354,7 @@ Run the following command to start finetuning. You should change the details, su
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # Set GPU on Linux
 # set CUDA_VISIBLE_DEVICES=0  # Set GPU on Windows
-python ../../train.py \
+python ../../tools/train.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --save_dir output/human_pp_humansegv2_lite \
   --save_interval 100 --do_eval --use_vdl
@@ -365,7 +365,7 @@ python ../../train.py \
 Load model and trained weights and start model evaluation. The full usage of model evaluation in [url](../../docs/evaluation/evaluate/evaluate.md).
 
 ```bash
-python ../../val.py \
+python ../../tools/val.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams
 ```
@@ -375,7 +375,7 @@ python ../../val.py \
 Load model and trained weights and start model prediction. The result are saved in `./data/images_result/added_prediction` and `./data/images_result/pseudo_color_prediction`
 
 ```bash
-python ../../predict.py \
+python ../../tools/predict.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --image_path data/images/human.jpg \
@@ -387,7 +387,7 @@ python ../../predict.py \
 Load model and trained weights and export inference model. The full usage of model exporting in [url](../../docs/model_export.md).
 
 ```shell
-python ../../export.py \
+python ../../tools/export.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --save_dir output/human_pp_humansegv2_lite \

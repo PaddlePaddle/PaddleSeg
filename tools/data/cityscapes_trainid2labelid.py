@@ -13,7 +13,7 @@
 # limitations under the License.
 """
 Obtain the mIoU of Cityscapes test set:
-1. Use predict.py to generate result images.
+1. Use tools/predict.py to generate result images.
 2. Use cityscapes_trainid2labelid.py to convert the result images from trainid to labelid.
 3. Submit the converted results to Cityscapes website.
 """
