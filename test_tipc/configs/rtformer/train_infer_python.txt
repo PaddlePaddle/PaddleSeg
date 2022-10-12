@@ -35,7 +35,7 @@ export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/rtformer_base/model.pdparams
-infer_export:export.py --config test_tipc/configs/rtformer/rtformer_base_cityscapes_1024x512_120k.yml
+infer_export:export.py --config test_tipc/configs/rtformer/rtformer_base_cityscapes_1024x512_120k.yml --input_shape 1 3 512 512
 infer_quant:False
 inference:deploy/python/infer.py --save_dir ./test_tipc/output/rtformer_base/
 --device:cpu|gpu
