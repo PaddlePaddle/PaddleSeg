@@ -96,10 +96,13 @@ def load_pretrained_model(model, pretrained_model):
                     # When the input is more than 3 channels such as trimap-based method, padding zeros to load.
                     para_shape = list(para_state_dict[k].shape)
                     model_shape = list(model_state_dict[k].shape)
-                    if 'weight' in k and para_shape[1] < model_shape[
-                            1] and para_shape[0] == model_shape[
-                                0] and para_shape[2] == model_shape[
-                                    2] and para_shape[3] == model_shape[3]:
+                    if 'weight' in k \
+                        and len(para_shape) > 3 \
+                        and len(para_shape) > 3 \
+                        and para_shape[1] < model_shape[1] \
+                        and para_shape[0] == model_shape[0] \
+                        and para_shape[2] == model_shape[2] \
+                        and para_shape[3] == model_shape[3]:
                         zeros_pad = paddle.zeros(
                             (para_shape[0], model_shape[1] - para_shape[1],
                              para_shape[2], para_shape[3]))
