@@ -39,19 +39,14 @@ export:
     - type: Normalize
 
 optimizer:
-  type: sgd
-  momentum: 0.9
+  type: adam
   weight_decay: 0.0005
-  #type: adam
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.01
+  learning_rate: 0.001
   end_lr: 0
   power: 0.9
-  #end_lr: 1.0e-6
-  #warmup_iters: 1500
-  #warmup_start_lr: 1.0e-6
 
 loss:
   types:
@@ -63,9 +58,9 @@ loss:
   coef: [1]
 
 model:
-  type: TopFormer
-  num_classes: 2
+  type: PortraitNet
   backbone:
-    type: TopTransformer_Small
-    lr_mult: 0.1
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_small_imagenet_pretrained.zip
+    type: MobileNetV2_x1_0 # out channels: [24, 32, 96, 320]
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv2_x1_0_ssld.tar.gz
+  add_edge: False
+  num_classes: 2
