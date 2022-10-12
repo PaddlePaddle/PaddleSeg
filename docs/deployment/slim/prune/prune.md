@@ -27,7 +27,7 @@ We can train the model through the script provided by PaddleSeg. Please make sur
 ```shell
 export CUDA_VISIBLE_DEVICES=0 # Set an available gpu card.
 # if Windows, set CUDA_VISIBLE_DEVICES=0
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \

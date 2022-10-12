@@ -36,17 +36,17 @@ function _train(){
     if [ $fp_item = "fp16" ]; then
         use_fp16_cmd="--precision fp16"
     fi
-    train_cmd="--config=benchmark/configs/${model_item}.yml \
+    train_cmd="--config=tests/benchmark/configs/${model_item}.yml \
                --batch_size=${batch_size} \
                --iters=${max_iter} \
                --num_workers=${num_workers} ${use_fp16_cmd}"
 
     case ${run_mode} in
-    sp) train_cmd="python -u train.py ${train_cmd}" ;;
+    sp) train_cmd="python -u tools/train.py ${train_cmd}" ;;
     mp)
         rm -rf ./mylog
         train_cmd="python -m paddle.distributed.launch --log_dir=./mylog --gpus=$CUDA_VISIBLE_DEVICES \
-                  train.py ${train_cmd}" ;;
+                  tools/train.py ${train_cmd}" ;;
     *) echo "choose run_mode(sp or mp)"; exit 1;
     esac
 
@@ -66,7 +66,7 @@ function _train(){
     fi
 }
 
-source ${BENCHMARK_ROOT}/scripts/run_model.sh   # 在该脚本中会对符合benchmark规范的log使用analysis.py 脚本进行性能数据解析;该脚本在连调时可从benchmark repo中下载https://github.com/PaddlePaddle/benchmark/blob/master/scripts/run_model.sh;如果不联调只想要产出训练log可以注掉本行,提交时需打开
+#source ${BENCHMARK_ROOT}/scripts/run_model.sh   # 在该脚本中会对符合benchmark规范的log使用analysis.py 脚本进行性能数据解析;该脚本在连调时可从benchmark repo中下载https://github.com/PaddlePaddle/benchmark/blob/master/scripts/run_model.sh;如果不联调只想要产出训练log可以注掉本行,提交时需打开
 _set_params $@
-# _train       # 如果只想产出训练log,不解析,可取消注释
-_run     # 该函数在run_model.sh中,执行时会调用_train; 如果不联调只想要产出训练log可以注掉本行,提交时需打开
+_train       # 如果只想产出训练log,不解析,可取消注释
+#_run     # 该函数在run_model.sh中,执行时会调用_train; 如果不联调只想要产出训练log可以注掉本行,提交时需打开

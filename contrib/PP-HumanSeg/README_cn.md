@@ -349,7 +349,7 @@ configs
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # Linux下设置1张可用的卡
 # set CUDA_VISIBLE_DEVICES=0  # Windows下设置1张可用的卡
-python ../../train.py \
+python ../../tools/train.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --save_dir output/human_pp_humansegv2_lite \
   --save_interval 100 --do_eval --use_vdl
@@ -360,7 +360,7 @@ python ../../train.py \
 执行如下命令，加载模型和训练好的权重，进行模型评估，输出验证集上的评估精度。模型评估的详细文档，请参考[链接](../../docs/evaluation/evaluate/evaluate_cn.md)。
 
 ```bash
-python ../../val.py \
+python ../../tools/val.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams
 ```
@@ -370,7 +370,7 @@ python ../../val.py \
 执行如下命令，加载模型和训练好的权重，对单张图像进行预测，预测结果保存在`./data/images_result`目录下的`added_prediction`和`pseudo_color_prediction`文件夹中。
 
 ```bash
-python ../../predict.py \
+python ../../tools/predict.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --image_path data/images/human.jpg \
@@ -382,7 +382,7 @@ python ../../predict.py \
 执行如下命令，加载模型和训练好的权重，导出预测模型。模型导出的详细文档，请参考[链接](../../docs/model_export_cn.md)。
 
 ```shell
-python ../../export.py \
+python ../../tools/export.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --save_dir output/human_pp_humansegv2_lite \

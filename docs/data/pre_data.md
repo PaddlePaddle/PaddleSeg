@@ -62,7 +62,7 @@ We recommend that you store dataset in `PaddleSeg/data` for full compatibility w
 Run the following command to convert labels:
 ```shell
 pip install cityscapesscripts
-python tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num_workers 8
+python tools/data/convert_cityscapes.py --cityscapes_path data/cityscapes --num_workers 8
 ```
 where `cityscapes_path` should be adjusted according to the actual dataset path. `num_workers` determines the number of processes to be started. The value can be adjusted as required.
 
@@ -74,7 +74,7 @@ Generally, we will use [SBD(Semantic Boundaries Dataset)](http://home.bharathh.i
 Run the following commands to download the SBD dataset and use it to expand:
 ```shell
 cd PaddleSeg
-python tools/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
+python tools/data/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
 ```
 where `voc_path`should be adjusted according to the actual dataset path.
 
@@ -106,7 +106,7 @@ We recommend that you store dataset in `PaddleSeg/data` for full compatibility w
 Run the following command to convert labels:
 
 ```shell
-python tools/convert_cocostuff.py --annotation_path /PATH/TO/ANNOTATIONS --save_path /PATH/TO/CONVERT_ANNOTATIONS
+python tools/data/convert_cocostuff.py --annotation_path /PATH/TO/ANNOTATIONS --save_path /PATH/TO/CONVERT_ANNOTATIONS
 ```
 where `annotation_path` should be filled according to the `cocostuff/annotations` actual path. `save_path` determines the location of the converted label.
 
@@ -139,7 +139,7 @@ We recommend that you store dataset in `PaddleSeg/data` for full compatibility w
 Run the following command to convert labels:
 
 ```shell
-python tools/convert_voc2010.py --voc_path /PATH/TO/VOC ----annotation_path /PATH/TO/JSON
+python tools/data/convert_voc2010.py --voc_path /PATH/TO/VOC ----annotation_path /PATH/TO/JSON
 ```
 where `voc_path` should be filled according to the voc2010 actual path. `annotation_path` is the trainval_merged.json saved path.
 

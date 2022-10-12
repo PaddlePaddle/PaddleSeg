@@ -188,6 +188,9 @@ def main(args):
 
     evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
 
+    logger.warning("This `val.py`  will be removed in version 2.8, "
+                   "please use `tools/val.py`.")
+
 
 if __name__ == '__main__':
     args = parse_args()

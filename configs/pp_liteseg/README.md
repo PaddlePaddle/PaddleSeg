@@ -54,7 +54,7 @@ export model=pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k     # test resol
 # export model=pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k
 # export model=pp_liteseg_stdc1_camvid_960x720_10k
 # export model=pp_liteseg_stdc2_camvid_960x720_10k
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
     --config configs/pp_liteseg/${model}.yml \
     --save_dir output/${model} \
     --save_interval 1000 \
@@ -77,7 +77,7 @@ Refer to [doc](../../docs/evaluation/evaluate/evaluate.md) for the detailed usag
 export CUDA_VISIBLE_DEVICES=0
 export model=pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k
 # export other model
-python val.py \
+python tools/val.py \
     --config configs/pp_liteseg/${model}.yml \
     --model_path output/${model}/best_model/model.pdparams \
     --num_workers 3
