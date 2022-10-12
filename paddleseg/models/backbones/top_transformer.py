@@ -408,16 +408,16 @@ class PyramidPoolAgg(nn.Layer):
 
 
 class InjectionMultiSum(nn.Layer):
-    def __init__(self, in_channels, out_channels, activations=None,
+    def __init__(self, in_channels, out_channels, activations=None, global_in_channels=None,
                  lr_mult=1.0):
         super(InjectionMultiSum, self).__init__()
 
         self.local_embedding = ConvBNAct(
             in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
         self.global_embedding = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
+            global_in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
         self.global_act = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
+            global_in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
         self.act = HSigmoid()
 
     def forward(self, x_low, x_global):
@@ -581,6 +581,7 @@ class TopTransformer(nn.Layer):
                             self.feat_channels[i],
                             injection_out_channels[i],
                             activations=act_layer,
+                            global_in_channels=self.embed_dim,
                             lr_mult=lr_mult))
                 else:
                     self.SIM.append(Identity())
@@ -598,12 +599,12 @@ class TopTransformer(nn.Layer):
         out = self.trans(out)
 
         if self.injection:
-            xx = out.split(self.feat_channels, axis=1)
+            #xx = out.split(self.feat_channels, axis=1)
             results = []
             for i in range(len(self.feat_channels)):
                 if i in self.trans_out_indices:
                     local_tokens = ouputs[i]
-                    global_semantics = xx[i]
+                    global_semantics = out #xx[i]
                     out_ = self.SIM[i](local_tokens, global_semantics)
                     results.append(out_)
             return results

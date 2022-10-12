@@ -34,10 +34,10 @@ def reverse_transform(pred, trans_info, mode='nearest'):
             h, w = item[1][0], item[1][1]
             if paddle.get_device() == 'cpu' and dtype in intTypeList:
                 pred = paddle.cast(pred, 'float32')
-                pred = F.interpolate(pred, (h, w), mode=mode)
+                pred = F.interpolate(pred, [h, w], mode=mode)
                 pred = paddle.cast(pred, dtype)
             else:
-                pred = F.interpolate(pred, (h, w), mode=mode)
+                pred = F.interpolate(pred, [h, w], mode=mode)
         elif trans_mode == 'padding':
             h, w = item[1][0], item[1][1]
             pred = pred[:, :, 0:h, 0:w]
