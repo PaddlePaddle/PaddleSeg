@@ -2,7 +2,7 @@ batch_size: 2
 iters: 160000
 
 model:
-  type: UPerNet
+  type: UPerNetCAE
   backbone:
     type: CAE
     img_size: 512
@@ -17,9 +17,10 @@ model:
     init_values: 0.1
     final_norm: True
     use_rel_pos_bias: True
-    pretrained: # a BOS link
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/upernet_caebase_ade20k_512x512_160k/pretrained/model.pdparams
   backbone_indices: [3, 5, 7, 11]
   channels: 768
+  fpn_dim: 768
   inplane_head: 768
   fpn_inplanes: [768, 768, 768, 768]
   
@@ -58,7 +59,6 @@ val_dataset:
 loss:
   types:
     - type: CrossEntropyLoss
-    - type: CrossEntropyLoss
   coef: [1, 0.4]
 
 optimizer:
@@ -72,7 +72,7 @@ lr_scheduler:
   type: PolynomialDecay
   warmup_iters: 1500
   warmup_start_lr: 0.0
-  learning_rate: 0.0001
+  learning_rate: 0.0002
   end_lr: 0.0
   power: 1.0
 

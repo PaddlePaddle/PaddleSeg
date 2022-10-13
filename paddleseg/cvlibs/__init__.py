@@ -14,5 +14,5 @@
 
 from . import manager
 from . import param_init
-from .config import Config
 from .optimizers import AdamWDL
+from .config import Config
