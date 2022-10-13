@@ -129,7 +129,9 @@ class DCM(nn.Layer):
         generated_filter = self.filter_gen_conv(self.avg_pool(x))
         x = self.input_redu_conv(x)
         b, c, h, w = x.shape
-        x = paddle.unsqueeze(paddle.flatten(x, start_axis=0, stop_axis=1), axis=0)
+        x = paddle.unsqueeze(
+            paddle.flatten(
+                x, start_axis=0, stop_axis=1), axis=0)
         generated_filter = generated_filter.reshape(
             [b * c, 1, self.filter_size, self.filter_size])
 
