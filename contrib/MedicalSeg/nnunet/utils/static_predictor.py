@@ -1,7 +1,3 @@
-# Implementation of this model is borrowed and modified
-# (from torch to paddle) from here:
-# https://github.com/MIC-DKFZ/nnUNet
-
 # Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,26 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pickle
 import numpy as np
 from functools import partial
 from typing import Tuple, List, Union
 from scipy.ndimage.filters import gaussian_filter
 
-from .utils import no_op, pad_nd_image
+from paddle.inference import create_predictor, PrecisionType
+from paddle.inference import Config as PredictConfig
 
-import paddle
-from paddle.amp import auto_cast
 from tools.preprocess_utils import GenericPreprocessor, PreprocessorFor2D
+from nnunet.utils.utils import no_op, pad_nd_image
 from nnunet.transforms import default_2D_augmentation_params, default_3D_augmentation_params
 
 
-class BasePredictor:
+class StaticBasePredictor:
     """
-    Basic predictor for nnunet.
+    Static predictor for nnunet.
     """
 
     def __init__(self):
-        # The follow 4 attributes must be set in subclass.
         self.input_shape_must_be_divisible_by = None
         self.threeD = None
         self.num_classes = None
@@ -58,8 +54,7 @@ class BasePredictor:
                    use_gaussian: bool=False,
                    pad_border_mode: str="constant",
                    pad_kwargs: dict=None,
-                   verbose: bool=True,
-                   mixed_precision: bool=True) -> Tuple[np.ndarray, np.ndarray]:
+                   verbose: bool=True) -> Tuple[np.ndarray, np.ndarray]:
         """
         x: Input data. Must be a nd.ndarray of shape (c, x, y, z).
         do_mirroring: If True, use test time data augmentation in the form of mirroring.
@@ -90,47 +85,39 @@ class BasePredictor:
 
         assert len(x.shape) == 4, "data must have shape (c,x,y,z)"
 
-        if mixed_precision:
-            context = auto_cast
+        if self.threeD:
+            if use_sliding_window:
+                res = self._internal_predict_3D_3Dconv_tiled(
+                    x,
+                    step_size,
+                    do_mirroring,
+                    mirror_axes,
+                    patch_size,
+                    regions_class_order,
+                    use_gaussian,
+                    pad_border_mode,
+                    pad_kwargs=pad_kwargs,
+                    verbose=verbose)
+            else:
+                res = self._internal_predict_3D_3Dconv(
+                    x,
+                    patch_size,
+                    do_mirroring,
+                    mirror_axes,
+                    regions_class_order,
+                    pad_border_mode,
+                    pad_kwargs=pad_kwargs,
+                    verbose=verbose)
         else:
-            context = no_op
-
-        with context():
-            with paddle.no_grad():
-                if self.threeD:
-                    if use_sliding_window:
-                        res = self._internal_predict_3D_3Dconv_tiled(
-                            x,
-                            step_size,
-                            do_mirroring,
-                            mirror_axes,
-                            patch_size,
-                            regions_class_order,
-                            use_gaussian,
-                            pad_border_mode,
-                            pad_kwargs=pad_kwargs,
-                            verbose=verbose)
-                    else:
-                        res = self._internal_predict_3D_3Dconv(
-                            x,
-                            patch_size,
-                            do_mirroring,
-                            mirror_axes,
-                            regions_class_order,
-                            pad_border_mode,
-                            pad_kwargs=pad_kwargs,
-                            verbose=verbose)
-                else:
-                    if use_sliding_window:
-                        res = self._internal_predict_3D_2Dconv_tiled(
-                            x, patch_size, do_mirroring, mirror_axes, step_size,
-                            regions_class_order, use_gaussian, pad_border_mode,
-                            pad_kwargs, False)
-                    else:
-                        res = self._internal_predict_3D_2Dconv(
-                            x, patch_size, do_mirroring, mirror_axes,
-                            regions_class_order, pad_border_mode, pad_kwargs,
-                            False)
+            if use_sliding_window:
+                res = self._internal_predict_3D_2Dconv_tiled(
+                    x, patch_size, do_mirroring, mirror_axes, step_size,
+                    regions_class_order, use_gaussian, pad_border_mode,
+                    pad_kwargs, False)
+            else:
+                res = self._internal_predict_3D_2Dconv(
+                    x, patch_size, do_mirroring, mirror_axes,
+                    regions_class_order, pad_border_mode, pad_kwargs, False)
         return res
 
     @staticmethod
@@ -229,7 +216,6 @@ class BasePredictor:
                     print("using precomputed Gaussian")
                 gaussian_importance_map = self._gaussian_3d
 
-            gaussian_importance_map = paddle.to_tensor(gaussian_importance_map)
         else:
             gaussian_importance_map = None
 
@@ -256,7 +242,7 @@ class BasePredictor:
                         data[None, :, lb_x:ub_x, lb_y:ub_y, lb_z:ub_z],
                         mirror_axes, do_mirroring, gaussian_importance_map)[0]
 
-                    predicted_patch = predicted_patch.numpy()
+                    predicted_patch = predicted_patch
                     aggregated_results[:, lb_x:ub_x, lb_y:ub_y, lb_z:
                                        ub_z] += predicted_patch
                     aggregated_nb_of_predictions[:, lb_x:ub_x, lb_y:ub_y, lb_z:
@@ -315,10 +301,10 @@ class BasePredictor:
 
         if regions_class_order is None:
             predicted_segmentation = predicted_probabilities.argmax(0)
-            predicted_segmentation = predicted_segmentation.numpy()
-            predicted_probabilities = predicted_probabilities.numpy()
+            predicted_segmentation = predicted_segmentation
+            predicted_probabilities = predicted_probabilities
         else:
-            predicted_probabilities = predicted_probabilities.numpy()
+            predicted_probabilities = predicted_probabilities
             predicted_segmentation = np.zeros(
                 predicted_probabilities.shape[1:], dtype=np.float32)
             for i, c in enumerate(regions_class_order):
@@ -357,10 +343,10 @@ class BasePredictor:
 
         if regions_class_order is None:
             predicted_segmentation = predicted_probabilities.argmax(0)
-            predicted_segmentation = predicted_segmentation.numpy()
-            predicted_probabilities = predicted_probabilities.numpy()
+            predicted_segmentation = predicted_segmentation
+            predicted_probabilities = predicted_probabilities
         else:
-            predicted_probabilities = predicted_probabilities.numpy()
+            predicted_probabilities = predicted_probabilities
             predicted_segmentation = np.zeros(
                 predicted_probabilities.shape[1:], dtype=np.float32)
             for i, c in enumerate(regions_class_order):
@@ -369,21 +355,16 @@ class BasePredictor:
         return predicted_segmentation, predicted_probabilities
 
     def _internal_maybe_mirror_and_pred_3D(self,
-                                           x: Union[np.ndarray, paddle.Tensor],
+                                           x: np.ndarray,
                                            mirror_axes: tuple,
                                            do_mirroring: bool=True,
-                                           mult: np.ndarray or
-                                           paddle.Tensor=None) -> paddle.Tensor:
+                                           mult: np.ndarray=None):
         assert len(
             x.shape) == 5, 'x must be (b, c, x, y, z), but got {}.'.format(
                 x.shape)
 
-        x = paddle.to_tensor(x).astype('float32')
-        result = paddle.zeros(
+        result = np.zeros(
             [1, self.num_classes] + list(x.shape[2:]), dtype='float32')
-
-        if mult is not None:
-            mult = paddle.to_tensor(mult).astype('float32')
 
         if do_mirroring:
             mirror_idx = 8
@@ -398,54 +379,48 @@ class BasePredictor:
                 result += 1 / num_results * pred
 
             if m == 1 and (2 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(paddle.flip(x, (4, ))))
-                result += 1 / num_results * paddle.flip(pred, (4, ))
+                pred = self.inference_apply_nonlin(self(np.flip(x, (4, ))))
+                result += 1 / num_results * np.flip(pred, (4, ))
 
             if m == 2 and (1 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(paddle.flip(x, (3, ))))
-                result += 1 / num_results * paddle.flip(pred, (3, ))
+                pred = self.inference_apply_nonlin(self(np.flip(x, (3, ))))
+                result += 1 / num_results * np.flip(pred, (3, ))
 
             if m == 3 and (2 in mirror_axes) and (1 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(paddle.flip(x, (4, 3))))
-                result += 1 / num_results * paddle.flip(pred, (4, 3))
+                pred = self.inference_apply_nonlin(self(np.flip(x, (4, 3))))
+                result += 1 / num_results * np.flip(pred, (4, 3))
 
             if m == 4 and (0 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(paddle.flip(x, (2, ))))
-                result += 1 / num_results * paddle.flip(pred, (2, ))
+                pred = self.inference_apply_nonlin(self(np.flip(x, (2, ))))
+                result += 1 / num_results * np.flip(pred, (2, ))
 
             if m == 5 and (0 in mirror_axes) and (2 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(paddle.flip(x, (4, 2))))
-                result += 1 / num_results * paddle.flip(pred, (4, 2))
+                pred = self.inference_apply_nonlin(self(np.flip(x, (4, 2))))
+                result += 1 / num_results * np.flip(pred, (4, 2))
 
             if m == 6 and (0 in mirror_axes) and (1 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(paddle.flip(x, (3, 2))))
-                result += 1 / num_results * paddle.flip(pred, (3, 2))
+                pred = self.inference_apply_nonlin(self(np.flip(x, (3, 2))))
+                result += 1 / num_results * np.flip(pred, (3, 2))
 
             if m == 7 and (0 in mirror_axes) and (1 in mirror_axes) and (
                     2 in mirror_axes):
-                pred = self.inference_apply_nonlin(
-                    self(paddle.flip(x, (4, 3, 2))))
-                result += 1 / num_results * paddle.flip(pred, (4, 3, 2))
+                pred = self.inference_apply_nonlin(self(np.flip(x, (4, 3, 2))))
+                result += 1 / num_results * np.flip(pred, (4, 3, 2))
 
         if mult is not None:
             result[:, :] *= mult
         return result
 
     def _internal_maybe_mirror_and_pred_2D(self,
-                                           x: Union[np.ndarray, paddle.Tensor],
+                                           x: np.ndarray,
                                            mirror_axes: tuple,
                                            do_mirroring: bool=True,
-                                           mult: np.ndarray or
-                                           paddle.Tensor=None) -> paddle.Tensor:
+                                           mult: np.ndarray=None):
         assert len(x.shape) == 4, 'x must be (b, c, x, y), but got {}.'.format(
             x.shape)
 
-        x = paddle.to_tensor(x).astype('float32')
-        result = paddle.zeros(
+        result = np.zeros(
             [x.shape[0], self.num_classes] + list(x.shape[2:]), dtype='float32')
-
-        if mult is not None:
-            mult = paddle.to_tensor(mult).astype('float32')
 
         if do_mirroring:
             mirror_idx = 4
@@ -459,16 +434,16 @@ class BasePredictor:
                 pred = self.inference_apply_nonlin(self(x))
                 result += 1 / num_results * pred
             if m == 1 and (1 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(paddle.flip(x, (3, ))))
-                result += 1 / num_results * paddle.flip(pred, (3, ))
+                pred = self.inference_apply_nonlin(self(np.flip(x, (3, ))))
+                result += 1 / num_results * np.flip(pred, (3, ))
 
             if m == 2 and (0 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(paddle.flip(x, (2, ))))
-                result += 1 / num_results * paddle.flip(pred, (2, ))
+                pred = self.inference_apply_nonlin(self(np.flip(x, (2, ))))
+                result += 1 / num_results * np.flip(pred, (2, ))
 
             if m == 3 and (0 in mirror_axes) and (1 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(paddle.flip(x, (3, 2))))
-                result += 1 / num_results * paddle.flip(pred, (3, 2))
+                pred = self.inference_apply_nonlin(self(np.flip(x, (3, 2))))
+                result += 1 / num_results * np.flip(pred, (3, 2))
         if mult is not None:
             result[:, :] *= mult
         return result
@@ -522,7 +497,6 @@ class BasePredictor:
                     print("using precomputed Gaussian")
                 gaussian_importance_map = self._gaussian_2d
 
-            gaussian_importance_map = paddle.to_tensor(gaussian_importance_map)
         else:
             gaussian_importance_map = None
 
@@ -546,7 +520,7 @@ class BasePredictor:
                     data[None, :, lb_x:ub_x, lb_y:ub_y], mirror_axes,
                     do_mirroring, gaussian_importance_map)[0]
 
-                predicted_patch = predicted_patch.numpy()
+                predicted_patch = predicted_patch
                 aggregated_results[:, lb_x:ub_x, lb_y:ub_y] += predicted_patch
                 aggregated_nb_of_predictions[:, lb_x:ub_x, lb_y:
                                              ub_y] += add_for_nb_of_preds
@@ -626,82 +600,59 @@ class BasePredictor:
         return predicted_segmentation, softmax_pred
 
 
-class DynamicPredictor(BasePredictor):
-    def __init__(self, model):
+class StaticPredictor(StaticBasePredictor):
+    def __init__(self,
+                 model_path,
+                 param_path,
+                 plans,
+                 stage,
+                 min_subgraph_size=3):
         super().__init__()
-        assert hasattr(
-            model, 'net_num_pool_op_kernel_sizes'
-        ), "BasePredictor only used for nnunet predict, but not found net_num_pool_op_kernel_sizes in your model."
+        self.stage = stage
+        self.min_subgraph_size = min_subgraph_size
+        self.plans = plans
+        self.inference_apply_nonlin = lambda x: x
+        self.model_path = model_path
+        self.param_path = param_path
+
+        self.patch_size = np.array(self.plans['plans_per_stage'][self.stage][
+            'patch_size']).astype(int)
         self.input_shape_must_be_divisible_by = np.prod(
-            model.net_num_pool_op_kernel_sizes, 0, dtype=np.int64)
-        self.threeD = model.threeD
-        self.num_classes = model.num_classes
-        self.inference_apply_nonlin = partial(
-            paddle.nn.functional.softmax, axis=1)
-        self.model = model
+            self.plans['plans_per_stage'][self.stage]['pool_op_kernel_sizes'],
+            0,
+            dtype=np.int64)
+        self.num_classes = self.plans['num_classes'] + 1
 
-    def __call__(self, x):
-        x = self.model(x)[0]
-        return x
-
-
-class MultiFoldsPredictor(BasePredictor):
-    def __init__(self, model, param_paths):
-        super().__init__()
-        assert hasattr(
-            model, 'net_num_pool_op_kernel_sizes'
-        ), "BasePredictor only used for nnunet predict, but not found net_num_pool_op_kernel_sizes in your model."
-        self.input_shape_must_be_divisible_by = np.prod(
-            model.net_num_pool_op_kernel_sizes, 0, dtype=np.int64)
-        self.threeD = model.threeD
-        self.num_classes = model.num_classes
-        self.inference_apply_nonlin = partial(
-            paddle.nn.functional.softmax, axis=1)
-        self.model = model
-        self.param_list = [
-            paddle.load(param_path) for param_path in param_paths
-        ]
-        self.plans = model.plans
-        self.stage = model.stage
-
-        if self.threeD:
-            self.data_aug_params = default_3D_augmentation_params
-        else:
+        if len(self.patch_size) == 2:
+            self.threeD = False
             self.data_aug_params = default_2D_augmentation_params
+        elif len(self.patch_size) == 3:
+            self.threeD = True
+            self.data_aug_params = default_3D_augmentation_params
 
-        self.intensity_properties = self.plans['dataset_properties'][
-            'intensityproperties']
-        self.normalization_schemes = self.plans['normalization_schemes']
-        self.use_mask_for_norm = self.plans['use_mask_for_norm']
-        if self.plans.get('transpose_forward') is None or self.plans.get(
-                'transpose_backward') is None:
-            print(
-                "WARNING! You seem to have data that was preprocessed with a previous version of nnU-Net. "
-                "You should rerun preprocessing. We will proceed and assume that both transpose_foward "
-                "and transpose_backward are [0, 1, 2]. If that is not correct then weird things will happen!"
-            )
-            self.plans['transpose_forward'] = [0, 1, 2]
-            self.plans['transpose_backward'] = [0, 1, 2]
-        self.transpose_forward = self.plans['transpose_forward']
-        self.transpose_backward = self.plans['transpose_backward']
+        self._init_base_config()
+        self._init_gpu_config()
+        self.predictor = create_predictor(self.pred_cfg)
+        input_names = self.predictor.get_input_names()
+        self.input_handle = self.predictor.get_input_handle(input_names[0])
+        output_names = self.predictor.get_output_names()
+        self.output_handle = self.predictor.get_output_handle(output_names[0])
+
+    def _init_base_config(self):
+        self.pred_cfg = PredictConfig(self.model_path, self.param_path)
+        self.pred_cfg.enable_memory_optim()
+        self.pred_cfg.switch_ir_optim(True)
+
+    def _init_gpu_config(self):
+        print("Use GPU")
+        self.pred_cfg.enable_use_gpu(100, 0)
 
     def __call__(self, x):
-        x = self.model(x)[0]
-        return x
-
-    def preprocess_patient(self, input_files):
-        if self.threeD:
-            preprocessor_class = GenericPreprocessor
-        else:
-            preprocessor_class = PreprocessorFor2D
-
-        preprocessor = preprocessor_class(
-            self.normalization_schemes, self.use_mask_for_norm,
-            self.transpose_forward, self.intensity_properties)
-        d, s, properties = preprocessor.preprocess_test_case(
-            input_files,
-            self.plans['plans_per_stage'][self.stage]['current_spacing'])
-        return d, s, properties
+        self.input_handle.reshape(x.shape)
+        self.input_handle.copy_from_cpu(x)
+        self.predictor.run()
+        results = self.output_handle.copy_to_cpu()
+        return results
 
     def predict_preprocessed_data_return_seg_and_softmax(
             self,
@@ -714,7 +665,7 @@ class MultiFoldsPredictor(BasePredictor):
             pad_border_mode: str='constant',
             pad_kwargs: dict=None,
             verbose: bool=True,
-            mixed_precision=True):
+            mixed_precision=False):
         if pad_border_mode == 'constant' and pad_kwargs is None:
             pad_kwargs = {'constant_values': 0}
         if do_mirroring and mirror_axes is None:
@@ -722,50 +673,16 @@ class MultiFoldsPredictor(BasePredictor):
         if do_mirroring:
             assert self.data_aug_params["do_mirror"], "Cannot do mirroring as test time augmentation when training " \
                                                       "was done without mirroring"
-        self.model.eval()
         res = self.predict_3D(
             x=data,
             do_mirroring=do_mirroring,
             mirror_axes=mirror_axes,
             use_sliding_window=use_sliding_window,
             step_size=step_size,
-            patch_size=self.model.patch_size,
+            patch_size=self.patch_size,
             regions_class_order=None,
             use_gaussian=use_gaussian,
             pad_border_mode=pad_border_mode,
             pad_kwargs=pad_kwargs,
-            verbose=verbose,
-            mixed_precision=mixed_precision)
+            verbose=verbose)
         return res
-
-    def multi_folds_predict_preprocessed_data_return_seg_and_softmax(
-            self,
-            data: np.ndarray,
-            do_mirroring: bool=True,
-            mirror_axes: Tuple[int]=None,
-            use_sliding_window: bool=True,
-            step_size: float=0.5,
-            use_gaussian: bool=True,
-            pad_border_mode: str='constant',
-            pad_kwargs: dict=None,
-            verbose: bool=True,
-            mixed_precision=True):
-        softmax_res = None
-        for params in self.param_list:
-            self.model.set_state_dict(params)
-            x = self.predict_preprocessed_data_return_seg_and_softmax(
-                data=data,
-                do_mirroring=do_mirroring,
-                mirror_axes=mirror_axes,
-                use_sliding_window=use_sliding_window,
-                step_size=step_size,
-                use_gaussian=use_gaussian,
-                pad_border_mode=pad_border_mode,
-                pad_kwargs=pad_kwargs,
-                verbose=verbose,
-                mixed_precision=mixed_precision)[1]
-            if softmax_res is None:
-                softmax_res = x
-            else:
-                softmax_res += x
-        return softmax_res / len(self.param_list)
