@@ -373,7 +373,7 @@
    * [EISeg 数据标注](./EISeg)
 
 * [模型训练](/docs/train/train_cn.md)
-* [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
+* [模型评估](./docs/evaluation/evaluate_cn.md)
 * [模型预测](./docs/predict/predict_cn.md)
 
 * 模型导出

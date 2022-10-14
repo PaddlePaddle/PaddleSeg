@@ -24,9 +24,6 @@ import sys
 import paddle
 import numpy as np
 
-__dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../')))
-
 from paddleseg.cvlibs import Config
 from paddleseg.utils import get_sys_env, logger, op_flops_funs
 from paddle.hapi.dynamic_flops import (count_parameters, register_hooks,
@@ -36,13 +33,12 @@ from paddle.hapi.static_flops import Table
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
+    parser.add_argument("--config", help="The path of config file.", type=str)
     parser.add_argument(
-        "--config", help="The config file.", default=None, type=str)
-    parser.add_argument(
-        "--input_size",
+        "--input_shape",
         nargs='+',
-        help="The input shape.",
         type=int,
+        help="Set the input shape, such as --input_shape 1 3 1024 1024",
         default=[1, 3, 1024, 1024])
     return parser.parse_args()
 
@@ -144,9 +140,10 @@ def analyze(args):
     paddle.set_device('cpu')
 
     cfg = Config(args.config)
+    cfg.check_sync_info()
 
     custom_ops = {paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn}
-    inputs = paddle.randn(args.input_size)
+    inputs = paddle.randn(args.input_shape)
     _dynamic_flops(cfg.model, inputs, custom_ops=custom_ops, print_detail=True)
 
 
@@ -156,6 +153,6 @@ if __name__ == '__main__':
         raise RuntimeError('No configuration file specified.')
 
     logger.info("config:" + args.config)
-    logger.info("input_size:")
-    logger.info(args.input_size)
+    logger.info("input_shape:")
+    logger.info(args.input_shape)
     analyze(args)

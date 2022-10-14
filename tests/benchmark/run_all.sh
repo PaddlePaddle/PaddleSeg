@@ -4,8 +4,8 @@
 
 # Usage:
 #   git clone git clone https://github.com/PaddlePaddle/PaddleSeg.git
-#   cd PaddleSeg
-#   bash benchmark/run_all.sh
+#   cd PaddleSeg/
+#   bash tests/benchmark/run_all.sh
 
 #if  [ ${RUN_PROFILER} = "PROFILER" ]; then
 #    log_path=${PROFILER_LOG_DIR:-$(pwd)}  #  benchmark系统指定该参数,如果需要跑profile时,log_path指向存profile的目录
@@ -33,14 +33,14 @@ for model_name in ${model_name_list[@]}; do
             run_mode=sp
             log_name=seg_${model_name}_${run_mode}_bs${bs_item}_${fp_item}   # 如:clas_MobileNetv1_mp_bs32_fp32_8
             echo "index is speed, 1gpus, begin, ${log_name}"
-            CUDA_VISIBLE_DEVICES=0 bash benchmark/run_benchmark.sh ${run_mode} ${bs_item} ${fp_item} \
+            CUDA_VISIBLE_DEVICES=0 bash tests/benchmark/run_benchmark.sh ${run_mode} ${bs_item} ${fp_item} \
                 ${max_iters} ${model_name} ${num_workers} | tee ${log_path}/${log_name}_speed_1gpus 2>&1
             sleep 60
 
             run_mode=mp
             log_name=seg_${model_name}_${run_mode}_bs${bs_item}_${fp_item}
             echo "index is speed, 8gpus, run_mode is multi_process, begin, ${log_name}"
-            CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 bash benchmark/run_benchmark.sh ${run_mode} ${bs_item} ${fp_item} \
+            CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 bash tests/benchmark/run_benchmark.sh ${run_mode} ${bs_item} ${fp_item} \
                 ${max_iters} ${model_name} ${num_workers} | tee ${log_path}/${log_name}_speed_8gpus8p 2>&1
             sleep 60
             done

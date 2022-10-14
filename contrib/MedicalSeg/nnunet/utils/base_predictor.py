@@ -256,7 +256,7 @@ class BasePredictor:
                         data[None, :, lb_x:ub_x, lb_y:ub_y, lb_z:ub_z],
                         mirror_axes, do_mirroring, gaussian_importance_map)[0]
 
-                    predicted_patch = predicted_patch.cpu().numpy()
+                    predicted_patch = predicted_patch.numpy()
                     aggregated_results[:, lb_x:ub_x, lb_y:ub_y, lb_z:
                                        ub_z] += predicted_patch
                     aggregated_nb_of_predictions[:, lb_x:ub_x, lb_y:ub_y, lb_z:
@@ -315,13 +315,10 @@ class BasePredictor:
 
         if regions_class_order is None:
             predicted_segmentation = predicted_probabilities.argmax(0)
-            predicted_segmentation = predicted_segmentation.detach().cpu(
-            ).numpy()
-            predicted_probabilities = predicted_probabilities.detach().cpu(
-            ).numpy()
+            predicted_segmentation = predicted_segmentation.numpy()
+            predicted_probabilities = predicted_probabilities.numpy()
         else:
-            predicted_probabilities = predicted_probabilities.detach().cpu(
-            ).numpy()
+            predicted_probabilities = predicted_probabilities.numpy()
             predicted_segmentation = np.zeros(
                 predicted_probabilities.shape[1:], dtype=np.float32)
             for i, c in enumerate(regions_class_order):
@@ -360,10 +357,10 @@ class BasePredictor:
 
         if regions_class_order is None:
             predicted_segmentation = predicted_probabilities.argmax(0)
-            predicted_segmentation = predicted_segmentation.detach().numpy()
-            predicted_probabilities = predicted_probabilities.detach().numpy()
+            predicted_segmentation = predicted_segmentation.numpy()
+            predicted_probabilities = predicted_probabilities.numpy()
         else:
-            predicted_probabilities = predicted_probabilities.detach().numpy()
+            predicted_probabilities = predicted_probabilities.numpy()
             predicted_segmentation = np.zeros(
                 predicted_probabilities.shape[1:], dtype=np.float32)
             for i, c in enumerate(regions_class_order):
@@ -549,7 +546,7 @@ class BasePredictor:
                     data[None, :, lb_x:ub_x, lb_y:ub_y], mirror_axes,
                     do_mirroring, gaussian_importance_map)[0]
 
-                predicted_patch = predicted_patch.cpu().numpy()
+                predicted_patch = predicted_patch.numpy()
                 aggregated_results[:, lb_x:ub_x, lb_y:ub_y] += predicted_patch
                 aggregated_nb_of_predictions[:, lb_x:ub_x, lb_y:
                                              ub_y] += add_for_nb_of_preds

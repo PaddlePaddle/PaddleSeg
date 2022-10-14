@@ -19,3 +19,4 @@ from .evaluator import NiftiEvaluator, aggregate_scores
 from .postprocessing import determine_postprocessing, load_remove_save
 from .cascade_utils import predict_next_stage
 from .predict_utils import predict_cases
+from .static_predictor import StaticPredictor

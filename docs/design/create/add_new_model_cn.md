@@ -321,7 +321,7 @@ lr_scheduler: # 学习率的设置
 
 假设我们将上面的 yaml 文件保存为 PaddleSeg/configs/custom_configs/NewNet_NewLoss_NewTrans_NewBackbone_NewData.yml，请先切换到PaddleSeg目录下后，运行以下命令：
 ```
-python train.py \
+python tools/train.py \
        --config configs/custom_configs/NewNet_NewLoss_NewTrans_NewBackbone_NewData.yml \
        --do_eval \
        --use_vdl \
