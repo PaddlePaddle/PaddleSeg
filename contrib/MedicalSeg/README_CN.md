@@ -8,7 +8,7 @@ MedicalSeg 是一个简单易使用的全流程 3D 医学图像分割工具包�
 
 <p align="center">
 <img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="30.6%" height="20%"><img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="40.6%" height="20%">
-<p align="center">
+<p align="left">
     Vnet 在 COVID-19 CT scans (评估集上的 mDice 指标为 97.04%) 和 MRISpineSeg 数据集(评估集上的 16 类 mDice 指标为 89.14%) 上的分割结果
 </p>
 </p>
@@ -21,28 +21,34 @@ MedicalSeg 是一个简单易使用的全流程 3D 医学图像分割工具包�
 </p>
 </p>
 
-**MedicalSeg 刚刚发布全新版本！如果您在使用中发现任何问题，或想分享任何开发建议，请提交 github issue 或扫描以下微信二维码加入我们。**
-
-<p align="center">
-<img src="https://github.com/shiyutang/files/raw/main/medicalsegwechat.jpg" width="25%" height="20%">
-</p>
-
 ## 目录结构
 0. [最新消息](##最新消息)
-1. [3D智能标注EISeg-Med3D](##3D智能标注EISeg-Med3D)
-2. [MedicalSeg模型性能](##MedicalSeg模型性能)
-3. [快速在肺部数据上开始](##快速在肺部数据上开始)
-4. [完整教程](##完整教程)
-5. [在自己的数据上训练](##在自己的数据上训练)
-6. [代码结构](##代码结构)
-7. [TODO](##TODO)
-8. [License](##License)
-9. [致谢](##致谢)
+1. [最新消息](##技术交流)
+2. [3D智能标注EISeg-Med3D](##3D智能标注EISeg-Med3D)
+3. [MedicalSeg模型性能](##MedicalSeg模型性能)
+4. [快速在肺部数据上开始](##快速在肺部数据上开始)
+5. [完整教程](##完整教程)
+6. [在自己的数据上训练](##在自己的数据上训练)
+7. [代码结构](##代码结构)
+8. [TODO](##TODO)
+9. [License](##License)
+10. [致谢](##致谢)
 
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043516-eed25535-10e8-4853-8601-6bcf7ff58197.png" width="25"/> 最新消息
 - [2022-9] 新增3大前沿模型支持全流程部署应用，包含 nnformer, TransUnet 和 nnUnet，让你体会更强更精准的分割效果；新增 3D 医疗图像智能标注平台 [EISeg-Med3D](../../EISeg/med3d/README.md)，方便快捷地实现精准3D医疗图像标注。
 - [2022-4] MedicalSeg 发布0.1版本，提供了3D医疗图像分割中的数据预处理到到训练部署全流程，包含了对五个数据集的原生支持，以及椎骨和肺部上的高精度预训练模型。
+
+## <img src="../../docs/images/chat.png" width="25"/> 技术交流
+* 如果大家有使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
+* **欢迎大家加入PaddleSeg的微信用户群👫**（扫码填写问卷即可入群），和各界大佬交流学习，还可以**领取重磅大礼包🎁**
+  * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
+  * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
+  * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
+  * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+</div>
 
 ## <img src="https://user-images.githubusercontent.com/34859558/188419267-bd117697-7456-4c72-8cbe-1272264d4fe4.png" width="25"/> 3D智能标注EISeg-Med3D
 为了解决3D医疗手工标注效率低下的问题，并从数据标注开始真正全流程用AI赋能医疗，我们基于医疗软件 Slicer 搭建了[EISeg-Med3D](../../EISeg/med3d/README.md)，一个专注用户友好、高效、智能的3D医疗图像标注平台，通过在标注过程中融入3D交互式分割模型实现3D医疗数据标注的智能化高效化。主要特性如下：
