@@ -1,4 +1,4 @@
-# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -113,6 +113,7 @@ class Attention(nn.Layer):
 
             self.register_buffer("relative_position_index",
                                  relative_position_index)
+            # trunc_normal_(self.relative_position_bias_table, std=.0)
         else:
             self.window_size = None
             self.relative_position_bias_table = None
@@ -142,8 +143,9 @@ class Attention(nn.Layer):
                 self.relative_position_index.reshape([-1])].reshape([
                     self.window_size[0] * self.window_size[1] + 1,
                     self.window_size[0] * self.window_size[1] + 1, -1
-                ])
-            relative_position_bias = relative_position_bias.transpose((2, 0, 1))
+                ])  # Wh*Ww,Wh*Ww,nH
+            relative_position_bias = relative_position_bias.transpose(
+                (2, 0, 1))  #.contiguous()  # nH, Wh*Ww, Wh*Ww
             attn = attn + relative_position_bias.unsqueeze(0)
         if rel_pos_bias is not None:
             attn = attn + rel_pos_bias
@@ -173,6 +175,7 @@ class Block(nn.Layer):
                  norm_layer='nn.LayerNorm',
                  epsilon=1e-5):
         super().__init__()
+        # self.norm1 = eval(norm_layer)(dim, epsilon=1e-6)
         self.norm1 = nn.LayerNorm(dim, epsilon=1e-6)
         self.attn = Attention(
             dim,
@@ -196,6 +199,8 @@ class Block(nn.Layer):
                 shape=([dim]), default_initializer=Constant(value=init_values))
             self.gamma_2 = self.create_parameter(
                 shape=([dim]), default_initializer=Constant(value=init_values))
+            #self.gamma_1 = nn.Parameter(init_values * torch.ones((dim)),requires_grad=True)
+            #self.gamma_2 = nn.Parameter(init_values * torch.ones((dim)),requires_grad=True)
         else:
             self.gamma_1, self.gamma_2 = None, None
 
@@ -250,6 +255,7 @@ class RelativePositionBias(nn.Layer):
         self.relative_position_bias_table = self.create_parameter(
             shape=(self.num_relative_distance, num_heads),
             default_initialize=zeros_)
+        # cls to token & token 2 cls & cls to cls
 
         # get pair-wise relative position index for each token inside the window
         coords_h = paddle.arange(window_size[0])
@@ -274,6 +280,7 @@ class RelativePositionBias(nn.Layer):
         relative_position_index[0:, 0] = self.num_relative_distance - 2
         relative_position_index[0, 0] = self.num_relative_distance - 1
         self.register_buffer("relative_position_index", relative_position_index)
+        # trunc_normal_(self.relative_position_bias_table, std=.02)
 
     def forward(self):
         relative_position_bias = \
@@ -377,6 +384,8 @@ class CAE(nn.Layer):
         ])
 
         self.final_norm = final_norm
+        #if self.final_norm:
+        #    self.norm = eval(norm_layer)(embed_dim, epsilon=epsilon)
         self.pretrained = pretrained
         self.init_weight()
 
@@ -446,6 +455,8 @@ class CAE(nn.Layer):
         res = []
         for idx, blk in enumerate(self.blocks):
             x = blk(x, rel_pos_bias)
+            #if self.final_norm and idx == len(self.blocks) - 1:
+            #    x = self.norm(x)
             res.append(x[:, 1:, :])
         return res, x_shape
 

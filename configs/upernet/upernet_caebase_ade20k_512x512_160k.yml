@@ -1,3 +1,5 @@
+_base_: '../_base_/ade20k.yml'
+
 batch_size: 2
 iters: 160000
 
@@ -17,26 +19,22 @@ model:
     init_values: 0.1
     final_norm: True
     use_rel_pos_bias: True
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/upernet_caebase_ade20k_512x512_160k/pretrained/model.pdparams
+    pretrained: saved_model/pretrained_model.pdparams
   backbone_indices: [3, 5, 7, 11]
   channels: 768
   fpn_dim: 768
   inplane_head: 768
   fpn_inplanes: [768, 768, 768, 768]
-  
+
 train_dataset:
   type: ADE20K
-  dataset_root: data/ADEChallengeData2016/
+  dataset_root: dataset/ADEChallengeData2016/
   transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
-      max_scale_factor: 2.0
-      scale_step_size: 0
+    - type: Resize_CAE
     - type: RandomPaddingCrop
       crop_size: [512, 512]
     - type: RandomHorizontalFlip
-    - type: RandomDistort
-      brightness_range: 0.125
+    - type: PhotoMetricDistortion
     - type: Normalize
       mean: [0.485, 0.456, 0.406]
       std: [0.229, 0.224, 0.225]
@@ -48,7 +46,7 @@ train_dataset:
 
 val_dataset:
   type: ADE20K
-  dataset_root: data/ADEChallengeData2016/
+  dataset_root: dataset/ADEChallengeData2016/
   transforms:
     - type: ResizeByShort
       short_size: 512
@@ -57,6 +55,8 @@ val_dataset:
       std: [0.229, 0.224, 0.225]
 
 loss:
+  types:
+    - type: CrossEntropyLoss
   types:
     - type: CrossEntropyLoss
   coef: [1, 0.4]
@@ -80,4 +80,3 @@ test_config:
   is_slide: True
   crop_size: [512, 512]
   stride: [341, 341]
-

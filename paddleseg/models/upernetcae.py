@@ -217,6 +217,10 @@ class UPerNetHead(nn.Layer):
             3,
             padding=1,
             bias_attr=False)
+        #self.conv_last = nn.Sequential(
+        #    layers.ConvBNReLU(
+        #        len(fpn_inplanes) * fpn_dim, fpn_dim, 3, bias_attr=False),
+        #    nn.Conv2D(fpn_dim, num_class, kernel_size=1))
         self.conv_seg = nn.Conv2D(channels, num_class, kernel_size=1)
 
     def cls_seg(self, feat):
@@ -226,16 +230,17 @@ class UPerNetHead(nn.Layer):
         return output
 
     def forward(self, conv_out):
-        fpn_feature_list = [self.psp_modules(conv_out[-1])]
+        psp_out = self.psp_modules(conv_out[-1])
+        f = psp_out
+        fpn_feature_list = [psp_out]
+        out = []
 
         for i in reversed(range(len(conv_out) - 1)):
-            conv_x = self.lateral_convs[i](conv_out[i])
+            conv_x = conv_out[i]
+            conv_x = self.lateral_convs[i](conv_x)
             prev_shape = paddle.shape(conv_x)[2:]
             f = conv_x + F.interpolate(
-                fpn_feature_list[0],
-                prev_shape,
-                mode='bilinear',
-                align_corners=False)
+                f, prev_shape, mode='bilinear', align_corners=False)
             fpn_feature_list.append(self.fpn_convs[i](f))
 
         fpn_feature_list.reverse()
@@ -251,8 +256,10 @@ class UPerNetHead(nn.Layer):
         x = self.fpn_bottleneck(fusion_out)
         x = self.cls_seg(x)
 
-        logits = [x]
         if self.enable_auxiliary_loss:
-            logits.append(self.dsn(conv_out[2]))
-
-        return logits
+            dsn = self.dsn(conv_out[2])
+            out.append(x)
+            out.append(dsn)
+            return out
+        else:
+            return [x]
