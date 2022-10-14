@@ -19,7 +19,7 @@ model:
     init_values: 0.1
     final_norm: True
     use_rel_pos_bias: True
-    pretrained: saved_model/pretrained_model.pdparams
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/upernet_caebase_ade20k_512x512_160k/pretrained/model.pdparams
   backbone_indices: [3, 5, 7, 11]
   channels: 768
   fpn_dim: 768
