@@ -95,8 +95,8 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
 
 ## <img src="../docs/images/chat.png" width="20"/> 技术交流
 
-* 如果您对EISeg有任何问题，欢迎在PaddleSeg issue下进行提问：[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* 欢迎您加入EISeg交流群，和我们一起共建EISeg。
+* 如果您对EISeg有任何问题和建议，欢迎在[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
+* 欢迎您加入EISeg微信群，和大家交流讨论、一起共建EISeg，而且可以**领取重磅学习大礼包🎁**。
 <div align="center">
 <img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
 </div>
