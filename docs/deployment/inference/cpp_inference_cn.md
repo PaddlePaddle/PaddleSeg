@@ -8,7 +8,7 @@
 * 准备模型和图片
 * 编译、执行
 
-飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），详细使用方法请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
+飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），详细使用方法请参考[文档](https://www.paddlepaddle.org.cn/inference/v2.3/product_introduction/summary.html)。
 
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
@@ -32,16 +32,16 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/work/TensorRT-7.1.3.4/lib
 
 ### 2.2 准备Paddle Inference C++预测库
 
-如果在X86 CPU上部署模型，进入[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)下载“manylinux_cpu_xxx”命名的PaddleInference库。
+如果在X86 CPU上部署模型，进入[C++预测库](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html)下载“manylinux_cpu_xxx”命名的PaddleInference库。
 
-如果在Nvidia GPU上部署模型，进入[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)下载对应CUDA、Cudnn、TRT、GCC版本的PaddleInference库。
+如果在Nvidia GPU上部署模型，进入[C++预测库](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html)下载对应CUDA、Cudnn、TRT、GCC版本的PaddleInference库。
 
 
 > 不同C++预测库可以根据名字进行区分。请根据机器的操作系统、CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT等信息，选择准确版本。（建议选择版本>=2.0的预测库）
 
 下载`paddle_inference.tgz`压缩文件后进行解压，将解压的paddle_inference文件保存到`PaddleSeg/deploy/cpp/`下。
 
-如果大家需要编译Paddle Inference C++预测库，可以参考[文档](https://paddleinference.paddlepaddle.org.cn/user_guides/source_compile.html)，此处不再赘述。
+如果大家需要编译Paddle Inference C++预测库，可以参考[文档](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/source_compile.html)，此处不再赘述。
 
 ### 2.3 安装其他库
 
