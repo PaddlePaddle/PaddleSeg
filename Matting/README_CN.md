@@ -38,7 +38,7 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 【3】支持背景替换功能。
 【4】支持人像抠图Android部署
 
-# 技术交流
+## 技术交流
 
 * 如果大家有使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
 * **欢迎大家加入PaddleSeg的微信用户群👫**（扫码填写问卷即可入群），和各界大佬交流学习，还可以**领取重磅大礼包🎁**
