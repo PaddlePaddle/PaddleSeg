@@ -30,7 +30,7 @@ class Identity(nn.Layer):
 
 
 @manager.MODELS.add_component
-class UPerNetCAE(nn.Layer):
+class UPerNet(nn.Layer):
     """ 
     Unified Perceptual Parsing for Scene Understanding
     (https://arxiv.org/abs/1807.10221)
@@ -57,7 +57,7 @@ class UPerNetCAE(nn.Layer):
                  align_corners=True,
                  dropout_ratio=0.1,
                  pretrained=None):
-        super(UPerNetCAE, self).__init__()
+        super(UPerNet, self).__init__()
         self._init_fpn(embed_dim=768, patch_size=16)
         self.backbone = backbone
         self.backbone_indices = backbone_indices
