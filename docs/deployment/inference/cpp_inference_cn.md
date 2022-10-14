@@ -32,9 +32,9 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/work/TensorRT-7.1.3.4/lib
 
 ### 2.2 准备Paddle Inference C++预测库
 
-如果在X86 CPU上部署模型，进入[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)下载“manylinux_cpu_xxx”命名的PaddleInference库。
+如果在X86 CPU上部署模型，进入[C++预测库](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html)下载“manylinux_cpu_xxx”命名的PaddleInference库。
 
-如果在Nvidia GPU上部署模型，进入[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)下载对应CUDA、Cudnn、TRT、GCC版本的PaddleInference库。
+如果在Nvidia GPU上部署模型，进入[C++预测库](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html)下载对应CUDA、Cudnn、TRT、GCC版本的PaddleInference库。
 
 
 > 不同C++预测库可以根据名字进行区分。请根据机器的操作系统、CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT等信息，选择准确版本。（建议选择版本>=2.0的预测库）
