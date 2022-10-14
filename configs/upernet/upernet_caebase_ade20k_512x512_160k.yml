@@ -57,8 +57,6 @@ val_dataset:
 loss:
   types:
     - type: CrossEntropyLoss
-  types:
-    - type: CrossEntropyLoss
   coef: [1, 0.4]
 
 optimizer:

@@ -217,10 +217,6 @@ class UPerNetHead(nn.Layer):
             3,
             padding=1,
             bias_attr=False)
-        #self.conv_last = nn.Sequential(
-        #    layers.ConvBNReLU(
-        #        len(fpn_inplanes) * fpn_dim, fpn_dim, 3, bias_attr=False),
-        #    nn.Conv2D(fpn_dim, num_class, kernel_size=1))
         self.conv_seg = nn.Conv2D(channels, num_class, kernel_size=1)
 
     def cls_seg(self, feat):
@@ -229,37 +225,34 @@ class UPerNetHead(nn.Layer):
         output = self.conv_seg(feat)
         return output
 
-    def forward(self, conv_out):
-        psp_out = self.psp_modules(conv_out[-1])
-        f = psp_out
-        fpn_feature_list = [psp_out]
-        out = []
+    def forward(self, x):
+        fpn_feature_list = [self.psp_modules(x[-1])]
 
-        for i in reversed(range(len(conv_out) - 1)):
-            conv_x = conv_out[i]
-            conv_x = self.lateral_convs[i](conv_x)
-            prev_shape = paddle.shape(conv_x)[2:]
+        f = fpn_feature_list[0]
+        for i in reversed(range(len(x) - 1)):
+            conv_x = self.lateral_convs[i](x[i])
             f = conv_x + F.interpolate(
-                f, prev_shape, mode='bilinear', align_corners=False)
+                f,
+                paddle.shape(conv_x)[2:],
+                mode='bilinear',
+                align_corners=False)
             fpn_feature_list.append(self.fpn_convs[i](f))
 
         fpn_feature_list.reverse()
         output_size = fpn_feature_list[0].shape[2:]
-        # resize multi-scales feature
-        for index in range(len(conv_out) - 1, 0, -1):
+        for index in range(len(x) - 1, 0, -1):
             fpn_feature_list[index] = F.interpolate(
                 fpn_feature_list[index],
                 size=output_size,
                 mode='bilinear',
                 align_corners=False)
+
         fusion_out = paddle.concat(fpn_feature_list, 1)
         x = self.fpn_bottleneck(fusion_out)
         x = self.cls_seg(x)
 
+        out = [x]
         if self.enable_auxiliary_loss:
-            dsn = self.dsn(conv_out[2])
-            out.append(x)
-            out.append(dsn)
-            return out
-        else:
-            return [x]
+            out.append(self.dsn(x[2]))
+
+        return out

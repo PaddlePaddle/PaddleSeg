@@ -437,10 +437,10 @@ class CAE(nn.Layer):
 
     def forward(self, x):
         x = self.patch_embed(x)
-        x_shape = paddle.shape(x)  # b * c * h * w
+        x_shape = paddle.shape(x)
 
         cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
-        x = x.flatten(2).transpose([0, 2, 1])  # b * hw * c
+        x = x.flatten(2).transpose([0, 2, 1])
         x = paddle.concat([cls_tokens, x], axis=1)
         if paddle.shape(x)[1] == self.pos_embed.shape[1]:
             x = x + self.pos_embed
@@ -455,8 +455,6 @@ class CAE(nn.Layer):
         res = []
         for idx, blk in enumerate(self.blocks):
             x = blk(x, rel_pos_bias)
-            #if self.final_norm and idx == len(self.blocks) - 1:
-            #    x = self.norm(x)
             res.append(x[:, 1:, :])
         return res, x_shape
 
