@@ -54,6 +54,14 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
   * 覆盖遥感、医疗、视频、3D医疗等众多垂类场景
   * 多平台兼容，简单易用，支持多类别标签管理
 
+## <img src="../docs/images/chat.png" width="20"/> 技术交流
+
+* 如果您对EISeg有任何问题和建议，欢迎在[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
+* 欢迎您加入EISeg微信群，和大家交流讨论、一起共建EISeg，而且可以**领取重磅学习大礼包🎁**。
+<div align="center">
+<img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
+</div>
+
 ## <img src="../docs/images/teach.png" width="20"/> 使用教程
 * [安装说明](docs/install.md)
 * [图像标注](docs/image.md)
@@ -92,11 +100,3 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
   year={2021}
 }
 ```
-
-## <img src="../docs/images/chat.png" width="20"/> 技术交流
-
-* 如果您对EISeg有任何问题和建议，欢迎在[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
-* 欢迎您加入EISeg微信群，和大家交流讨论、一起共建EISeg，而且可以**领取重磅学习大礼包🎁**。
-<div align="center">
-<img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
-</div>
