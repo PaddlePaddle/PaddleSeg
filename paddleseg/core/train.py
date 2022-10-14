@@ -34,15 +34,17 @@ def check_logits_losses(logits_list, losses):
             .format(len_logits, len_losses))
 
 
-def loss_computation(logits_list, labels, losses, edges=None):
+def loss_computation(logits_list, labels, edges, losses):
     check_logits_losses(logits_list, losses)
     loss_list = []
     for i in range(len(logits_list)):
         logits = logits_list[i]
         loss_i = losses['types'][i]
         coef_i = losses['coef'][i]
-
-        if loss_i.__class__.__name__ == 'MixedLoss':
+        if loss_i.__class__.__name__ in ('BCELoss', ) and loss_i.edge_label:
+            # Use edges as labels According to loss type.
+            loss_list.append(coef_i * loss_i(logits, edges))
+        elif loss_i.__class__.__name__ == 'MixedLoss':
             mixed_loss_list = loss_i(logits, labels)
             for mixed_loss in mixed_loss_list:
                 loss_list.append(coef_i * mixed_loss)
@@ -77,7 +79,7 @@ def train(model,
     Launch training.
 
     Args:
-        model（nn.Layer): A sementic segmentation model.
+        model（nn.Layer): A semantic segmentation model.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
         optimizer (paddle.optimizer.Optimizer): The optimizer.
@@ -146,7 +148,7 @@ def train(model,
 
     if to_static_training:
         model = paddle.jit.to_static(model)
-        logger.info("Successfully to apply @to_static")
+        logger.info("Successfully applied @to_static")
 
     avg_loss = 0.0
     avg_loss_list = []
@@ -169,11 +171,11 @@ def train(model,
                 else:
                     break
             reader_cost_averager.record(time.time() - batch_start)
-            images = data[0]
-            labels = data[1].astype('int64')
+            images = data['img']
+            labels = data['label'].astype('int64')
             edges = None
-            if len(data) == 3:
-                edges = data[2].astype('int64')
+            if 'edge' in data.keys():
+                edges = data['edge'].astype('int64')
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':
                 images = images.transpose((0, 2, 3, 1))
 
@@ -190,8 +192,8 @@ def train(model,
                     loss_list = loss_computation(
                         logits_list=logits_list,
                         labels=labels,
-                        losses=losses,
-                        edges=edges)
+                        edges=edges,
+                        losses=losses)
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss
@@ -205,8 +207,8 @@ def train(model,
                 loss_list = loss_computation(
                     logits_list=logits_list,
                     labels=labels,
-                    losses=losses,
-                    edges=edges)
+                    edges=edges,
+                    losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
                 # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.

@@ -70,6 +70,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         # persistent this bbox instance and update when needed
         self.bbox = BBoxAnnotation(labelIndex, self, cocoIndex, self)
         self.bbox.setParentItem(self)
+        # self.bbox.setVisible(False)
 
     @property
     def scnenePoints(self):

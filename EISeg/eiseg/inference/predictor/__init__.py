@@ -17,6 +17,8 @@ Ths copyright of saic-vul/ritm_interactive_segmentation is as follows:
 MIT License [see LICENSE for details]
 """
 
+import paddle
+
 from .base import BasePredictor
 from inference.transforms import ZoomIn
 
@@ -38,6 +40,7 @@ def get_predictor(net,
 
         if predictor_params is not None:
             predictor_params_.update(predictor_params)
+
         predictor = BasePredictor(
             net, zoom_in=zoom_in, with_flip=with_flip, **predictor_params_)
 

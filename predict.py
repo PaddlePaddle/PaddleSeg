@@ -157,6 +157,7 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    cfg.check_sync_info()
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -178,6 +179,9 @@ def main(args):
         image_dir=image_dir,
         save_dir=args.save_dir,
         **test_config)
+
+    logger.warning("This `predict.py` will be removed in version 2.8, "
+                   "please use `tools/predict.py`.")
 
 
 if __name__ == '__main__':

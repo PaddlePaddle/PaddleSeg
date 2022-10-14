@@ -69,14 +69,15 @@ function func_parser_params(){
 }
 
 function status_check(){
-    last_status=$1   # the exit code
-    run_command=$2
-    run_log=$3
-    model_name=$4
+    local last_status=$1   # the exit code
+    local run_command=$2
+    local run_log=$3
+    local model_name=$4
+    local log_path=$5
     if [ $last_status -eq 0 ]; then
-        echo -e "\033[33m Run successfully with command - ${model_name} - ${run_command}!  \033[0m" | tee -a ${run_log}
+        echo -e "\033[33m Run successfully with command - ${model_name} - ${run_command} - ${log_path}  \033[0m" | tee -a ${run_log}
     else
-        echo -e "\033[33m Run failed with command - ${model_name} - ${run_command}!  \033[0m" | tee -a ${run_log}
+        echo -e "\033[33m Run failed with command - ${model_name} - ${run_command} - ${log_path}  \033[0m" | tee -a ${run_log}
     fi
 }
 
@@ -91,4 +92,29 @@ function contains() {
     }
     echo "n"
     return 1
+}
+
+function parse_extra_args() {
+    local lines=("$@")
+    local last_idx=$((${#lines[@]}-1))
+    local IFS=';'
+    extra_args=(${lines[last_idx]})
+}
+
+function add_suffix() {
+    local ori_path="$1"
+    local suffix=$2
+    local ext="${ori_path##*.}"
+    echo "${ori_path%.*}${suffix}.${ext}"
+}
+
+function run_command() {
+    local cmd="$1"
+    local log_path="$2"
+    if [ -n "${log_path}" ]; then
+        eval ${cmd} | tee "${log_path}"
+        test ${PIPESTATUS[0]} -eq 0
+    else
+        eval ${cmd}
+    fi
 }

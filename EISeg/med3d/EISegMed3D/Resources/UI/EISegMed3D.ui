@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>placePoint</class>
+    <widget class="qMRMLWidget" name="placePoint">
+        <property name="enabled">
+            <bool>true</bool>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>682</width>
+                <height>847</height>
+            </rect>
+        </property>
+        <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+            </sizepolicy>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+                <widget class="ctkCollapsibleButton" name="modelSettingsCollapse">
+                    <property name="text">
+                        <string>Model Settings</string>
+                    </property>
+                    <property name="collapsed">
+                        <bool>false</bool>
+                    </property>
+                    <property name="collapsedHeight">
+                        <number>9</number>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_2">
+                        <item>
+                            <layout class="QFormLayout" name="modelLayout">
+                                <item row="0" column="0">
+                                    <widget class="QLabel" name="modelPathLabel">
+                                        <property name="text">
+                                            <string>Model Path: </string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item row="0" column="1">
+                                    <widget class="ctkPathLineEdit" name="modelPathInput" />
+                                </item>
+                                <item row="1" column="0">
+                                    <widget class="QLabel" name="paramPathLabel">
+                                        <property name="text">
+                                            <string>Param Path: </string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item row="1" column="1">
+                                    <widget class="ctkPathLineEdit" name="paramPathInput" />
+                                </item>
+                            </layout>
+                        </item>
+                        <item>
+                            <layout class="QHBoxLayout" name="loadModelLayout">
+                                <item>
+                                    <widget class="QPushButton" name="loadModelButton">
+                                        <property name="text">
+                                            <string>Load Static Model</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                            </layout>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+            <item>
+                <widget class="Line" name="line_2">
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <layout class="QHBoxLayout" name="dataFolderLayout">
+                    <item>
+                        <widget class="QLabel" name="dataFolderLabel">
+                            <property name="text">
+                                <string>Data Folder :</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="ctkDirectoryButton" name="dataFolderButton">
+                            <property name="options">
+                                <set>ctkDirectoryButton::HideNameFilterDetails|ctkDirectoryButton::ReadOnly</set>
+                            </property>
+                        </widget>
+                    </item>
+                </layout>
+            </item>
+            <item>
+                <widget class="QCheckBox" name="skipFinished">
+                    <property name="text">
+                        <string>Skip Finished Scans</string>
+                    </property>
+                    <property name="checked">
+                        <bool>false</bool>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <layout class="QHBoxLayout" name="prevNextLayout">
+                    <item>
+                        <widget class="QPushButton" name="prevScanButton">
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="text">
+                                <string>Prev Scan</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="QPushButton" name="nextScanButton">
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="text">
+                                <string>Next Scan</string>
+                            </property>
+                        </widget>
+                    </item>
+                </layout>
+            </item>
+            <item>
+                <widget class="Line" name="line_3">
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <layout class="QHBoxLayout" name="placePointLayout">
+                    <item>
+                        <widget class="QLabel" name="positiveLabel">
+                            <property name="text">
+                                <string>Positive Point:</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="qSlicerMarkupsPlaceWidget" name="dgPositiveControlPointPlacementWidget">
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="buttonsVisible">
+                                <bool>false</bool>
+                            </property>
+                            <property name="placeMultipleMarkups">
+                                <enum>qSlicerMarkupsPlaceWidget::ForcePlaceMultipleMarkups</enum>
+                            </property>
+                            <property name="nodeColor">
+                                <color>
+                                    <red>0</red>
+                                    <green>1</green>
+                                    <blue>0</blue>
+                                </color>
+                            </property>
+                            <property name="currentNodeActive">
+                                <bool>false</bool>
+                            </property>
+                            <property name="placeModeEnabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="placeModePersistency">
+                                <bool>false</bool>
+                            </property>
+                            <property name="deleteAllMarkupsOptionVisible">
+                                <bool>false</bool>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="QLabel" name="negativeLabel">
+                            <property name="text">
+                                <string>Negative Point:</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="qSlicerMarkupsPlaceWidget" name="dgNegativeControlPointPlacementWidget">
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="buttonsVisible">
+                                <bool>false</bool>
+                            </property>
+                            <property name="deleteAllControlPointsOptionVisible">
+                                <bool>false</bool>
+                            </property>
+                            <property name="placeMultipleMarkups">
+                                <enum>qSlicerMarkupsPlaceWidget::ForcePlaceMultipleMarkups</enum>
+                            </property>
+                        </widget>
+                    </item>
+                </layout>
+            </item>
+            <item>
+                <layout class="QHBoxLayout" name="finishLayout">
+                    <item>
+                        <widget class="QPushButton" name="finishSegmentButton">
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="text">
+                                <string>Finish Segment</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="QPushButton" name="finishScanButton">
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="text">
+                                <string>Finish Scan</string>
+                            </property>
+                        </widget>
+                    </item>
+                </layout>
+            </item>
+            <item>
+                <widget class="Line" name="line_5">
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <widget class="Line" name="line">
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <widget class="ctkCollapsibleButton" name="segmentEditorCollapse">
+                    <property name="text">
+                        <string>Segment Editor</string>
+                    </property>
+                    <property name="collapsed">
+                        <bool>false</bool>
+                    </property>
+                    <property name="collapsedHeight">
+                        <number>9</number>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_2">
+                        <item>
+                            <widget class="qMRMLSegmentEditorWidget" name="embeddedSegmentEditorWidget">
+                                <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                                        <horstretch>0</horstretch>
+                                        <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                </property>
+                                <property name="segmentationNodeSelectorVisible">
+                                    <bool>false</bool>
+                                </property>
+                                <property name="sourceVolumeNodeSelectorVisible">
+                                    <bool>false</bool>
+                                </property>
+                                <property name="masterVolumeNodeSelectorVisible">
+                                    <bool>false</bool>
+                                </property>
+                                <property name="switchToSegmentationsButtonVisible">
+                                    <bool>true</bool>
+                                </property>
+                                <property name="effectColumnCount">
+                                    <number>3</number>
+                                </property>
+                                <property name="unorderedEffectsVisible">
+                                    <bool>false</bool>
+                                </property>
+                                <property name="jumpToSelectedSegmentEnabled">
+                                    <bool>true</bool>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+            <item>
+                <layout class="QHBoxLayout" name="opacityLayout">
+                    <item>
+                        <widget class="QLabel" name="threshLabel">
+                            <property name="text">
+                                <string>Segment Opacity: </string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="ctkSliderWidget" name="opacitySlider">
+                            <property name="sizePolicy">
+                                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="decimals">
+                                <number>2</number>
+                            </property>
+                            <property name="singleStep">
+                                <double>0.010000000000000</double>
+                            </property>
+                            <property name="pageStep">
+                                <double>0.100000000000000</double>
+                            </property>
+                            <property name="maximum">
+                                <double>1.000000000000000</double>
+                            </property>
+                            <property name="value">
+                                <double>0.900000000000000</double>
+                            </property>
+                        </widget>
+                    </item>
+                </layout>
+            </item>
+            <item>
+                <widget class="ctkCollapsibleButton" name="progressCollapse">
+                    <property name="text">
+                        <string>Progress</string>
+                    </property>
+                    <property name="collapsed">
+                        <bool>true</bool>
+                    </property>
+                    <property name="collapsedHeight">
+                        <number>9</number>
+                    </property>
+                    <layout class="QVBoxLayout" name="progressLayout">
+                        <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout">
+                                <item>
+                                    <widget class="QLabel" name="progressLabel">
+                                        <property name="text">
+                                            <string>Annotation Progress: </string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <widget class="QProgressBar" name="annProgressBar">
+                                        <property name="value">
+                                            <number>0</number>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <widget class="QLabel" name="progressDetail">
+                                        <property name="text">
+                                            <string />
+                                        </property>
+                                    </widget>
+                                </item>
+                            </layout>
+                        </item>
+                        <item>
+                            <widget class="QTableWidget" name="progressTable">
+                                <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                                        <horstretch>0</horstretch>
+                                        <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                </property>
+                                <property name="focusPolicy">
+                                    <enum>Qt::NoFocus</enum>
+                                </property>
+                                <property name="sizeAdjustPolicy">
+                                    <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                                </property>
+                                <property name="editTriggers">
+                                    <set>QAbstractItemView::NoEditTriggers</set>
+                                </property>
+                                <property name="alternatingRowColors">
+                                    <bool>true</bool>
+                                </property>
+                                <property name="sortingEnabled">
+                                    <bool>false</bool>
+                                </property>
+                                <property name="columnCount">
+                                    <number>2</number>
+                                </property>
+                                <attribute name="horizontalHeaderVisible">
+                                    <bool>false</bool>
+                                </attribute>
+                                <attribute name="horizontalHeaderCascadingSectionResizes">
+                                    <bool>true</bool>
+                                </attribute>
+                                <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+                                    <bool>false</bool>
+                                </attribute>
+                                <attribute name="horizontalHeaderStretchLastSection">
+                                    <bool>true</bool>
+                                </attribute>
+                                <attribute name="verticalHeaderVisible">
+                                    <bool>false</bool>
+                                </attribute>
+                                <column>
+                                    <property name="text">
+                                        <string>Finished</string>
+                                    </property>
+                                </column>
+                                <column>
+                                    <property name="text">
+                                        <string>Scan Name</string>
+                                    </property>
+                                </column>
+                            </widget>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+            <item>
+                <spacer name="verticalSpacer">
+                    <property name="orientation">
+                        <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                        <size>
+                            <width>20</width>
+                            <height>40</height>
+                        </size>
+                    </property>
+                </spacer>
+            </item>
+        </layout>
+    </widget>
+    <customwidgets>
+        <customwidget>
+            <class>ctkCollapsibleButton</class>
+            <extends>QWidget</extends>
+            <header>ctkCollapsibleButton.h</header>
+            <container>1</container>
+        </customwidget>
+        <customwidget>
+            <class>ctkDirectoryButton</class>
+            <extends>QWidget</extends>
+            <header>ctkDirectoryButton.h</header>
+        </customwidget>
+        <customwidget>
+            <class>ctkPathLineEdit</class>
+            <extends>QWidget</extends>
+            <header>ctkPathLineEdit.h</header>
+        </customwidget>
+        <customwidget>
+            <class>ctkSliderWidget</class>
+            <extends>QWidget</extends>
+            <header>ctkSliderWidget.h</header>
+        </customwidget>
+        <customwidget>
+            <class>qMRMLWidget</class>
+            <extends>QWidget</extends>
+            <header>qMRMLWidget.h</header>
+            <container>1</container>
+        </customwidget>
+        <customwidget>
+            <class>qSlicerWidget</class>
+            <extends>QWidget</extends>
+            <header>qSlicerWidget.h</header>
+            <container>1</container>
+        </customwidget>
+        <customwidget>
+            <class>qSlicerMarkupsPlaceWidget</class>
+            <extends>qSlicerWidget</extends>
+            <header>qSlicerMarkupsPlaceWidget.h</header>
+        </customwidget>
+        <customwidget>
+            <class>qMRMLSegmentEditorWidget</class>
+            <extends>qMRMLWidget</extends>
+            <header>qMRMLSegmentEditorWidget.h</header>
+        </customwidget>
+    </customwidgets>
+    <resources />
+    <connections />
+</ui>

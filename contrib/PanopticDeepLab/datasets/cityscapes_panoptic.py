@@ -60,6 +60,7 @@ class CityscapesPanoptic(paddle.io.Dataset):
         small_instance_weight (int, optional): The loss weight for small instance. Default: 1.
         stuff_area (int, optional): An Integer, remove stuff whose area is less tan stuff_area. Default: 2048.
     """
+    NUM_CLASSES = 19
 
     def __init__(self,
                  transforms,
@@ -159,7 +160,10 @@ class CityscapesPanoptic(paddle.io.Dataset):
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
         dataset_dict = {}
-        im, label = self.transforms(im=image_path, label=label_path)
+        data = {'img': image_path, 'label': label_path}
+        data['gt_fields'] = ['label']
+        data = self.transforms(data)
+        im, label = data['img'], data['label']
         label_dict = self.target_transform(label, self.ins_list[idx])
         for key in label_dict.keys():
             dataset_dict[key] = label_dict[key]

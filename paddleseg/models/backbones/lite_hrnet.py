@@ -728,6 +728,7 @@ class LiteHRNet(nn.Layer):
             "wider_naive": Naive network with wider channels in each block.
             "lite_18": Lite-HRNet-18, which replaces the pointwise convolution in a shuffle block by conditional channel weighting.
             "lite_30": Lite-HRNet-30, with more blocks compared with Lite-HRNet-18.
+        in_channels (int, optional): The channels of input image. Default: 3.
         freeze_at (int): the stage to freeze
         freeze_norm (bool): whether to freeze norm in HRNet
         norm_decay (float): weight decay for normalization layer weights
@@ -736,6 +737,7 @@ class LiteHRNet(nn.Layer):
 
     def __init__(self,
                  network_type,
+                 in_channels=3,
                  freeze_at=0,
                  freeze_norm=True,
                  norm_decay=0.,
@@ -793,7 +795,7 @@ class LiteHRNet(nn.Layer):
 
         self.stages_config = self.module_configs[network_type]
 
-        self.stem = Stem(3, 32, 32, 1)
+        self.stem = Stem(in_channels, 32, 32, 1)
         num_channels_pre_layer = [32]
         for stage_idx in range(3):
             num_channels = self.stages_config["num_channels"][stage_idx]

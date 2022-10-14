@@ -43,7 +43,7 @@ def evaluate(model,
     Launch evalution.
 
     Args:
-        model（nn.Layer): A sementic segmentation model.
+        model（nn.Layer): A semantic segmentation model.
         eval_dataset (paddle.io.Dataset): Used to read and process validation datasets.
         aug_eval (bool, optional): Whether to use mulit-scales and flip augment for evaluation. Default: False.
         scales (list|float, optional): Scales for augment. It is valid when `aug_eval` is True. Default: 1.0.
@@ -97,11 +97,10 @@ def evaluate(model,
     batch_cost_averager = TimeAverager()
     batch_start = time.time()
     with paddle.no_grad():
-        for iter, (im, label) in enumerate(loader):
+        for iter, data in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
-            label = label.astype('int64')
+            label = data['label'].astype('int64')
 
-            ori_shape = label.shape[-2:]
             if aug_eval:
                 if precision == 'fp16':
                     with paddle.amp.auto_cast(
@@ -114,9 +113,8 @@ def evaluate(model,
                             custom_black_list={'bilinear_interp_v2'}):
                         pred, logits = infer.aug_inference(
                             model,
-                            im,
-                            ori_shape=ori_shape,
-                            transforms=eval_dataset.transforms.transforms,
+                            data['img'],
+                            trans_info=data['trans_info'],
                             scales=scales,
                             flip_horizontal=flip_horizontal,
                             flip_vertical=flip_vertical,
@@ -126,9 +124,8 @@ def evaluate(model,
                 else:
                     pred, logits = infer.aug_inference(
                         model,
-                        im,
-                        ori_shape=ori_shape,
-                        transforms=eval_dataset.transforms.transforms,
+                        data['img'],
+                        trans_info=data['trans_info'],
                         scales=scales,
                         flip_horizontal=flip_horizontal,
                         flip_vertical=flip_vertical,
@@ -147,18 +144,16 @@ def evaluate(model,
                             custom_black_list={'bilinear_interp_v2'}):
                         pred, logits = infer.inference(
                             model,
-                            im,
-                            ori_shape=ori_shape,
-                            transforms=eval_dataset.transforms.transforms,
+                            data['img'],
+                            trans_info=data['trans_info'],
                             is_slide=is_slide,
                             stride=stride,
                             crop_size=crop_size)
                 else:
                     pred, logits = infer.inference(
                         model,
-                        im,
-                        ori_shape=ori_shape,
-                        transforms=eval_dataset.transforms.transforms,
+                        data['img'],
+                        trans_info=data['trans_info'],
                         is_slide=is_slide,
                         stride=stride,
                         crop_size=crop_size)

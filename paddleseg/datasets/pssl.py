@@ -27,7 +27,7 @@ class PSSLDataset(Dataset):
     is computed by the Consensus explanation algorithm.
 
     The PSSL refers to "Distilling Ensemble of Explanations for Weakly-Supervised Pre-Training of Image Segmentation 
-    Models" (TODO). 
+    Models" (https://arxiv.org/abs/2207.03335). 
     
     The Consensus explanation refers to "Cross-Model Consensus of Explanations and Beyond for Image Classification 
     Models: An Empirical Study" (https://arxiv.org/abs/2109.00707).
@@ -110,7 +110,8 @@ class PSSLDataset(Dataset):
             self.file_list.append([img_path, label_path])
 
         # mapping class name to class id.
-        class_id_file = os.path.join(pssl_root, "imagenet_lsvrc_2015_synsets.txt")
+        class_id_file = os.path.join(pssl_root,
+                                     "imagenet_lsvrc_2015_synsets.txt")
         if not os.path.exists(class_id_file):
             raise ValueError("Class id file isn't exists.")
         for idx, line in enumerate(open(class_id_file)):
@@ -119,8 +120,9 @@ class PSSLDataset(Dataset):
 
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
+        data = {'img': image_path, 'trans_info': [], 'gt_fields': []}
 
-        # transform label
+        # get class_id by image path
         class_name = (image_path.split('/')[-1]).split('_')[0]
         class_id = self.class_id_dict[class_name]
 
@@ -128,7 +130,9 @@ class PSSLDataset(Dataset):
         gt_semantic_seg = np.zeros_like(pssl_seg, dtype=np.int64) + 1000
         # [0, 999] for imagenet classes, 1000 for background, others(-1) will be ignored during training.
         gt_semantic_seg[pssl_seg == 1] = class_id
+        data['label'] = gt_semantic_seg
 
-        im, label = self.transforms(im=image_path, label=gt_semantic_seg)
-
-        return im, label
+        if self.mode == 'train':
+            data['gt_fields'].append('label')
+        data = self.transforms(data)
+        return data

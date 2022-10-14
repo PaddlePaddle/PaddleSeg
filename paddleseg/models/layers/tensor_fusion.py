@@ -15,7 +15,8 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-
+from paddle import ParamAttr
+from paddle.nn.initializer import Constant
 from paddleseg.models import layers
 from paddleseg.models.layers import tensor_fusion_helper as helper
 
@@ -171,6 +172,11 @@ class UAFM_SpAtten(UAFM):
                 4, 2, kernel_size=3, padding=1, bias_attr=False),
             layers.ConvBN(
                 2, 1, kernel_size=3, padding=1, bias_attr=False))
+        self._scale = self.create_parameter(
+            shape=[1],
+            attr=ParamAttr(initializer=Constant(value=1.)),
+            dtype="float32")
+        self._scale.stop_gradient = True
 
     def fuse(self, x, y):
         """
@@ -181,7 +187,7 @@ class UAFM_SpAtten(UAFM):
         atten = helper.avg_max_reduce_channel([x, y])
         atten = F.sigmoid(self.conv_xy_atten(atten))
 
-        out = x * atten + y * (1 - atten)
+        out = x * atten + y * (self._scale - atten)
         out = self.conv_out(out)
         return out
 
@@ -238,3 +244,42 @@ class UAFMMobile(UAFM):
             x_ch, y_ch, kernel_size=ksize, padding=ksize // 2, bias_attr=False)
         self.conv_out = layers.SeparableConvBNReLU(
             y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+
+
+class UAFMMobile_SpAtten(UAFM):
+    """
+    Unified Attention Fusion Module with spatial attention for mobile.
+    Args:
+        x_ch (int): The channel of x tensor, which is the low level feature.
+        y_ch (int): The channel of y tensor, which is the high level feature.
+        out_ch (int): The channel of output tensor.
+        ksize (int, optional): The kernel size of the conv for x tensor. Default: 3.
+        resize_mode (str, optional): The resize model in unsampling y tensor. Default: bilinear.
+    """
+
+    def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_x = layers.SeparableConvBNReLU(
+            x_ch, y_ch, kernel_size=ksize, padding=ksize // 2, bias_attr=False)
+        self.conv_out = layers.SeparableConvBNReLU(
+            y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+
+        self.conv_xy_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                4, 2, kernel_size=3, padding=1, bias_attr=False),
+            layers.ConvBN(
+                2, 1, kernel_size=3, padding=1, bias_attr=False))
+
+    def fuse(self, x, y):
+        """
+        Args:
+            x (Tensor): The low level feature.
+            y (Tensor): The high level feature.
+        """
+        atten = helper.avg_max_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out

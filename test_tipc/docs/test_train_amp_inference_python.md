@@ -8,28 +8,30 @@ Linux GPU/CPU 混合精度训练推理测试的主程序为`test_train_inference
 
 | 算法名称 | 模型名称 | 单机单卡 | 单机多卡 |
 |  :----: |   :----:  |    :----:  |  :----:   |
-|  PP_LiteSeg   |  pp_liteseg_stdc1 |  混合精度训练 | 混合精度训练 |
-|  PP_LiteSeg   |  pp_liteseg_stdc2 |  混合精度训练 | 混合精度训练 |
-|  ConnectNet   |  pp_humanseg_lite | 混合精度训练 | 混合精度训练 |
-|  HRNet W18 Small   | pp_humanseg_mobile  |  混合精度训练 | 混合精度训练 |
-|  DeepLabV3P ResNet50   |  pp_humanseg_server |  混合精度训练 | 混合精度训练 |
+|  PP-LiteSeg   |  pp_liteseg_stdc1 |  混合精度训练 | 混合精度训练 |
+|  PP-LiteSeg   |  pp_liteseg_stdc2 |  混合精度训练 | 混合精度训练 |
+|  ConnectNet   |  pphumanseg_lite | 混合精度训练 | 混合精度训练 |
+|  HRNet   | pphumanseg_mobile (fcn_hrnetw18_small)  |  混合精度训练 | 混合精度训练 |
+|  DeepLabV3P   |  pphumanseg_server (deeplabv3p_resnet50) |  混合精度训练 | 混合精度训练 |
 |  HRNet   |  fcn_hrnet_w18 |  混合精度训练 | 混合精度训练 |
 |  OCRNet   |  ocrnet_hrnetw18 |  混合精度训练 | 混合精度训练 |
 |  OCRNet   |  ocrnet_hrnetw48 |  混合精度训练 | 混合精度训练 |
+| SegFormer | segformer_b0 | 混合精度训练 | 混合精度训练 |
 
 
 - 推理相关：
 
 | 算法名称 | 模型名称 | device_CPU | device_GPU | batchsize |
 |  :----:   |  :----: |   :----:   |  :----:  |   :----:   |
-|  PP_LiteSeg   |  pp_liteseg_stdc1 |  支持 | 支持 | 1 |
-|  PP_LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 1 |
+|  PP-LiteSeg   |  pp_liteseg_stdc1 |  支持 | 支持 | 1 |
+|  PP-LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 1 |
 |  ConnectNet   |  pp_humanseg_lite |  支持 | 支持 | 1 |
-|  HRNet W18 Small   | pp_humanseg_mobile  |  支持 | 支持 | 1 |
-|  DeepLabV3P ResNet50    |  pp_humanseg_server |  支持 | 支持 | 1 |
+|  HRNet   | pphumanseg_mobile (fcn_hrnetw18_small)  |  支持 | 支持 | 1 |
+|  DeepLabV3P    |  pphumanseg_server (deeplabv3p_resnet50) |  支持 | 支持 | 1 |
 |  HRNet   |  fcn_hrnet_w18 |  支持 | 支持 | 1 |
 |  OCRNet   |  ocrnet_hrnetw18 |  支持 | 支持 | 1 |
 |  OCRNet   |  ocrnet_hrnetw48 |  支持 | 支持 | 1 |
+| SegFormer | segformer_b0 | 支持 | 支持 | 1 |
 
 
 ## 2. 测试流程
@@ -77,7 +79,7 @@ bash test_tipc/test_train_inference_python.sh test_tipc/configs/pphumanseg_lite/
 输出结果如下，表示命令运行成功。
 
 ```bash
-[33m Run successfully with command - python3.7 train.py --config test_tipc/configs/pphumanseg_lite/pphumanseg_lite_mini_supervisely.yml --precision fp16 --amp_level O2 --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/pphumanseg_lite/amp_train_gpus_0_autocast_null --iters=50     --batch_size=2  
+[33m Run successfully with command - python3.7 tools/train.py --config test_tipc/configs/pphumanseg_lite/pphumanseg_lite_mini_supervisely.yml --precision fp16 --amp_level O2 --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/pphumanseg_lite/amp_train_gpus_0_autocast_null --iters=50     --batch_size=2  
 ......
 [33m Run successfully with command - python3.7 deploy/python/infer.py --device=cpu --enable_mkldnn=True --cpu_threads=1 --config=./test_tipc/output/pphumanseg_lite/amp_train_gpus_0_autocast_null//deploy.yaml --batch_size=1 --image_path=test_tipc/data/mini_supervisely/test.txt --benchmark=True --precision=fp32 --save_dir=./test_tipc/output/pphumanseg_lite/python_infer_cpu_usemkldnn_True_threads_1_precision_fp32_batchsize_1_results   > ./test_tipc/output/pphumanseg_lite/python_infer_cpu_usemkldnn_True_threads_1_precision_fp32_batchsize_1.log 2>&1 !
 ```

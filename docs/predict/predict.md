@@ -7,8 +7,8 @@ In addition to analyzing the `IOU`, `ACC` and `Kappa`, we can also check the seg
 The `predict.py` script is specially used to visualize prediction cases. The command format is as follows:
 
 ```
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+python tools/predict.py \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result
@@ -114,8 +114,8 @@ After prediction, what we get is the predicted segmentation result depend on def
 
 In the segmentation result, the foreground is marked in red, and the background is marked in black. If you want to use other colors, you can refer to the following command:
 ```python
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+python tools/predict.py \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result \
@@ -130,8 +130,8 @@ The segmentation results are as follows:
 - You can see that we added `--custom_color 0 0 0 255 255 255` at the end. What does this mean? In the RGB image, the final color of each pixel is determined by the components of the three RGB channels, so every three digits after the command line parameter represent the color of a pixel, and the color of each class in `label.txt` is releated to 3 digits sequentially.
 - If you use a custom color map, the number of input `color values` should be equal to `3 * pixel classes` (depending on the dataset you are using). For example, if your data set has 3 types of pixels, you can consider run:
 ```pythons
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+python tools/predict.py \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result \
