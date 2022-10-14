@@ -1,4 +1,4 @@
-U-HRNet: Delving into Improving Semantic Representation of High Resolution Network for Dense Prediction
+# U-HRNet: Delving into Improving Semantic Representation of High Resolution Network for Dense Prediction
 
 ## Reference
 > Jian Wang, Xiang Long, Guowei Chen, Zewu Wu, Zeyu Chen, Errui Ding et al. "U-HRNet: Delving into Improving Semantic Representation of High Resolution Network for Dense Prediction" arXiv preprint arXiv:2210.07140 (2022).
