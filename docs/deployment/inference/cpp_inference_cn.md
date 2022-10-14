@@ -41,7 +41,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/work/TensorRT-7.1.3.4/lib
 
 下载`paddle_inference.tgz`压缩文件后进行解压，将解压的paddle_inference文件保存到`PaddleSeg/deploy/cpp/`下。
 
-如果大家需要编译Paddle Inference C++预测库，可以参考[文档](https://paddleinference.paddlepaddle.org.cn/user_guides/source_compile.html)，此处不再赘述。
+如果大家需要编译Paddle Inference C++预测库，可以参考[文档](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/source_compile.html)，此处不再赘述。
 
 ### 2.3 安装其他库
 
