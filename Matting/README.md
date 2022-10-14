@@ -1,21 +1,27 @@
 English | [简体中文](README_CN.md)
 
-# Matting
+# Natural Image Matting
 Image Matting is the technique of extracting foreground from an image by calculating its color and transparency. It is widely used in the film industry to replace background, image composition, and visual effects. Each pixel in the image will have a value that represents its foreground transparency, called Alpha. The set of all Alpha values in an image is called Alpha Matte. The part of the image covered by the mask can be extracted to complete foreground separation.
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
+<img src="https://user-images.githubusercontent.com/30919197/179751613-d26f2261-7bcf-4066-a0a4-4c818e7065f0.gif" width="100%" height="100%">
 </p>
 
 # One-click experience
-Matting is widely used in a variety of industries, such as video clip, video synthesis and other fields，Some developers also built a one-click Matting website named "No code Matting" based on PP-Matting，Welcome to use it.
-- [using Link](http://seg.itmanbu.com/)
+Try the online demo "[Non-Code Matting](https://easyseg.cn/)".
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">
+<img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="70%" height="70%">
 </p>
 
 ## Update Notes
+2022.07
+[1] Release PPMatting code.
+[2] Add ClosedFormMatting, KNNMatting, FastMatting, LearningBaseMatting and RandomWalksMatting traditional machine learning algorithms.
+[3] Add GCA model.
+[4] Improving the directory structure.
+[5] Support to specify metrics for evaluation.
+
 2022.04
 [1] Add PPMatting model.
 [2] Add PPHumanMatting high-resolution human matting model.
@@ -29,6 +35,15 @@ Matting is widely used in a variety of industries, such as video clip, video syn
 [2] Support model export and python deployment.
 [3] Support background replacement function.
 [4] Support human matting deployment in Android.
+
+## Community
+
+* If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+</div>
+
 
 ## Contents
 - [Installation](#Installation)
@@ -75,8 +90,8 @@ Model recommend:
 
 | Model | Params(M) | FLOPs(G) | FPS | Checkpoint | Inference Model |
 | - | - | -| - | - | - |
-| PP-Matting-512     | 24.5 | 91.28 | 28.9 | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_512.zip) |
-| PP-Matting-1024    | 24.5 | 91.28 | 13.4(1024X1024) | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_1024.zip) |
+| PP-Matting-512     | 24.5 | 91.28 | 28.9 | [model](https://paddleseg.bj.bcebos.com/matting/models/ppmatting-hrnet_w18-human_512.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_512.zip) |
+| PP-Matting-1024    | 24.5 | 91.28 | 13.4(1024X1024) | [model](https://paddleseg.bj.bcebos.com/matting/models/ppmatting-hrnet_w18-human_1024.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_1024.zip) |
 | PP-HumanMatting    | 63.9 | 135.8 (2048X2048)| 32.8(2048X2048)| [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-humanmatting-resnet34_vd.zip) |
 | ModNet-MobileNetV2 | 6.5 | 15.7 | 68.4 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-mobilenetv2.zip) |
 | ModNet-ResNet50_vd | 92.2 | 151.6 | 29.0 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-resnet50_vd.zip) |

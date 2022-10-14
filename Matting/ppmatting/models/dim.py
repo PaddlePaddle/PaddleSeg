@@ -93,7 +93,8 @@ class DIM(nn.Layer):
                 alpha_pred = paddle.clip(alpha_pred, min=0, max=1)
             logit_dict['alpha_pred'] = alpha_pred
         if self.training:
-            return logit_dict
+            loss_dict = self.loss(logit_dict, inputs)
+            return logit_dict, loss_dict
         else:
             return alpha_pred
 

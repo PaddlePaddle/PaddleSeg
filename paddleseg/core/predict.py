@@ -36,6 +36,15 @@ def partition_list(arr, m):
     return [arr[i:i + n] for i in range(0, len(arr), n)]
 
 
+def preprocess(im_path, transforms):
+    data = {}
+    data['img'] = im_path
+    data = transforms(data)
+    data['img'] = data['img'][np.newaxis, ...]
+    data['img'] = paddle.to_tensor(data['img'])
+    return data
+
+
 def predict(model,
             model_path,
             transforms,
@@ -89,18 +98,13 @@ def predict(model,
     color_map = visualize.get_color_map_list(256, custom_color=custom_color)
     with paddle.no_grad():
         for i, im_path in enumerate(img_lists[local_rank]):
-            im = cv2.imread(im_path)
-            ori_shape = im.shape[:2]
-            im, _ = transforms(im)
-            im = im[np.newaxis, ...]
-            im = paddle.to_tensor(im)
+            data = preprocess(im_path, transforms)
 
             if aug_pred:
                 pred, _ = infer.aug_inference(
                     model,
-                    im,
-                    ori_shape=ori_shape,
-                    transforms=transforms.transforms,
+                    data['img'],
+                    trans_info=data['trans_info'],
                     scales=scales,
                     flip_horizontal=flip_horizontal,
                     flip_vertical=flip_vertical,
@@ -110,9 +114,8 @@ def predict(model,
             else:
                 pred, _ = infer.inference(
                     model,
-                    im,
-                    ori_shape=ori_shape,
-                    transforms=transforms.transforms,
+                    data['img'],
+                    trans_info=data['trans_info'],
                     is_slide=is_slide,
                     stride=stride,
                     crop_size=crop_size)
@@ -140,10 +143,5 @@ def predict(model,
                 pred_saved_dir, os.path.splitext(im_file)[0] + ".png")
             mkdir(pred_saved_path)
             pred_mask.save(pred_saved_path)
-
-            # pred_im = utils.visualize(im_path, pred, weight=0.0)
-            # pred_saved_path = os.path.join(pred_saved_dir, im_file)
-            # mkdir(pred_saved_path)
-            # cv2.imwrite(pred_saved_path, pred_im)
 
             progbar_pred.update(i + 1)

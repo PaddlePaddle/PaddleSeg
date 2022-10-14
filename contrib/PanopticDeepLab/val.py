@@ -18,7 +18,7 @@ import os
 import paddle
 import paddleseg
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check
+from paddleseg.utils import get_sys_env, logger
 
 from core import evaluate
 from datasets import CityscapesPanoptic
@@ -75,6 +75,7 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    cfg.check_sync_info()
     val_dataset = cfg.val_dataset
     if val_dataset is None:
         raise RuntimeError(
@@ -94,8 +95,6 @@ def main(args):
     if args.model_path:
         paddleseg.utils.utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
-
-    config_check(cfg, val_dataset=val_dataset)
 
     evaluate(
         model,

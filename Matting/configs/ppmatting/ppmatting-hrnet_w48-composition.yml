@@ -1,0 +1,7 @@
+_base_: 'ppmatting-hrnet_w48-distinctions.yml'
+
+train_dataset:
+  dataset_root: data/matting/Composition-1k
+
+val_dataset:
+  dataset_root: data/matting/Composition-1k

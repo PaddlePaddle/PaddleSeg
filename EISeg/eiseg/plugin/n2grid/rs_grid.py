@@ -33,6 +33,7 @@ class RSGrids:
 
     def clear(self) -> None:
         self.mask_grids = []  # 标签宫格
+        self.json_labels = []  # 保存标签
         self.grid_count = None  # (row count, col count)
         self.curr_idx = None  # (current row, current col)
 

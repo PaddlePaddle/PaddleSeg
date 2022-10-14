@@ -21,6 +21,7 @@ from PIL import Image
 
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import functional
+from paddleseg.utils import logger
 
 
 @manager.TRANSFORMS.add_component
@@ -32,43 +33,63 @@ class Compose:
     Args:
         transforms (list): A list contains data pre-processing or augmentation. Empty list means only reading images, no transformation.
         to_rgb (bool, optional): If converting image to RGB color space. Default: True.
+        img_channels (int, optional): The image channels used to check the loaded image. Default: 3.
 
     Raises:
         TypeError: When 'transforms' is not a list.
         ValueError: when the length of 'transforms' is less than 1.
     """
 
-    def __init__(self, transforms, to_rgb=True):
+    def __init__(self, transforms, to_rgb=True, img_channels=3):
         if not isinstance(transforms, list):
             raise TypeError('The transforms must be a list!')
         self.transforms = transforms
         self.to_rgb = to_rgb
+        self.img_channels = img_channels
+        self.read_flag = cv2.IMREAD_GRAYSCALE if img_channels == 1 else cv2.IMREAD_COLOR
 
-    def __call__(self, im, label=None):
+    def __call__(self, data):
         """
         Args:
-            im (str|np.ndarray): It is either image path or image object.
-            label (str|np.ndarray): It is either label path or label ndarray.
+            data: A dict to deal with. It may include keys: 'img', 'label', 'trans_info' and 'gt_fields'.
+                'trans_info' reserve the image shape informating. And the 'gt_fields' save the key need to transforms
+                together with 'img'
 
-        Returns:
-            (tuple). A tuple including image, image info, and label after transformation.
+        Returns: A dict after process。
         """
-        if isinstance(im, str):
-            im = cv2.imread(im).astype('float32')
-        if isinstance(label, str):
-            label = np.asarray(Image.open(label))
-        if im is None:
-            raise ValueError('Can\'t read The image file {}!'.format(im))
-        if self.to_rgb:
-            im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+        if 'img' not in data.keys():
+            raise ValueError("`data` must include `img` key.")
+        if isinstance(data['img'], str):
+            data['img'] = cv2.imread(data['img'],
+                                     self.read_flag).astype('float32')
+        if data['img'] is None:
+            raise ValueError('Can\'t read The image file {}!'.format(data[
+                'img']))
+        if not isinstance(data['img'], np.ndarray):
+            raise TypeError("Image type is not numpy.")
+
+        img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
+        if img_channels != self.img_channels:
+            raise ValueError(
+                'The img_channels ({}) is not equal to the channel of loaded image ({})'.
+                format(self.img_channels, img_channels))
+        if self.to_rgb and img_channels == 3:
+            data['img'] = cv2.cvtColor(data['img'], cv2.COLOR_BGR2RGB)
+
+        if 'label' in data.keys() and isinstance(data['label'], str):
+            data['label'] = np.asarray(Image.open(data['label']))
+
+        # the `trans_info` will save the process of image shape, and will be used in evaluation and prediction.
+        if 'trans_info' not in data.keys():
+            data['trans_info'] = []
 
         for op in self.transforms:
-            outputs = op(im, label)
-            im = outputs[0]
-            if len(outputs) == 2:
-                label = outputs[1]
-        im = np.transpose(im, (2, 0, 1))
-        return (im, label)
+            data = op(data)
+
+        if data['img'].ndim == 2:
+            data['img'] = data['img'][..., np.newaxis]
+        data['img'] = np.transpose(data['img'], (2, 0, 1))
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -83,15 +104,12 @@ class RandomHorizontalFlip:
     def __init__(self, prob=0.5):
         self.prob = prob
 
-    def __call__(self, im, label=None):
+    def __call__(self, data):
         if random.random() < self.prob:
-            im = functional.horizontal_flip(im)
-            if label is not None:
-                label = functional.horizontal_flip(label)
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+            data['img'] = functional.horizontal_flip(data['img'])
+            for key in data.get('gt_fields', []):
+                data[key] = functional.horizontal_flip(data[key])
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -106,15 +124,12 @@ class RandomVerticalFlip:
     def __init__(self, prob=0.1):
         self.prob = prob
 
-    def __call__(self, im, label=None):
+    def __call__(self, data):
         if random.random() < self.prob:
-            im = functional.vertical_flip(im)
-            if label is not None:
-                label = functional.vertical_flip(label)
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+            data['img'] = functional.vertical_flip(data['img'])
+            for key in data.get('gt_fields', []):
+                data[key] = functional.vertical_flip(data[key])
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -123,7 +138,11 @@ class Resize:
     Resize an image.
 
     Args:
-        target_size (list|tuple, optional): The target size of image. Default: (512, 512).
+        target_size (list|tuple, optional): The target size (w, h) of image. Default: (512, 512).
+        keep_ratio (bool, optional): Whether to keep the same ratio for width and height in resizing.
+            Default: False.
+        size_divisor (int, optional): If size_divisor is not None, make the width and height be the times
+            of size_divisor. Default: None.
         interp (str, optional): The interpolation mode of resize is consistent with opencv.
             ['NEAREST', 'LINEAR', 'CUBIC', 'AREA', 'LANCZOS4', 'RANDOM']. Note that when it is
             'RANDOM', a random interpolation mode would be specified. Default: "LINEAR".
@@ -143,11 +162,11 @@ class Resize:
         'LANCZOS4': cv2.INTER_LANCZOS4
     }
 
-    def __init__(self, target_size=(512, 512), interp='LINEAR'):
-        self.interp = interp
-        if not (interp == "RANDOM" or interp in self.interp_dict):
-            raise ValueError("`interp` should be one of {}".format(
-                self.interp_dict.keys()))
+    def __init__(self,
+                 target_size=(512, 512),
+                 keep_ratio=False,
+                 size_divisor=None,
+                 interp='LINEAR'):
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
                 raise ValueError(
@@ -157,40 +176,42 @@ class Resize:
             raise TypeError(
                 "Type of `target_size` is invalid. It should be list or tuple, but it is {}"
                 .format(type(target_size)))
+        if not (interp == "RANDOM" or interp in self.interp_dict):
+            raise ValueError("`interp` should be one of {}".format(
+                self.interp_dict.keys()))
+        if size_divisor is not None:
+            assert isinstance(size_divisor,
+                              int), "size_divisor should be None or int"
 
         self.target_size = target_size
+        self.keep_ratio = keep_ratio
+        self.size_divisor = size_divisor
+        self.interp = interp
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label),
-
-        Raises:
-            TypeError: When the 'img' type is not numpy.
-            ValueError: When the length of "im" shape is not 3.
-        """
-
-        if not isinstance(im, np.ndarray):
-            raise TypeError("Resize: image type is not numpy.")
-        if len(im.shape) != 3:
-            raise ValueError('Resize: image is not 3-dimensional.')
+    def __call__(self, data):
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
         if self.interp == "RANDOM":
             interp = random.choice(list(self.interp_dict.keys()))
         else:
             interp = self.interp
-        im = functional.resize(im, self.target_size, self.interp_dict[interp])
-        if label is not None:
-            label = functional.resize(label, self.target_size,
-                                      cv2.INTER_NEAREST)
 
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        target_size = self.target_size
+        if self.keep_ratio:
+            h, w = data['img'].shape[0:2]
+            target_size, _ = functional.rescale_size((w, h), self.target_size)
+        if self.size_divisor:
+            target_size = [
+                math.ceil(i / self.size_divisor) * self.size_divisor
+                for i in target_size
+            ]
+
+        data['img'] = functional.resize(data['img'], target_size,
+                                        self.interp_dict[interp])
+        for key in data.get('gt_fields', []):
+            data[key] = functional.resize(data[key], target_size,
+                                          cv2.INTER_NEAREST)
+
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -205,25 +226,14 @@ class ResizeByLong:
     def __init__(self, long_size):
         self.long_size = long_size
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
+    def __call__(self, data):
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
+        data['img'] = functional.resize_long(data['img'], self.long_size)
+        for key in data.get('gt_fields', []):
+            data[key] = functional.resize_long(data[key], self.long_size,
+                                               cv2.INTER_NEAREST)
 
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
-
-        im = functional.resize_long(im, self.long_size)
-        if label is not None:
-            label = functional.resize_long(label, self.long_size,
-                                           cv2.INTER_NEAREST)
-
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -238,25 +248,14 @@ class ResizeByShort:
     def __init__(self, short_size):
         self.short_size = short_size
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
+    def __call__(self, data):
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
+        data['img'] = functional.resize_short(data['img'], self.short_size)
+        for key in data.get('gt_fields', []):
+            data[key] = functional.resize_short(data[key], self.short_size,
+                                                cv2.INTER_NEAREST)
 
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
-
-        im = functional.resize_short(im, self.short_size)
-        if label is not None:
-            label = functional.resize_short(label, self.short_size,
-                                            cv2.INTER_NEAREST)
-
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -296,16 +295,10 @@ class LimitLong:
         self.max_long = max_long
         self.min_long = min_long
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
+    def __call__(self, data):
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
 
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
-        h, w = im.shape[0], im.shape[1]
+        h, w = data['img'].shape[0], data['img'].shape[1]
         long_edge = max(h, w)
         target = long_edge
         if (self.max_long is not None) and (long_edge > self.max_long):
@@ -314,14 +307,12 @@ class LimitLong:
             target = self.min_long
 
         if target != long_edge:
-            im = functional.resize_long(im, target)
-            if label is not None:
-                label = functional.resize_long(label, target, cv2.INTER_NEAREST)
+            data['img'] = functional.resize_long(data['img'], target)
+            for key in data.get('gt_fields', []):
+                data[key] = functional.resize_long(data[key], target,
+                                                   cv2.INTER_NEAREST)
 
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -342,30 +333,20 @@ class ResizeRangeScaling:
         self.min_value = min_value
         self.max_value = max_value
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
+    def __call__(self, data):
 
         if self.min_value == self.max_value:
             random_size = self.max_value
         else:
             random_size = int(
                 np.random.uniform(self.min_value, self.max_value) + 0.5)
-        im = functional.resize_long(im, random_size, cv2.INTER_LINEAR)
-        if label is not None:
-            label = functional.resize_long(label, random_size,
-                                           cv2.INTER_NEAREST)
+        data['img'] = functional.resize_long(data['img'], random_size,
+                                             cv2.INTER_LINEAR)
+        for key in data.get('gt_fields', []):
+            data[key] = functional.resize_long(data[key], random_size,
+                                               cv2.INTER_NEAREST)
 
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -395,15 +376,7 @@ class ResizeStepScaling:
         self.max_scale_factor = max_scale_factor
         self.scale_step_size = scale_step_size
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
+    def __call__(self, data):
 
         if self.min_scale_factor == self.max_scale_factor:
             scale_factor = self.min_scale_factor
@@ -420,17 +393,14 @@ class ResizeStepScaling:
                                         num_steps).tolist()
             np.random.shuffle(scale_factors)
             scale_factor = scale_factors[0]
-        w = int(round(scale_factor * im.shape[1]))
-        h = int(round(scale_factor * im.shape[0]))
+        w = int(round(scale_factor * data['img'].shape[1]))
+        h = int(round(scale_factor * data['img'].shape[0]))
 
-        im = functional.resize(im, (w, h), cv2.INTER_LINEAR)
-        if label is not None:
-            label = functional.resize(label, (w, h), cv2.INTER_NEAREST)
+        data['img'] = functional.resize(data['img'], (w, h), cv2.INTER_LINEAR)
+        for key in data.get('gt_fields', []):
+            data[key] = functional.resize(data[key], (w, h), cv2.INTER_NEAREST)
 
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -439,44 +409,29 @@ class Normalize:
     Normalize an image.
 
     Args:
-        mean (list, optional): The mean value of a data set. Default: [0.5, 0.5, 0.5].
-        std (list, optional): The standard deviation of a data set. Default: [0.5, 0.5, 0.5].
+        mean (list, optional): The mean value of a data set. Default: [0.5,].
+        std (list, optional): The standard deviation of a data set. Default: [0.5,].
 
     Raises:
         ValueError: When mean/std is not list or any value in std is 0.
     """
 
-    def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)):
-        self.mean = mean
-        self.std = std
-        if not (isinstance(self.mean,
-                           (list, tuple)) and isinstance(self.std,
-                                                         (list, tuple))):
+    def __init__(self, mean=(0.5, ), std=(0.5, )):
+        if not (isinstance(mean, (list, tuple)) and isinstance(std, (list, tuple))) \
+            and (len(mean) not in [1, 3]) and (len(std) not in [1, 3]):
             raise ValueError(
-                "{}: input type is invalid. It should be list or tuple".format(
-                    self))
+                "{}: input type is invalid. It should be list or tuple with the lenght of 1 or 3".
+                format(self))
+        self.mean = np.array(mean)
+        self.std = np.array(std)
+
         from functools import reduce
         if reduce(lambda x, y: x * y, self.std) == 0:
             raise ValueError('{}: std is invalid!'.format(self))
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
-
-        mean = np.array(self.mean)[np.newaxis, np.newaxis, :]
-        std = np.array(self.std)[np.newaxis, np.newaxis, :]
-        im = functional.normalize(im, mean, std)
-
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+    def __call__(self, data):
+        data['img'] = functional.normalize(data['img'], self.mean, self.std)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -486,8 +441,8 @@ class Padding:
 
     Args:
         target_size (list|tuple): The target size after padding.
-        im_padding_value (list, optional): The padding value of raw image.
-            Default: [127.5, 127.5, 127.5].
+        im_padding_value (float, optional): The padding value of raw image.
+            Default: 127.5.
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
 
     Raises:
@@ -497,7 +452,7 @@ class Padding:
 
     def __init__(self,
                  target_size,
-                 im_padding_value=(127.5, 127.5, 127.5),
+                 im_padding_value=127.5,
                  label_padding_value=255):
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
@@ -512,17 +467,9 @@ class Padding:
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
-
-        im_height, im_width = im.shape[0], im.shape[1]
+    def __call__(self, data):
+        data['trans_info'].append(('padding', data['img'].shape[0:2]))
+        im_height, im_width = data['img'].shape[0], data['img'].shape[1]
         if isinstance(self.target_size, int):
             target_height = self.target_size
             target_width = self.target_size
@@ -536,27 +483,25 @@ class Padding:
                 'The size of image should be less than `target_size`, but the size of image ({}, {}) is larger than `target_size` ({}, {})'
                 .format(im_width, im_height, target_width, target_height))
         else:
-            im = cv2.copyMakeBorder(
-                im,
+            img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
+            data['img'] = cv2.copyMakeBorder(
+                data['img'],
                 0,
                 pad_height,
                 0,
                 pad_width,
                 cv2.BORDER_CONSTANT,
-                value=self.im_padding_value)
-            if label is not None:
-                label = cv2.copyMakeBorder(
-                    label,
+                value=(self.im_padding_value, ) * img_channels)
+            for key in data.get('gt_fields', []):
+                data[key] = cv2.copyMakeBorder(
+                    data[key],
                     0,
                     pad_height,
                     0,
                     pad_width,
                     cv2.BORDER_CONSTANT,
                     value=self.label_padding_value)
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -565,34 +510,25 @@ class PaddingByAspectRatio:
 
     Args:
         aspect_ratio (int|float, optional): The aspect ratio = width / height. Default: 1.
+        im_padding_value (float, optional): The padding value of raw image. Default: 127.5.
+        label_padding_value (int, optional): The padding value of annotation image. Default: 255.
     """
 
     def __init__(self,
                  aspect_ratio=1,
-                 im_padding_value=(127.5, 127.5, 127.5),
+                 im_padding_value=127.5,
                  label_padding_value=255):
         self.aspect_ratio = aspect_ratio
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
+    def __call__(self, data):
 
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
-
-        img_height = im.shape[0]
-        img_width = im.shape[1]
+        img_height = data['img'].shape[0]
+        img_width = data['img'].shape[1]
         ratio = img_width / img_height
         if ratio == self.aspect_ratio:
-            if label is None:
-                return (im, )
-            else:
-                return (im, label)
+            return data
         elif ratio > self.aspect_ratio:
             img_height = int(img_width / self.aspect_ratio)
         else:
@@ -601,7 +537,7 @@ class PaddingByAspectRatio:
             (img_width, img_height),
             im_padding_value=self.im_padding_value,
             label_padding_value=self.label_padding_value)
-        return padding(im, label)
+        return padding(data)
 
 
 @manager.TRANSFORMS.add_component
@@ -612,8 +548,7 @@ class RandomPaddingCrop:
 
     Args:
         crop_size (tuple, optional): The target cropping size. Default: (512, 512).
-        im_padding_value (list, optional): The padding value of raw image.
-            Default: [127.5, 127.5, 127.5].
+        im_padding_value (float, optional): The padding value of raw image. Default: 127.5.
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
 
     Raises:
@@ -623,7 +558,7 @@ class RandomPaddingCrop:
 
     def __init__(self,
                  crop_size=(512, 512),
-                 im_padding_value=(127.5, 127.5, 127.5),
+                 im_padding_value=127.5,
                  label_padding_value=255):
         if isinstance(crop_size, list) or isinstance(crop_size, tuple):
             if len(crop_size) != 2:
@@ -638,15 +573,7 @@ class RandomPaddingCrop:
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
+    def __call__(self, data):
 
         if isinstance(self.crop_size, int):
             crop_width = self.crop_size
@@ -655,51 +582,50 @@ class RandomPaddingCrop:
             crop_width = self.crop_size[0]
             crop_height = self.crop_size[1]
 
-        img_height = im.shape[0]
-        img_width = im.shape[1]
+        img_height = data['img'].shape[0]
+        img_width = data['img'].shape[1]
 
         if img_height == crop_height and img_width == crop_width:
-            if label is None:
-                return (im, )
-            else:
-                return (im, label)
+            return data
         else:
             pad_height = max(crop_height - img_height, 0)
             pad_width = max(crop_width - img_width, 0)
+            img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
             if (pad_height > 0 or pad_width > 0):
-                im = cv2.copyMakeBorder(
-                    im,
+                data['img'] = cv2.copyMakeBorder(
+                    data['img'],
                     0,
                     pad_height,
                     0,
                     pad_width,
                     cv2.BORDER_CONSTANT,
-                    value=self.im_padding_value)
-                if label is not None:
-                    label = cv2.copyMakeBorder(
-                        label,
+                    value=(self.im_padding_value, ) * img_channels)
+                for key in data.get('gt_fields', []):
+                    data[key] = cv2.copyMakeBorder(
+                        data[key],
                         0,
                         pad_height,
                         0,
                         pad_width,
                         cv2.BORDER_CONSTANT,
                         value=self.label_padding_value)
-                img_height = im.shape[0]
-                img_width = im.shape[1]
+                img_height = data['img'].shape[0]
+                img_width = data['img'].shape[1]
 
             if crop_height > 0 and crop_width > 0:
                 h_off = np.random.randint(img_height - crop_height + 1)
                 w_off = np.random.randint(img_width - crop_width + 1)
 
-                im = im[h_off:(crop_height + h_off), w_off:(w_off + crop_width
-                                                            ), :]
-                if label is not None:
-                    label = label[h_off:(crop_height + h_off), w_off:(
+                if data['img'].ndim == 2:
+                    data['img'] = data['img'][h_off:(crop_height + h_off),
+                                              w_off:(w_off + crop_width)]
+                else:
+                    data['img'] = data['img'][h_off:(crop_height + h_off),
+                                              w_off:(w_off + crop_width), :]
+                for key in data.get('gt_fields', []):
+                    data[key] = data[key][h_off:(crop_height + h_off), w_off:(
                         w_off + crop_width)]
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -719,8 +645,8 @@ class RandomCenterCrop:
         if isinstance(retain_ratio, list) or isinstance(retain_ratio, tuple):
             if len(retain_ratio) != 2:
                 raise ValueError(
-                    'When type of `retain_ratio` is list or tuple, it shoule include 2 elements, but it is {}'.
-                    format(retain_ratio))
+                    'When type of `retain_ratio` is list or tuple, it shoule include 2 elements, but it is {}'
+                    .format(retain_ratio))
             if retain_ratio[0] > 1 or retain_ratio[1] > 1 or retain_ratio[
                     0] < 0 or retain_ratio[1] < 0:
                 raise ValueError(
@@ -732,39 +658,29 @@ class RandomCenterCrop:
                 .format(type(retain_ratio)))
         self.retain_ratio = retain_ratio
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
+    def __call__(self, data):
         retain_width = self.retain_ratio[0]
         retain_height = self.retain_ratio[1]
 
-        img_height = im.shape[0]
-        img_width = im.shape[1]
+        img_height = data['img'].shape[0]
+        img_width = data['img'].shape[1]
 
         if retain_width == 1. and retain_height == 1.:
-            if label is None:
-                return (im, )
-            else:
-                return (im, label)
+            return data
         else:
             randw = np.random.randint(img_width * (1 - retain_width))
             randh = np.random.randint(img_height * (1 - retain_height))
             offsetw = 0 if randw == 0 else np.random.randint(randw)
             offseth = 0 if randh == 0 else np.random.randint(randh)
             p0, p1, p2, p3 = offseth, img_height + offseth - randh, offsetw, img_width + offsetw - randw
-            im = im[p0:p1, p2:p3, :]
-            if label is not None:
-                label = label[p0:p1, p2:p3, :]
+            if data['img'].ndim == 2:
+                data['img'] = data['img'][p0:p1, p2:p3]
+            else:
+                data['img'] = data['img'][p0:p1, p2:p3, :]
+            for key in data.get('gt_fields', []):
+                data[key] = data[key][p0:p1, p2:p3]
 
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -775,8 +691,7 @@ class ScalePadding:
 
         Args:
             target_size (list|tuple, optional): The target size of image. Default: (512, 512).
-            im_padding_value (list, optional): The padding value of raw image.
-                Default: [127.5, 127.5, 127.5].
+            im_padding_value (float, optional): The padding value of raw image. Default: 127.5
             label_padding_value (int, optional): The padding value of annotation image. Default: 255.
 
         Raises:
@@ -786,7 +701,7 @@ class ScalePadding:
 
     def __init__(self,
                  target_size=(512, 512),
-                 im_padding_value=(127.5, 127.5, 127.5),
+                 im_padding_value=127.5,
                  label_padding_value=255):
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
@@ -802,45 +717,43 @@ class ScalePadding:
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
+    def __call__(self, data):
+        height = data['img'].shape[0]
+        width = data['img'].shape[1]
 
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
-        height = im.shape[0]
-        width = im.shape[1]
-
-        new_im = np.zeros(
-            (max(height, width), max(height, width), 3)) + self.im_padding_value
-        if label is not None:
+        img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
+        if data['img'].ndim == 2:
+            new_im = np.zeros((max(height, width), max(height, width)
+                               )) + self.im_padding_value
+        else:
+            new_im = np.zeros((max(height, width), max(height, width),
+                               img_channels)) + self.im_padding_value
+        if 'label' in data['gt_fields']:
             new_label = np.zeros((max(height, width), max(height, width)
                                   )) + self.label_padding_value
 
         if height > width:
             padding = int((height - width) / 2)
-            new_im[:, padding:padding + width, :] = im
-            if label is not None:
-                new_label[:, padding:padding + width] = label
+            if data['img'].ndim == 2:
+                new_im[:, padding:padding + width] = data['img']
+            else:
+                new_im[:, padding:padding + width, :] = data['img']
+            if 'label' in data['gt_fields']:
+                new_label[:, padding:padding + width] = data['label']
         else:
             padding = int((width - height) / 2)
-            new_im[padding:padding + height, :, :] = im
-            if label is not None:
-                new_label[padding:padding + height, :] = label
+            new_im[padding:padding + height, :] = data['img']
+            if 'label' in data['gt_fields']:
+                new_label[padding:padding + height, :] = data['label']
 
-        im = np.uint8(new_im)
-        im = functional.resize(im, self.target_size, interp=cv2.INTER_CUBIC)
-        if label is not None:
-            label = np.uint8(new_label)
-            label = functional.resize(
-                label, self.target_size, interp=cv2.INTER_NEAREST)
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        data['img'] = np.uint8(new_im)
+        data['img'] = functional.resize(
+            data['img'], self.target_size, interp=cv2.INTER_CUBIC)
+        if 'label' in data['gt_fields']:
+            data['label'] = np.uint8(new_label)
+            data['label'] = functional.resize(
+                data['label'], self.target_size, interp=cv2.INTER_CUBIC)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -858,27 +771,16 @@ class RandomNoise:
         self.prob = prob
         self.max_sigma = max_sigma
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
+    def __call__(self, data):
         if random.random() < self.prob:
             mu = 0
             sigma = random.random() * self.max_sigma
-            im = np.array(im, dtype=np.float32)
-            im += np.random.normal(mu, sigma, im.shape)
-            im[im > 255] = 255
-            im[im < 0] = 0
+            data['img'] = np.array(data['img'], dtype=np.float32)
+            data['img'] += np.random.normal(mu, sigma, data['img'].shape)
+            data['img'][data['img'] > 255] = 255
+            data['img'][data['img'] < 0] = 0
 
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -900,15 +802,7 @@ class RandomBlur:
         self.prob = prob
         self.blur_type = blur_type
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
+    def __call__(self, data):
 
         if self.prob <= 0:
             n = 0
@@ -923,28 +817,28 @@ class RandomBlur:
                     radius = radius + 1
                 if radius > 9:
                     radius = 9
-                im = np.array(im, dtype='uint8')
+                data['img'] = np.array(data['img'], dtype='uint8')
                 if self.blur_type == "gaussian":
-                    im = cv2.GaussianBlur(im, (radius, radius), 0, 0)
+                    data['img'] = cv2.GaussianBlur(data['img'],
+                                                   (radius, radius), 0, 0)
                 elif self.blur_type == "median":
-                    im = cv2.medianBlur(im, radius)
+                    data['img'] = cv2.medianBlur(data['img'], radius)
                 elif self.blur_type == "blur":
-                    im = cv2.blur(im, (radius, radius))
+                    data['img'] = cv2.blur(data['img'], (radius, radius))
                 elif self.blur_type == "random":
                     select = random.random()
                     if select < 0.3:
-                        im = cv2.GaussianBlur(im, (radius, radius), 0)
+                        data['img'] = cv2.GaussianBlur(data['img'],
+                                                       (radius, radius), 0)
                     elif select < 0.6:
-                        im = cv2.medianBlur(im, radius)
+                        data['img'] = cv2.medianBlur(data['img'], radius)
                     else:
-                        im = cv2.blur(im, (radius, radius))
+                        data['img'] = cv2.blur(data['img'], (radius, radius))
                 else:
-                    im = cv2.GaussianBlur(im, (radius, radius), 0, 0)
-        im = np.array(im, dtype='float32')
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+                    data['img'] = cv2.GaussianBlur(data['img'],
+                                                   (radius, radius), 0, 0)
+        data['img'] = np.array(data['img'], dtype='float32')
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -954,31 +848,23 @@ class RandomRotation:
 
     Args:
         max_rotation (float, optional): The maximum rotation degree. Default: 15.
-        im_padding_value (list, optional): The padding value of raw image.
-            Default: [127.5, 127.5, 127.5].
+        im_padding_value (float, optional): The padding value of raw image. Default: 127.5.
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
     """
 
     def __init__(self,
                  max_rotation=15,
-                 im_padding_value=(127.5, 127.5, 127.5),
+                 im_padding_value=127.5,
                  label_padding_value=255):
         self.max_rotation = max_rotation
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
+    def __call__(self, data):
 
         if self.max_rotation > 0:
-            (h, w) = im.shape[:2]
+            (h, w) = data['img'].shape[:2]
+            img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
             do_rotation = np.random.uniform(-self.max_rotation,
                                             self.max_rotation)
             pc = (w // 2, h // 2)
@@ -993,26 +879,23 @@ class RandomRotation:
             r[0, 2] += (nw / 2) - cx
             r[1, 2] += (nh / 2) - cy
             dsize = (nw, nh)
-            im = cv2.warpAffine(
-                im,
+            data['img'] = cv2.warpAffine(
+                data['img'],
                 r,
                 dsize=dsize,
                 flags=cv2.INTER_LINEAR,
                 borderMode=cv2.BORDER_CONSTANT,
-                borderValue=self.im_padding_value)
-            if label is not None:
-                label = cv2.warpAffine(
-                    label,
+                borderValue=(self.im_padding_value, ) * img_channels)
+            for key in data.get('gt_fields', []):
+                data[key] = cv2.warpAffine(
+                    data[key],
                     r,
                     dsize=dsize,
                     flags=cv2.INTER_NEAREST,
                     borderMode=cv2.BORDER_CONSTANT,
                     borderValue=self.label_padding_value)
 
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -1030,19 +913,11 @@ class RandomScaleAspect:
         self.min_scale = min_scale
         self.aspect_ratio = aspect_ratio
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
+    def __call__(self, data):
 
         if self.min_scale != 0 and self.aspect_ratio != 0:
-            img_height = im.shape[0]
-            img_width = im.shape[1]
+            img_height = data['img'].shape[0]
+            img_width = data['img'].shape[1]
             for i in range(0, 10):
                 area = img_height * img_width
                 target_area = area * np.random.uniform(self.min_scale, 1.0)
@@ -1060,20 +935,20 @@ class RandomScaleAspect:
                     h1 = np.random.randint(0, img_height - dh)
                     w1 = np.random.randint(0, img_width - dw)
 
-                    im = im[h1:(h1 + dh), w1:(w1 + dw), :]
-                    im = cv2.resize(
-                        im, (img_width, img_height),
+                    if data['img'].ndim == 2:
+                        data['img'] = data['img'][h1:(h1 + dh), w1:(w1 + dw)]
+                    else:
+                        data['img'] = data['img'][h1:(h1 + dh), w1:(w1 + dw), :]
+                    data['img'] = cv2.resize(
+                        data['img'], (img_width, img_height),
                         interpolation=cv2.INTER_LINEAR)
-                    if label is not None:
-                        label = label[h1:(h1 + dh), w1:(w1 + dw)]
-                        label = cv2.resize(
-                            label, (img_width, img_height),
+                    for key in data.get('gt_fields', []):
+                        data[key] = data[key][h1:(h1 + dh), w1:(w1 + dw)]
+                        data[key] = cv2.resize(
+                            data[key], (img_width, img_height),
                             interpolation=cv2.INTER_NEAREST)
                     break
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -1116,15 +991,7 @@ class RandomDistort:
         self.sharpness_range = sharpness_range
         self.sharpness_prob = sharpness_prob
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
+    def __call__(self, data):
 
         brightness_lower = 1 - self.brightness_range
         brightness_upper = 1 + self.brightness_range
@@ -1138,8 +1005,10 @@ class RandomDistort:
         sharpness_upper = 1 + self.sharpness_range
         ops = [
             functional.brightness, functional.contrast, functional.saturation,
-            functional.hue, functional.sharpness
+            functional.sharpness
         ]
+        if data['img'].ndim > 2:
+            ops.append(functional.hue)
         random.shuffle(ops)
         params_dict = {
             'brightness': {
@@ -1170,19 +1039,16 @@ class RandomDistort:
             'hue': self.hue_prob,
             'sharpness': self.sharpness_prob
         }
-        im = im.astype('uint8')
-        im = Image.fromarray(im)
+        data['img'] = data['img'].astype('uint8')
+        data['img'] = Image.fromarray(data['img'])
         for id in range(len(ops)):
             params = params_dict[ops[id].__name__]
             prob = prob_dict[ops[id].__name__]
-            params['im'] = im
+            params['im'] = data['img']
             if np.random.uniform(0, 1) < prob:
-                im = ops[id](**params)
-        im = np.asarray(im).astype('float32')
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+                data['img'] = ops[id](**params)
+        data['img'] = np.asarray(data['img']).astype('float32')
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -1196,7 +1062,7 @@ class RandomAffine:
         max_rotation (float, optional): The maximum rotation degree. Default: 15.
         min_scale_factor (float, optional): The minimum scale. Default: 0.75.
         max_scale_factor (float, optional): The maximum scale. Default: 1.25.
-        im_padding_value (float, optional): The padding value of raw image. Default: (128, 128, 128).
+        im_padding_value (float, optional): The padding value of raw image. Default: 128.
         label_padding_value (int, optional): The padding value of annotation image. Default: (255, 255, 255).
     """
 
@@ -1206,7 +1072,7 @@ class RandomAffine:
                  max_rotation=15,
                  min_scale_factor=0.75,
                  max_scale_factor=1.25,
-                 im_padding_value=(128, 128, 128),
+                 im_padding_value=128,
                  label_padding_value=255):
         self.size = size
         self.translation_offset = translation_offset
@@ -1216,18 +1082,10 @@ class RandomAffine:
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
+    def __call__(self, data):
 
         w, h = self.size
-        bbox = [0, 0, im.shape[1] - 1, im.shape[0] - 1]
+        bbox = [0, 0, data['img'].shape[1] - 1, data['img'].shape[0] - 1]
         x_offset = (random.random() - 0.5) * 2 * self.translation_offset
         y_offset = (random.random() - 0.5) * 2 * self.translation_offset
         dx = (w - (bbox[2] + bbox[0])) / 2.0
@@ -1251,25 +1109,24 @@ class RandomAffine:
              [0, 0, 1.0]])
 
         matrix = matrix.dot(matrix_trans)[0:2, :]
-        im = cv2.warpAffine(
-            np.uint8(im),
+        img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
+        data['img'] = cv2.warpAffine(
+            np.uint8(data['img']),
             matrix,
             tuple(self.size),
             flags=cv2.INTER_LINEAR,
             borderMode=cv2.BORDER_CONSTANT,
-            borderValue=self.im_padding_value)
-        if label is not None:
-            label = cv2.warpAffine(
-                np.uint8(label),
+            borderValue=(self.im_padding_value, ) * img_channels)
+        for key in data.get('gt_fields', []):
+            data[key] = cv2.warpAffine(
+                np.uint8(data[key]),
                 matrix,
                 tuple(self.size),
                 flags=cv2.INTER_NEAREST,
                 borderMode=cv2.BORDER_CONSTANT,
                 borderValue=self.label_padding_value)
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -1565,4 +1422,3 @@ class Resize_CAE:
             return (im, )
         else:
             return (im, label)
-        #return im

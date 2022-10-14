@@ -1,9 +1,9 @@
 English | [简体中文](whole_process_cn.md)
-# Whole Process of PaddleSeg
+# Learn PaddleSeg in 20 mins
 
-We will use `PP-LiteSeg model` and `Medical Video Disc Segmentation Dataset` as example to introduce PaddleSeg's **configurable driver**. If you want to know how to use API, you can click [PaddleSeg Advanced Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0).
+Paddleseg is composed of code modules and controls the setting use configs, in this way, it realize the full-process from data label to model deployment. In this tutorial, we will use `PP-LiteSeg model` and `Medical Video Disc Segmentation Dataset` as example to help you learn Paddleseg easily and quickily.
 
-The whole process is as follows:
+This tutorial contains the following steps:
 
 1. **Prepare the environment**: PaddleSeg's software environment.
 2. **Data preparation**: How to prepare and organize custom datasets.
@@ -14,17 +14,19 @@ The whole process is as follows:
 7. **Model export**: How to export a model that can be deployed.
 8. **Model deployment**: Quickly use Python to achieve efficient deployment.
 
-## **1. Environmental Installation and Verification**
+## **1. Environmental Installation**
 
 ### **1.1 Environment Installation**
 
-Refer to the [Installation Guide](./install.md) to prepare the environment.
+Please refer to the [Installation Guide](./install.md) to prepare the environment.
+
 ## **2. Dataset Preparation**
 
 ### **2.1 Dataset Download**
 
-Our demo uses the `optic disc segmentation dataset` for training.
-Optic disc segmentation is a set of fundus medical segmentation datasets, including 267 training images, 76 verification images, and 38 test images. You can download them by the following command.
+Our demo uses the `optic disc segmentation dataset` for training. It is one of dozens datasets that we support. You can refer to [Datasets prepare](./data/pre_data.md) to use other datasets we support or [Prepare your own data](./data/marker/marker.md) to prepare your own data.
+
+Optic disc segmentation is a set of fundus medical segmentation datasets, including 267 training images, 76 verification images, and 38 test images. You can download and unzip them using the following command.
 
 ```
 mkdir data
@@ -38,48 +40,6 @@ The original image and segmentation result are shown below. Our task will be to 
 
 ![](./images/fig1.png)
 
-
-
-### **2.2 Prepare other Dataset**
-
-How to use your own dataset for training is the most concerned thing for developers. Below we will focus on explaining what we should prepare if we want to customize the dataset. And we will tell you how to make corresponding changes in the configuration file after the dataset is ready.
-
-- It is recommended to organize into the following structure.
-
-        custom_dataset
-        |
-        |--images
-        |  |--image1.jpg
-        |  |--image2.jpg
-        |  |--...
-        |
-        |--labels
-        |  |--label1.png
-        |  |--label2.png
-        |  |--...
-        |
-        |--train.txt
-        |
-        |--val.txt
-        |
-        |--test.txt
-
-- The origin images with 3 channels are saved in `images` directory. The label images with 1 channel are saved in `labels` directory. The train.txt, val.txt and test.txt denotes the train set, validation set and test set, respectively.
-
-- It is not necessary for the folder to be named custom_dataset, images, labels, and the user can name it independently.
-
-- The file in train.txt val.txt test.txt does not have to be in the same directory as the custom_dataset folder, it can be modified through the options in the configuration file.
-
-- The contents of train.txt and val.txt are as follows:
-
-  ```
-
-   images/image1.jpg labels/label1.png
-   images/image2.jpg labels/label2.png
-   ...
-  ```
-
-- The format of the dataset we just downloaded is similar (label.txt is optional). If users want to label and divide the dataset, please refer to [Data Marking Document](data/marker/marker.md) and [ dataset division document](data/custom/data_prepare.md).
 
 ## **3. Model Training**
 
@@ -224,7 +184,7 @@ export CUDA_VISIBLE_DEVICES=0 # Set 1 usable card
 
 **Please execute the following command under windows**
 **set CUDA_VISIBLE_DEVICES=0**
-python train.py \
+python tools/train.py \
         --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --do_eval \
         --use_vdl \
@@ -284,7 +244,7 @@ A: As shown by the serial number in the figure, the parameters of the No. 1 yml 
 
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # Set 4 usable cards
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
@@ -295,7 +255,7 @@ python -m paddle.distributed.launch train.py \
 ### **3.8 Resume training**
 
 ```
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
@@ -334,7 +294,7 @@ Enter the suggested URL in the browser, the effect is as follows:
 After the training is completed, the user can use the evaluation script val.py to evaluate the effect of the model. Assuming that the number of iterations (iters) in the training process is 1000, the interval for saving the model is 500, that is, the training model is saved twice for every 1000 iterations of the dataset. Therefore, there will be a total of 2 regularly saved models, plus the best model best_model saved, there are a total of 3 models. You can specify the model file you want to evaluate through model_path.
 
 ```
-python val.py \
+python tools/val.py \
         --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --model_path output/iter_1000/model.pdparams
 ```
@@ -342,7 +302,7 @@ python val.py \
 If you want to perform multi-scale flip evaluation, you can turn it on by passing in `--aug_eval`, and then passing in scale information via `--scales`, `--flip_horizontal` turns on horizontal flip, and `flip_vertical` turns on vertical flip. Examples of usage are as follows:
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --aug_eval \
@@ -353,7 +313,7 @@ python val.py \
 If you want to perform sliding window evaluation, you can open it by passing in `--is_slide`, pass in the window size by `--crop_size`, and pass in the step size by `--stride`. Examples of usage are as follows:
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --is_slide \
@@ -389,7 +349,7 @@ In addition to analyzing the IOU, ACC and Kappa indicators of the model, we can 
 The predict.py script is specially used to visualize prediction cases. The command format is as follows
 
 ```
-python predict.py \
+python tools/predict.py \
         --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --model_path output/iter_1000/model.pdparams \
         --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
@@ -409,7 +369,7 @@ We select 1 picture to view, the effect is as follows. We can intuitively see th
 In order to facilitate the user's industrial-level deployment, PaddleSeg provides a one-click function of moving to static, which is to convert the trained dynamic graph model file into a static graph form.
 
 ```
-python export.py \
+python tools/export.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams
 ```
@@ -501,11 +461,11 @@ PaddleSeg
             ├── functional.py
             └── transforms.py
         └── utils
-            ├── config_check.py
             ├── visualize.py
             └── ...
-     ├── train.py # The training entry file, which describes the analysis of parameters, the starting method of training, and the resources prepared for training.
-     ├── predict.py # Prediction file
+     ├── tools
+        ├── train.py # The training entry file, which describes the analysis of parameters, the starting method of training, and the resources prepared for training.
+        ├── predict.py # Prediction file
      └── ...
 
 

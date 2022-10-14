@@ -1,3 +1,4 @@
+English|[简体中文](cpp_inference_cn.md)
 # Paddle Inference Deployment (C++)
 
 ## 1. Description
@@ -63,11 +64,11 @@ make install
 
 ## 3. Prepare models and pictures
 
-Execute the following command in the `PaddleSeg/deploy/cpp/` directory to download the [test model](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz) for testing. If you need to test other models, please refer to [documentation](../../model_export.md) to export the prediction model.
+Execute the following command in the `PaddleSeg/deploy/cpp/` directory to download the [test model](https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz) for testing. If you need to test other models, please refer to [documentation](../../model_export.md) to export the prediction model.
 
 ````
-wget https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz
-tar xzf bisenet_demo_model.tar.gz
+wget https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
+tar xf stdc1seg_infer_model.tar.gz
 ````
 
 Download one [image](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png) from the validation set of cityscapes.
@@ -83,7 +84,7 @@ Please check that `PaddleSeg/deploy/cpp/` stores prediction libraries, models, a
 ````
 PaddleSeg/deploy/cpp
 |-- paddle_inference # prediction library
-|-- bisenetv2_demo_model # model
+|-- stdc1seg_infer_model # model
 |-- cityscapes_demo.png # image
 ````
 

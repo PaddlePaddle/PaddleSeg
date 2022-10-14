@@ -74,7 +74,7 @@ dataset = Dataset(transforms = transforms,
 > CLASS paddleseg.datasets.PascalVOC(transforms, dataset_root=None, mode='train', edge=False)
 
     PascalVOC2012 dataset `http://host.robots.ox.ac.uk/pascal/VOC/`.
-    If you want to augment the dataset, please run the voc_augment.py in tools.
+    If you want to augment the dataset, please run the voc_augment.py in tools/data.
 
 > > Args
 > > > - **transforms** (list): Transforms for image.

@@ -24,7 +24,7 @@ from paddleseg.transforms import Compose
 class PascalContext(Dataset):
     """
     PascalVOC2010 dataset `http://host.robots.ox.ac.uk/pascal/VOC/`.
-    If you want to use pascal context dataset, please run the convert_voc2010.py in tools firstly.
+    If you want to use pascal context dataset, please run the convert_voc2010.py in tools/data firstly.
 
     Args:
         transforms (list): Transforms for image.

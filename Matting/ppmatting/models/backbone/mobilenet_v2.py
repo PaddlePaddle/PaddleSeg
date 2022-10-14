@@ -22,8 +22,9 @@ import paddle.nn.functional as F
 from paddle.nn import Conv2D, BatchNorm, Linear, Dropout
 from paddle.nn import AdaptiveAvgPool2D, MaxPool2D, AvgPool2D
 
-from paddleseg import utils
 from paddleseg.cvlibs import manager
+
+import ppmatting
 
 MODEL_URLS = {
     "MobileNetV2_x0_25":
@@ -233,7 +234,7 @@ class MobileNet(nn.Layer):
         return feat_list
 
     def init_weight(self):
-        utils.load_pretrained_model(self, self.pretrained)
+        ppmatting.utils.load_pretrained_model(self, self.pretrained)
 
 
 @manager.BACKBONES.add_component

@@ -28,7 +28,8 @@ def visualize_instances(imask,
 
 @lru_cache(maxsize=16)
 def get_palette(num_cls):
-    return np.array([[0, 0, 0], [128, 0, 0], [0, 128, 0], [0, 0, 128]])
+    return np.array([[0, 0, 0], [128, 0, 0], [0, 128, 0], [0, 0, 128],
+                     [128, 128, 0], [0, 128, 128], [128, 0, 128]])
 
 
 def visualize_mask(mask, num_cls):

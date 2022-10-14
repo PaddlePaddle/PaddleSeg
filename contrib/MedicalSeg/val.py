@@ -19,7 +19,7 @@ import paddle
 
 from medicalseg.cvlibs import Config
 from medicalseg.core import evaluate
-from medicalseg.utils import get_sys_env, logger, config_check, utils
+from medicalseg.utils import get_sys_env, logger, utils
 
 
 def parse_args():
@@ -114,8 +114,6 @@ def main(args):
     if args.use_vdl:
         from visualdl import LogWriter
         log_writer = LogWriter(args.save_dir)
-
-    config_check(cfg, val_dataset=val_dataset)
 
     evaluate(
         model,

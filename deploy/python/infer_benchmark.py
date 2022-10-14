@@ -168,8 +168,9 @@ class PredictorBenchmark(Predictor):
         logger.info("Average time: %.3f ms/img" % avg_time)
 
     def _preprocess(self, img_path):
+        data = {'img': img_path}
         if self.args.resize_width == 0 and self.args.resize_height == 0:
-            return self.cfg.transforms(img_path)[0]
+            return self.cfg.transforms(data)['img']
         else:
             assert args.resize_width > 0 and args.resize_height > 0
             with codecs.open(args.cfg, 'r', 'utf-8') as file:
@@ -180,7 +181,7 @@ class PredictorBenchmark(Predictor):
                 'target_size': [args.resize_width, args.resize_height]
             })
             transforms = DeployConfig.load_transforms(transforms_dic)
-            return transforms(img_path)[0]
+            return transforms(data)['img']
 
     def _save_imgs(self, results):
         for i in range(results.shape[0]):
