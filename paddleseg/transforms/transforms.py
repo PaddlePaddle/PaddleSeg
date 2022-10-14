@@ -1518,7 +1518,7 @@ class Resize_CAE:
     def _resize_img(self, results, scale):
         """Resize images with ``results['scale']``."""
         if self.keep_ratio:
-            img, scale_factor = geometric.imrescale(
+            img, scale_factor = functional.imrescale(
                 results, scale, return_scale=True)
             # the w_scale and h_scale has minor difference
             # a real fix should be done in the mmcv.imrescale in the future
@@ -1527,7 +1527,7 @@ class Resize_CAE:
             w_scale = new_w / w
             h_scale = new_h / h
         else:
-            img, w_scale, h_scale = geometric.imresize(
+            img, w_scale, h_scale = functional.imresize(
                 results, results['scale'], return_scale=True)
         scale_factor = np.array(
             [w_scale, h_scale, w_scale, h_scale], dtype=np.float32)
@@ -1537,10 +1537,11 @@ class Resize_CAE:
         """Resize semantic segmentation map with ``results['scale']``."""
 
         if self.keep_ratio:
-            gt_seg = geometric.imrescale(
+            gt_seg = functional.imrescale(
                 results, scale, interpolation='nearest')
         else:
-            gt_seg = geometric.imresize(results, scale, interpolation='nearest')
+            gt_seg = functional.imresize(
+                results, scale, interpolation='nearest')
         return gt_seg
 
     def __call__(self, im, label=None):

@@ -19,7 +19,8 @@ model:
     init_values: 0.1
     final_norm: True
     use_rel_pos_bias: True
-    pretrained: saved_model/pretrained_model.pdparams
+    pretrained: model.pdparams
+    #pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/upernet_caebase_ade20k_512x512_160k/pretrained/model.pdparams
   backbone_indices: [3, 5, 7, 11]
   channels: 768
   fpn_dim: 768
@@ -28,7 +29,7 @@ model:
 
 train_dataset:
   type: ADE20K
-  dataset_root: dataset/ADEChallengeData2016/
+  dataset_root: data/ADEChallengeData2016/
   transforms:
     - type: Resize_CAE
     - type: RandomPaddingCrop
@@ -46,7 +47,7 @@ train_dataset:
 
 val_dataset:
   type: ADE20K
-  dataset_root: dataset/ADEChallengeData2016/
+  dataset_root: data/ADEChallengeData2016/
   transforms:
     - type: ResizeByShort
       short_size: 512
