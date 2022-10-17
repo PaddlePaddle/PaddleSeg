@@ -229,7 +229,7 @@ def imresize(img,
         return resized_img, w_scale, h_scale
 
 
-def rescale_size(old_size, scale, return_scale=False):
+def rescale_size(old_size, scale):
     """Calculate the new size to be rescaled to.
 
     Args:
@@ -238,53 +238,28 @@ def rescale_size(old_size, scale, return_scale=False):
             If it is a float number, then the image will be rescaled by this
             factor, else if it is a tuple of 2 integers, then the image will
             be rescaled as large as possible within the scale.
-        return_scale (bool): Whether to return the scaling factor besides the
-            rescaled image size.
 
     Returns:
         tuple[int]: The new rescaled image size.
     """
-
-    def _scale_size(size, scale):
-        """Rescale a size by a ratio.
-
-        Args:
-            size (tuple[int]): (w, h).
-            scale (float): Scaling factor.
-
-        Returns:
-            tuple[int]: scaled size.
-        """
-        w, h = size
-        return int(w * float(scale) + 0.5), int(h * float(scale) + 0.5)
-
     w, h = old_size
     if isinstance(scale, (float, int)):
         if scale <= 0:
             raise ValueError(f'Invalid scale {scale}, must be positive.')
-        scale_factor = scale
     elif isinstance(scale, tuple):
         max_long_edge = max(scale)
         max_short_edge = min(scale)
-        scale_factor = min(max_long_edge / max(h, w),
-                           max_short_edge / min(h, w))
+        scale = min(max_long_edge / max(h, w), max_short_edge / min(h, w))
     else:
         raise TypeError(
             f'Scale must be a number or tuple of int, but got {type(scale)}')
 
-    new_size = _scale_size((w, h), scale_factor)
+    new_size = (int(w * float(scale) + 0.5), int(h * float(scale) + 0.5))
 
-    if return_scale:
-        return new_size, scale_factor
-    else:
-        return new_size
+    return new_size
 
 
-def imrescale(img,
-              scale,
-              return_scale=False,
-              interpolation='bilinear',
-              backend=None):
+def imrescale(img, scale, interpolation='bilinear', backend=None):
     """Resize image while keeping the aspect ratio.
 
     Args:
@@ -293,8 +268,6 @@ def imrescale(img,
             If it is a float number, then the image will be rescaled by this
             factor, else if it is a tuple of 2 integers, then the image will
             be rescaled as large as possible within the scale.
-        return_scale (bool): Whether to return the scaling factor besides the
-            rescaled image.
         interpolation (str): Same as :func:`resize`.
         backend (str | None): Same as :func:`resize`.
 
@@ -302,10 +275,8 @@ def imrescale(img,
         ndarray: The rescaled image.
     """
     h, w = img.shape[:2]
-    new_size, scale_factor = rescale_size((w, h), scale, return_scale=True)
+    new_size = rescale_size((w, h), scale)
     rescaled_img = imresize(
         img, new_size, interpolation=interpolation, backend=backend)
-    if return_scale:
-        return rescaled_img, scale_factor
-    else:
-        return rescaled_img
+
+    return rescaled_img

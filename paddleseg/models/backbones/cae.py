@@ -23,8 +23,6 @@ from paddleseg.cvlibs import manager
 from paddleseg.utils import utils, logger
 from paddleseg.models.backbones.transformer_utils import to_2tuple, DropPath, Identity
 
-zeros_ = Constant(value=0.)
-
 
 class Mlp(nn.Layer):
     def __init__(self,
@@ -68,11 +66,9 @@ class Attention(nn.Layer):
 
         if qkv_bias:
             self.q_bias = self.create_parameter(
-                shape=([dim]), default_initializer=zeros_)
+                shape=([dim]), default_initializer=Constant(value=0.))
             self.v_bias = self.create_parameter(
-                shape=([dim]), default_initializer=zeros_)
-            #self.q_bias = nn.Parameter(paddle.zeros(dim)) 
-            #self.v_bias = nn.Parameter(paddle.zeros(dim))
+                shape=([dim]), default_initializer=Constant(value=0.))
         else:
             self.q_bias = None
             self.v_bias = None
@@ -82,38 +78,32 @@ class Attention(nn.Layer):
                 2 * window_size[1] - 1) + 3
             self.relative_position_bias_table = self.create_parameter(
                 shape=(self.num_relative_distance, num_heads),
-                default_initializer=zeros_)  # 2*Wh-1 * 2*Ww-1, nH
-            # cls to token & token 2 cls & cls to cls
+                default_initializer=Constant(value=0.))
 
             # get pair-wise relative position index for each token inside the window
             coords_h = paddle.arange(window_size[0])
             coords_w = paddle.arange(window_size[1])
-            coords = paddle.stack(paddle.meshgrid(
-                [coords_h, coords_w]))  # 2, Wh, Ww
-            coords_flatten = paddle.flatten(coords, 1)  # 2, Wh*Ww 
+            coords = paddle.stack(paddle.meshgrid([coords_h, coords_w]))
+            coords_flatten = paddle.flatten(coords, 1)
             coords_flatten_1 = paddle.unsqueeze(coords_flatten, 2)
             coords_flatten_2 = paddle.unsqueeze(coords_flatten, 1)
             relative_coords = coords_flatten_1.clone() - coords_flatten_2.clone(
             )
 
-            #relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]  # 2, Wh*Ww, Wh*Wh
-            relative_coords = relative_coords.transpose(
-                (1, 2, 0))  #.contiguous()  # Wh*Ww, Wh*Ww, 2
-            relative_coords[:, :, 0] += window_size[
-                0] - 1  # shift to start from 0
+            #relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :] 
+            relative_coords = relative_coords.transpose((1, 2, 0))
+            relative_coords[:, :, 0] += window_size[0] - 1
             relative_coords[:, :, 1] += window_size[1] - 1
             relative_coords[:, :, 0] *= 2 * window_size[1] - 1
             relative_position_index = \
                 paddle.zeros(shape=(window_size[0] * window_size[1] + 1, ) * 2, dtype=relative_coords.dtype)
-            relative_position_index[1:, 1:] = relative_coords.sum(
-                -1)  # Wh*Ww, Wh*Ww
+            relative_position_index[1:, 1:] = relative_coords.sum(-1)
             relative_position_index[0, 0:] = self.num_relative_distance - 3
             relative_position_index[0:, 0] = self.num_relative_distance - 2
             relative_position_index[0, 0] = self.num_relative_distance - 1
 
             self.register_buffer("relative_position_index",
                                  relative_position_index)
-            # trunc_normal_(self.relative_position_bias_table, std=.0)
         else:
             self.window_size = None
             self.relative_position_bias_table = None
@@ -143,9 +133,8 @@ class Attention(nn.Layer):
                 self.relative_position_index.reshape([-1])].reshape([
                     self.window_size[0] * self.window_size[1] + 1,
                     self.window_size[0] * self.window_size[1] + 1, -1
-                ])  # Wh*Ww,Wh*Ww,nH
-            relative_position_bias = relative_position_bias.transpose(
-                (2, 0, 1))  #.contiguous()  # nH, Wh*Ww, Wh*Ww
+                ])
+            relative_position_bias = relative_position_bias.transpose((2, 0, 1))
             attn = attn + relative_position_bias.unsqueeze(0)
         if rel_pos_bias is not None:
             attn = attn + rel_pos_bias
@@ -175,7 +164,6 @@ class Block(nn.Layer):
                  norm_layer='nn.LayerNorm',
                  epsilon=1e-5):
         super().__init__()
-        # self.norm1 = eval(norm_layer)(dim, epsilon=1e-6)
         self.norm1 = nn.LayerNorm(dim, epsilon=1e-6)
         self.attn = Attention(
             dim,
@@ -199,8 +187,6 @@ class Block(nn.Layer):
                 shape=([dim]), default_initializer=Constant(value=init_values))
             self.gamma_2 = self.create_parameter(
                 shape=([dim]), default_initializer=Constant(value=init_values))
-            #self.gamma_1 = nn.Parameter(init_values * torch.ones((dim)),requires_grad=True)
-            #self.gamma_2 = nn.Parameter(init_values * torch.ones((dim)),requires_grad=True)
         else:
             self.gamma_1, self.gamma_2 = None, None
 
@@ -254,41 +240,35 @@ class RelativePositionBias(nn.Layer):
             2 * window_size[1] - 1) + 3
         self.relative_position_bias_table = self.create_parameter(
             shape=(self.num_relative_distance, num_heads),
-            default_initialize=zeros_)
+            default_initialize=Constant(value=0.))
         # cls to token & token 2 cls & cls to cls
 
         # get pair-wise relative position index for each token inside the window
         coords_h = paddle.arange(window_size[0])
         coords_w = paddle.arange(window_size[1])
-        coords = paddle.stack(paddle.meshgrid(
-            [coords_h, coords_w]))  # 2, Wh, Ww
-        coords_flatten = coords.flatten(1)  # 2, Wh*Ww
+        coords = paddle.stack(paddle.meshgrid([coords_h, coords_w]))
+        coords_flatten = coords.flatten(1)
 
-        relative_coords = coords_flatten[:, :,
-                                         None] - coords_flatten[:,
-                                                                None, :]  # 2, Wh*Ww, Wh*Ww
-        relative_coords = relative_coords.transpos(
-            (1, 2, 0))  #.contiguous()  # Wh*Ww, Wh*Ww, 2 
-        relative_coords[:, :, 0] += window_size[0] - 1  # shift to start from 0
+        relative_coords = coords_flatten[:, :, None] - coords_flatten[:,
+                                                                      None, :]
+        relative_coords = relative_coords.transpos((1, 2, 0))
+        relative_coords[:, :, 0] += window_size[0] - 1
         relative_coords[:, :, 1] += window_size[1] - 1
         relative_coords[:, :, 0] *= 2 * window_size[1] - 1
         relative_position_index = \
             paddle.zeros(size=(window_size[0] * window_size[1] + 1,) * 2, dtype=relative_coords.dtype)
-        relative_position_index[1:, 1:] = relative_coords.sum(
-            -1)  # Wh*Ww, Wh*Ww
+        relative_position_index[1:, 1:] = relative_coords.sum(-1)
         relative_position_index[0, 0:] = self.num_relative_distance - 3
         relative_position_index[0:, 0] = self.num_relative_distance - 2
         relative_position_index[0, 0] = self.num_relative_distance - 1
         self.register_buffer("relative_position_index", relative_position_index)
-        # trunc_normal_(self.relative_position_bias_table, std=.02)
 
     def forward(self):
         relative_position_bias = \
             self.relative_position_bias_table[self.relative_position_index.view(-1)].view(
                  self.window_size[0] * self.window_size[1] + 1,
-                 self.window_size[0] * self.window_size[1] + 1, -1)  # Wh*Ww,Wh*Ww,nH 
-        return relative_position_bias.transpose(
-            (2, 0, 1))  #.contiguous()  # nH, Wh*Ww, Wh*Ww
+                 self.window_size[0] * self.window_size[1] + 1, -1)
+        return relative_position_bias.transpose((2, 0, 1))
 
 
 def get_sinusoid_encoding_table(n_position, d_hid, token=False):
@@ -302,8 +282,8 @@ def get_sinusoid_encoding_table(n_position, d_hid, token=False):
 
     sinusoid_table = np.array(
         [get_position_angle_vec(pos_i) for pos_i in range(n_position)])
-    sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])  # dim 2i
-    sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
+    sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])
+    sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])
     if token:
         sinusoid_table = np.concatenate(
             [sinusoid_table, np.zeros([1, d_hid])], dim=0)
@@ -384,8 +364,6 @@ class CAE(nn.Layer):
         ])
 
         self.final_norm = final_norm
-        #if self.final_norm:
-        #    self.norm = eval(norm_layer)(embed_dim, epsilon=epsilon)
         self.pretrained = pretrained
         self.init_weight()
 

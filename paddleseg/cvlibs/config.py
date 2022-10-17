@@ -312,8 +312,6 @@ class Config(object):
         args = self.dic.get('optimizer', {}).copy()
         if args['type'] == 'sgd':
             args.setdefault('momentum', 0.9)
-        elif args['type'] == 'adamwdl':
-            args.pop('momentum', None)
 
         return args
 

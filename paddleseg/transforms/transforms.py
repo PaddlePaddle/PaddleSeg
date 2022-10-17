@@ -1375,8 +1375,7 @@ class Resize_CAE:
     def _resize_img(self, results, scale):
         """Resize images with ``results['scale']``."""
         if self.keep_ratio:
-            img, scale_factor = functional.imrescale(
-                results, scale, return_scale=True)
+            img = functional.imrescale(results, scale)
             # the w_scale and h_scale has minor difference
             # a real fix should be done in the mmcv.imrescale in the future
             new_h, new_w = img.shape[:2]
