@@ -1,4 +1,4 @@
-简体中文|[English](cpp_inference.md)
+简体中文 | [English](cpp_inference.md)
 # Paddle Inference部署（C++）
 
 ## 1. 说明
@@ -99,21 +99,26 @@ make install
 
 ## 3. 准备模型和图片
 
-在`PaddleSeg/deploy/cpp/`目录下执行如下命令，下载[测试模型](https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz)用于测试。如果需要测试其他模型，请参考[文档](../../model_export.md)导出预测模型。
+在`PaddleSeg/deploy/cpp/`目录下执行如下命令，下载[测试模型](https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz)。如果需要测试其他模型，请参考[文档](../../model_export.md)导出预测模型。
 
 ```
-wget https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
-tar xf stdc1seg_infer_model.tar.gz
+wget https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz
+tar xf pp_liteseg_infer_model.tar.gz
 ```
 
-预测模型格式如下，其中`model.pdmodel`可以通过[Netron](https://netron.app/)打开进行模型可视化。
-通过可视化，可以看到预测模型的输入输出的个数和数据类别，这些信息在调用PaddleInference预测API是需要用到。
+预测模型文件格式如下。
 ```shell
 output/inference_model
   ├── deploy.yaml            # 部署相关的配置文件，主要说明数据预处理方式等信息
   ├── model.pdmodel          # 预测模型的拓扑结构文件
   ├── model.pdiparams        # 预测模型的权重文件
   └── model.pdiparams.info   # 参数额外信息，一般无需关注
+```
+
+`model.pdmodel`可以通过[Netron](https://netron.app/)打开进行模型可视化，大家可以看到预测模型的输入输出的个数、数据类型（比如int32_t, int64_t, float等）。
+如果模型的输出数据类型不是int32_t，执行默认的代码后会报错。此时需要大家手动修改`deploy/cpp/src/test_seg.cc`文件中的下面代码，改为输出对应的数据类别。
+```
+std::vector<int32_t> out_data(out_num);
 ```
 
 下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)。
@@ -127,7 +132,7 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 ```
 PaddleSeg/deploy/cpp
 |-- paddle_inference        # 预测库
-|-- stdc1seg_infer_model    # 模型
+|-- pp_liteseg_infer_model    # 模型
 |-- cityscapes_demo.png     # 图片
 ...
 ```
@@ -135,6 +140,7 @@ PaddleSeg/deploy/cpp
 ## 4. X86 CPU上部署
 
 执行`sh run_seg_cpu.sh`，会进行编译，然后在X86 CPU上执行预测，分割结果会保存在当前目录的“out_img.jpg“图片。
+
 ## 5. Nvidia GPU上部署
 
 在Nvidia GPU上部署模型，我们需要提前明确部署场景和要求，主要关注多次预测时输入图像的尺寸是否变化。

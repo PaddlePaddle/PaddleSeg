@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
   std::vector<int> output_shape = output_t->shape();
   int out_num = std::accumulate(output_shape.begin(), output_shape.end(), 1,
                                 std::multiplies<int>());
-  std::vector<int64_t> out_data(out_num);
+  std::vector<int32_t> out_data(out_num);
   output_t->CopyToCpu(out_data.data());
 
   // Get pseudo image
