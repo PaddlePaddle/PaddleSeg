@@ -34,10 +34,10 @@ def reverse_transform(pred, trans_info, mode='nearest'):
             h, w = item[1][0], item[1][1]
             if paddle.get_device() == 'cpu' and dtype in intTypeList:
                 pred = paddle.cast(pred, 'float32')
-                pred = F.interpolate(pred, (h, w), mode=mode)
+                pred = F.interpolate(pred, [h, w], mode=mode)
                 pred = paddle.cast(pred, dtype)
             else:
-                pred = F.interpolate(pred, (h, w), mode=mode)
+                pred = F.interpolate(pred, [h, w], mode=mode)
         elif trans_mode == 'padding':
             h, w = item[1][0], item[1][1]
             pred = pred[:, :, 0:h, 0:w]
@@ -211,7 +211,7 @@ def aug_inference(model,
     for scale in scales:
         h = int(h_input * scale + 0.5)
         w = int(w_input * scale + 0.5)
-        im = F.interpolate(im, (h, w), mode='bilinear')
+        im = F.interpolate(im, [h, w], mode='bilinear')
         for flip in flip_comb:
             im_flip = tensor_flip(im, flip)
             logit = inference(
@@ -221,7 +221,7 @@ def aug_inference(model,
                 crop_size=crop_size,
                 stride=stride)
             logit = tensor_flip(logit, flip)
-            logit = F.interpolate(logit, (h_input, w_input), mode='bilinear')
+            logit = F.interpolate(logit, [h_input, w_input], mode='bilinear')
 
             logit = F.softmax(logit, axis=1)
             final_logit = final_logit + logit
