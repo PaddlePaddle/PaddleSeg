@@ -106,7 +106,7 @@ def parse_args():
     parser.add_argument(
         '--device',
         dest='device',
-        help='Device place to be set, which can be GPU, XPU, NPU, CPU',
+        help='Device place to be set, which can be GPU, XPU, NPU, MLU, CPU',
         default='gpu',
         type=str)
 
@@ -149,6 +149,8 @@ def main(args):
         place = 'xpu'
     elif args.device == 'npu' and paddle.is_compiled_with_npu():
         place = 'npu'
+    elif args.device == 'mlu' and paddle.is_compiled_with_mlu():
+        place = 'mlu'
     else:
         place = 'cpu'
 
