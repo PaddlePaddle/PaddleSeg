@@ -9,32 +9,32 @@ Linux端基础训练预测功能测试的主程序为`test_train_inference_pytho
 
 | 算法名称 | 模型名称 | 单机单卡 | 单机多卡 | 多机多卡 | 模型压缩（单机多卡） |
 |  :----  |   :----  |    :----  |  :----   |  :----   |  :----   |
-|  HRNet     |PP-HumanSeg-mobile (HRNet_W18_small)  |  正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
-| HRNet     |HRNet_W18| 正常训练 | 正常训练 |  |  |
-| DeepLabv3p     |PP-HumanSeg-Server (DeepLabv3p_resnet50)| 正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
-| DeepLabv3p     |DeepLabv3p_resnet50_cityscapes| 正常训练 | 正常训练 |  |  |
-| ConnectNet | PP-HumanSeg-Lite| 正常训练  | 正常训练  |  |  |
-| BiSeNetV2 | BiSeNetV2 | 正常训练  | 正常训练  |  |  |
-| OCRNet | OCRNet_HRNetW18 | 正常训练  | 正常训练  |  |  |
-| OCRNet | OCRNet_HRNetW48 | 正常训练  | 正常训练  |  |  |
-| Segformer | Segformer_B0 | 正常训练  | 正常训练  |  |  |
-| STDC | STDC_STDC1 | 正常训练  | 正常训练  |  |  |
-| MODNet | PP-Matting | 正常训练  | 正常训练  |  |  |
-| PFPNNet | PFPNNet | 正常训练 | 正常训练 |  |  |
-| ENet | ENet | 正常训练 | 正常训练 |  |  |
-| FastSCNN | FastSCNN | 正常训练 | 正常训练 |  |  |
-| DDRNet | DDRNet_23 | 正常训练 | 正常训练 |  |  |
-| CCNet | CCNet | 正常训练 | 正常训练 |  |  |
-| PP-LiteSeg | PP-LiteSeg(STDC-1) | 正常训练 | 正常训练 |  |  |
-| PP-LiteSeg | PP-LiteSeg(STDC-2) | 正常训练 | 正常训练 |  |  |
-| GloRe | GloRe | 正常训练 | 正常训练 |  |  |
-| BiSeNetV1 | BiSeNetV1 | 正常训练 | 正常训练 |  |  |
-| UPERNet | UPERNet | 正常训练 | 正常训练 |  |  |
-| HRNetW48Contrast | HRNetW48Contrast | 正常训练 | 正常训练 |  |  |
-| ENCNet | ENCNet | 正常训练 | 正常训练 |  |  |
-| ESPNetV2 | ESPNetV2 | 正常训练 | 正常训练 |  |  |
-| SFNet | SFNet | 正常训练 | 正常训练 |  |  |
-| MobileSeg | MobileSeg-MV3 | 正常训练 | 正常训练 |  |  |
+| HRNet     | pphumanseg_mobile (fcn_hrnetw18_small)  |  正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
+| HRNet     | fcn_hrnet_w18 | 正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
+| DeepLabV3P     | pphumanseg_server (deeplabv3p_resnet50) | 正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
+| DeepLabV3P     | deeplabv3p_resnet50_cityscapes | 正常训练 | 正常训练 |  |  |
+| ConnectNet | pphumanseg_lite | 正常训练 <br> 混合精度  | 正常训练 <br> 混合精度  |  |  |
+| BiSeNetV2 | bisenetv2 | 正常训练  | 正常训练  |  |  |
+| OCRNet | ocrnet_hrnetw18 | 正常训练 <br> 混合精度  | 正常训练 <br> 混合精度  |  |  |
+| OCRNet | ocrnet_hrnetw48 | 正常训练 <br> 混合精度  | 正常训练 <br> 混合精度  |  |  |
+| SegFormer | segformer_b0 | 正常训练 <br> 混合精度  | 正常训练 <br> 混合精度  |  |  |
+| STDC | stdc_stdc1 | 正常训练  | 正常训练  |  |  |
+| MODNet | ppmatting | 正常训练  | 正常训练  |  |  |
+| PFPNNet | pfpnnet | 正常训练 | 正常训练 |  |  |
+| ENet | enet | 正常训练 | 正常训练 |  |  |
+| FastSCNN | fastscnn | 正常训练 | 正常训练 |  |  |
+| DDRNet | ddrnet | 正常训练 | 正常训练 |  |  |
+| CCNet | ccnet | 正常训练 | 正常训练 |  |  |
+| PP-LiteSeg | pp_liteseg_stdc1 | 正常训练 | 正常训练 |  |  |
+| PP-LiteSeg | pp_liteseg_stdc2 | 正常训练 | 正常训练 |  |  |
+| GloRe | glore | 正常训练 | 正常训练 |  |  |
+| BiSeNetV1 | bisenetv1 | 正常训练 | 正常训练 |  |  |
+| UPERNet | upernet | 正常训练 | 正常训练 |  |  |
+| HRNet | hrnet_w48_contrast | 正常训练 | 正常训练 |  |  |
+| ENCNet | encnet | 正常训练 | 正常训练 |  |  |
+| ESPNetV2 | espnetv2 | 正常训练 | 正常训练 |  |  |
+| SFNet | sfnet | 正常训练 | 正常训练 |  |  |
+| MobileSeg | mobileseg_mv3 | 正常训练 | 正常训练 |  |  |
 
 
 - 预测相关：基于训练是否使用量化，可以将训练产出的模型可以分为`正常模型`和`量化模型`，这两类模型对应的预测功能汇总如下，
@@ -60,19 +60,19 @@ Linux端基础训练预测功能测试的主程序为`test_train_inference_pytho
 `test_train_inference_python.sh`包含4种运行模式，每种模式的运行数据不同，分别用于测试速度和精度，分别是：
 
 - 模式1：lite_train_lite_infer，使用少量数据训练，用于快速验证训练到预测的走通流程，不验证精度和速度；
-```shell
+```bash
 bash test_tipc/prepare.sh ./test_tipc/configs/fcn_hrnetw18_small/train_infer_python.txt 'lite_train_lite_infer'
 bash test_tipc/test_train_inference_python.sh ./test_tipc/configs/fcn_hrnetw18_small/train_infer_python.txt 'lite_train_lite_infer'
 ```  
 
 - 模式2：lite_train_whole_infer，使用少量数据训练，一定量数据预测，用于验证训练后的模型执行预测，预测速度是否合理；
-```shell
+```bash
 bash test_tipc/prepare.sh ./test_tipc/configs/fcn_hrnetw18_small/train_infer_python.txt  'lite_train_whole_infer'
 bash test_tipc/test_train_inference_python.sh ../test_tipc/configs/fcn_hrnetw18_small/train_infer_python.txt 'lite_train_whole_infer'
 ```  
 
 - 模式3：whole_infer，不训练，全量数据预测，走通开源模型评估、动转静，检查inference model预测时间和精度;
-```shell
+```bash
 bash test_tipc/prepare.sh ./test_tipc/configs/fcn_hrnetw18_small/train_infer_python.txt 'whole_infer'
 # 用法1:
 bash test_tipc/test_train_inference_python.sh ../test_tipc/configs/fcn_hrnetw18_small/train_infer_python.txt 'whole_infer'
@@ -81,13 +81,13 @@ bash test_tipc/test_train_inference_python.sh ./test_tipc/configs/fcn_hrnetw18_s
 ```  
 
 - 模式4：whole_train_whole_infer，CE： 全量数据训练，全量数据预测，验证模型训练精度，预测精度，预测速度；
-```shell
+```bash
 bash test_tipc/prepare.sh ./test_tipc/configs/fcn_hrnetw18_small/train_infer_python.txt 'whole_train_whole_infer'
 bash test_tipc/test_train_inference_python.sh ./test_tipc/configs/fcn_hrnetw18_small/train_infer_python.txt 'whole_train_whole_infer'
 ```  
 
 <!-- - 模式5：klquant_whole_infer，测试离线量化；
-```shell
+```bash
 bash test_tipc/prepare.sh ./test_tipc/configs/fcn_hrnetw18_small_KL/model_linux_gpu_normal_normal_infer_python_linux_gpu_cpu.txt  'klquant_whole_infer'
 bash test_tipc/test_train_inference_python.sh ./test_tipc/configs/fcn_hrnetw18_small_KL/model_linux_gpu_normal_normal_infer_python_linux_gpu_cpu.txt  'klquant_whole_infer'
 ``` -->
@@ -106,13 +106,13 @@ test_tipc/output/[model name]/
 
 其中`results_python.log`中包含了每条指令的运行状态，如果运行成功会输出：
 ```
-Run successfully with command - python3.7 train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
+Run successfully with command - python3.7 tools/train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
 Run successfully with command - python3.7 export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --model_path=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null/best_model/model.pdparams --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null!
 ......
 ```
 如果运行失败，会输出：
 ```
-Run failed with command - python3.7 train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
+Run failed with command - python3.7 tools/train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
 Run failed with command - python3.7 export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --model_path=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null/best_model/model.pdparams --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null!
 ......
 ```
@@ -130,7 +130,7 @@ Run failed with command - python3.7 export.py --config test_tipc/configs/fcn_hrn
 
 #### 使用方式
 
-```shell
+```bash
 python3.7 test_tipc/compare_results.py --metric_file=./test_tipc/results/*.txt  --predict_dir=./test_tipc/output/xxx/python_infer_*_results --gt_dir=./test_tipc/data/xxx --num_classes xxx
 ```
 
@@ -143,7 +143,7 @@ python3.7 test_tipc/compare_results.py --metric_file=./test_tipc/results/*.txt  
 - rtol: 设置的相对误差，默认为1e-3
 
 以`fcn_hrnetw18_small`模型为例，运行命令如下：
-```shell
+```bash
 python3.7 test_tipc/compare_results.py --metric_file=./test_tipc/results/*.txt  --predict_dir=./test_tipc/output/fcn_hrnetw18_small/python_infer_*_results --gt_dir=./test_tipc/data/mini_supervisely/Annotations --num_classes 2
 ```
 

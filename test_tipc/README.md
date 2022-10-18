@@ -23,32 +23,32 @@
 
 | 算法论文 | 模型名称 | 基础<br>训练预测 | 更多<br>训练方式 | 模型压缩 |  更多部署方式  |
 | :--- | :--- |  :----:  |  :----  |   :----  |   :----  |
-| HRNet     |PP-HumanSeg-Mobile (HRNet_W18_small)    | 支持  | 混合精度 | - | - |
-| HRNet     |HRNet_W18    | 支持  | - | - | - |
-| DeepLabv3p     |PP-HumanSeg-Server (DeepLabv3p_resnet50) | 支持 | 混合精度 | - | - |
-| DeepLabv3p     |DeepLabv3p_resnet50_cityscapes | 支持 | - | - | - |
-| ConnectNet | PP-HumanSeg-Lite | 支持 | - | - | - |
-| BiSeNetV2 | BiSeNetV2 | 支持 | - | - | - |
-| OCRNet | OCRNet_HRNetW18 | 支持 | - | - | - |
-| OCRNet | OCRNet_HRNetW48 | 支持 | - | - | - |
-| Segformer | Segformer_B0 | 支持 | - | - | - |
-| STDC | STDC_STDC1 | 支持 | - | - | C++预测 |
-| MODNet | PP-Matting | 支持 | - | - | - |
-| PFPNNet | PFPNNet | 支持 | - | - | - |
-| ENet | ENet | 支持 | - | - | - |
-| FastSCNN | FastSCNN | 支持 | - | - | - |
-| DDRNet | DDRNet_23 | 支持 | - | - | - |
-| CCNet | CCNet | 支持 | - | - | - |
-| PP-LiteSeg | PP-LiteSeg(STDC-1) | 支持 | - | - | - |
-| PP-LiteSeg | PP-LiteSeg(STDC-2) | 支持 | - | - | - |
-| UPerNet | UPerNet | 支持 | - | - | - |
-| GloRe | GloRe | 支持 | - | - | - |
-| BiSeNetV1 | BiSeNetV1 | 支持 | - | - | - |
-| HRNetW48Contrast | HRNetW48Contrast | 支持 | - | - | - |
-| ENCNet | ENCNet | 支持 | - | - | - |
-| ESPNetV2 | ESPNetV2 | 支持 | - | - | - |
-| SFNet | SFNet | 支持 | - | - | - |
-| MobileSeg | MobileSeg-MV3 | 支持 | - | - | - |
+| HRNet     | pphumanseg_mobile (fcn_hrnetw18_small)    | 支持  | 混合精度 | KL离线量化<br>PACT量化训练 | - |
+| HRNet     | fcn_hrnet_w18    | 支持  | 混合精度 | KL离线量化<br>PACT量化训练 | - |
+| DeepLabV3P     | pphumanseg_server (deeplabv3p_resnet50) | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | - |
+| DeepLabV3P     | deeplabv3p_resnet50_cityscapes | 支持 | - | - | - |
+| ConnectNet | pphumanseg_lite | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | - |
+| BiSeNetV2 | bisenetv2 | 支持 | - | - | - |
+| OCRNet | ocrnet_hrnetw18 | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | - |
+| OCRNet | ocrnet_hrnetw48 | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | - |
+| SegFormer | segformer_b0 | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | - |
+| STDC | stdc_stdc1 | 支持 | - | - | C++预测 |
+| MODNet | ppmatting | 支持 | - | - | - |
+| PFPNNet | pfpnnet | 支持 | - | - | - |
+| ENet | enet | 支持 | - | - | - |
+| FastSCNN | fastscnn | 支持 | - | - | - |
+| DDRNet | ddrnet | 支持 | - | - | - |
+| CCNet | ccnet | 支持 | - | - | - |
+| PP-LiteSeg | pp_liteseg_stdc1 | 支持 | - | KL离线量化<br>PACT量化训练 | - |
+| PP-LiteSeg | pp_liteseg_stdc2 | 支持 | - | KL离线量化<br>PACT量化训练 | - |
+| GloRe | glore | 支持 | - | - | - |
+| BiSeNetV1 | bisenetv1 | 支持 | - | - | - |
+| UPerNet | upernet | 支持 | - | - | - |
+| HRNet | hrnet_w48_contrast | 支持 | - | - | - |
+| ENCNet | encnet | 支持 | - | - | - |
+| ESPNetV2 | espnetv2 | 支持 | - | - | - |
+| SFNet | sfnet | 支持 | - | - | - |
+| MobileSeg | mobileseg_mv3 | 支持 | - | - | - |
 
 ## 3. 测试工具简介
 ### 目录介绍

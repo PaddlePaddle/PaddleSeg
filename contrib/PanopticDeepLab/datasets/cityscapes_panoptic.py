@@ -60,6 +60,7 @@ class CityscapesPanoptic(paddle.io.Dataset):
         small_instance_weight (int, optional): The loss weight for small instance. Default: 1.
         stuff_area (int, optional): An Integer, remove stuff whose area is less tan stuff_area. Default: 2048.
     """
+    NUM_CLASSES = 19
 
     def __init__(self,
                  transforms,

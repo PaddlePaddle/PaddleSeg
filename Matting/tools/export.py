@@ -102,7 +102,8 @@ def main(args):
             'Deploy': {
                 'transforms': transforms,
                 'model': 'model.pdmodel',
-                'params': 'model.pdiparams'
+                'params': 'model.pdiparams',
+                'input_shape': shape
             }
         }
         yaml.dump(data, file)

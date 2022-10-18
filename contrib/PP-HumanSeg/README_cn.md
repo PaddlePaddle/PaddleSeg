@@ -5,10 +5,11 @@
 **目录**
 - 1 简介
 - 2 最新消息
-- 3 PP-HumanSeg模型
-- 4 快速体验
-- 5 训练评估预测演示
-- 6 部署
+- 3 技术交流
+- 4 PP-HumanSeg模型
+- 5 快速体验
+- 6 训练评估预测演示
+- 7 部署
 
 ## 1 简介
 
@@ -34,9 +35,21 @@
 <img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="200">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="200">
 </p>
 
-## 3 PP-HumanSeg模型
+## 3 技术交流
 
-### 3.1 肖像分割模型
+* 如果大家有使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
+* **欢迎大家加入PaddleSeg的微信用户群👫**（扫码填写问卷即可入群），和各界大佬交流学习，还可以**领取重磅大礼包🎁**
+  * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
+  * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
+  * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
+  * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+</div>
+
+## 4 PP-HumanSeg模型
+
+### 4.1 肖像分割模型
 
 针对手机视频通话、Web视频会议等实时半身人像的分割场景，PP-HumanSeg发布了自研的肖像分割模型。该系列模型可以开箱即用，零成本直接集成到产品中。
 
@@ -69,7 +82,7 @@ PP-HumanSegV1-Lite肖像分割模型，分割效果较好，模型体积非常�
 * 在手机端部署肖像分割模型，存在横屏和竖屏两种情况。大家可以根据实际情况对图像进行旋转，保持人像始终是竖直，然后将图像（尺寸比如是256x144或144x256）输入模型，得到最佳分割效果。
 </details>
 
-### 3.2 通用人像分割模型
+### 4.2 通用人像分割模型
 
 针对通用人像分割任务，我们首先构建的大规模人像数据集，然后使用PaddleSeg的SOTA模型，最终发布了多个PP-HumanSeg通用人像分割模型。
 
@@ -105,9 +118,9 @@ PP-HumanSegV2-Mobile通用分割模型，使用PaddleSeg自研的[PP-LiteSeg](..
 </details>
 
 
-## 4 快速体验
+## 5 快速体验
 
-### 4.1 准备环境
+### 5.1 准备环境
 
 安装PaddlePaddle，要求：
 * PaddlePaddle >= 2.2.0
@@ -124,7 +137,7 @@ cd PaddleSeg
 pip install -r requirements.txt
 ```
 
-### 4.2 准备模型和数据
+### 5.2 准备模型和数据
 
 以下所有命令均在`PaddleSeg/contrib/PP-HumanSeg`目录下执行。
 
@@ -147,7 +160,7 @@ python src/download_inference_models.py
 python src/download_data.py
 ```
 
-### 4.3 肖像分割
+### 5.3 肖像分割
 
 使用`src/seg_demo.py`脚本实现肖像分割、背景替换等功能的演示。
 
@@ -304,18 +317,20 @@ python src/seg_demo.py \
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/bg_replace.gif"  height="200">
 </p>
 
-### 4.4 在线运行教程
+### 5.4 在线运行教程
 
-PP-HumanSeg V1版本提供了基于AI Studio的[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/2189481)，大家可以实践体验。
+基于PP-HumanSeg V1版本的AI Studio[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/2189481)。
 
-## 5 训练微调
+基于PP-HumanSeg V2版本的AI Studio[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/4504982)。
+
+## 6 训练微调
 
 由于分割任务的场景变化很大，大家需要根据实际场景评估PP-HumanSeg系列模型的精度。
 如果开源模型满足业务要求，可以直接应用到产品中。如果不满足业务要求，大家可以收集、标注数据，基于开源模型进行Finetune。
 
 我们以PP-HumanSeg通用人像分割模型为例，介绍训练、评估、导出的方法。
 
-### 5.1 准备
+### 6.1 准备
 
 参考前文"快速体验 - 准备环境"，安装Paddle和PaddleSeg。
 
@@ -329,7 +344,7 @@ python src/download_data.py
 python src/download_pretrained_models.py
 ```
 
-### 5.2 训练
+### 6.2 训练
 
 配置文件保存在`./configs`目录下，如下。配置文件中，已经通过`pretrained`设置好预训练权重的路径。
 
@@ -342,45 +357,45 @@ configs
 ├── human_pp_humansegv1_server.yml
 ```
 
-执行如下命令，进行模型微调。模型训练的详细文档，请参考[链接](../../docs/train/train_cn.md)。
+执行如下命令，进行模型微调（大家需要根据实际情况修改配置文件中的超参）。模型训练的详细文档，请参考[链接](../../docs/train/train_cn.md)。
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # Linux下设置1张可用的卡
 # set CUDA_VISIBLE_DEVICES=0  # Windows下设置1张可用的卡
-python ../../train.py \
+python ../../tools/train.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --save_dir output/human_pp_humansegv2_lite \
   --save_interval 100 --do_eval --use_vdl
 ```
 
-### 5.3 评估
+### 6.3 评估
 
 执行如下命令，加载模型和训练好的权重，进行模型评估，输出验证集上的评估精度。模型评估的详细文档，请参考[链接](../../docs/evaluation/evaluate/evaluate_cn.md)。
 
 ```bash
-python ../../val.py \
+python ../../tools/val.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams
 ```
 
-### 5.4 预测
+### 6.4 预测
 
 执行如下命令，加载模型和训练好的权重，对单张图像进行预测，预测结果保存在`./data/images_result`目录下的`added_prediction`和`pseudo_color_prediction`文件夹中。
 
 ```bash
-python ../../predict.py \
+python ../../tools/predict.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --image_path data/images/human.jpg \
   --save_dir ./data/images_result
 ```
 
-### 5.5 导出
+### 6.5 导出
 
 执行如下命令，加载模型和训练好的权重，导出预测模型。模型导出的详细文档，请参考[链接](../../docs/model_export_cn.md)。
 
 ```shell
-python ../../export.py \
+python ../../tools/export.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --save_dir output/human_pp_humansegv2_lite \
@@ -391,10 +406,15 @@ python ../../export.py \
 注意，使用`--without_argmax --with_softmax`参数，则模型导出的时候，模型最后面不会添加Argmax算子，而是添加Softmax算子。
 所以，输出是浮点数类型，表示前景的概率，使得图像融合的边缘更为平滑。
 
-## 6 部署
-### 6.1 移动端部署
+## 7 部署
 
-参见[移动端部署教程](../../docs/deployment/lite/lite_cn.md)
+导出PP-HumanSeg人像分割模型后，可以和其他分割模型类似，使用预测引擎进行部署，实现更快的推理速度。
+
+服务器端Python部署，请参考[教程](../../docs/deployment/inference/python_inference_cn.md)。
+
+服务器端C++部署，请参考[教程](../../docs/deployment/inference/cpp_inference_cn.md)。
+
+移动端部署教程，请参见[教程](../../docs/deployment/lite/lite_cn.md)。
 
 <p align="center">
 <img src="../../deploy/lite/example/human_1.png"  height="200">  
@@ -402,9 +422,8 @@ python ../../export.py \
 <img src="../../deploy/lite/example/human_3.png"  height="200">
 </p>
 
-### 6.2 Web端部署
 
-参见[Web端部署教程](../../docs/deployment/web/web_cn.md)
+Web端部署教程，请参见[教程](../../docs/deployment/web/web_cn.md)。
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png"  height="200">

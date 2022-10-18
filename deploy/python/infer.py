@@ -61,7 +61,7 @@ def parse_args():
         default='./output')
     parser.add_argument(
         '--device',
-        choices=['cpu', 'gpu'],
+        choices=['cpu', 'gpu', 'xpu', 'npu'],
         default="gpu",
         help="Select which device to inference, defaults to gpu.")
 
@@ -243,6 +243,10 @@ class Predictor:
 
         if args.device == 'cpu':
             self._init_cpu_config()
+        elif args.device == 'npu':
+            self.pred_cfg.enable_npu()
+        elif args.device == 'xpu':
+            self.pred_cfg.enable_xpu()
         else:
             self._init_gpu_config()
 

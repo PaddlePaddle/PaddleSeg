@@ -8,10 +8,10 @@ Image Matting is the technique of extracting foreground from an image by calcula
 </p>
 
 # One-click experience
-Try the online demo "[Non-Code Matting](http://seg.itmanbu.com/)".
+Try the online demo "[Non-Code Matting](https://easyseg.cn/)".
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">
+<img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="70%" height="70%">
 </p>
 
 ## Update Notes
@@ -35,6 +35,15 @@ Try the online demo "[Non-Code Matting](http://seg.itmanbu.com/)".
 [2] Support model export and python deployment.
 [3] Support background replacement function.
 [4] Support human matting deployment in Android.
+
+## Community
+
+* If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+</div>
+
 
 ## Contents
 - [Installation](#Installation)

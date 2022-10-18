@@ -50,7 +50,7 @@ If your dataset is not organized as the aforementioned structure, we suggest tha
 
 The commands used are as follows, which supports enabling specific functions through different Flags.
 ```
-python tools/split_dataset_list.py <dataset_root> <images_dir_name> <labels_dir_name> ${FLAGS}
+python tools/data/split_dataset_list.py <dataset_root> <images_dir_name> <labels_dir_name> ${FLAGS}
 ```
 Parameters:
 - dataset_root: Dataset root directory
@@ -74,18 +74,18 @@ After running, `train.txt`, `val.txt`, `test.txt` and `labels.txt` will be gener
 
 #### Example
 ```
-python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
+python tools/data/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
 ```
 
 ### 1.2 Generate txt files
 If you only have a divided dataset, you can generate a file list by executing the following script:
 ```
 # Generate a file list, the separator is a space, and the data format of the picture and the label set is png
-python tools/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
+python tools/data/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
 ```
 ```
 # Generate a list of files. The folders for pictures and tag sets are named img and gt, and the folders for training and validation sets are named training and validation. No test set list is generated.
-python tools/create_dataset_list.py <your/dataset/dir> \
+python tools/data/create_dataset_list.py <your/dataset/dir> \
         --folder img gt --second_folder training validation
 ```
 **Note:** A custom dataset directory must be specified, and FLAG can be set as needed. There is no need to specify `--type`.

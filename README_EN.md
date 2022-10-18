@@ -63,11 +63,10 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 
 ## <img src="./docs/images/chat.png" width="20"/> Community
 
-* Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
 * If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-
+* Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
 </div>
 
 
@@ -380,7 +379,7 @@ Note that:
     * [Label Data with EISeg](./EISeg)
 
 * [Model Training](/docs/train/train.md)
-* [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
+* [Model Evaluation](./docs/evaluation/evaluate.md)
 * [Prediction](./docs/predict/predict.md)
 
 * Model Export
@@ -400,9 +399,9 @@ Note that:
 * [Training Tricks](./docs/train/train_tricks.md)
 
 *  Model Compression
-    * [Quantization](./docs/slim/quant/quant.md)
-    * [Distillation](./docs/slim/distill/distill.md)
-    * [Prune](./docs/slim/prune/prune.md)
+    * [Quantization](./docs/deployment/slim/quant/quant.md)
+    * [Distillation](./docs/deployment/slim/distill/distill.md)
+    * [Prune](./docs/deployment/slim/prune/prune.md)
 
 * [FAQ](./docs/faq/faq/faq.md)
 
@@ -417,7 +416,7 @@ Note that:
     * [PR Tutorial](./docs/pr/pr/pr.md)
     * [PR Style](./docs/pr/pr/style_cn.md)
 
-## Practical Projects
+## <img src="./docs/images/anli.png" width="20"/> Special Features
   * [Interactive Segmentation](./EISeg)
   * [Image Matting](./Matting)
   * [PP-HumanSeg](./contrib/PP-HumanSeg)
@@ -427,12 +426,15 @@ Note that:
   * [CVPR Champion Solution](./contrib/AutoNUE)
   * [Domain Adaptation](./contrib/DomainAdaptation)
 
-# AI Studio tutorials
-* [Learn Paddleseg in 10 Mins](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
-* [Use PaddleSeg in Human Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
-* [Use PaddleSeg in Mini-dataset Spine Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
-* [Use PaddleSeg in Lane Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
+## <img src="https://user-images.githubusercontent.com/48054808/157801371-9a9a8c65-1690-4123-985a-e0559a7f9494.png" width="20"/> Industrial Tutorial Examples
+
+* [Using PP-HumanSegV2 for Human Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/4504982?contributionType=1)
+* [Using PP-HumanSegV1 for Human Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
+* [Using PP-LiteSeg for Road Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/3873145?contributionType=1)
+* [Using PaddleSeg for Mini-dataset Spine Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
+* [Using PaddleSeg for Lane Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
 * [PaddleSeg in APIs](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
+* [Learn Paddleseg in 10 Mins](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 
 ## License
 

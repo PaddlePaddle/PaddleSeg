@@ -18,7 +18,8 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
-from paddleseg.utils import utils
+
+import ppmatting
 
 __all__ = [
     "ResNet18_vd", "ResNet34_vd", "ResNet50_vd", "ResNet101_vd", "ResNet152_vd"
@@ -331,7 +332,7 @@ class ResNet_vd(nn.Layer):
         return feat_list
 
     def init_weight(self):
-        utils.load_pretrained_model(self, self.pretrained)
+        ppmatting.utils.load_pretrained_model(self, self.pretrained)
 
 
 @manager.BACKBONES.add_component

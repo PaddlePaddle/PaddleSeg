@@ -125,7 +125,7 @@ export CUDA_VISIBLE_DEVICES=0
 # --config 参数表示指定使用哪个配置文件
 # --do_eval 参数表示一遍训练一遍验证
 # --save_interval 参数表示每经过100个iters，进行一个模型的保存
-python PaddleSeg/train.py \
+python PaddleSeg/tools/train.py \
        --config PaddleSeg/configs/mynet.yml \
        --do_eval \
        --use_vdl \

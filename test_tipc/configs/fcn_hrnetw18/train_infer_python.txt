@@ -12,8 +12,8 @@ train_model_name:best_model/model.pdparams
 train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 --profiler_options:null
 ##
-trainer:norm
-norm_train:train.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml --save_interval 500 --seed 100 --num_workers 8
+trainer:norm_train
+norm_train:tools/train.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml --device gpu --save_interval 500 --seed 100 --num_workers 8
 pact_train:null
 fpgm_train:null
 distill_train:null
@@ -21,13 +21,13 @@ null:null
 null:null
 ##
 ===========================eval_params===========================
-eval:val.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml --num_workers 8
+eval:tools/val.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml --device gpu --num_workers 8
 null:null
 ##
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:export.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml
+norm_export:tools/export.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -35,7 +35,7 @@ export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/fcn_hrnetw18/fcn_hrnetw18_1024x512/model.pdparams
-infer_export:export.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml
+infer_export:tools/export.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml
 infer_quant:False
 inference:deploy/python/infer.py
 --device:cpu|gpu
@@ -58,4 +58,4 @@ fp_items:fp32|fp16
 epoch:500
 --profiler_options:'batch_range=[10,20];state=GPU;tracer_option=Default;profile_path=model.profile'
 flags:FLAGS_eager_delete_tensor_gb=0.0;FLAGS_fraction_of_gpu_memory_to_use=0.98;FLAGS_conv_workspace_size_limit=4096;FLAGS_cudnn_deterministic=False
-log_iters:8;set_cv_threads:true;skip_iters:2;repeats:500
+log_iters:8;skip_iters:2;repeats:500

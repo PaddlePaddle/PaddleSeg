@@ -1,3 +1,4 @@
+简体中文|[English](cpp_inference.md)
 # Paddle Inference部署（C++）
 
 ## 1. 说明
@@ -10,8 +11,6 @@
 飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），详细使用方法请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
 
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
-
-此外，PaddleX也提供了C++部署的示例和文档，具体参考[链接](https://github.com/PaddlePaddle/PaddleX/tree/develop/deploy/cpp)。
 
 ## 2. 准备环境
 ### 2.1 准备基础环境
@@ -33,16 +32,16 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/work/TensorRT-7.1.3.4/lib
 
 ### 2.2 准备Paddle Inference C++预测库
 
-如果在X86 CPU上部署模型，进入[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)下载“manylinux_cpu_xxx”命名的PaddleInference库。
+如果在X86 CPU上部署模型，进入[C++预测库](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html)下载“manylinux_cpu_xxx”命名的PaddleInference库。
 
-如果在Nvidia GPU上部署模型，进入[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)下载对应CUDA、Cudnn、TRT、GCC版本的PaddleInference库。
+如果在Nvidia GPU上部署模型，进入[C++预测库](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html)下载对应CUDA、Cudnn、TRT、GCC版本的PaddleInference库。
 
 
 > 不同C++预测库可以根据名字进行区分。请根据机器的操作系统、CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT等信息，选择准确版本。（建议选择版本>=2.0的预测库）
 
 下载`paddle_inference.tgz`压缩文件后进行解压，将解压的paddle_inference文件保存到`PaddleSeg/deploy/cpp/`下。
 
-如果大家需要编译Paddle Inference C++预测库，可以参考[文档](https://paddleinference.paddlepaddle.org.cn/user_guides/source_compile.html)，此处不再赘述。
+如果大家需要编译Paddle Inference C++预测库，可以参考[文档](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/source_compile.html)，此处不再赘述。
 
 ### 2.3 安装其他库
 
@@ -105,6 +104,16 @@ make install
 ```
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
 tar xf stdc1seg_infer_model.tar.gz
+```
+
+预测模型格式如下，其中`model.pdmodel`可以通过[Netron](https://netron.app/)打开进行模型可视化。
+通过可视化，可以看到预测模型的输入输出的个数和数据类别，这些信息在调用PaddleInference预测API是需要用到。
+```shell
+output/inference_model
+  ├── deploy.yaml            # 部署相关的配置文件，主要说明数据预处理方式等信息
+  ├── model.pdmodel          # 预测模型的拓扑结构文件
+  ├── model.pdiparams        # 预测模型的权重文件
+  └── model.pdiparams.info   # 参数额外信息，一般无需关注
 ```
 
 下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)。

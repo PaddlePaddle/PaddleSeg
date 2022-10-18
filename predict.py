@@ -182,6 +182,9 @@ def main(args):
         save_dir=args.save_dir,
         **test_config)
 
+    logger.warning("This `predict.py` will be removed in version 2.8, "
+                   "please use `tools/predict.py`.")
+
 
 if __name__ == '__main__':
     args = parse_args()
