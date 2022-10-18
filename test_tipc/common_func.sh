@@ -112,7 +112,7 @@ function run_command() {
     local cmd="$1"
     local log_path="$2"
     if [ -n "${log_path}" ]; then
-        eval ${cmd} | tee "${log_path}"
+        eval ${cmd} 2>&1 | tee "${log_path}"
         test ${PIPESTATUS[0]} -eq 0
     else
         eval ${cmd}
