@@ -30,34 +30,19 @@ This example uses OpenCV to read images, so OpenCV needs to be prepared.
 
 Run the following commands to download, compile, and install OpenCV.
 ````
-wget https://github.com/opencv/opencv/archive/3.4.7.tar.gz
-tar -xf 3.4.7.tar.gz
-
-mkdir -p opencv-3.4.7/build
-cd opencv-3.4.7/build
-
-install_path=/usr/local/opencv3
-cmake .. -DCMAKE_INSTALL_PREFIX=${install_path} -DCMAKE_BUILD_TYPE=Release
-make -j
-make install
-
-cd ../..
+sh install_opencv.sh
 ````
 
-### Install Yaml
+### Install Yaml, Gflags and Glog
 
-This example uses Yaml to read configuration file information.
+This example uses Yaml, Gflags and Glog.
 
-Run the following commands to download, compile, and install Yaml.
+Run the following commands to download, compile, and install these libs.
 
 ````
-wget https://github.com/jbeder/yaml-cpp/archive/refs/tags/yaml-cpp-0.7.0.zip
-unzip yaml-cpp-0.7.0.zip
-mkdir -p yaml-cpp-yaml-cpp-0.7.0/build
-cd yaml-cpp-yaml-cpp-0.7.0/build
-cmake -DYAML_BUILD_SHARED_LIBS=ON ..
-make -j
-make install
+sh install_yaml.sh
+sh install_gflags.sh
+sh install_glog.sh
 ````
 
 ## 3. Prepare models and pictures

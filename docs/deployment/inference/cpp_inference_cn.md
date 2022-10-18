@@ -30,14 +30,16 @@ wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/work/TensorRT-7.1.3.4/lib
 ```
 
+如果大家使用Docker，可以拉取`registry.baidubce.com/paddlepaddle/paddle:2.1.2-gpu-cuda10.2-cudnn7`，在docker内部配置需要的基础环境。
+
 ### 2.2 准备Paddle Inference C++预测库
 
-如果在X86 CPU上部署模型，进入[C++预测库](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html)下载“manylinux_cpu_xxx”命名的PaddleInference库。
+如果在X86 CPU上部署模型，进入[C++预测库](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html)下载“manylinux_cpu_xxx”命名的PaddleInference C++预测库。
 
-如果在Nvidia GPU上部署模型，进入[C++预测库](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html)下载对应CUDA、Cudnn、TRT、GCC版本的PaddleInference库。
+如果在Nvidia GPU上部署模型，进入[C++预测库](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html)下载对应CUDA、Cudnn、TRT、GCC版本的PaddleInference C++预测库。
 
 
-> 不同C++预测库可以根据名字进行区分。请根据机器的操作系统、CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT等信息，选择准确版本。（建议选择版本>=2.0的预测库）
+> 不同C++预测库可以根据名字进行区分。请根据机器的操作系统、CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT、GCC版本等信息，选择准确版本。（建议选择版本>=2.3的预测库）
 
 下载`paddle_inference.tgz`压缩文件后进行解压，将解压的paddle_inference文件保存到`PaddleSeg/deploy/cpp/`下。
 
@@ -48,53 +50,17 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/work/TensorRT-7.1.3.4/lib
 本示例使用OpenCV读取图片，所以需要安装OpenCV。在实际部署中，大家视需要安装。
 
 执行如下命令下载、编译、安装OpenCV。
-```
-wget https://github.com/opencv/opencv/archive/3.4.7.tar.gz
-tar -xf 3.4.7.tar.gz
-
-mkdir -p opencv-3.4.7/build
-cd opencv-3.4.7/build
-
-install_path=/usr/local/opencv3
-cmake .. -DCMAKE_INSTALL_PREFIX=${install_path} -DCMAKE_BUILD_TYPE=Release
-make -j
-make install
-
-cd ../..
-```
-
-本示例使用Yaml读取配置文件信息。在实际部署中，大家视需要安装。
-
-执行如下命令下载、编译、安装Yaml。
 
 ```
-wget https://github.com/jbeder/yaml-cpp/archive/refs/tags/yaml-cpp-0.7.0.zip
-unzip yaml-cpp-0.7.0.zip
-mkdir -p yaml-cpp-yaml-cpp-0.7.0/build
-cd yaml-cpp-yaml-cpp-0.7.0/build
-cmake -DYAML_BUILD_SHARED_LIBS=ON ..
-make -j
-make install
+sh install_opencv.sh
 ```
 
-本示例使用Gflags和Glog，在实际部署中，大家视需要安装。
+本示例使用Yaml读取配置文件信息，使用Gflags和Glog管理输入和输出。在实际部署中，大家视需要安装。
 
 ```
-git clone https://github.com/gflags/gflags.git
-mkdir -p gflags/build
-cd gflags/build
-cmake ..
-make -j
-make install
-```
-
-```
-git clone https://github.com/google/glog
-mkdir -p glog/build
-cd glog/build
-cmake ..
-make -j
-make install
+sh install_yaml.sh
+sh install_gflags.sh
+sh install_glog.sh
 ```
 
 ## 3. 准备模型和图片
@@ -184,7 +150,7 @@ PaddleInference有多种方法使用TRT方式、固定Shape模式来部署Paddle
 在`PaddleSeg/deploy/cpp`路径下，执行如下命令。
 ```
 python ../python/collect_dynamic_shape.py \
-    --config stdc1seg_infer_model/deploy.yaml \
+    --config pp_liteseg_infer_model/deploy.yaml \
     --image_path ./cityscapes_demo.png \
     --dynamic_shape_path ./dynamic_shape.pbtxt
 ```
