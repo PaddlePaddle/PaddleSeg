@@ -1,4 +1,4 @@
-简体中文|[English](python_inference.md)
+简体中文 | [English](python_inference.md)
 # Paddle Inference部署（Python）
 
 ## 1. 说明
@@ -44,8 +44,8 @@ wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0
 安装CUDA和cudnn后，还需要将TensorRT库的路径加入到LD_LIBRARY_PATH，比如`export LD_LIBRARY_PATH=/download/TensorRT-7.1.3.4/lib:${LD_LIBRARY_PATH}`。
 
 
-然后，大家参考[文档2](https://www.paddlepaddle.org.cn/inference/user_guides/download_lib.html#python)安装GPU版本、联编TensorRT的PaddlePaddle(按照whl包文件命名进行选择)。
-比如，2.3版本、支持GPU、联编TensorRT的PaddlePaddle whl包，可以在[链接](https://www.paddlepaddle.org.cn/inference/user_guides/download_lib.html#python)下载并安装。
+然后，大家参考[文档](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html#python)安装GPU版本、联编TensorRT的PaddlePaddle(按照whl包文件命名进行选择)。
+比如，2.3版本、支持GPU、联编TensorRT的PaddlePaddle whl包，可以在[链接](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html#python)下载并安装。
 
 ## 3. 准备模型和数据
 
