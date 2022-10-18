@@ -8,7 +8,7 @@
 * 准备模型和图片
 * 编译、执行
 
-飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），详细使用方法请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
+飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），详细使用方法请参考[文档](https://www.paddlepaddle.org.cn/inference/v2.3/product_introduction/summary.html)。
 
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
