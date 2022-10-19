@@ -14,7 +14,7 @@ English | [简体中文](install_cn.md)
 
 ### 1. Install PaddlePaddle
 
-Please refer to the [installation doc](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html) to install PaddlePaddle (the version >= 2.2).
+Please refer to the [installation doc](https://www.paddlepaddle.org.cn/en/install/quick?docurl=/documentation/docs/en/install/pip/linux-pip_en.html) to install PaddlePaddle (the version >= 2.2).
 
 Highly recommend you install the GPU version of PaddlePaddle, due to the large overhead of segmentation models, otherwise, it could be out of memory while running the models.
 
