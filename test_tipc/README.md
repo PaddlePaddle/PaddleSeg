@@ -24,14 +24,14 @@
 | 算法论文 | 模型名称 | 基础<br>训练预测 | 更多<br>训练方式 | 模型压缩 |  更多部署方式  |
 | :--- | :--- |  :----:  |  :----  |   :----  |   :----  |
 | HRNet     | pphumanseg_mobile (fcn_hrnetw18_small)    | 支持  | 混合精度 | KL离线量化<br>PACT量化训练 | - |
-| HRNet     | fcn_hrnet_w18    | 支持  | 混合精度 | KL离线量化<br>PACT量化训练 | - |
-| DeepLabV3P     | pphumanseg_server (deeplabv3p_resnet50) | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | - |
+| HRNet     | fcn_hrnet_w18    | 支持  | 混合精度 | KL离线量化<br>PACT量化训练 | C++预测 |
+| DeepLabV3P     | pphumanseg_server (deeplabv3p_resnet50) | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | C++预测 |
 | DeepLabV3P     | deeplabv3p_resnet50_cityscapes | 支持 | - | - | - |
-| ConnectNet | pphumanseg_lite | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | - |
+| ConnectNet | pphumanseg_lite | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | C++预测 |
 | BiSeNetV2 | bisenetv2 | 支持 | - | - | - |
-| OCRNet | ocrnet_hrnetw18 | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | - |
-| OCRNet | ocrnet_hrnetw48 | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | - |
-| SegFormer | segformer_b0 | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | - |
+| OCRNet | ocrnet_hrnetw18 | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | C++预测 |
+| OCRNet | ocrnet_hrnetw48 | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | C++预测 |
+| SegFormer | segformer_b0 | 支持 | 混合精度 | KL离线量化<br>PACT量化训练 | C++预测 |
 | STDC | stdc_stdc1 | 支持 | - | - | C++预测 |
 | MODNet | ppmatting | 支持 | - | - | - |
 | PFPNNet | pfpnnet | 支持 | - | - | - |
@@ -39,12 +39,12 @@
 | FastSCNN | fastscnn | 支持 | - | - | - |
 | DDRNet | ddrnet | 支持 | - | - | - |
 | CCNet | ccnet | 支持 | - | - | - |
-| PP-LiteSeg | pp_liteseg_stdc1 | 支持 | - | KL离线量化<br>PACT量化训练 | - |
-| PP-LiteSeg | pp_liteseg_stdc2 | 支持 | - | KL离线量化<br>PACT量化训练 | - |
+| PP-LiteSeg | pp_liteseg_stdc1 | 支持 | - | KL离线量化<br>PACT量化训练 | C++预测 |
+| PP-LiteSeg | pp_liteseg_stdc2 | 支持 | - | KL离线量化<br>PACT量化训练 | C++预测 |
 | GloRe | glore | 支持 | - | - | - |
 | BiSeNetV1 | bisenetv1 | 支持 | - | - | - |
 | UPerNet | upernet | 支持 | - | - | - |
-| HRNet | hrnet_w48_contrast | 支持 | - | - | - |
+| HRNet | hrnet_w48_contrast | 支持 | - | - | C++预测 |
 | ENCNet | encnet | 支持 | - | - | - |
 | ESPNetV2 | espnetv2 | 支持 | - | - | - |
 | SFNet | sfnet | 支持 | - | - | - |
