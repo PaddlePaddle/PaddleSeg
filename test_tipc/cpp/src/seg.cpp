@@ -53,7 +53,7 @@ void Segmentor::LoadModel(const std::string &model_path,
 }
 
 
-std::tuple<std::vector<int64>, std::vector<int>, double> Segmentor::Run(cv::Mat &img) {
+std::tuple<std::vector<int32_t>, std::vector<int>, double> Segmentor::Run(cv::Mat &img) {
   cv::Mat new_img;
   img.copyTo(new_img);
 
@@ -80,7 +80,7 @@ std::tuple<std::vector<int64>, std::vector<int>, double> Segmentor::Run(cv::Mat 
   this->predictor_->Run();
 
   // Get output
-  std::vector<int64> out_data;
+  std::vector<int32_t> out_data;
   auto output_names = this->predictor_->GetOutputNames();
   auto output_t = this->predictor_->GetOutputHandle(output_names[0]);
   std::vector<int> out_shape = output_t->shape();
@@ -96,7 +96,7 @@ std::tuple<std::vector<int64>, std::vector<int>, double> Segmentor::Run(cv::Mat 
                      std::chrono::microseconds::period::num /
                      std::chrono::microseconds::period::den;
 
-  std::tuple<std::vector<int64>, std::vector<int>, double> result = std::make_tuple(out_data, out_shape, cost_time);
+  std::tuple<std::vector<int32_t>, std::vector<int>, double> result = std::make_tuple(out_data, out_shape, cost_time);
   return result;
 }
 
