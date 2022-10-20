@@ -17,6 +17,7 @@ Linux GPU/CPU C++ 推理功能测试的主程序为`test_inference_cpp.sh`，可
 |  HRNet   |  fcn_hrnet_w18 |  支持 | 支持 |
 |  OCRNet   |  ocrnet_hrnetw18 |  支持 | 支持 |
 |  OCRNet   |  ocrnet_hrnetw48 |  支持 | 支持 |
+|  SegFormer |  segformer_b0 |  支持 | 支持 |
 
 ## 2. 测试流程
 
