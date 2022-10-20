@@ -134,6 +134,9 @@ def main(args):
 
     logger.info(f'The inference model is saved in {args.save_dir}')
 
+    logger.warning("This `export.py` will be removed in version 2.8, "
+                   "please use `tools/export.py`.")
+
 
 if __name__ == '__main__':
     args = parse_args()

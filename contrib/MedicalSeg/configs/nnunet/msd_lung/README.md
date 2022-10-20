@@ -214,3 +214,71 @@ python nnunet/ensemble.py --ensemble_folds {predict folder1} {predict folder2}  
 ```commandline
 python nnunet/ensemble.py --ensemble_folds output/nnunet_predict/fullres_pred output/nnunet_predict/3d_unet  --output_folder output/ensemble_pred --postprocessing_json_path output/cascade_lowres_val/postprocessing.json
 ```
+
+# 模型导出
+模型导出使用如下命令：
+```commandline
+python nnunet/export.py --config {config path} --save_dir {output dir} --model_path {path to pdparams}
+```
+
+2D-UNet导出：
+```commandline
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_2d_msd_lung_fold0.yml --save_dir output/static/2d_unet/fold0 --model_path output/2d_unet/fold0/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_2d_msd_lung_fold1.yml --save_dir output/static/2d_unet/fold1 --model_path output/2d_unet/fold1/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_2d_msd_lung_fold2.yml --save_dir output/static/2d_unet/fold2 --model_path output/2d_unet/fold2/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_2d_msd_lung_fold3.yml --save_dir output/static/2d_unet/fold3 --model_path output/2d_unet/fold3/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_2d_msd_lung_fold4.yml --save_dir output/static/2d_unet/fold4 --model_path output/2d_unet/fold4/iter_30000/model.pdparams
+```
+
+3D-UNet导出：
+```commandline
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3d_fullres_msd_lung_fold0.yml --save_dir output/static/3d_unet/fold0 --model_path output/3d_unet/fold0/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3d_fullres_msd_lung_fold1.yml --save_dir output/static/3d_unet/fold1 --model_path output/3d_unet/fold1/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3d_fullres_msd_lung_fold2.yml --save_dir output/static/3d_unet/fold2 --model_path output/3d_unet/fold2/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3d_fullres_msd_lung_fold3.yml --save_dir output/static/3d_unet/fold3 --model_path output/3d_unet/fold3/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3d_fullres_msd_lung_fold4.yml --save_dir output/static/3d_unet/fold4 --model_path output/3d_unet/fold4/iter_30000/model.pdparams
+```
+
+Cascade lowres导出：
+```commandline
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold0.yml --save_dir output/static/cascade_lowres/fold0 --model_path output/cascade_lowres/fold0/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold1.yml --save_dir output/static/cascade_lowres/fold1 --model_path output/cascade_lowres/fold1/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold2.yml --save_dir output/static/cascade_lowres/fold2 --model_path output/cascade_lowres/fold2/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold3.yml --save_dir output/static/cascade_lowres/fold3 --model_path output/cascade_lowres/fold3/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold4.yml --save_dir output/static/cascade_lowres/fold4 --model_path output/cascade_lowres/fold4/iter_30000/model.pdparams
+```
+
+Cascade fullres导出：
+```commandline
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold0.yml --save_dir output/static/cascade_fullres/fold0 --model_path output/cascade_fullres/fold0/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold1.yml --save_dir output/static/cascade_fullres/fold1 --model_path output/cascade_fullres/fold1/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold2.yml --save_dir output/static/cascade_fullres/fold2 --model_path output/cascade_fullres/fold2/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold3.yml --save_dir output/static/cascade_fullres/fold3 --model_path output/cascade_fullres/fold3/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold4.yml --save_dir output/static/cascade_fullres/fold4 --model_path output/cascade_fullres/fold4/iter_30000/model.pdparams
+```
+
+# 静态图推理
+推理命令和预测命令非常相似，区别在于将pdparams路径更换为pdmodel和pdiparams路径。命令为：
+```commandline
+python nnunet/infer.py --image_folder {image dir}  --output_folder {output dir} --plan_path {plan path} --model_paths {pdmodel path1} {pdmodel path2} {...} --param_paths {pdiparams path1} {pdiparams path2} {...} --postprocessing_json_path {postprocessing json path} --model_type 3d --disable_postprocessing  --save_npz
+```
+
+2D-UNet推理：
+```commandline
+python nnunet/infer.py --image_folder msd_lung/Task006_Lung/imagesTs  --output_folder output/nnunet_static/2d_unet --plan_path msd_lung/preprocessed/Task006_Lung/nnUNetPlansv2.1_plans_3D.pkl --model_paths output/static/2d_unet/fold0/model.pdmodel output/static/2d_unet/fold1/model.pdmodel output/static/2d_unet/fold2/model.pdmodel output/static/2d_unet/fold3/model.pdmodel output/static/2d_unet/fold4/model.pdmodel --param_paths output/static/2d_unet/fold0/model.pdiparams output/static/2d_unet/fold1/model.pdiparams output/static/2d_unet/fold2/model.pdiparams output/static/2d_unet/fold3/model.pdiparams output/static/2d_unet/fold4/model.pdiparams --postprocessing_json_path output/2d_unet_val/postprocessing.json --model_type 3d --disable_postprocessing  --save_npz
+```
+
+3D-UNet推理：
+```commandline
+python nnunet/infer.py --image_folder msd_lung/Task006_Lung/imagesTs  --output_folder output/nnunet_static/3d_fullres --plan_path msd_lung/preprocessed/Task006_Lung/nnUNetPlansv2.1_plans_3D.pkl --model_paths output/static/3d_unet/fold0/model.pdmodel output/static/3d_unet/fold1/model.pdmodel output/static/3d_unet/fold2/model.pdmodel output/static/3d_unet/fold3/model.pdmodel output/static/3d_unet/fold4/model.pdmodel --param_paths output/static/3d_unet/fold0/model.pdiparams output/static/3d_unet/fold1/model.pdiparams output/static/3d_unet/fold2/model.pdiparams output/static/3d_unet/fold3/model.pdiparams output/static/3d_unet/fold4/model.pdiparams --postprocessing_json_path output/3d_unet_val/postprocessing.json --model_type 3d --disable_postprocessing  --save_npz
+```
+
+Cascade lowres推理：
+```commandline
+python nnunet/infer.py --image_folder msd_lung/Task006_Lung/imagesTs  --output_folder output/nnunet_static/lowres_pred --plan_path msd_lung/preprocessed/Task006_Lung/nnUNetPlansv2.1_plans_3D.pkl --model_paths output/static/cascade_lowres/fold0/model.pdmodel output/static/cascade_lowres/fold1/model.pdmodel output/static/cascade_lowres/fold2/model.pdmodel output/static/cascade_lowres/fold3/model.pdmodel output/static/cascade_lowres/fold4/model.pdmodel --param_paths output/static/cascade_lowres/fold0/model.pdiparams output/static/cascade_lowres/fold1/model.pdiparams output/static/cascade_lowres/fold2/model.pdiparams output/static/cascade_lowres/fold3/model.pdiparams output/static/cascade_lowres/fold4/model.pdiparams --postprocessing_json_path output/cascade_lowres_val/postprocessing.json --model_type cascade_lowres
+```
+
+Cascade fullres推理：
+```commandline
+python nnunet/infer.py --image_folder msd_lung/Task006_Lung/imagesTs  --output_folder output/nnunet_static/fullres_pred --plan_path msd_lung/preprocessed/Task006_Lung/nnUNetPlansv2.1_plans_3D.pkl --model_paths output/static/cascade_fullres/fold0/model.pdmodel output/static/cascade_fullres/fold1/model.pdmodel output/static/cascade_fullres/fold2/model.pdmodel output/static/cascade_fullres/fold3/model.pdmodel output/static/cascade_fullres/fold4/model.pdmodel --param_paths output/static/cascade_fullres/fold0/model.pdiparams output/static/cascade_fullres/fold1/model.pdiparams output/static/cascade_fullres/fold2/model.pdiparams output/static/cascade_fullres/fold3/model.pdiparams output/static/cascade_fullres/fold4/model.pdiparams --postprocessing_json_path output/cascade_lowres_val/postprocessing.json --model_type cascade_fullres --save_npz --lowres_segmentations output/nnunet_static/lowres_pred
+```

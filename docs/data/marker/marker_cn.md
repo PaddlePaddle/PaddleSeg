@@ -30,7 +30,7 @@ PaddleSeg既支持灰度标注图，也支持伪彩色标注图。
 * 如果希望将指定目录下的所有灰度标注图转换为伪彩色标注图，则执行以下命令。
 
 ```buildoutcfg
-python tools/gray2pseudo_color.py <dir_or_file> <output_dir>
+python tools/data/gray2pseudo_color.py <dir_or_file> <output_dir>
 ```
 
 |参数|用途|
@@ -41,7 +41,7 @@ python tools/gray2pseudo_color.py <dir_or_file> <output_dir>
 * 如果仅希望将指定数据集中的部分灰度标注图转换为伪彩色标注图，则执行以下命令。
 
 ```buildoutcfg
-python tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <dataset directory> --file_separator <file list separator>
+python tools/data/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <dataset directory> --file_separator <file list separator>
 ```
 |参数|用途|
 |-|-|
@@ -85,7 +85,7 @@ custom_dataset
 PaddleSeg提供了切分数据并生成文件列表的脚本。
 
 ```
-python tools/split_dataset_list.py <dataset_root> <images_dir_name> <labels_dir_name> ${FLAGS}
+python tools/data/split_dataset_list.py <dataset_root> <images_dir_name> <labels_dir_name> ${FLAGS}
 ```
 
 参数说明：
@@ -104,7 +104,7 @@ FLAGS说明：
 
 使用示例：
 ```
-python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
+python tools/data/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
 ```
 
 运行后将在数据集根目录下生成`train.txt`、`val.txt`和`test.txt`，如下。

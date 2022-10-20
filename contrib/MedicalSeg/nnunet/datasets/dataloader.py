@@ -128,6 +128,11 @@ class DataLoader3D(SlimDataLoaderBase):
                 case_all_data = np.load(self._data[i]['data_file'])['data']
 
             if self.has_prev_stage:
+                if not os.path.isfile(self._data[i][
+                        'seg_from_prev_stage_file']):
+                    raise UserWarning(
+                        "seg from prev stage missing: {}. please run single_fold_eval.py with --predict_next_stage first.".
+                        format(self._data[i]['seg_from_prev_stage_file']))
                 if os.path.isfile(self._data[i]['seg_from_prev_stage_file'][:-4]
                                   + ".npy"):
                     segs_from_previous_stage = np.load(

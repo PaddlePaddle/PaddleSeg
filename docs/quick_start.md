@@ -44,7 +44,7 @@ Run the following command in the root directory of PaddleSeg to start training m
 export CUDA_VISIBLE_DEVICES=0 # Use single GPU in Linux
 # set CUDA_VISIBLE_DEVICES=0 # Use single GPU in Windows
 
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --save_interval 500 \
        --do_eval \
@@ -61,7 +61,7 @@ In the root directory of PaddleSeg, run the following command to evaluate the tr
 
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams
 ```
@@ -72,7 +72,7 @@ python val.py \
 In the root directory of PaddleSeg, run the following command to load trained model, predict the segmentation result and save the result image.
 
 ```
-python predict.py \
+python tools/predict.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0002.jpg \

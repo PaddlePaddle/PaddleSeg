@@ -14,7 +14,7 @@ model:
   hidden_size: 768
   n_skip: 3
   patches_grid: [14, 14]
-  pretrained_path: https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/transunet_synapse_1_224_224_14k_1e-2/pretrain_model.pdparams
+  pretrained_path: https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/transunet_abdomen_224_224_1_14k_1e-2/transunet_pretrained.zip
   skip_channels: [512, 256, 64, 16]
   attention_dropout_rate: 0.0
   dropout_rate: 0.1
@@ -26,8 +26,8 @@ model:
 
 train_dataset:
   type: Abdomen
-  dataset_root: ./mini_synapse_dataset
-  result_dir: ./output
+  dataset_root: mini_synapse_dataset
+  result_dir: tset_tipc/output
   transforms:
     - type: RandomFlip3D
       flip_axis: [1, 2]
@@ -43,8 +43,8 @@ train_dataset:
 
 val_dataset:
   type: Abdomen
-  dataset_root: ./mini_synapse_dataset
-  result_dir: ./output
+  dataset_root: mini_synapse_dataset
+  result_dir: test_tipc/output
   num_classes: 9
   transforms:
     - type: Resize3D
@@ -53,8 +53,8 @@ val_dataset:
 
 test_dataset:
   type: Abdomen
-  dataset_root: ./mini_synapse_dataset
-  result_dir: ./output
+  dataset_root: mini_synapse_dataset
+  result_dir: test_tipc/output
   num_classes: 9
   transforms:
     - type: Resize3D
@@ -88,4 +88,4 @@ export:
     - type: Resize3D
       size: [ 1 ,224, 224 ]
   inference_helper:
-    type: TransUNetInferenceHelper
+    type: InferenceHelper2D

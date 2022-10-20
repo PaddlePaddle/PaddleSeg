@@ -48,7 +48,7 @@ wget -nc -P $model_path https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite
 cd $model_path && tar xf ppseg_lite_portrait_398x224.tar.gz && cd ../../../
 
 # export to static shape model
-python3 export.py \
+python3 tools/export.py \
     --config configs/pp_humanseg_lite/pp_humanseg_lite_export_398x224.yml \
     --model_path test_tipc/web/models/ppseg_lite_portrait_398x224/model.pdparams \
     --save_dir $model_path$saved_model_name/ \

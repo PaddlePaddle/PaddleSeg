@@ -55,7 +55,7 @@ export CUDA_VISIBLE_DEVICES=0
 在PaddleSeg根目录下执行如下命令，训练教师模型。
 
 ```
-python train.py \
+python tools/train.py \
     --config configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
     --do_eval \
     --use_vdl \
@@ -76,7 +76,7 @@ python train.py \
 在PaddleSeg根目录下执行如下命令，训练学生模型。
 
 ```
-python train.py \
+python tools/train.py \
     --config configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml \
     --do_eval \
     --use_vdl \

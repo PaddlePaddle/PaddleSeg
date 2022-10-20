@@ -97,3 +97,18 @@ def kaiming_uniform(param, **kwargs):
 
     initializer = nn.initializer.KaimingUniform(**kwargs)
     initializer(param, param.block)
+
+
+def trunc_normal(param, **kwargs):
+    r"""The Random TruncatedNormal (Gaussian) distribution initializer.
+    Args:
+         param (Tensor): Tensor that needs to be initialized.
+    Examples:
+        from paddleseg.cvlibs import param_init
+        import paddle.nn as nn
+        linear = nn.Linear(2, 4)
+        param_init.trunc_normal(linear.weight)
+    """
+
+    initializer = nn.initializer.TruncatedNormal(std=.02, **kwargs)
+    initializer(param, param.block)

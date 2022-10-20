@@ -63,7 +63,7 @@ Cityscapes是关于城市街道场景的语义理解图片数据集。它主要�
 
 ```shell
 pip install cityscapesscripts
-python tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num_workers 8
+python tools/data/convert_cityscapes.py --cityscapes_path data/cityscapes --num_workers 8
 ```
 
 ### ADE20K数据集
@@ -84,7 +84,7 @@ Pascal VOC 2012数据集以对象分割为主，包含20个类别和背景类，
 
 ```shell
 cd PaddleSeg
-python tools/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
+python tools/data/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
 ```
 
 ### Coco Stuff数据集
@@ -111,7 +111,7 @@ Coco Stuff是基于Coco数据集的像素级别语义分割数据集。它主要
 运行下列命令进行标签转换，其中`annotation_path`应根据下载cocostuff/annotations文件夹的实际路径填写，`save_path`决定转换后标签的存放位置。
 
 ```shell
-python tools/convert_cocostuff.py --annotation_path /PATH/TO/ANNOTATIONS --save_path /PATH/TO/CONVERT_ANNOTATIONS
+python tools/data/convert_cocostuff.py --annotation_path /PATH/TO/ANNOTATIONS --save_path /PATH/TO/CONVERT_ANNOTATIONS
 ```
 
 
@@ -142,7 +142,7 @@ Pascal Context是基于PASCAL VOC 2010数据集额外标注的像素级别的语
 运行下列命令进行标签转换：
 
 ```shell
-python tools/convert_voc2010.py --voc_path /PATH/TO/VOC ----annotation_path /PATH/TO/JSON
+python tools/data/convert_voc2010.py --voc_path /PATH/TO/VOC ----annotation_path /PATH/TO/JSON
 ```
 其中`voc_path`应根据下载VOC2010文件夹的实际路径填写。 `annotation_path`决定下载trainval_merged.json的存放位置。
 

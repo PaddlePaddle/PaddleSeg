@@ -1,2 +1,4 @@
 from .inference_helper import InferenceHelper
+from .inference_helper_2d import InferenceHelper2D
 from .transunet_inference_helper import TransUNetInferenceHelper
+from .nnformer_inference_helper import NNFormerInferenceHelper

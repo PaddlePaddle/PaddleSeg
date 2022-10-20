@@ -471,10 +471,6 @@ class MSDDataset(MedicalDataset):
                 self.dataset[k]['seg_from_prev_stage_file'] = os.path.join(
                     self.folder_with_segs_from_prev_stage,
                     k + "_segFromPrevStage.npz")
-                assert os.path.isfile(
-                    self.dataset[k]['seg_from_prev_stage_file']
-                ), "seg from prev stage missing: %s. please run single_fold_eval.py with --predict_next_stage first." % (
-                    self.dataset[k]['seg_from_prev_stage_file'])
 
         print("dataset split over! dataset mode: {}, keys: {}".format(
             self.mode, tr_keys if self.mode == 'train' else val_keys))

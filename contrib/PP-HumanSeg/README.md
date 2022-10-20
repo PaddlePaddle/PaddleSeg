@@ -36,10 +36,17 @@ The following is demonstration videos (due to the video is large, the loading wi
 <img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="200">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="200">
 </p>
 
+## 3 Community
 
-## 3 PP-HumanSeg Models
+* If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+</div>
 
-### 3.1 Portrait Segmentation Models
+## 4 PP-HumanSeg Models
+
+### 4.1 Portrait Segmentation Models
 
 We release self-developed portrait segmentation models for real-time applications such as mobile video and web conferences. These models can be directly integrated into products at zero cost.
 
@@ -73,7 +80,7 @@ PP-HumanSegV2-Lite protrait segmentation model: **The inference speed is increas
 </details>
 
 
-### 3.2 General Human Segmentation Models
+### 4.2 General Human Segmentation Models
 
 For general human segmentation task, we first build a big human segmentation dataset, then use the SOTA model in PaddleSeg for training, finally release several general human segmentation models.
 
@@ -107,9 +114,9 @@ PP-HumanSegV2-Mobile general human segmentation model: It uses the self-develop 
 </details>
 
 
-## 4 Quick Start
+## 5 Quick Start
 
-### 4.1 Prepare Environment
+### 5.1 Prepare Environment
 
 Install PaddlePaddle:
 * PaddlePaddle >= 2.2.0
@@ -128,7 +135,7 @@ pip install -r requirements.txt
 
 
 
-### 4.2 Prepare Models and Data
+### 5.2 Prepare Models and Data
 
 We run following commands under `PaddleSeg/contrib/PP-HumanSeg`.
 
@@ -148,7 +155,7 @@ Download and save test data in `data`.
 python src/download_data.py
 ```
 
-### 4.3 Portrait Segmentation
+### 5.3 Portrait Segmentation
 
 We use `src/seg_demo.py` to show the portrait segmentation and background replacement.
 
@@ -309,18 +316,20 @@ The result of background replacement as follows.
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/bg_replace.gif"  height="200">
 </p>
 
-### 4.4 Online Tutorial
+### 5.4 Online Tutorial
 
 PP-HumanSeg V1 provides an online tutorial ([url](https://aistudio.baidu.com/aistudio/projectdetail/2189481)) in AI Studio.
 
-## 5 Training and Finetuning
+PP-HumanSeg V2 provides an online tutorial ([url](https://aistudio.baidu.com/aistudio/projectdetail/4504982)) in AI Studio.
+
+## 6 Training and Finetuning
 
 Since the image for segmentation is various, you should evaluate the release model according to the actual scene.
 If the segmentation accuracy is not satisfied, you should annotate images and finetune the model with pretrained weights.
 
 We use the general human segmentation of PP-HumanSeg to show the training, evaluating and exporting.
 
-### 5.1 Prepare
+### 6.1 Prepare
 
 Refer to the "Quick Start  -  Prepare Environment", install Paddle and PaddleSeg.
 
@@ -334,7 +343,7 @@ Run the following command to download pretrained models.
 python src/download_pretrained_models.py
 ```
 
-### 5.2 Training
+### 6.2 Training
 
 The config files are saved in `./configs` as follows. We have set the path of pretrained weight in all config files.
 
@@ -347,45 +356,45 @@ configs
 ├── human_pp_humansegv1_server.yml
 ```
 
-Run the following command to start finetuning. The full usage of model training in [url](../../docs/train/train.md).
+Run the following command to start finetuning. You should change the details, such as learn rate, according to the actual situation. The full usage of model training in [url](../../docs/train/train.md).
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # Set GPU on Linux
 # set CUDA_VISIBLE_DEVICES=0  # Set GPU on Windows
-python ../../train.py \
+python ../../tools/train.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --save_dir output/human_pp_humansegv2_lite \
   --save_interval 100 --do_eval --use_vdl
 ```
 
-### 5.3 Evaluation
+### 6.3 Evaluation
 
 Load model and trained weights and start model evaluation. The full usage of model evaluation in [url](../../docs/evaluation/evaluate/evaluate.md).
 
 ```bash
-python ../../val.py \
+python ../../tools/val.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams
 ```
 
-### 5.4 Prediction
+### 6.4 Prediction
 
 Load model and trained weights and start model prediction. The result are saved in `./data/images_result/added_prediction` and `./data/images_result/pseudo_color_prediction`
 
 ```bash
-python ../../predict.py \
+python ../../tools/predict.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --image_path data/images/human.jpg \
   --save_dir ./data/images_result
 ```
 
-### 5.5 Exporting
+### 6.5 Exporting
 
 Load model and trained weights and export inference model. The full usage of model exporting in [url](../../docs/model_export.md).
 
 ```shell
-python ../../export.py \
+python ../../tools/export.py \
   --config configs/human_pp_humansegv2_lite.yml \
   --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --save_dir output/human_pp_humansegv2_lite \
@@ -395,10 +404,15 @@ python ../../export.py \
 
 When set `--without_argmax --with_softmax`, the last operation of inference model is softmax.
 
-## 6 Deployment
-### 6.1 Deployment on Mobile Devices
+## 7 Deployment
 
-Refer to [deployment on edge dvices](../../docs/deployment/lite/lite.md)
+The PP-Humanseg inference models are deployed in the same way as other models.
+
+Deployment on server with python api, refer to [doc](../../docs/deployment/inference/python_inference.md).
+
+Deployment on server with c++ api, refer to [doc](../../docs/deployment/inference/cpp_inference.md).
+
+Deployment on edge dvices, refer to [doc](../../docs/deployment/lite/lite.md).
 
 <p align="center">
 <img src="../../deploy/lite/example/human_1.png"  height="200">  
@@ -406,9 +420,8 @@ Refer to [deployment on edge dvices](../../docs/deployment/lite/lite.md)
 <img src="../../deploy/lite/example/human_3.png"  height="200">
 </p>
 
-### 6.2 Deployment on Web
 
-Refer to [deployment on web](../../docs/deployment/web/web.md)
+Deployment on web, refer to [doc](../../docs/deployment/web/web.md).
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png"  height="200">

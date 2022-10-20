@@ -125,7 +125,7 @@ def parse_args():
     parser.add_argument(
         '--device',
         dest='device',
-        help='Device place to be set, which can be gpu, xpu, npu, or cpu.',
+        help='Device place to be set, which can be gpu, xpu, npu, mlu or cpu.',
         default='gpu',
         choices=['cpu', 'gpu', 'xpu', 'npu'],
         type=str)
@@ -143,6 +143,8 @@ def main(args):
         place = 'xpu'
     elif args.device == 'npu' and paddle.is_compiled_with_npu():
         place = 'npu'
+    elif args.device == 'mlu' and paddle.is_compiled_with_mlu():
+        place = 'mlu'
     else:
         place = 'cpu'
 
@@ -187,6 +189,9 @@ def main(args):
     test_config = get_test_config(cfg, args)
 
     evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
+
+    logger.warning("This `val.py`  will be removed in version 2.8, "
+                   "please use `tools/val.py`.")
 
 
 if __name__ == '__main__':

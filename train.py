@@ -135,7 +135,7 @@ def parse_args():
     parser.add_argument(
         '--device',
         dest='device',
-        help='Device place to be set, which can be gpu, xpu, npu, or cpu.',
+        help='Device place to be set, which can be gpu, xpu, npu, mlu or cpu.',
         default='gpu',
         choices=['cpu', 'gpu', 'xpu', 'npu'],
         type=str)
@@ -150,7 +150,6 @@ def parse_args():
 
 
 def main(args):
-
     if args.seed is not None:
         paddle.seed(args.seed)
         np.random.seed(args.seed)
@@ -169,6 +168,8 @@ def main(args):
         place = 'xpu'
     elif args.device == 'npu' and paddle.is_compiled_with_npu():
         place = 'npu'
+    elif args.device == 'mlu' and paddle.is_compiled_with_mlu():
+        place = 'mlu'
     else:
         place = 'cpu'
 
@@ -241,6 +242,9 @@ def main(args):
         amp_level=args.amp_level,
         profiler_options=args.profiler_options,
         to_static_training=cfg.to_static_training)
+
+    logger.warning("This `train.py` will be removed in version 2.8, "
+                   "please use `tools/train.py`.")
 
 
 if __name__ == '__main__':

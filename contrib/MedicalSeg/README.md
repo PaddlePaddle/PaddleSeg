@@ -22,30 +22,32 @@ MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports
 </p>
 
 
-**MedicalSeg just released! If you find any problem using it or want to share any future develop suggestions, please open a github issue or join us by scanning the following wechat QR code.**
-
-<p align="center">
-<img src="https://github.com/shiyutang/files/raw/main/medicalsegwechat.jpg" width="25%" height="20%">
-</p>
-
-
 ## Contents
 0. [News](##News)
-1. [EISeg-Med3D](##EISeg-Med3D)
-2. [Performance](##Performance)
-3. [Quick Start](##QuickStart)
-4. [Full Tutorial](##FullTutorial)
-5. [Train On Your Dataset](##TrainOnYourDataset)
-6. [Structure](##Structure)
-7. [TODO](##TODO)
-8. [License](##License)
-9. [Acknowledgement](##Acknowledgement)
+1. [Community](##Community)
+2. [EISeg-Med3D](##EISeg-Med3D)
+3. [Performance](##Performance)
+4. [Quick Start](##QuickStart)
+5. [Full Tutorial](##FullTutorial)
+6. [Train On Your Dataset](##TrainOnYourDataset)
+7. [Structure](##Structure)
+8. [TODO](##TODO)
+9. [License](##License)
+10. [Acknowledgement](##Acknowledgement)
 
 
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043516-eed25535-10e8-4853-8601-6bcf7ff58197.png" width="25"/> News
 - [2022-9] Added 3 cutting-edge models to support whole process deployment applications, including nnformer, TransUnet and nnUnet, allowing you to experience a stronger and more accurate segmentation effect; a new 3D medical image intelligent annotation platform [EISeg-Med3D]( ../../EISeg/med3d/README_en.md) to quickly and easily achieve accurate 3D medical image annotation.
 - [2022-4] MedicalSeg releases version 0.1, which provides the whole process from data preprocessing in 3D medical image segmentation to training and deployment, including native support for five datasets, and high-precision preprocessing on vertebrae and lungs Train the model.
+
+## <img src="../../docs/images/chat.png" width="25"/> Community
+
+* If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+</div>
 
 ## <img src="https://user-images.githubusercontent.com/34859558/188419267-bd117697-7456-4c72-8cbe-1272264d4fe4.png" width="25"/>  EISeg-Med3D
 In order to solve the problem of low efficiency of 3D medical manual annotation, and to truly empower medical care with AI starting from data annotation, we built [EISeg-Med3D](../../EISeg/med3d/README_en.md), a user-friendly, efficient and intelligent 3D medical image annotation platform, which realizes intelligent and efficient 3D medical data annotation by integrating 3D interactive segmentation models in the annotation process. The main features are as follows:

@@ -57,7 +57,7 @@ loss:
         - type: CrossEntropyLoss
         - type: LovaszSoftmaxLoss
       coef: [0.8, 0.2]
-  coef: [1, 1, 1]
+  coef: [1, 1, 1, 1]
 
 model:
   type: PPLiteSeg
