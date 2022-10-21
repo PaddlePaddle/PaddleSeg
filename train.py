@@ -220,6 +220,14 @@ def main(args):
     else:
         model = cfg.model
 
+    import shutil
+    import os
+    os.makedirs(args.save_dir, exist_ok=True)
+    shutil.copyfile('paddleseg/models/backbones/top_transformer.py',
+                    os.path.join(args.save_dir, 'top_transformer.py'))
+    shutil.copyfile('paddleseg/models/topformer.py',
+                    os.path.join(args.save_dir, 'topformer.py'))
+
     train(
         model,
         train_dataset,
