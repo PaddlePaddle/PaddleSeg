@@ -50,9 +50,8 @@ def _save_imgs(results, imgs_path, save_dir):
 
 
 def main(args):
-    img = cv2.imread(args.img_path)
     transform = Compose([Normalize()])
-    input = transform(img)[0]
+    input = transform({'img': args.img_path})['img']
     input = input[np.newaxis, ...]
 
     # 加载ONNX模型

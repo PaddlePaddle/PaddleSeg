@@ -18,7 +18,7 @@ train_dataset:
       scale_step_size: 0
     - type: RandomPaddingCrop
       crop_size: [256, 256]
-      label_padding_value: 1000
+      label_padding_value: 1001
     - type: RandomHorizontalFlip
     - type: RandomDistort
       brightness_range: 0.2

@@ -65,14 +65,14 @@ loss:
 
 * Lovasz loss训练
 ```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch tools/train.py \
 --config configs/ocrnet/ocrnet_hrnetw18_cityscapes_1024x512_160k_lovasz_softmax.yml \
 --use_vdl  --num_workers 3 --do_eval
 ```
 
 * Cross entropy loss训练
 ```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch tools/train.py \
 --config configs/ocrnet/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml \
 --use_vdl  --num_workers 3 --do_eval
 ```
@@ -114,14 +114,14 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
 
 * Lovasz loss训练
 ```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch tools/train.py \
 --config configs/ocrnet/ocrnet_hrnetw18_road_extraction_768x768_15k_lovasz_hinge.yml \
 --use_vdl  --num_workers 3 --do_eval
 ```
 
 * Cross entropy loss训练
 ```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch tools/train.py \
 --config configs/ocrnet/ocrnet_hrnetw18_road_extraction_768x768_15k.yml \
 --use_vdl  --num_workers 3 --do_eval
 ```

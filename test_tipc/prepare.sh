@@ -116,6 +116,9 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     elif [ ${model_name} == "ocrnet_hrnetw18_KL" ];then
         wget -P ${model_path} https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip --no-check-certificate
         unzip -o ${model_path}/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d ${model_path}/
+    elif [ ${model_name} == "segformer_b0_KL" ];then
+        wget -nc -P $model_path https://paddleseg.bj.bcebos.com/tipc/infer_models/segformer_b0_cityscapes_1024x1024_160k.zip --no-check-certificate
+        unzip -o ${model_path}/segformer_b0_cityscapes_1024x1024_160k.zip -d ${model_path}/
     fi
 fi
 
@@ -137,6 +140,10 @@ if [ ${MODE} = "benchmark_train" ];then
         rm -rf ./test_tipc/data/PPM-100
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
+    elif [ ${model_name} = 'deeplabv3p_resnet50_cityscapes' ]; then
+        rm -rf ./test_tipc/data/cityscapes
+        wget https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar -O ./test_tipc/data/cityscapes.tar --no-check-certificate
+        tar -xf ./test_tipc/data/cityscapes.tar -C ./test_tipc/data/
     else
         rm -rf ./test_tipc/data/cityscapes
         wget https://paddleseg.bj.bcebos.com/tipc/data/cityscapes_300imgs.tar.gz \
@@ -200,6 +207,9 @@ if [ ${MODE} = "cpp_infer" ];then
     elif [ ${model_name} == "ocrnet_hrnetw18" ];then
         wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip --no-check-certificate
         unzip inference_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d inference_models/
+    elif [ ${model_name} == "segformer_b0" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/segformer_b0_cityscapes_1024x1024_160k.zip --no-check-certificate
+        unzip inference_models/segformer_b0_cityscapes_1024x1024_160k.zip -d inference_models/
     fi
 
     PADDLEInfer=${3:-https://paddle-inference-lib.bj.bcebos.com/2.2.2/cxx_c/Linux/GPU/x86-64_gcc8.2_avx_mkl_cuda11.1_cudnn8.1.1_trt7.2.3.4/paddle_inference.tgz}

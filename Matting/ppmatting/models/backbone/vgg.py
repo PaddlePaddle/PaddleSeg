@@ -20,7 +20,8 @@ from paddle.nn import Conv2D, BatchNorm, Linear, Dropout
 from paddle.nn import AdaptiveAvgPool2D, MaxPool2D, AvgPool2D
 
 from paddleseg.cvlibs import manager
-from paddleseg.utils import utils
+
+import ppmatting
 
 
 class ConvBlock(nn.Layer):
@@ -139,7 +140,7 @@ class VGGNet(nn.Layer):
 
     def init_weight(self):
         if self.pretrained is not None:
-            utils.load_pretrained_model(self, self.pretrained)
+            ppmatting.utils.load_pretrained_model(self, self.pretrained)
 
 
 @manager.BACKBONES.add_component

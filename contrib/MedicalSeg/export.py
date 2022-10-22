@@ -126,9 +126,11 @@ def main(args):
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
         transforms = cfg.export_config.get('transforms', [{}])
+        inference_helper = cfg.export_config.get('inference_helper', None)
         data = {
             'Deploy': {
                 'transforms': transforms,
+                'inference_helper': inference_helper,
                 'model': 'model.pdmodel',
                 'params': 'model.pdiparams'
             }

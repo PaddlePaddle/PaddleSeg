@@ -1,0 +1,91 @@
+data_root: test_tipc/data
+
+batch_size: 1
+iters: 10
+
+model:
+  type: TransUNet
+  backbone:
+    type: ResNet
+    block_units: [3, 4, 9]
+    width_factor: 1
+  classifier: seg
+  decoder_channels: [256, 128, 64, 16]
+  hidden_size: 768
+  n_skip: 3
+  patches_grid: [14, 14]
+  pretrained_path: https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/transunet_abdomen_224_224_1_14k_1e-2/transunet_pretrained.zip
+  skip_channels: [512, 256, 64, 16]
+  attention_dropout_rate: 0.0
+  dropout_rate: 0.1
+  mlp_dim: 3072
+  num_heads: 12
+  num_layers: 12
+  num_classes: 9
+  img_size: 224
+
+train_dataset:
+  type: Abdomen
+  dataset_root: mini_synapse_dataset
+  result_dir: tset_tipc/output
+  transforms:
+    - type: RandomFlip3D
+      flip_axis: [1, 2]
+    - type: RandomQuarterTurn3D
+      rotate_planes: [[ 1, 2 ]]
+    - type: RandomRotation3D
+      degrees: 20
+      rotate_planes: [[1, 2]]
+    - type: Resize3D
+      size: [1 ,224, 224]
+  mode: train
+  num_classes: 9
+
+val_dataset:
+  type: Abdomen
+  dataset_root: mini_synapse_dataset
+  result_dir: test_tipc/output
+  num_classes: 9
+  transforms:
+    - type: Resize3D
+      size: [1 ,224, 224]
+  mode: test
+
+test_dataset:
+  type: Abdomen
+  dataset_root: mini_synapse_dataset
+  result_dir: test_tipc/output
+  num_classes: 9
+  transforms:
+    - type: Resize3D
+      size: [1 ,224, 224]
+  mode: test
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 1.0e-4
+
+lr_scheduler:
+  type: PolynomialDecay
+  decay_steps: 13950
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+          weight: Null
+        - type: DiceLoss
+      coef: [1, 1]
+  coef: [1]
+
+export:
+  transforms:
+    - type: Resize3D
+      size: [ 1 ,224, 224 ]
+  inference_helper:
+    type: InferenceHelper2D

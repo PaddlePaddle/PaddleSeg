@@ -1,4 +1,4 @@
-简体中文 | [English](README.md)
+简体中文 | [English](README_EN.md)
 
 <div align="center">
 
@@ -58,11 +58,14 @@
 
 ## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
-* 欢迎大家加入PaddleSeg的微信群（扫码填写问卷即可入群），和小伙伴们一起交流学习，而且有专门同学给大家解答疑问。
-* 如果大家有使用问题、产品建议、功能需求, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issues，我们会及时跟进。
-
+* 如果大家有PaddleSeg的使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
+* **欢迎大家加入PaddleSeg的微信用户群👫**（扫码填写问卷即可入群），和各界大佬交流学习，还可以**领取重磅大礼包🎁**
+  * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
+  * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
+  * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
+  * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
 </div>
 
 ## <img src="./docs/images/model.png" width="20"/> 产品矩阵
@@ -373,7 +376,7 @@
    * [EISeg 数据标注](./EISeg)
 
 * [模型训练](/docs/train/train_cn.md)
-* [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
+* [模型评估](./docs/evaluation/evaluate_cn.md)
 * [模型预测](./docs/predict/predict_cn.md)
 
 * 模型导出
@@ -393,9 +396,9 @@
 * [训练技巧](./docs/train/train_tricks_cn.md)
 
 * 模型压缩
-    * [量化](./docs/slim/quant/quant_cn.md)
-    * [蒸馏](./docs/slim/distill/distill_cn.md)
-    * [裁剪](./docs/slim/prune/prune_cn.md)
+    * [量化](./docs/deployment/slim/quant/quant_cn.md)
+    * [蒸馏](./docs/deployment/slim/distill/distill_cn.md)
+    * [裁剪](./docs/deployment/slim/prune/prune_cn.md)
 
 * [常见问题汇总](./docs/faq/faq/faq_cn.md)
 
@@ -409,7 +412,7 @@
     * [提交PR说明](./docs/pr/pr/pr_cn.md)
     * [模型PR规范](./docs/pr/pr/style_cn.md)
 
-## <img src="./docs/images/anli.png" width="20"/> 实践案例
+## <img src="./docs/images/anli.png" width="20"/> 特色能力
 
 - [交互式分割](./EISeg)
 - [图像抠图](./Matting)
@@ -420,12 +423,15 @@
 - [CVPR冠军模型](./contrib/AutoNUE)
 - [领域自适应](./contrib/DomainAdaptation)
 
-## AI Studio第三方教程推荐
-* [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
-* [PaddleSeg实战之人像分割](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
+## <img src="https://user-images.githubusercontent.com/48054808/157801371-9a9a8c65-1690-4123-985a-e0559a7f9494.png" width="20"/> 产业实践范例
+
+* [使用PP-HumanSegV2进行人像分割](https://aistudio.baidu.com/aistudio/projectdetail/4504982?contributionType=1)
+* [使用PP-HumanSegV1进行人像分割](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
+* [使用PP-LiteSeg进行遥感道路分割](https://aistudio.baidu.com/aistudio/projectdetail/3873145?contributionType=1)
 * [PaddleSeg实战之小数据集3D椎骨分割](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
 * [PaddleSeg实战之车道线图像分割](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
 * [PaddleSeg动态图API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
+* [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 
 ## 许可证书
 本项目的发布受Apache 2.0 license许可认证。
