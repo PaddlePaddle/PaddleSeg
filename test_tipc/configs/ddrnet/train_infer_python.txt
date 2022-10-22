@@ -1,6 +1,6 @@
 ===========================train_params===========================
 model_name:ddrnet
-python:python3
+python:python3.7
 gpu_list:0|0,1
 Global.use_gpu:null|null
 Global.auto_cast:null

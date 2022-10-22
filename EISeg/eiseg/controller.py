@@ -46,6 +46,7 @@ class InteractiveController:
             区分前景和背景结果的阈值
 
         """
+
         self.predictor_params = predictor_params
         self.prob_thresh = prob_thresh
         self.model = None
@@ -265,7 +266,9 @@ class InteractiveController:
         if self.lccFilter:
             object_mask = self.getLargestCC(object_mask)
         polygon = util.get_polygon(
-            (object_mask.astype(np.uint8) * 255), building=building)
+            (object_mask.astype(np.uint8) * 255),
+            img_size=object_mask.shape,
+            building=building)
         if polygon is not None:
             self._result_mask[object_mask] = self.curr_label_number
             self.resetLastObject()

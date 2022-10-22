@@ -33,6 +33,8 @@ Linux端基础训练预测功能测试的主程序为`test_train_inference_pytho
 | HRNetW48Contrast | HRNetW48Contrast | 正常训练 | 正常训练 |  |  |
 | ENCNet | ENCNet | 正常训练 | 正常训练 |  |  |
 | ESPNetV2 | ESPNetV2 | 正常训练 | 正常训练 |  |  |
+| SFNet | SFNet | 正常训练 | 正常训练 |  |  |
+| MobileSeg | MobileSeg-MV3 | 正常训练 | 正常训练 |  |  |
 
 
 - 预测相关：基于训练是否使用量化，可以将训练产出的模型可以分为`正常模型`和`量化模型`，这两类模型对应的预测功能汇总如下，
@@ -97,7 +99,7 @@ test_tipc/output/[model name]/
 |- norm_train_gpus_0_autocast_null/  # GPU 0号卡上正常训练的训练日志和模型保存文件夹
 |- pact_train_gpus_0_autocast_null/  # GPU 0号卡上量化训练的训练日志和模型保存文件夹
 ......
-|- python_infer_cpu_usemkldnn_True_threads_1_batchsize_1.log  # CPU上开启Mkldnn线程数设置为1，测试batch_size=1条件下的预测运行日志
+|- python_infer_cpu_usemkldnn_True_threads_1_precision_fp32_batchsize_1.log  # CPU上开启Mkldnn线程数设置为1，测试batch_size=1条件下的fp32精度预测日志
 |- python_infer_gpu_usetrt_True_precision_fp16_batchsize_1.log # GPU上开启TensorRT，测试batch_size=1的半精度预测日志
 ......
 ```

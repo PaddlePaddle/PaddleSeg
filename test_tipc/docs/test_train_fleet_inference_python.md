@@ -31,10 +31,10 @@ Linux GPU/CPU 多机多卡训练推理测试的主程序为`test_train_inference
 
 #### 2.1.2 准备数据
 
-运行`prepare.sh`准备数据和模型，以配置文件`test_tipc/configs/pp_liteseg_stdc1/train_fleet_infer_python.txt`为例，数据准备命令如下所示。
+运行`prepare.sh`准备数据和模型，以配置文件`test_tipc/configs/pp_liteseg_stdc1/train_linux_gpu_fleet_normal_infer_python_linux_gpu_cpu.txt`为例，数据准备命令如下所示。
 
 ```shell
-bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/train_fleet_infer_python.txt lite_train_lite_infer
+bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/train_linux_gpu_fleet_normal_infer_python_linux_gpu_cpu.txt lite_train_lite_infer
 ```
 
 **注意：** 由于是多机训练，这里需要在所有的节点上均运行启动上述命令，准备数据。
@@ -47,10 +47,10 @@ bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/train_fleet_infer_p
 export FLAGS_START_PORT=17000
 ```
 
-以配置文件`test_tipc/configs/pp_liteseg_stdc1/train_fleet_infer_python.txt`为例，测试方法如下所示。
+以配置文件`test_tipc/configs/pp_liteseg_stdc1/train_linux_gpu_fleet_normal_infer_python_linux_gpu_cpu.txt`为例，测试方法如下所示。
 
 ```shell
-bash test_tipc/test_train_inference_python.sh  test_tipc/configs/pp_liteseg_stdc1/train_fleet_infer_python.txt lite_train_lite_infer
+bash test_tipc/test_train_inference_python.sh  test_tipc/configs/pp_liteseg_stdc1/train_linux_gpu_fleet_normal_infer_python_linux_gpu_cpu.txt lite_train_lite_infer
 ```
 
 **注意：** 由于是多机训练，这里需要在所有的节点上均运行启动上述命令进行测试。
@@ -107,4 +107,4 @@ p32_batchsize_1.log 2>&1 !  ^[[0m
 
 如果运行失败，也会在终端中输出运行失败的日志信息以及对应的运行命令。可以基于该命令，分析运行失败的原因。
 
-**注意：** 由于分布式训练时，仅在`trainer_id=0`所在的节点中保存模型，因此其他的节点中在运行模型导出与推理时会报错，为正常现象。
+**注意：** 由于分布式训练时，仅在`trainer_id=0`所在的节点中保存模型，因此如果测试多机的推理过程，其他的节点中在运行模型导出与推理时会报错，为正常现象。

@@ -21,7 +21,7 @@ import shutil
 import numpy as np
 import paddle
 import paddle.nn.functional as F
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
+from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, train_profiler
 
 from .val import evaluate
 
@@ -54,30 +54,32 @@ def visual_in_traning(log_writer, vis_dict, step):
         log_writer.add_image(tag=key, img=value, step=step)
 
 
-def save_best(best_model_dir, sad, mse, grad, conn, iter):
-    keys = ['sad', 'mse', 'conn', 'conn', 'iter']
-    values = [sad, mse, grad, conn, iter]
-    with open(os.path.join(best_model_dir, 'best_sad.txt'), 'w') as f:
-        for key, value in zip(keys, values):
+def save_best(best_model_dir, metrics_data, iter):
+    with open(os.path.join(best_model_dir, 'best_metrics.txt'), 'w') as f:
+        for key, value in metrics_data.items():
             line = key + ' ' + str(value) + '\n'
             f.write(line)
+        f.write('iter' + ' ' + str(iter) + '\n')
 
 
-def get_best(best_file, resume_model=None):
-    '''Get best sad, mse, grad, conn and iter from file'''
+def get_best(best_file, metrics, resume_model=None):
+    '''Get best metrics and iter from file'''
+    best_metrics_data = {}
     if os.path.exists(best_file) and (resume_model is not None):
         values = []
         with open(best_file, 'r') as f:
             lines = f.readlines()
             for line in lines:
                 line = line.strip()
-                value = line.split(' ')[1]
-                values.append(eval(value))
-            best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter = values
+                key, value = line.split(' ')
+                best_metrics_data[key] = eval(value)
+                if key == 'iter':
+                    best_iter = eval(value)
     else:
-        best_sad = best_sad_mse = best_sad_grad = best_sad_conn = np.inf
+        for key in metrics:
+            best_metrics_data[key] = np.inf
         best_iter = -1
-    return best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter
+    return best_metrics_data, best_iter
 
 
 def train(model,
@@ -95,7 +97,11 @@ def train(model,
           use_vdl=False,
           losses=None,
           keep_checkpoint_max=5,
-          eval_begin_iters=None):
+          eval_begin_iters=None,
+          metrics='sad',
+          precision='fp32',
+          amp_level='O1',
+          profiler_options=None):
     """
     Launch training.
     Args:
@@ -115,6 +121,12 @@ def train(model,
         losses (dict, optional): A dict of loss, refer to the loss function of the model for details. Default: None.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         eval_begin_iters (int): The iters begin evaluation. It will evaluate at iters/2 if it is None. Defalust: None.
+        metrics(str|list, optional): The metrics to evaluate, it may be the combination of ("sad", "mse", "grad", "conn"). 
+        precision (str, optional): Use AMP if precision='fp16'. If precision='fp32', the training is normal.
+        amp_level (str, optional): Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, 
+            the input data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators 
+            parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel and batchnorm. Default is O1(amp)
+        profiler_options (str, optional): The option of train profiler.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -128,6 +140,17 @@ def train(model,
         if os.path.exists(save_dir):
             os.remove(save_dir)
         os.makedirs(save_dir)
+
+    # Use amp
+    if precision == 'fp16':
+        logger.info('use AMP to train. AMP level = {}'.format(amp_level))
+        scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
+        if amp_level == 'O2':
+            model, optimizer = paddle.amp.decorate(
+                models=model,
+                optimizers=optimizer,
+                level='O2',
+                save_dtype='float32')
 
     if nranks > 1:
         # Initialize parallel environment if not done.
@@ -151,8 +174,13 @@ def train(model,
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
 
-    best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter = get_best(
-        os.path.join(save_dir, 'best_model', 'best_sad.txt'),
+    if isinstance(metrics, str):
+        metrics = [metrics]
+    elif not isinstance(metrics, list):
+        metrics = ['sad']
+    best_metrics_data, best_iter = get_best(
+        os.path.join(save_dir, 'best_model', 'best_metrics.txt'),
+        metrics,
         resume_model=resume_model)
     avg_loss = defaultdict(float)
     iters_per_epoch = len(batch_sampler)
@@ -169,20 +197,33 @@ def train(model,
                 break
             reader_cost_averager.record(time.time() - batch_start)
 
-            # model input
-            if nranks > 1:
-                logit_dict = ddp_model(data)
+            if precision == 'fp16':
+                with paddle.amp.auto_cast(
+                        level=amp_level,
+                        enable=True,
+                        custom_white_list={
+                            "elementwise_add", "batch_norm", "sync_batch_norm"
+                        },
+                        custom_black_list={'bilinear_interp_v2', 'pad3d'}):
+                    logit_dict, loss_dict = ddp_model(
+                        data) if nranks > 1 else model(data)
+
+                scaled = scaler.scale(loss_dict['all'])  # scale the loss
+                scaled.backward()  # do backward
+                scaler.minimize(optimizer, scaled)  # update parameters
             else:
-                logit_dict = model(data)
-            loss_dict = model.loss(logit_dict, data, losses)
+                logit_dict, loss_dict = ddp_model(
+                    data) if nranks > 1 else model(data)
+                loss_dict['all'].backward()
+                optimizer.step()
 
-            loss_dict['all'].backward()
-
-            optimizer.step()
             lr = optimizer.get_lr()
             if isinstance(optimizer._learning_rate,
                           paddle.optimizer.lr.LRScheduler):
                 optimizer._learning_rate.step()
+
+            train_profiler.add_profiler_step(profiler_options)
+
             model.clear_gradients()
 
             for key, value in loss_dict.items():
@@ -263,38 +304,46 @@ def train(model,
                     val_dataset is not None
             ) and local_rank == 0 and iter >= eval_begin_iters:
                 num_workers = 1 if num_workers > 0 else 0
-                sad, mse, grad, conn = evaluate(
+                metrics_data = evaluate(
                     model,
                     val_dataset,
                     num_workers=1,
                     print_detail=True,
-                    save_results=False)
+                    save_results=False,
+                    metrics=metrics,
+                    precision=precision,
+                    amp_level=amp_level)
                 model.train()
 
             # save best model and add evaluation results to vdl
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
                 if val_dataset is not None and iter >= eval_begin_iters:
-                    if sad < best_sad:
-                        best_sad = sad
+                    if metrics_data[metrics[0]] < best_metrics_data[metrics[0]]:
                         best_iter = iter
-                        best_sad_mse = mse
-                        best_sad_grad = grad
-                        best_sad_conn = conn
+                        best_metrics_data = metrics_data.copy()
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
-                        save_best(best_model_dir, sad, mse, grad, conn, iter)
-                    logger.info(
-                        '[EVAL] The model with the best validation SAD ({:.4f}) was saved at iter {}. While MSE: {:.4f}, Grad: {:.4f}, Conn: {:.4f}'
-                        .format(best_sad, best_iter, best_sad_mse,
-                                best_sad_grad, best_sad_conn))
+                        save_best(best_model_dir, best_metrics_data, iter)
+
+                    show_list = []
+                    for key, value in best_metrics_data.items():
+                        show_list.append((key, value))
+                    log_str = '[EVAL] The model with the best validation {} ({:.4f}) was saved at iter {}.'.format(
+                        show_list[0][0], show_list[0][1], best_iter)
+                    if len(show_list) > 1:
+                        log_str += " While"
+                        for i in range(1, len(show_list)):
+                            log_str = log_str + ' {}: {:.4f},'.format(
+                                show_list[i][0], show_list[i][1])
+                        log_str = log_str[:-1]
+                    logger.info(log_str)
 
                     if use_vdl:
-                        log_writer.add_scalar('Evaluate/SAD', sad, iter)
-                        log_writer.add_scalar('Evaluate/MSE', mse, iter)
-                        log_writer.add_scalar('Evaluate/Grad', grad, iter)
-                        log_writer.add_scalar('Evaluate/Conn', conn, iter)
+                        for key, value in metrics_data.items():
+                            log_writer.add_scalar('Evaluate/' + key, value,
+                                                  iter)
 
             batch_start = time.time()
 

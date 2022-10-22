@@ -1,0 +1,9 @@
+_base_: '../pp_liteseg/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.yml'
+
+model:
+  _inherited_: False
+  type: PPLiteSeg
+  backbone:
+    type: STDC2
+    pretrained: null
+  pretrained: /root/codespace/PaddleSeg-release-2.5/work_dirs_pp_liteseg_stdc2_pssl/snapshot/iter_66725/model.pdparams

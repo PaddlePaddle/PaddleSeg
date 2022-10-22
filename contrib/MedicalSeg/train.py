@@ -19,7 +19,7 @@ import paddle
 import numpy as np
 
 from medicalseg.cvlibs import manager, Config
-from medicalseg.utils import get_sys_env, logger, config_check
+from medicalseg.utils import get_sys_env, logger
 from medicalseg.core import train
 
 
@@ -112,6 +112,13 @@ def parse_args():
             'profiler is enabled. Refer to the medseg/utils/train_profiler.py for details.'
     )
 
+    parser.add_argument('--sw_num', default=None, type=int, help='sw_num')
+
+    parser.add_argument(
+        '--is_save_data', default=True, type=eval, help='warmup')
+
+    parser.add_argument(
+        '--has_dataset_json', default=True, type=eval, help='has_dataset_json')
     return parser.parse_args()
 
 
@@ -168,8 +175,6 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
-
     train(
         cfg.model,
         train_dataset,
@@ -186,7 +191,10 @@ def main(args):
         losses=losses,
         keep_checkpoint_max=args.keep_checkpoint_max,
         profiler_options=args.profiler_options,
-        to_static_training=cfg.to_static_training)
+        to_static_training=cfg.to_static_training,
+        sw_num=args.sw_num,
+        is_save_data=args.is_save_data,
+        has_dataset_json=args.has_dataset_json)
 
 
 if __name__ == '__main__':

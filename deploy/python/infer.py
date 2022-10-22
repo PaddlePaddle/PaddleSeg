@@ -176,7 +176,8 @@ def auto_tune(args, imgs, img_nums):
 
     for i in range(0, num):
         if isinstance(imgs[i], str):
-            data = np.array([cfg.transforms(imgs[i])[0]])
+            data = {'img': imgs[i]}
+            data = np.array([cfg.transforms(data)['img']])
         else:
             data = imgs[i]
         input_handle.reshape(data.shape)
@@ -374,10 +375,10 @@ class Predictor:
 
             self.predictor.run()
 
+            results = output_handle.copy_to_cpu()
             if args.benchmark:
                 self.autolog.times.stamp()
 
-            results = output_handle.copy_to_cpu()
             results = self._postprocess(results)
 
             if args.benchmark:
@@ -387,7 +388,9 @@ class Predictor:
         logger.info("Finish")
 
     def _preprocess(self, img):
-        return self.cfg.transforms(img)[0]
+        data = {}
+        data['img'] = img
+        return self.cfg.transforms(data)['img']
 
     def _postprocess(self, results):
         if self.args.with_argmax:

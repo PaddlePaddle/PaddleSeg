@@ -92,6 +92,13 @@ def parse_args():
         help='Eval while training',
         action='store_true')
     parser.add_argument(
+        '--metrics',
+        dest='metrics',
+        nargs='+',
+        help='The metrics to evaluate, it may be the combination of ("sad", "mse", "grad", "conn")',
+        type=str,
+        default='sad')
+    parser.add_argument(
         '--log_iters',
         dest='log_iters',
         help='Display logging information at every log_iters',
@@ -114,7 +121,41 @@ def parse_args():
         help='Set the random seed during training.',
         default=None,
         type=int)
-
+    parser.add_argument(
+        "--precision",
+        default="fp32",
+        type=str,
+        choices=["fp32", "fp16"],
+        help="Use AMP (Auto mixed precision) if precision='fp16'. If precision='fp32', the training is normal."
+    )
+    parser.add_argument(
+        "--amp_level",
+        default="O1",
+        type=str,
+        choices=["O1", "O2"],
+        help="Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, the input \
+                data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators \
+                parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel \
+                and batchnorm. Default is O1(amp)")
+    parser.add_argument(
+        '--profiler_options',
+        type=str,
+        default=None,
+        help='The option of train profiler. If profiler_options is not None, the train ' \
+            'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
+    )
+    parser.add_argument(
+        '--repeats',
+        type=int,
+        default=1,
+        help="Repeat the samples in the dataset for `repeats` times in each epoch."
+    )
+    parser.add_argument(
+        '--device',
+        dest='device',
+        help='Set the device type, which may be GPU, CPU or XPU.',
+        default='gpu',
+        type=str)
     return parser.parse_args()
 
 
@@ -130,10 +171,14 @@ def main(args):
                      ['-' * 48])
     logger.info(info)
 
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
-
-    paddle.set_device(place)
+    place = args.device
+    if place == 'gpu' and env_info['Paddle compiled with cuda'] and env_info[
+            'GPUs used']:
+        paddle.set_device('gpu')
+    elif place == 'xpu' and paddle.is_compiled_with_xpu():
+        paddle.set_device('xpu')
+    else:
+        paddle.set_device('cpu')
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
@@ -152,6 +197,9 @@ def main(args):
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
 
+    if args.repeats > 1:
+        train_dataset.fg_bg_list *= args.repeats
+
     val_dataset = cfg.val_dataset if args.do_eval else None
 
     msg = '\n---------------Config Information---------------\n'
@@ -159,8 +207,13 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
+    model = cfg.model
+    if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
+        # convert bn to sync_bn
+        model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+
     train(
-        model=cfg.model,
+        model,
         train_dataset=train_dataset,
         val_dataset=val_dataset,
         optimizer=cfg.optimizer,
@@ -172,7 +225,11 @@ def main(args):
         log_iters=args.log_iters,
         resume_model=args.resume_model,
         save_dir=args.save_dir,
-        eval_begin_iters=args.eval_begin_iters)
+        eval_begin_iters=args.eval_begin_iters,
+        metrics=args.metrics,
+        precision=args.precision,
+        amp_level=args.amp_level,
+        profiler_options=args.profiler_options)
 
 
 if __name__ == '__main__':

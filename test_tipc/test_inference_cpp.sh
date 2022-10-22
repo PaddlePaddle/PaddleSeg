@@ -29,7 +29,7 @@ else
     INFERIMG="test_tipc/cpp/cityscapes_demo.png"
 fi
 
-LOG_PATH="./test_tipc/output/infer_cpp"
+LOG_PATH="./test_tipc/output/${model_name}/${MODE}"
 mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_infer_cpp.log"
 
@@ -57,7 +57,7 @@ function func_infer_cpp(){
     infer_cpp_full_cmd="${inference_cpp_cmd} ${FILENAME} ${INFERIMG} > ${_save_log_path} 2>&1 "   
     eval $infer_cpp_full_cmd
     last_status=${PIPESTATUS[0]}
-    status_check $last_status "${infer_cpp_full_cmd}" "${status_log}" "${model_name}"
+    status_check $last_status "${infer_cpp_full_cmd}" "${status_log}" "${model_name}" "${_save_log_path}"
 }
 
 echo "################### run test cpp inference ###################"
