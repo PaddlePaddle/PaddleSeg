@@ -194,7 +194,7 @@ class RTFormer(nn.Layer):
         x_out = self.seghead(paddle.concat([x5_, x6], axis=1))  # 4c, 1/8
         logit_list = [x_out]
 
-        if self.use_aux_head:
+        if self.training and self.use_aux_head:
             x_out_extra = self.seghead_extra(x3_)
             logit_list.append(x_out_extra)
 
