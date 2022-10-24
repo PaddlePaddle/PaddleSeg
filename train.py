@@ -17,6 +17,7 @@ import random
 
 import paddle
 import numpy as np
+import cv2
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger
@@ -176,6 +177,15 @@ def main(args):
     paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
+
+    nranks = paddle.distributed.ParallelEnv().nranks
+    # Limit cv2 threads if too many subprocesses are spawned.
+    # This should reduce resource allocation and thus boost performance.
+    if nranks >= 8 and args.num_workers >= 8:
+        logger.warning(
+            "The number of threads used by OpenCV is set to 1 to improve performance."
+        )
+        cv2.setNumThreads(1)
 
     cfg = Config(
         args.cfg,
