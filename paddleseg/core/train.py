@@ -328,7 +328,7 @@ def train(model,
             model, [1, c, h, w],
             custom_ops={paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn})
 
-    # Sleep for half a second to let dataloader release resources.
-    time.sleep(0.5)
+    # Sleep for a second to let dataloader release resources.
+    time.sleep(1)
     if use_vdl:
         log_writer.close()
