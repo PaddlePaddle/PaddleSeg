@@ -31,7 +31,7 @@ class UHRNet(nn.Layer):
 
     The original article refers to
     Jian Wang, et, al. "U-HRNet: Delving into Improving Semantic Representation of High Resolution Network for Dense Prediction"
-    (TODO: add arxiv url after releasing).
+    (https://arxiv.org/pdf/2210.07140.pdf).
 
     Args:
         in_channels (int, optional): The channels of input image. Default: 3.

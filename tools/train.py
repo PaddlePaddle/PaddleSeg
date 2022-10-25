@@ -17,6 +17,7 @@ import random
 
 import paddle
 import numpy as np
+import cv2
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger
@@ -135,7 +136,7 @@ def parse_args():
     parser.add_argument(
         '--device',
         dest='device',
-        help='Device place to be set, which can be gpu, xpu, npu, or cpu.',
+        help='Device place to be set, which can be gpu, xpu, npu, mlu or cpu.',
         default='gpu',
         choices=['cpu', 'gpu', 'xpu', 'npu'],
         type=str)
@@ -150,7 +151,6 @@ def parse_args():
 
 
 def main(args):
-
     if args.seed is not None:
         paddle.seed(args.seed)
         np.random.seed(args.seed)
@@ -169,12 +169,23 @@ def main(args):
         place = 'xpu'
     elif args.device == 'npu' and paddle.is_compiled_with_npu():
         place = 'npu'
+    elif args.device == 'mlu' and paddle.is_compiled_with_mlu():
+        place = 'mlu'
     else:
         place = 'cpu'
 
     paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
+
+    nranks = paddle.distributed.ParallelEnv().nranks
+    # Limit cv2 threads if too many subprocesses are spawned.
+    # This should reduce resource allocation and thus boost performance.
+    if nranks >= 8 and args.num_workers >= 8:
+        logger.warning(
+            "The number of threads used by OpenCV is set to 1 to improve performance."
+        )
+        cv2.setNumThreads(1)
 
     cfg = Config(
         args.cfg,
