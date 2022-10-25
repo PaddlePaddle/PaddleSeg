@@ -89,10 +89,11 @@ EISeg (Efficient Interactive Segmentation) is an efficient and intelligent inter
 If you find our project useful in your research, please consider citing ：
 
 ```
-@article{hao2021edgeflow,
-  title={EdgeFlow: Achieving Practical Interactive Segmentation with Edge-Guided Flow},
+@inproceedings{hao2021edgeflow,
+  title={Edgeflow: Achieving practical interactive segmentation with edge-guided flow},
   author={Hao, Yuying and Liu, Yi and Wu, Zewu and Han, Lin and Chen, Yizhou and Chen, Guowei and Chu, Lutao and Tang, Shiyu and Yu, Zhiliang and Chen, Zeyu and others},
-  journal={arXiv preprint arXiv:2109.09406},
+  booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision},
+  pages={1551--1560},
   year={2021}
 }
 ```
