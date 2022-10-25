@@ -2,7 +2,7 @@
 
 ## Reference
 
-> todo
+> Wang, Jian, Chenhui Gou, Qiman Wu, Haocheng Feng, Junyu Han, Errui Ding, and Jingdong Wang. "RTFormer: Efficient Design for Real-Time Semantic Segmentation with Transformer." arXiv preprint arXiv:2210.07124 (2022).
 
 ## Performance
 
