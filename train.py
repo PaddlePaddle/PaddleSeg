@@ -138,7 +138,7 @@ def parse_args():
         dest='device',
         help='Device place to be set, which can be gpu, xpu, npu, mlu or cpu.',
         default='gpu',
-        choices=['cpu', 'gpu', 'xpu', 'npu'],
+        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
         type=str)
     parser.add_argument(
         '--repeats',
