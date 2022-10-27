@@ -5,6 +5,7 @@
 
 ### NNUnet
 > Isensee, F., Jaeger, P. F., Kohl, S. A., Petersen, J., & Maier-Hein, K. H. (2020). nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nature Methods, 1-9.
+
 | 主干网络 | 分辨率 | 学习率 | 训练轮数 | Dice |  链接 |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 |2D|512x512|0.01|30000|53.549%|[model_fold0](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold0/model.pdparams) \| [model_fold1](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold1/model.pdparams) \| [model_fold2](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold2/model.pdparams) \| [model_fold3](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold3/model.pdparams) \| [model_fold4](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold4/model.pdparams) \|  [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
