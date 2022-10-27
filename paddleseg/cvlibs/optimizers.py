@@ -138,12 +138,12 @@ class AdamWDL(AdamW):
                  beta2=0.999,
                  epsilon=1e-8,
                  parameters=None,
-                 weight_decay=0.01,
+                 weight_decay=0.0,
                  apply_decay_param_fun=None,
                  grad_clip=None,
                  lazy_mode=False,
                  multi_precision=False,
-                 layerwise_decay=1.0,
+                 layerwise_decay=0.65,
                  n_layers=12,
                  set_param_lr_fun=layerwise_lr_decay,
                  name_dict=None,
@@ -176,4 +176,4 @@ class AdamWDL(AdamW):
         # excute Adam op
         res = super(AdamW, self)._append_optimize_op(block, param_and_grad)
         param_and_grad[0].optimize_attr["learning_rate"] = prev_lr
-        return
+        return res

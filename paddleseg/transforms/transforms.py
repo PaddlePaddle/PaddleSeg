@@ -969,17 +969,18 @@ class RandomDistort:
         sharpness_prob (float, optional): A probability of adjusting saturation. Default: 0.
     """
 
-    def __init__(self,
-                 brightness_range=0.5,
-                 brightness_prob=0.5,
-                 contrast_range=0.5,
-                 contrast_prob=0.5,
-                 saturation_range=0.5,
-                 saturation_prob=0.5,
-                 hue_range=18,
-                 hue_prob=0.5,
-                 sharpness_range=0.5,
-                 sharpness_prob=0):
+    def __init__(
+            self,
+            brightness_range=0.5,
+            brightness_prob=0.5,  #1.0
+            contrast_range=0.5,
+            contrast_prob=0.5,  #1.0
+            saturation_range=0.5,
+            saturation_prob=0.5,  # 1.0
+            hue_range=18,
+            hue_prob=0.5,  # 1.0
+            sharpness_range=0.5,
+            sharpness_prob=0):
         self.brightness_range = brightness_range
         self.brightness_prob = brightness_prob
         self.contrast_range = contrast_range
@@ -1189,8 +1190,8 @@ class PhotoMetricDistortion:
             img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
         return img
 
-    def __call__(self, img, label=None):
-        img = self.brightness(img)
+    def __call__(self, data):
+        img = self.brightness(data["img"])
         # mode == 0 --> do random contrast first
         # mode == 1 --> do random contrast last
 
@@ -1204,10 +1205,8 @@ class PhotoMetricDistortion:
         # random contrast
         if mode == 0:
             img = self.contrast(img)
-        if label is None:
-            return (img, )
-        else:
-            return (img, label)
+        data["img"] = img
+        return data
 
 
 @manager.TRANSFORMS.add_component
@@ -1218,7 +1217,7 @@ class Resize_CAE:
     contains the key "scale", then the scale in the input dict is used,
     otherwise the specified scale in the init method is used.
 
-    ``img_scale`` can be Nong, a tuple (single-scale) or a list of tuple
+    ``img_scale`` can be None, a tuple (single-scale) or a list of tuple
     (multi-scale). There are 4 multiscale modes:
 
     - ``ratio_range is not None``:
@@ -1242,11 +1241,12 @@ class Resize_CAE:
             image.
     """
 
-    def __init__(self,
-                 img_scale=(2048, 512),
-                 multiscale_mode='range',
-                 ratio_range=(0.5, 2.0),
-                 keep_ratio=True):
+    def __init__(
+            self,
+            img_scale=None,  #(2048, 512),
+            multiscale_mode='range',
+            ratio_range=(0.5, 2.0),
+            keep_ratio=True):
         if img_scale is None:
             self.img_scale = None
         else:
@@ -1280,7 +1280,7 @@ class Resize_CAE:
         """
 
         #assert mmcv.is_list_of(img_scales, tuple)
-        assert isinstance(list, (img_scale,
+        assert isinstance(list, (img_scales,
                                  tuple)), "image_list should be a list or tuple"
         scale_idx = np.random.randint(len(img_scales))
         img_scale = img_scales[scale_idx]
@@ -1356,7 +1356,7 @@ class Resize_CAE:
 
         if self.ratio_range is not None:
             if self.img_scale is None:
-                h, w = img.shape[:2]
+                h, w = results['img'].shape[:2]
                 scale, scale_idx = self.random_sample_ratio((w, h),
                                                             self.ratio_range)
             else:
@@ -1400,7 +1400,7 @@ class Resize_CAE:
                 results, scale, interpolation='nearest')
         return gt_seg
 
-    def __call__(self, im, label=None):
+    def __call__(self, data):
         """Call function to resize images, bounding boxes, masks, semantic
         segmentation map.
 
@@ -1411,13 +1411,10 @@ class Resize_CAE:
             dict: Resized results, 'img_shape', 'pad_shape', 'scale_factor',
                 'keep_ratio' keys are added into result dict.
         """
-        scale = self._random_scale(im)
+        scale = self._random_scale(data)
 
-        im = self._resize_img(im, scale)
-        if label is not None:
-            label = self._resize_seg(label, scale)
+        data['im'] = self._resize_img(data['img'], scale)
+        if 'label' in data['gt_fields']:
+            data['label'] = self._resize_seg(data['label'], scale)
 
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
+        return data
