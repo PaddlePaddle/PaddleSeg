@@ -14,6 +14,8 @@ Highly recommend you install the GPU version of PaddlePaddle, due to large overh
 
 #### step 2. Install PaddleSeg
 
+You should use *API Calling* method to install PaddleSeg for flexible development.
+
 ```shell
 pip install paddleseg==2.5.0
 ```
