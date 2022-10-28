@@ -31,7 +31,9 @@ class RTFormer(nn.Layer):
     """
     The RTFormer implementation based on PaddlePaddle.
 
-    TODO(pjc): The original article refers to xxx.
+    The original article refers to "Wang, Jian, Chenhui Gou, Qiman Wu, Haocheng Feng, 
+    Junyu Han, Errui Ding, and Jingdong Wang. RTFormer: Efficient Design for Real-Time
+    Semantic Segmentation with Transformer. arXiv preprint arXiv:2210.07124 (2022)."
 
     Args:
         num_classes (int): The unique number of target classes.
@@ -194,7 +196,7 @@ class RTFormer(nn.Layer):
         x_out = self.seghead(paddle.concat([x5_, x6], axis=1))  # 4c, 1/8
         logit_list = [x_out]
 
-        if self.use_aux_head:
+        if self.training and self.use_aux_head:
             x_out_extra = self.seghead_extra(x3_)
             logit_list.append(x_out_extra)
 
