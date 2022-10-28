@@ -104,6 +104,8 @@ def evaluate(
             if has_dataset_json:
                 image_json = dataset_json_dict["training"][idx[0].split("/")[-1]
                                                            .split(".")[0]]
+            else:
+                image_json = None
 
             label = label.astype('int32')
 
@@ -157,13 +159,15 @@ def evaluate(
                             'label': label.numpy(),
                             'img': im.numpy()
                         },
-                        form=('npy', 'nii.gz'),
+                        form=('npy', 'nii.gz')
+                        if image_json is not None else ('npy', ),
                         image_infor={
-                            "spacing": image_json["spacing_resample"],
+                            "spacing": image_json.get("spacing_resample",
+                                                      image_json["spacing"]),
                             'direction': image_json["direction"],
                             "origin": image_json["origin"],
                             'format': "xyz"
-                        })
+                        } if image_json is not None else {})
 
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))
