@@ -20,6 +20,20 @@
 <img src="https://github.com/shiyutang/files/blob/9590ea6bfc36139982ce75b00d3b9f26713934dd/teasor.gif"  width = "800" />  
 </div>
 
+
+## 🚀 热门活动
+- 🎊 **【分割技术分享三日课】PP-HumanSegV2、EISeg 1.0、MedicalSegV2技术方案大揭秘！**
+  - ⏰ **时间：10月31日 晚上8:30, 11月1-2日 晚上7:30**
+  - **10月31日：PP-HumanSegV2：精度96.63%、速度63FPS的人像分割SOTA方案**
+  - **11月01日：EISeg 1.0：智能交互式标注，标注效率提升超过10倍**
+  - **11月02日：MedicalSegV2：高精度定制化3D医疗分割方案**
+  - 🎁 **扫码报名入群，即可获取专属直播链接与学习大礼包！**
+
+
+  <div align="center">
+  <img src="https://user-images.githubusercontent.com/52520497/198967798-dfaf8bfc-dcb6-4aba-baaa-b5929b556a9e.png"  width = "200" />  
+  </div>
+
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
 * [2022-10-11] :fire: 开源官方实现的[RTFormer](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/rtformer)模型 (NeurIPS 2022)。
 * [2022-07-20] :fire: PaddleSeg 2.6版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
