@@ -31,7 +31,7 @@
 
 
   <div align="center">
-  <img src="https://user-images.githubusercontent.com/52520497/198967798-dfaf8bfc-dcb6-4aba-baaa-b5929b556a9e.png"  width = "200" />  
+  <img src="https://user-images.githubusercontent.com/52520497/198970711-2b4c81f9-5fe8-4404-93be-2512d7046fa8.jpg"  width = "200" />  
   </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
