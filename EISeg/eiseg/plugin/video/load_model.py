@@ -11,22 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os.path
 
 import paddle
 
 import paddle.inference as paddle_infer
+import torch
+from isnet.nets import DISNet
 
 
 def load_model(model_path, param_path, use_gpu=None):
     config = paddle_infer.Config(model_path, param_path)
     if use_gpu is None:
-        if paddle.device.is_compiled_with_cuda():  # TODO: 可以使用GPU却返回False
+        if paddle.device.is_compiled_with_cuda():  # TODO: Can use GPU but returns False
             use_gpu = True
         else:
             use_gpu = False
     if not use_gpu:
         config.enable_mkldnn()
-        # TODO: fluid要废弃了，研究判断方式
+        # TODO: fluid To be discarded, research judgment method
         config.switch_ir_optim(True)
         config.set_cpu_math_library_num_threads(10)
     else:
@@ -42,6 +45,30 @@ def load_model(model_path, param_path, use_gpu=None):
     # config.set_cpu_math_library_num_threads(10)
     model = paddle_infer.create_predictor(config)
     return model
+
+def load_pytorch_model(model_path):
+    _, ext = os.path.splitext(model_path)
+    if ext == '.ckpt':
+        if torch.cuda.is_available():
+            device = 'cuda:0'
+        else:
+            device = 'cpu'
+        ckpt = torch.load(model_path, map_location=device)
+        state_dict = ckpt['state_dict']
+    else:
+        state_dict = torch.load(model_path)
+    disnet = DISNet(3, 1)
+    # disnet.load_state_dict(state_dict)
+    # state_dict = torch.load(state_dict)['state_dict']
+    new_state_dict = {}
+    for key, value in state_dict.items():
+        if 'model' in key:
+            key = key.replace('model.', '')
+            new_state_dict[key] = value
+    disnet.load_state_dict(new_state_dict, strict=False)
+    return disnet
+
+
 
 
 def jit_load(path):

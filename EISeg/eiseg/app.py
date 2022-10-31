@@ -67,9 +67,9 @@ class ModelThread(QThread):
 
 class APP_EISeg(QMainWindow, Ui_EISeg):
     IDILE, ANNING, EDITING = 0, 1, 2
-    # IDILE：网络，权重，图像三者任一没有加载
-    # EDITING：多边形编辑，可以交互式，但是多边形内部不能点
-    # ANNING：交互式标注，只能交互式，不能编辑多边形，多边形不接hover
+    # IDILE：The network, weights, and images are not loaded
+    # EDITING：Polygon editing, which can be interactive, but cannot point inside the polygon
+    # ANNING：Interactive annotation, only interactive, cannot edit polygons, polygons are not connected to hover
 
     # 宫格标注背景颜色
     GRID_COLOR = {
@@ -257,6 +257,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.listFiles.itemDoubleClicked.connect(
             self.imageListClicked)  # 标签列表点击
         self.btnAddClass.clicked.connect(self.addLabel)
+
         self.btnParamsSelect.clicked.connect(self.changeParam)  # 模型参数选择
         self.btn3DParamsSelect.clicked.connect(self.changePropgationParam)
         self.cheWithMask.stateChanged.connect(self.chooseMode)  # with_mask
@@ -585,31 +586,31 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "Use",
             tr("主要功能使用介绍"), )
         report_bug = action(
-            tr("&反馈问题"),
+            tr("&feedback questions"),
             self.reportBug,
             "report_bug",
             "ReportBug",
-            tr("通过Github Issue反馈使用过程中遇到的问题。我们会尽快进行修复"), )
+            tr("via Github Issue feedback on problems encountered during use。We will fix it asap"), )
         edit_shortcuts = action(
-            tr("&编辑快捷键"),
+            tr("&Edit shortcuts"),
             self.editShortcut,
             "edit_shortcuts",
             "Shortcut",
-            tr("编辑软件快捷键"), )
+            tr("Editing software shortcuts"), )
         toggle_logging = action(
-            tr("&调试日志"),
+            tr("&debug log"),
             self.toggleLogging,
             "toggle_logging",
             "Log",
-            tr("用于观察软件执行过程和进行debug。我们不会自动收集任何日志，可能会希望您在反馈问题时间打开此功能，帮助我们定位问题。"),
+            tr("Used to observe the software execution process and debug。We do not automatically collect any logs, and may want you to turn on this feature when you report a problem to help us locate the problem。"),
             checkable=True, )
         toggle_logging.setChecked(bool(self.settings.value("log", False)))
         use_qt_widget = action(
-            tr("&使用QT文件窗口"),
+            tr("&Using the QT file window"),
             self.useQtWidget,
             "use_qt_widget",
             "Qt",
-            tr("如果使用文件选择窗口时遇到问题可以选择使用Qt窗口"),
+            tr("If you have problems using the file selection window, you can choose to use the Qt window"),
             checkable=True, )
         # print(
         #     "use_qt_widget",
@@ -776,8 +777,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.menus.languages.addAction(entry)
 
     def changeLanguage(self, lang):
+        lang = "English"
         self.settings.setValue("language", lang)
-        self.warn(self.tr("切换语言"), self.tr("切换语言需要重启软件才能生效"))
+        self.warn(self.tr("Chaning Language"), self.tr("You must restart the application in order to apply language settings"))
 
     # 近期图像
     def updateRecentFile(self):
@@ -794,7 +796,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             action.triggered.connect(partial(self.openRecentImage, f))
             menu.addAction(action)
         if len(files) == 0:
-            menu.addAction(self.tr("无近期文件"))
+            menu.addAction(self.tr("No recent files"))
         self.settings.setValue("recent_files", files)
 
     def addRecentFile(self, path):
@@ -810,7 +812,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def clearRecentFile(self):
         self.settings.remove("recent_files")
-        self.statusbar.showMessage(self.tr("已清除最近打开文件"), 10000)
+        self.statusbar.showMessage(self.tr("Recently opened files cleared"), 10000)
 
     # 模型加载
     def updateModelMenu(self):
@@ -830,7 +832,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 partial(self.setModelParam, m["param_path"]))
             menu.addAction(action)
         if len(self.recentModels) == 0:
-            menu.addAction(self.tr("无近期模型记录"))
+            menu.addAction(self.tr("No recent model records"))
         self.settings.setValue("recent_params", self.recentModels)
 
     def updateVideoModelMenu(self):
@@ -850,14 +852,18 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 partial(self.setVideoModelParam, m["param_path"]))
             menu.addAction(action)
         if len(self.video_recentModels) == 0:
-            menu.addAction(self.tr("无近期视频传播模型记录"))
+            menu.addAction(self.tr("No recent video propagation model records"))
         self.settings.setValue("video_recent_params", self.video_recentModels)
 
     def setModelParam(self, paramPath):
-        res = self.changeParam(paramPath)
-        if res:
-            return True
-        return False
+        self.load_thread = ModelThread(self.controller, paramPath)
+        self.load_thread._signal.connect(self.__change_model_callback)
+        self.load_thread.start()
+        return True
+        # res = self.changeParam(paramPath)
+        # if res:
+        #     return True
+        # return False
 
     def setVideoModelParam(self, paramPath):
         res = self.changePropgationParam(paramPath)
@@ -867,7 +873,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def changeParam(self, param_path: str=None):
         if not param_path:
-            filters = self.tr("Paddle静态模型权重文件(*.pdiparams)")
+            filters = self.tr("Paddle static model weights file(*.pdiparams)")
+            prop_filters = self.tr("Paddle propagation model weights file(*.pdmodel)")
             start_path = ("." if len(self.recentModels) == 0 else
                           osp.dirname(self.recentModels[-1]["param_path"]))
             if self.settings.value("use_qt_widget", False, type=bool):
@@ -876,7 +883,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 options = QtWidgets.QFileDialog.ReadOnly
             param_path, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self,
-                self.tr("选择传播模型参数") + " - " + __APPNAME__,
+                self.tr("Choose Propagation Model Parameters") + " - " + __APPNAME__,
                 start_path,
                 filters,
                 options=options, )
@@ -886,7 +893,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         # 中文路径打不开
         if check_cn(param_path):
-            self.warn(self.tr("参数路径存在中文"), self.tr("请修改参数路径为非中文路径！"))
+            self.warn(self.tr("The parameter path exists in Chinese"), self.tr("Please modify the parameter path to a non-Chinese path!"))
             return False
 
         # success, res = self.controller.setModel(param_path)
@@ -896,7 +903,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def changePropgationParam(self, param_path: str=None):
         if not param_path:
-            filters = self.tr("Paddle静态模型权重文件(*.pdiparams)")
+            filters = self.tr("Paddle static model weights file (*.pdmodel)")
             start_path = (
                 ".") if len(self.video_recentModels) == 0 else osp.dirname(
                     self.video_recentModels[-1]["param_path"])
@@ -906,7 +913,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 options = QtWidgets.QFileDialog.ReadOnly
             param_path, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self,
-                self.tr("选择模型参数") + " - " + __APPNAME__,
+                self.tr("Choose model parameters") + " - " + __APPNAME__,
                 start_path,
                 filters,
                 options=options, )
@@ -914,9 +921,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if not param_path:
             return False
 
-        # 中文路径打不开
+        # Chinese path cannot be opened
         if check_cn(param_path):
-            self.warn(self.tr("参数路径存在中文"), self.tr("请修改参数路径为非中文路径！"))
+            self.warn(self.tr("The parameter path exists in Chinese"), self.tr("Please modify the parameter path to a non-Chinese path！"))
             return False
 
         success, res = self.video.set_model(param_path)
@@ -1243,8 +1250,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def openImage(self, filePath: str=None):
         # 在triggered.connect中使用不管默认filePath为什么返回值都为False
+        # Use in triggered.connect no matter why the default file Path returns False
         if not isinstance(filePath, str) or filePath is False:
-            prompts = ["图片", "医学影像", "遥感影像", "视频"]
+            # prompts = ["图片", "医学影像", "遥感影像", "视频"]
+            prompts = ["picture", "medical image", "remote sensing image", "video"]
             filters = ""
             for fmts, p in zip(self.formats, prompts):
                 filters += f"{p} ({' '.join(['*' + f for f in fmts])}) ;; "
@@ -1260,18 +1269,18 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 options = QtWidgets.QFileDialog.ReadOnly
             filePath, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self,
-                self.tr("选择待标注图片") + " - " + __APPNAME__,
+                self.tr("Select an image to be tagged") + " - " + __APPNAME__,
                 recentPath,
                 filters,
                 options=options, )
-            if len(filePath) == 0:  # 用户没选就直接关闭窗口
+            if len(filePath) == 0:  # The user closes the window without making a choice
                 return
             if osp.splitext(filePath)[-1] in self.video_ext:
                 if not paddle.device.is_compiled_with_cuda(
                 ):  # TODO: 可以使用GPU却返回False
                     self.warn(
-                        self.tr("请在gpu电脑上进行视频标注"),
-                        self.tr("准备进行视频标注，由于视频标注需要一定计算，请尽量确保在gpu的电脑上进行操作!"))
+                        self.tr("Please do video annotation on gpu computer"),
+                        self.tr("Prepare to perform video annotation. Since video annotation requires certain calculations, please try to ensure that the operation is performed on a gpu computer.!"))
         filePath = normcase(filePath)
         if not self.loadImage(filePath):
             return False
@@ -1348,7 +1357,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def loadImage(self, path):
         if self.controller.model is None:
-            self.warn("未检测到模型", "请先加载模型参数")
+            self.warn("model not found", "load model first")
             return
         # 1. 拒绝None和不存在的路径，关闭当前图像
         if not path:
@@ -2055,7 +2064,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             return
         currLabel = self.controller.curr_label_number
         if not currLabel or currLabel == 0:
-            self.warn(self.tr("未选择当前标签"), self.tr("请先在标签列表中单击点选标签"))
+            self.warn(self.tr("Current tab not selected"), self.tr("请先在标签列表中单击点选标签"))
             return
 
         self.controller.addClick(x, y, isLeft)
@@ -2161,41 +2170,41 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.refreshLabelList()
 
     def toggleWidget(self, index=None, warn=True):
-        # TODO: 输入从数字改成名字
+        # TODO: Change input from number to name
 
-        # 1. 改变
+        # 1. Change
         if isinstance(index, int):
             self.dockStatus[index] = not self.dockStatus[index]
 
-        # 2. 判断widget是否可以开启
-        # 2.1 遥感
+        # 2. Determine whether the widget can be opened
+        # 2.1 remote sensing
         if self.dockStatus[4] and not (rs.check_gdal() and rs.check_rasterio()):
             if warn:
                 self.warn(
-                    self.tr("无法导入GDAL或rasterio"),
-                    self.tr("使用遥感工具需要安装GDAL和rasterio！"),
+                    self.tr("Cannot import GDAL or rasterio"),
+                    self.tr("Using remote sensing tools requires GDAL and rasterio to be installed！"),
                     QMessageBox.Yes, )
-            self.statusbar.showMessage(self.tr("打开遥感工具失败，请安装GDAL和rasterio"))
+            self.statusbar.showMessage(self.tr("Failed to open remote sensing tool，Please install GDAL and rasterio"))
             self.dockStatus[4] = False
 
         # 2.2 医疗
         if self.dockStatus[5] and not med.has_sitk():
             if warn:
                 self.warn(
-                    self.tr("无法导入SimpleITK"),
-                    self.tr("使用医疗工具需要安装SimpleITK！"),
+                    self.tr("Unable to import Simple ITK"),
+                    self.tr("Simple ITK is required to use medical tools！"),
                     QMessageBox.Yes, )
-            self.statusbar.showMessage(self.tr("打开医疗工具失败，请安装SimpleITK"))
+            self.statusbar.showMessage(self.tr("Failed to open medical tool，Please install Simple ITK"))
             self.dockStatus[5] = False
 
         # 2.3 3D显示
         if self.dockStatus[9] and not self.vtkWidget.convert_vtk():
             if warn:
                 self.warn(
-                    self.tr("无法导入VTK"),
-                    self.tr("使用3D显示工具需要安装VTK！"),
+                    self.tr("Unable to import VTK"),
+                    self.tr("Using the 3D display tool requires VTK to be installed！"),
                     QMessageBox.Yes, )
-            self.statusbar.showMessage(self.tr("打开3D显示工具失败，请安装VTK"))
+            self.statusbar.showMessage(self.tr("Failed to open 3D display tool, please install VTK"))
             self.dockStatus[9] = False
 
         widgets = list(self.dockWidgets.values())
@@ -2695,17 +2704,17 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def on_play(self):
         if self.video_images is None:
-            self.warn(self.tr("图片格式无法播放"), self.tr("请先加载视频"))
+            self.warn(self.tr("Image format cannot be played"), self.tr("Please load the video first"))
             return
         if self.timer.isActive():
             self.timer.stop()
-            self.videoPlay.setText(self.tr("播放"))
+            self.videoPlay.setText(self.tr("play"))
             self.videoPlay.setIcon(
                 QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
         else:
             # self.delAllPolygon()
-            self.timer.start(1000 / self.ratio)
-            self.videoPlay.setText(self.tr("暂停"))
+            self.timer.start(1000 // self.ratio)
+            self.videoPlay.setText(self.tr("pause"))
             self.videoPlay.setIcon(
                 QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))
 
@@ -2718,10 +2727,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def on_propgation(self):
         self.finishObject()
         if self.video_images is None:
-            self.warn(self.tr("未加载视频"), self.tr("请先在加载图像按钮中加载视频"))
+            self.warn(self.tr("Video not loaded"), self.tr("请先在加载图像按钮中加载视频"))
             return
         if self.video.prop_net_segm is None:
-            self.warn(self.tr("传播模型未加载"), self.tr("尚未加载视频传播模型，请先加载模型!"))
+            self.warn(self.tr("Propagation model not loaded"), self.tr("The video propagation model has not been loaded, please load the model first!"))
+            self.video.prop_net_segm.set_model()
             return
         if self.video.fuse_net is None:
             self.warn(self.tr("融合模型未加载"), self.tr("尚未加载视频融合模型，请先加载模型!"))

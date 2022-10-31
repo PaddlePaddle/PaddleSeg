@@ -39,19 +39,19 @@ class Ui_EISeg(object):
         ## 时间轴设置
         widget = QtWidgets.QWidget()
         verticalLayout = QtWidgets.QVBoxLayout(widget)
-        self.VideoDock = self.p_create_dock("VideoDock", self.tr("时间轴"), widget)
+        self.VideoDock = self.p_create_dock("VideoDock", self.tr("Timeline"), widget)
         VideoRegion = QtWidgets.QHBoxLayout()
         VideoRegion.setObjectName("VideoRegion")
         self.videoPlay = self.p_create_button(
             "videoPlay",
-            self.tr("播放"),
+            self.tr("play"),
             osp.join(pjpath, "resource/Play.png"),
             "", )
         VideoRegion.addWidget(self.videoPlay)
         self.sldTime, self.textTime, _ = self.p_create_slider(
             "sldTime", "textTime", "", 0, frames, 0, 1, True)
         VideoRegion.addWidget(
-            create_text(self.CentralWidget, None, self.tr("帧数：")))
+            create_text(self.CentralWidget, None, self.tr("frame number：")))
         VideoRegion.addWidget(self.textTime)
         VideoRegion.addWidget(self.sldTime)
         verticalLayout.addLayout(VideoRegion)
@@ -66,7 +66,8 @@ class Ui_EISeg(object):
         ## -- 主窗体设置 --
         MainWindow.setObjectName("MainWindow")
         MainWindow.setMinimumSize(QtCore.QSize(1366, 768))  # 1366x768的屏幕显示不全
-        MainWindow.setWindowTitle(__APPNAME__ + " " + __VERSION__)
+        # MainWindow.setWindowTitle(__APPNAME__ + " " + __VERSION__)
+        MainWindow.setWindowTitle('Background Removement ' + __VERSION__)
         MainWindow.setWindowIcon(QIcon())  # TODO: 默认图标需要换一个吗，貌似不能不显示图标
         self.CentralWidget = QtWidgets.QWidget(MainWindow)
         self.CentralWidget.setObjectName("CentralWidget")
@@ -94,7 +95,7 @@ class Ui_EISeg(object):
         self.statusbar.setStyleSheet("QStatusBar::item {border: none;}")
         MainWindow.setStatusBar(self.statusbar)
         self.statusbar.addPermanentWidget(
-            self.show_logo(osp.join(pjpath, "resource/Paddle.png")))
+            self.show_logo(osp.join(pjpath, "resource/vitasoft_logo.png")))
         ## -----
         ## -- 图形区域 --
         ImageRegion = QtWidgets.QHBoxLayout(self.CentralWidget)

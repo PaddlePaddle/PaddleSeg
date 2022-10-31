@@ -70,6 +70,7 @@ def main():
     lang = settings.value("language")
     if lang != "中文":
         trans = QtCore.QTranslator(app)
+        lang = "English.qm"
         trans.load(osp.join(pjpath, f"util/translate/{lang}"))
         app.installTranslator(trans)
 

@@ -32,6 +32,11 @@ class InferenceCore:
     """
 
     def __init__(self, mem_profile=2, mem_freq=5):
+
+        print(os.getcwd())
+        model_path = 'disnet.ckpt'
+        self.disnet = load_pytorch_model(model_path)
+
         self.cursur = 0
 
         self.mem_freq = mem_freq
@@ -96,7 +101,7 @@ class InferenceCore:
 
     def set_model(self, param_path=None):
         if param_path is None or not os.path.exists(param_path):
-            raise Exception(f"权重路径{param_path}不存在。请指定正确的模型路径")
+            raise Exception(f"weight path {param_path} does not exist. Please specify the correct model path")
 
         # param path
         param_path = os.path.abspath(os.path.dirname(param_path))
@@ -121,7 +126,7 @@ class InferenceCore:
         fusion_param_path = os.path.join(param_path, 'static_fusion.pdiparams')
         self.fuse_net = load_model(fusion_model_path, fusion_param_path)
 
-        return True, "模型设置成功"
+        return True, "Model set up successfully"
 
     def set_images(self, images):
         # True dimensions

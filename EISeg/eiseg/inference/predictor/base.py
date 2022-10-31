@@ -94,6 +94,8 @@ class BasePredictor(object):
 
         image_nd, clicks_lists, is_image_changed = self.apply_transforms(
             input_image, [clicks_list])
+
+        # TODO: why _get_prediction function is used
         pred_logits, pred_edges = self._get_prediction(image_nd, clicks_lists,
                                                        is_image_changed)
 
@@ -118,8 +120,7 @@ class BasePredictor(object):
                 self.prev_edge = edge_prediction
             prediction = t.inv_transform(prediction)
 
-        if self.zoom_in is not None and self.zoom_in.check_possible_recalculation(
-        ):
+        if self.zoom_in is not None and self.zoom_in.check_possible_recalculation():
             return self.get_prediction(clicker)
 
         self.prev_prediction = prediction
