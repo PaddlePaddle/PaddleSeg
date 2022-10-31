@@ -189,7 +189,7 @@ class PPModule(nn.Layer):
                 mode='bilinear',
                 align_corners=self.align_corners)
             cat_layers.append(x)
-        cat_layers = [input] + cat_layers[::-1]
+        cat_layers = [input] + cat_layers#[::-1]
         cat = paddle.concat(cat_layers, axis=1)
         out = self.conv_bn_relu2(cat)
 
