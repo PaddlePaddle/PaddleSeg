@@ -744,7 +744,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def on_speed(self, sender):
         text = self.speedComboBox.currentText()
-        self.ratio = int(20 * float(text[4:-1]))
+        self.ratio = int(20 * float(text[-4:-1]))
         if self.timer.isActive():
             self.timer.stop()
             self.timer.start(1000 / self.ratio)
