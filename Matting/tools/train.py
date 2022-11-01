@@ -196,9 +196,6 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
-    # for data in train_dataset:
-    #     print(data.keys())
-    #     print(data['img_name'], data['img'].shape, data['alpha'].shape)
 
     if args.repeats > 1:
         train_dataset.fg_bg_list *= args.repeats
