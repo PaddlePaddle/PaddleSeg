@@ -20,6 +20,8 @@ from functools import partial
 import json
 from distutils.util import strtobool
 import webbrowser
+
+import torch
 from easydict import EasyDict as edict
 
 from qtpy import QtGui, QtCore, QtWidgets
@@ -88,13 +90,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         layoutdir = Qt.RightToLeft if currentLang == "Arabic" else Qt.LeftToRight
         self.setLayoutDirection(layoutdir)
 
-        # 初始化界面
+        # Initialize the interface
         self.setupUi(self)
 
-        # app变量
+        # app variable
         self._anning = False  # self.status替代
-        self.isDirty = False  # 是否需要保存
-        self.image = None  # 可能先加载图片后加载模型，只用于暂存图片
+        self.isDirty = False  # Do you need to save
+        self.image = None  # It is possible to load the image first and then load the model, which is only used to temporarily store the image
         self.predictor_params = {
             "brs_mode": "NoBRS",
             "with_flip": False,
@@ -116,15 +118,15 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.video = InferenceCore()
         self.video_images = None
         self.video_masks = None
-        # self.controller.labelList = util.LabelList()  # 标签列表
+        # self.controller.labelList = util.LabelList()  # list of tags
         self.save_status = {
             "gray_scale": True,
             "pseudo_color": True,
             "json": False,
             "coco": True,
             "cutout": True,
-        }  # 是否保存这几个格式
-        self.outputDir = None  # 标签保存路径
+        }  # Whether to save these formats
+        self.outputDir = None  # Label save path
         self.labelPaths = []  # 所有outputdir中的标签文件路径
         self.imagePaths = []  # 文件夹下所有待标注图片路径
         self.currIdx = 0  # 文件夹标注当前图片下标
@@ -258,7 +260,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.imageListClicked)  # 标签列表点击
         self.btnAddClass.clicked.connect(self.addLabel)
 
-        self.btnParamsSelect.clicked.connect(self.changeParam)  # 模型参数选择
+        self.btnParamsSelect.clicked.connect(self.changeParam)  # Model parameter selection
         self.btn3DParamsSelect.clicked.connect(self.changePropgationParam)
         self.cheWithMask.stateChanged.connect(self.chooseMode)  # with_mask
         self.btnPropagate.clicked.connect(self.on_propgation)
@@ -744,7 +746,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def on_speed(self, sender):
         text = self.speedComboBox.currentText()
-        self.ratio = int(20 * float(text[4:-1]))
+        self.ratio = int(20 * float(text[-4:-1]))
         if self.timer.isActive():
             self.timer.stop()
             self.timer.start(1000 / self.ratio)
@@ -1222,6 +1224,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         for polygon in self.scene.polygon_items:
             polygon.removeFocusPoint()
 
+    def getMask2(self):
+        with torch.no_grad():
+            self.video.disnet(self.image)
+
+
     # 图片/标签 io
     def getMask(self):
         if not self.controller or self.controller.image is None:
@@ -1229,8 +1236,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         s = self.controller.imgShape
         pesudo = np.zeros([s[0], s[1]])
         # 覆盖顺序，从上往下
-        # TODO: 是标签数值大的会覆盖小的吗?
-        # A: 是列表中上面的覆盖下面的，由于标签可以移动，不一定是大小按顺序覆盖
+        # TODO: Does the label with a larger value cover the smaller one??
+        # A: is below the overlay above in the list, because the labels can be moved, not necessarily the overlays in order of size
         # RE: 我们做医学的时候覆盖比较多，感觉一般是数值大的标签覆盖数值小的标签。按照上面覆盖下面的话可能跟常见的情况正好是反过来的，感觉可能从下往上覆盖会比较好
         len_lab = self.labelListTable.rowCount()
         for i in range(len_lab - 1, -1, -1):
@@ -2453,7 +2460,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.image = self.grid.detimg
             is_big = checkOpenGrid(self.image, self.thumbnail_min)
         if is_big is None:
-            self.statusbar.showMessage(self.tr("图像过大，已显示缩略图"))
+            self.statusbar.showMessage(self.tr("Image too large, thumbnail shown"))
         self.controller.image = self.image
         self.controller._result_mask = mask
         self.exportLabel(savePath=save_path, lab_input=mask)
@@ -2557,15 +2564,15 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     # 界面布局
     def loadLayout(self):
         self.restoreState(self.layoutStatus)
-        # TODO: 这里检查环境，判断是不是开医疗和遥感widget
+        # TODO: Check the environment here to determine whether to open medical and remote sensing widgets
 
     def saveLayout(self):
-        # 保存界面
+        # save interface
         self.settings.setValue("layout_status", QByteArray(self.saveState()))
         self.settings.setValue(
             "save_status",
             [(k, self.save_status[k]) for k in self.save_status.keys()])
-        # # 如果设置了保存路径，把标签也保存下
+        # # If the save path is set, save the label as well
         # if self.outputDir is not None and len(self.controller.labelList) != 0:
         #     self.exportLabelList(osp.join(self.outputDir, "autosave_label.txt"))
 
@@ -2727,14 +2734,14 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def on_propgation(self):
         self.finishObject()
         if self.video_images is None:
-            self.warn(self.tr("Video not loaded"), self.tr("请先在加载图像按钮中加载视频"))
+            self.warn(self.tr("Video not loaded"), self.tr("Please load the video first in the load image button"))
             return
         if self.video.prop_net_segm is None:
             self.warn(self.tr("Propagation model not loaded"), self.tr("The video propagation model has not been loaded, please load the model first!"))
             self.video.prop_net_segm.set_model()
             return
         if self.video.fuse_net is None:
-            self.warn(self.tr("融合模型未加载"), self.tr("尚未加载视频融合模型，请先加载模型!"))
+            self.warn(self.tr("Fusion model does not load"), self.tr("The video fusion model has not been loaded, please load the model first!"))
             return
 
         current_mask = self.getMask()

@@ -19,11 +19,16 @@ MIT License [see LICENSE for details]
 
 import paddle
 import paddle.nn.functional as F
+import torch.nn.functional as torch_f
 import numpy as np
+import torch
+from PIL import Image
 
 from inference.transforms import AddHorizontalFlip, SigmoidForPred, LimitLongestSide
-from .ops import DistMaps, ScaleLayer, BatchImageNormalize
+from torchvision.transforms import transforms
 
+from .ops import DistMaps, ScaleLayer, BatchImageNormalize
+from isnet.nets import DISNet
 
 class BasePredictor(object):
     def __init__(self,
@@ -35,6 +40,15 @@ class BasePredictor(object):
                  with_mask=True,
                  **kwargs):
 
+        self.disnet = DISNet(3, 1)
+        state_dict = torch.load('disnet.ckpt', map_location='cpu')['state_dict']
+        new_state_dict = {}
+        for key, value in state_dict.items():
+            new_key = key.replace('model.', '')
+            new_state_dict[new_key] = value
+        self.disnet.load_state_dict(new_state_dict, strict=False)
+        self.disnet.eval()
+        print('disnet loaded')
         self.with_flip = with_flip
         self.net_clicks_limit = net_clicks_limit
         self.original_image = None
@@ -68,9 +82,11 @@ class BasePredictor(object):
 
     def set_input_image(self, image):
         image_nd = self.to_tensor(image)
+        self.image = image
 
         for transform in self.transforms:
             transform.reset()
+
         self.original_image = image_nd
         if len(self.original_image.shape) == 3:
             self.original_image = self.original_image.unsqueeze(0)
@@ -78,6 +94,31 @@ class BasePredictor(object):
                                                                      1, :, :])
         if not self.with_prev_mask:
             self.prev_edge = paddle.zeros_like(self.original_image[:, :1, :, :])
+
+    def get_disnet(self, shape):
+        image = self.image
+        image = Image.fromarray(image)
+        # transforms
+        transform = transforms.Compose([
+            transforms.Resize((1024, 1024)),
+            transforms.ToTensor()
+        ])
+        tn_img = transform(image)
+        with torch.no_grad():
+            outputs, _ = self.disnet(tn_img.unsqueeze(0))
+
+        # output = outputs[0].detach().squeeze(0).squeeze(0)
+        output = torch_f.interpolate(
+            outputs[0],
+            mode="bilinear",
+            align_corners=True,
+            size=shape)
+
+        # output = output.detach().squeeze(0).squeeze(0)
+
+        return output.detach().squeeze(0).squeeze(0).numpy()
+
+
 
     def get_prediction(self, clicker, prev_mask=None):
         clicks_list = clicker.get_clicks()
@@ -95,7 +136,6 @@ class BasePredictor(object):
         image_nd, clicks_lists, is_image_changed = self.apply_transforms(
             input_image, [clicks_list])
 
-        # TODO: why _get_prediction function is used
         pred_logits, pred_edges = self._get_prediction(image_nd, clicks_lists,
                                                        is_image_changed)
 

@@ -132,9 +132,9 @@ class InteractiveController:
             self._result_mask = np.zeros(image.shape[:2], dtype=np.uint8)
             self.resetLastObject()
 
-    # 标签操作
+    # Label operation
     def setLabelList(self, labelList: json):
-        """设置标签列表，会覆盖已有的标签列表
+        """Set the label list, which will overwrite the existing label list
 
         Parameters
         ----------
@@ -213,6 +213,8 @@ class InteractiveController:
         click = clicker.Click(is_positive=is_positive, coords=(y, x))
         self.clicker.add_click(click)
         pred = self.predictor.get_prediction(self.clicker)
+        dis_pred = self.predictor.get_disnet(pred.shape)
+
 
         # 3. save state
         self.states.append({
@@ -220,9 +222,11 @@ class InteractiveController:
             "predictor": self.predictor.get_states(),
         })
         if self.probs_history:
-            self.probs_history.append((self.probs_history[-1][1], pred))
+            # self.probs_history.append((self.probs_history[-1][1], pred))
+            self.probs_history.append((self.probs_history[-1][1], dis_pred))
         else:
-            self.probs_history.append((np.zeros_like(pred), pred))
+            # self.probs_history.append((np.zeros_like(pred), pred))
+            self.probs_history.append((np.zeros_like(dis_pred), dis_pred))
 
         # After clicking, the previous historical redo cannot be resumed.
         self.undo_states = []
