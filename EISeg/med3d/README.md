@@ -121,7 +121,7 @@ os.system(f"'{sys.executable}' -m pip install paddlepaddle-gpu==2.3.1.post111 -f
 
 | 数据 | 模型 | 下载链接 |
 |:-:|:-:|:-:|
-| MRI椎骨数据 | 交互式 Vnet |[模型](链接: https://pan.baidu.com/s/1vu0ZIbGumlFvRlMGbMvWAg)-pw: dt8q \|  [椎骨数据](https://aistudio.baidu.com/aistudio/datasetdetail/81211)|
+| MRI椎骨数据 | 交互式 Vnet |[模型][链接](https://pan.baidu.com/s/1vu0ZIbGumlFvRlMGbMvWAg) -pw: dt8q \|  [椎骨数据](https://aistudio.baidu.com/aistudio/datasetdetail/81211)|
 
 </p>
 
