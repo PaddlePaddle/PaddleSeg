@@ -13,15 +13,16 @@
 # limitations under the License.
 
 from functools import partial
+from collections import defaultdict
 
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from collections import defaultdict
+
 import paddleseg
+from paddleseg import utils
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager
-from paddleseg import utils
 from paddleseg.models.backbones.transformer_utils import Identity, DropPath
 
 from ppmatting.models.layers import MLFF
@@ -31,6 +32,11 @@ from ppmatting.models.losses import MRSD, GradientLoss
 @manager.MODELS.add_component
 class PPMattingV2(nn.Layer):
     """
+    The PPMattingV2 implementation based on PaddlePaddle.
+
+    The original article refers to
+    TODO Guowei Chen, et, al. "" ().
+
     Args:
         backbone: backobne model.
         pretrained(str, optional): The path of pretrianed model. Defautl: None.
@@ -41,8 +47,10 @@ class PPMattingV2(nn.Layer):
         dpp_bin_sizes(list, optional): The output size of the second pyramid pool in dpp. Default: (2, 4, 6).
         dpp_mlp_ratios(int, optional): The expandsion ratio of mlp in dpp. Default: 2.
         dpp_attn_ratio(int, optional): The expandsion ratio of attention. Default: 2.
-        dpp_merge_type(str, optional): The merge type of the output of the second pyramid pool in dpp, which should be one of (`concat`, `add`). Default: 'concat'.
-        mlff_merge_type(str, optional): The merge type of the multi features before output. It should be one of ('add', 'concat'). Default: 'concat'.
+        dpp_merge_type(str, optional): The merge type of the output of the second pyramid pool in dpp, 
+            which should be one of (`concat`, `add`). Default: 'concat'.
+        mlff_merge_type(str, optional): The merge type of the multi features before output. 
+            It should be one of ('add', 'concat'). Default: 'concat'.
     """
 
     def __init__(self,
@@ -63,6 +71,12 @@ class PPMattingV2(nn.Layer):
 
         self.backbone = backbone
         self.backbone_channels = backbone.feat_channels
+
+        # check
+        assert len(backbone.feat_channels) == 5, \
+            "Backbone should return 5 features with different scales"
+        assert max(dpp_index) < len(backbone.feat_channels), \
+            "The element of `dpp_index` should be less than the number of return features of backbone."
 
         # dpp module
         self.dpp_index = dpp_index
@@ -143,8 +157,7 @@ class PPMattingV2(nn.Layer):
 
         input_8x = [feats_backbone[-3], x, dpp_out]
         x = self.mlff8x(input_8x, paddle.shape(feats_backbone[-3])[-2:])  # 8x
-        if self.training:
-            alpha_8x = self.matting_head_mlff8x(x)
+        mlff8x_output = x
 
         input_4x = [feats_backbone[-4], x]
         input_4x.append(
@@ -166,7 +179,7 @@ class PPMattingV2(nn.Layer):
         if self.training:
             logit_dict = {}
             logit_dict['alpha'] = alpha
-            logit_dict['alpha_8x'] = alpha_8x
+            logit_dict['alpha_8x'] = self.matting_head_mlff8x(mlff8x_output)
 
             loss_dict = self.loss(logit_dict, inputs)
 
@@ -214,6 +227,147 @@ class PPMattingV2(nn.Layer):
     def init_weight(self):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
+
+
+class MattingHead(nn.Layer):
+    def __init__(self, in_chan, mid_chan, mid_num=1, out_channels=1):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            in_chan,
+            mid_chan,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias_attr=False)
+        self.mid_conv = nn.LayerList([
+            layers.ConvBNReLU(
+                mid_chan,
+                mid_chan,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+                bias_attr=False) for i in range(mid_num - 1)
+        ])
+        self.conv_out = nn.Conv2D(
+            mid_chan, out_channels, kernel_size=1, bias_attr=False)
+
+    def forward(self, x):
+        x = self.conv(x)
+        for mid_conv in self.mid_conv:
+            x = mid_conv(x)
+        x = self.conv_out(x)
+        x = F.sigmoid(x)
+        return x
+
+
+class DoublePyramidPoolModule(nn.Layer):
+    """
+    Extract global information through double pyramid pool structure and attention calculation by transformer block.
+
+    Args:
+        stride(int): The stride for the inputs.
+        input_channel(int): The total channels of input features.
+        mid_channel(int, optional): The output channels of the first pyramid pool. Default: 256.
+        out_channel(int, optional): The output channels. Default: 512.
+        len_trans(int, optional): The depth of transformer block. Default: 1.
+        bin_sizes(list, optional): The output size of the second pyramid pool. Default: (2, 4, 6).
+        mlp_ratios(int, optional): The expandsion ratio of the mlp. Default: 2.
+        attn_ratio(int, optional): The expandsion ratio of the attention. Default: 2.
+        merge_type(str, optional): The merge type of the output of the second pyramid pool, which should be one of (`concat`, `add`). Default: 'concat'.
+        align_corners(bool, optional): Whether to use `align_corners` when interpolating. Default: False.
+
+    """
+
+    def __init__(self,
+                 stride,
+                 input_channel,
+                 mid_channel=256,
+                 output_channel=512,
+                 len_trans=1,
+                 bin_sizes=(2, 4, 6),
+                 mlp_ratios=2,
+                 attn_ratio=2,
+                 merge_type='concat',
+                 align_corners=False):
+        super().__init__()
+
+        self.mid_channel = mid_channel
+        self.align_corners = align_corners
+        self.mlp_rations = mlp_ratios
+        self.attn_ratio = attn_ratio
+        if isinstance(len_trans, int):
+            self.len_trans = [len_trans] * len(bin_sizes)
+        elif isinstance(len_trans, (list, tuple)):
+            self.len_trans = len_trans
+            if len(len_trans) != len(bin_sizes):
+                raise ValueError(
+                    'If len_trans is list or tuple, the length should be same as bin_sizes'
+                )
+        else:
+            raise ValueError(
+                '`len_trans` only support int, list and tuple type')
+
+        if merge_type not in ['add', 'concat']:
+            raise ('`merge_type only support `add` or `concat`.')
+        self.merge_type = merge_type
+
+        self.pp1 = PyramidPoolAgg(stride=stride)
+        self.conv_mid = layers.ConvBN(input_channel, mid_channel, 1)
+        self.pp2 = nn.LayerList([
+            self._make_stage(
+                embdeding_channels=mid_channel, size=size, block_num=block_num)
+            for size, block_num in zip(bin_sizes, self.len_trans)
+        ])
+
+        if self.merge_type == 'concat':
+            in_chan = mid_channel + mid_channel * len(bin_sizes)
+        else:
+            in_chan = mid_channel
+        self.conv_out = layers.ConvBNReLU(
+            in_chan, output_channel, kernel_size=1)
+
+    def _make_stage(self, embdeding_channels, size, block_num):
+        prior = nn.AdaptiveAvgPool2D(output_size=size)
+        if size == 1:
+            trans = layers.ConvBNReLU(
+                in_channels=embdeding_channels,
+                out_channels=embdeding_channels,
+                kernel_size=1)
+        else:
+            trans = BasicLayer(
+                block_num=block_num,
+                embedding_dim=embdeding_channels,
+                key_dim=16,
+                num_heads=8,
+                mlp_ratios=self.mlp_rations,
+                attn_ratio=self.attn_ratio,
+                drop=0,
+                attn_drop=0,
+                drop_path=0,
+                act_layer=nn.ReLU6,
+                lr_mult=1.0)
+        return nn.Sequential(prior, trans)
+
+    def forward(self, inputs):
+        x = self.pp1(inputs)
+        pp2_input = self.conv_mid(x)
+
+        cat_layers = []
+        for stage in self.pp2:
+            x = stage(pp2_input)
+            x = F.interpolate(
+                x,
+                paddle.shape(pp2_input)[2:],
+                mode='bilinear',
+                align_corners=self.align_corners)
+            cat_layers.append(x)
+        cat_layers = [pp2_input] + cat_layers[::-1]
+        if self.merge_type == 'concat':
+            cat = paddle.concat(cat_layers, axis=1)
+        else:
+            cat = sum(cat_layers)
+        out = self.conv_out(cat)
+        return out
 
 
 class Conv2DBN(nn.Layer):
@@ -419,114 +573,6 @@ class BasicLayer(nn.Layer):
         return x
 
 
-class DoublePyramidPoolModule(nn.Layer):
-    """
-    Args:
-        stride(int): The stride for the inputs.
-        input_channel(list): The total channels of input features.
-        mid_channel(int, optional): The output channels of the first pyramid pool. Default: 256.
-        out_channel(int, optional): The output channels. Default: 512.
-        len_trans(int, optional): The depth of transformer block. Default: 1.
-        bin_sizes(list, optional): The output size of the second pyramid pool. Default: (2, 4, 6).
-        mlp_ratios(int, optional): The expandsion ratio of the mlp. Default: 2.
-        attn_ratio(int, optional): The expandsion ratio of the attention. Default: 2.
-        merge_type(str, optional): The merge type of the output of the second pyramid pool, which should be one of (`concat`, `add`). Default: 'concat'.
-        align_corners(bool, optional): Whether to use `align_corners` when interpolating. Default: False.
-
-    """
-
-    def __init__(self,
-                 stride,
-                 input_channel,
-                 mid_channel=256,
-                 output_channel=512,
-                 len_trans=1,
-                 bin_sizes=(2, 4, 6),
-                 mlp_ratios=2,
-                 attn_ratio=2,
-                 merge_type='concat',
-                 align_corners=False):
-        super().__init__()
-
-        self.mid_channel = mid_channel
-        self.align_corners = align_corners
-        self.mlp_rations = mlp_ratios
-        self.attn_ratio = attn_ratio
-        if isinstance(len_trans, int):
-            self.len_trans = [len_trans] * len(bin_sizes)
-        elif isinstance(len_trans, (list, tuple)):
-            self.len_trans = len_trans
-            if len(len_trans) != len(bin_sizes):
-                raise ValueError(
-                    'If len_trans is list or tuple, the length should be same as bin_sizes'
-                )
-        else:
-            raise ValueError(
-                '`len_trans` only support int, list and tuple type')
-
-        if merge_type not in ['add', 'concat']:
-            raise ('`merge_type only support `add` or `concat`.')
-        self.merge_type = merge_type
-
-        self.pp1 = PyramidPoolAgg(stride=stride)
-        self.conv_mid = layers.ConvBN(input_channel, mid_channel, 1)
-        self.pp2 = nn.LayerList([
-            self._make_stage(
-                embdeding_channels=mid_channel, size=size, block_num=block_num)
-            for size, block_num in zip(bin_sizes, self.len_trans)
-        ])
-
-        if self.merge_type == 'concat':
-            in_chan = mid_channel + mid_channel * len(bin_sizes)
-        else:
-            in_chan = mid_channel
-        self.conv_out = layers.ConvBNReLU(
-            in_chan, output_channel, kernel_size=1)
-
-    def _make_stage(self, embdeding_channels, size, block_num):
-        prior = nn.AdaptiveAvgPool2D(output_size=size)
-        if size == 1:
-            trans = layers.ConvBNReLU(
-                in_channels=embdeding_channels,
-                out_channels=embdeding_channels,
-                kernel_size=1)
-        else:
-            trans = BasicLayer(
-                block_num=block_num,
-                embedding_dim=embdeding_channels,
-                key_dim=16,
-                num_heads=8,
-                mlp_ratios=self.mlp_rations,
-                attn_ratio=self.attn_ratio,
-                drop=0,
-                attn_drop=0,
-                drop_path=0,
-                act_layer=nn.ReLU6,
-                lr_mult=1.0)
-        return nn.Sequential(prior, trans)
-
-    def forward(self, inputs):
-        x = self.pp1(inputs)
-        pp2_input = self.conv_mid(x)
-
-        cat_layers = []
-        for stage in self.pp2:
-            x = stage(pp2_input)
-            x = F.interpolate(
-                x,
-                paddle.shape(pp2_input)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
-            cat_layers.append(x)
-        cat_layers = [pp2_input] + cat_layers[::-1]
-        if self.merge_type == 'concat':
-            cat = paddle.concat(cat_layers, axis=1)
-        else:
-            cat = sum(cat_layers)
-        out = self.conv_out(cat)
-        return out
-
-
 class PyramidPoolAgg(nn.Layer):
     def __init__(self, stride):
         super().__init__()
@@ -553,34 +599,3 @@ class PyramidPoolAgg(nn.Layer):
             out.append(x)
         out = paddle.concat(out, axis=1)
         return out
-
-
-class MattingHead(nn.Layer):
-    def __init__(self, in_chan, mid_chan, mid_num=1, out_channels=1):
-        super().__init__()
-        self.conv = layers.ConvBNReLU(
-            in_chan,
-            mid_chan,
-            kernel_size=3,
-            stride=1,
-            padding=1,
-            bias_attr=False)
-        self.mid_conv = nn.LayerList([
-            layers.ConvBNReLU(
-                mid_chan,
-                mid_chan,
-                kernel_size=3,
-                stride=1,
-                padding=1,
-                bias_attr=False) for i in range(mid_num - 1)
-        ])
-        self.conv_out = nn.Conv2D(
-            mid_chan, out_channels, kernel_size=1, bias_attr=False)
-
-    def forward(self, x):
-        x = self.conv(x)
-        for mid_conv in self.mid_conv:
-            x = mid_conv(x)
-        x = self.conv_out(x)
-        x = F.sigmoid(x)
-        return x
