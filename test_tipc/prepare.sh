@@ -127,6 +127,8 @@ mkdir -p ./test_tipc/data
 if [ ${MODE} = "benchmark_train" ];then
     pip install -r requirements.txt
     pip install -r test_tipc/requirements.txt
+    # Install current version of PaddleSeg
+    pip install -e .
     if [ ${model_name} = 'fcn_hrnetw18_small' ] \
         || [ ${model_name} = 'pphumanseg_lite' ] \
         || [ ${model_name} = 'deeplabv3p_resnet50' ] \
