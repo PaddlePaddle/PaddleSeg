@@ -62,23 +62,34 @@ class Attention(nn.Layer):
         head_dim = dim // num_heads
         self.scale = qk_scale or head_dim**-0.5
 
-        self.qkv = nn.Linear(dim, dim * 3, bias_attr=qkv_bias)
+        self.qkv = nn.Linear(dim, dim * 3, bias_attr=qkv_bias)  # 768, 2304
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        import pdb
+        pdb.set_trace()
+        x_shape = paddle.shape(x)  # [2   , 1025, 768 ])
         N, C = x_shape[1], x_shape[2]
-        qkv = self.qkv(x).reshape((-1, N, 3, self.num_heads, C //
-                                   self.num_heads)).transpose((2, 0, 3, 1, 4))
-        q, k, v = qkv[0], qkv[1], qkv[2]
+        qkv = self.qkv(x).reshape((
+            -1,
+            N,
+            3,
+            self.num_heads,
+            C //  # [2, 1025, 2304]
+            self.num_heads)).transpose(
+                (2, 0, 3, 1,
+                 4))  # [2,  1025,3, 8, 2304//8] # 通道数量很大的情况下，linear层贡献也不少 
+        q, k, v = qkv[0], qkv[1], qkv[2]  # [3, 2, 12, 1025, 64]
 
-        attn = (q.matmul(k.transpose((0, 1, 3, 2)))) * self.scale
+        attn = (q.matmul(k.transpose((0, 1, 3, 2)))
+                ) * self.scale  # O(N2) 生成权重，矩阵乘积是导致复杂度关键
         attn = nn.functional.softmax(attn, axis=-1)
         attn = self.attn_drop(attn)
 
-        x = (attn.matmul(v)).transpose((0, 2, 1, 3)).reshape((-1, N, C))
+        x = (attn.matmul(v)).transpose((0, 2, 1, 3)).reshape(
+            (-1, N, C))  # 权重乘以特征 
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
@@ -263,9 +274,10 @@ class VisionTransformer(nn.Layer):
         cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
         x = x.flatten(2).transpose([0, 2, 1])  # b * hw * c
         x = paddle.concat([cls_tokens, x], axis=1)
-
+        import pdb
+        pdb.set_trace()
         if paddle.shape(x)[1] == self.pos_embed.shape[1]:
-            x = x + self.pos_embed
+            x = x + self.pos_embed  # [1, 1025, 768]
         else:
             x = x + self.resize_pos_embed(self.pos_embed,
                                           (self.pos_h, self.pos_w), x_shape[2:])

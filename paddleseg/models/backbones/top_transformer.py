@@ -280,19 +280,21 @@ class Attention(nn.Layer):
                 self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = paddle.shape(x)  # NCHW
         H, W = x_shape[2], x_shape[3]
 
         qq = self.to_q(x).reshape(
-            [0, self.num_heads, self.key_dim, -1]).transpose([0, 1, 3, 2])
-        kk = self.to_k(x).reshape([0, self.num_heads, self.key_dim, -1])
+            [0, self.num_heads, self.key_dim, -1]).transpose(
+                [0, 1, 3, 2])  # [N , nh,  HW, dim]
+        kk = self.to_k(x).reshape(
+            [0, self.num_heads, self.key_dim, -1])  # [N , nh, dim, HW]
         vv = self.to_v(x).reshape([0, self.num_heads, self.d, -1]).transpose(
-            [0, 1, 3, 2])
+            [0, 1, 3, 2])  # [N , nh, HW, dh, ]
 
-        attn = paddle.matmul(qq, kk)
+        attn = paddle.matmul(qq, kk)  # HW2 # [N , nh, HW ,HW] scale
         attn = F.softmax(attn, axis=-1)
 
-        xx = paddle.matmul(attn, vv)
+        xx = paddle.matmul(attn, vv)  # [N , nh, HW, dh]
 
         xx = xx.transpose([0, 1, 3, 2]).reshape([0, self.dh, H, W])
         xx = self.proj(xx)
