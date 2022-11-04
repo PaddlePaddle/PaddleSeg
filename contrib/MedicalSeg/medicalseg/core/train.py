@@ -161,7 +161,7 @@ def train(model,
             model.clear_gradients()
             # TODO use a function to record, print lossetc
 
-            avg_loss += loss.numpy()[0]
+            avg_loss += float(loss)
             mdice += np.mean(per_channel_dice) * 100
 
             if channel_dice_array.size == 0:
