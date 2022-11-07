@@ -315,15 +315,18 @@ class Block(nn.Layer):
         self.num_heads = num_heads
         self.mlp_ratios = mlp_ratios
 
-        self.attn = Attention(
-            dim,
-            key_dim=key_dim,
-            num_heads=num_heads,
-            attn_ratio=attn_ratio,
-            activation=act_layer,
-            lr_mult=lr_mult)
+        from paddleseg.models.rtformer import ExternalAttention 
+        self.attn = ExternalAttention(dim, dim, 256, num_heads=8, use_cross_kv=False) 
+        #self.attn = Attention(
+        #    dim,
+        #    key_dim=key_dim,
+        #    num_heads=num_heads,
+        #    attn_ratio=attn_ratio,
+        #    activation=act_layer,
+        #    lr_mult=lr_mult)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
+        
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
         mlp_hidden_dim = int(dim * mlp_ratios)
         self.mlp = MLP(in_features=dim,
@@ -777,7 +780,7 @@ class TopTransformer(nn.Layer):
             self.inj_module = InjectionMultiSumallmultiallsum(
                 in_channels=self.feat_channels[1:] + [self.embed_dim],
                 activations=act_layer,
-                lr_mult=lr_mult)
+                lr_mult=1.0)
             # self.SIM = nn.LayerList()
             # # inj_module = SIM_BLOCK[injection_type]
             # inj_module = InjectionMultiSumSimple
