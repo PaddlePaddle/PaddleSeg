@@ -7,9 +7,9 @@
 - 高分辨率(>2048)简单背景人像抠图：PP-HumanMatting。
 - 提供trimap：DIM-VGG16。
 
-| 模型 | SAD $\downarrow$ | MSE $\downarrow$ | Grad $\downarrow$ | Conn $\downarrow$ |Params(M) | FLOPs(G) | FPS | Checkpoint | Inference Model |
+| 模型 | SAD | MSE | Grad | Conn |Params(M) | FLOPs(G) | FPS | Checkpoint | Inference Model |
 | - | - | -| - | - | - | - | -| - | - |
-| PP-MattingV2 | 40.59 | 0.0038 | 33.86 |38.90 | 8.95 | 7.51 | 98.89 | [model](https://paddleseg.bj.bcebos.com/matting/models/ppmattingv2-stdc1-human_512.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/ppmattingv2-stdc1-human_512.zip) |
+| PP-MattingV2       |40.59|0.0038|33.86|38.90| 8.95 | 7.51 | 98.89 | [model](https://paddleseg.bj.bcebos.com/matting/models/ppmattingv2-stdc1-human_512.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/ppmattingv2-stdc1-human_512.zip) |
 | PP-Matting-512     |31.56|0.0022|31.80|30.13| 24.5 | 91.28 | 28.9 | [model](https://paddleseg.bj.bcebos.com/matting/models/ppmatting-hrnet_w18-human_512.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/ppmatting-hrnet_w18-human_512.zip) |
 | PP-Matting-1024    |66.22|0.0088|32.90|64.80| 24.5 | 91.28 | 13.4(1024X1024) | [model](https://paddleseg.bj.bcebos.com/matting/models/ppmatting-hrnet_w18-human_1024.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/ppmatting-hrnet_w18-human_1024.zip) |
 | PP-HumanMatting    |53.15|0.0054|43.75|52.03| 63.9 | 135.8 (2048X2048)| 32.8(2048X2048)| [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-humanmatting-resnet34_vd.zip) |
