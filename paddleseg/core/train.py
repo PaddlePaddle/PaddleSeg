@@ -34,7 +34,7 @@ def check_logits_losses(logits_list, losses):
             .format(len_logits, len_losses))
 
 
-def loss_computation(logits_list, labels, edges, losses):
+def loss_computation(logits_list, labels, edges, losses, targets):
     check_logits_losses(logits_list, losses)
     loss_list = []
     for i in range(len(logits_list)):
@@ -52,7 +52,10 @@ def loss_computation(logits_list, labels, edges, losses):
             loss_list.append(coef_i *
                              loss_i(logits_list[0], logits_list[1].detach()))
         else:
-            loss_list.append(coef_i * loss_i(logits, labels))
+            if targets is not None:
+                loss_list.append(coef_i * loss_i(logits, targets))
+            else:
+                loss_list.append(coef_i * loss_i(logits, labels))
     return loss_list
 
 
@@ -176,6 +179,17 @@ def train(model,
             edges = None
             if 'edge' in data.keys():
                 edges = data['edge'].astype('int64')
+
+            targets = None
+            if "instances" in data.keys():
+                targets = []
+                for target_per_image in data['instances']:
+                    # ignore the pad gt because we did not pad image
+                    targets.append({
+                        "labels": target_per_image.gt_classes,
+                        "masks": target_per_image.gt_masks
+                    })
+
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':
                 images = images.transpose((0, 2, 3, 1))
 
@@ -208,7 +222,8 @@ def train(model,
                     logits_list=logits_list,
                     labels=labels,
                     edges=edges,
-                    losses=losses)
+                    losses=losses,
+                    targets=targets)
                 loss = sum(loss_list)
                 loss.backward()
                 # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.

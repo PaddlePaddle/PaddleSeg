@@ -16,6 +16,7 @@ import os
 
 import numpy as np
 from PIL import Image
+import paddle
 
 from paddleseg.datasets import Dataset
 from paddleseg.utils.download import download_file_and_uncompress
@@ -25,6 +26,17 @@ from paddleseg.transforms import Compose
 import paddleseg.transforms.functional as F
 
 URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
+
+
+class Instances(object):
+    """
+    Construct the Instances in detectron2/strutures/instances.py in a very simple way.
+    """
+
+    def __init__(self, image_shape):
+        self.image_shape = image_shape
+        self.gt_classes = None
+        self.gt_masks = None
 
 
 @manager.DATASETS.add_component
@@ -40,7 +52,12 @@ class ADE20K(Dataset):
     """
     NUM_CLASSES = 150
 
-    def __init__(self, transforms, dataset_root=None, mode='train', edge=False):
+    def __init__(self,
+                 transforms,
+                 dataset_root=None,
+                 mode='train',
+                 edge=False,
+                 to_mask=False):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
@@ -49,6 +66,7 @@ class ADE20K(Dataset):
         self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
         self.edge = edge
+        self.to_mask = to_mask
 
         if mode not in ['train', 'val']:
             raise ValueError(
@@ -104,7 +122,6 @@ class ADE20K(Dataset):
             label = label - 1
             label = label[np.newaxis, :, :]
             data['label'] = label
-            return data
         else:
             data['label'] = label_path
             data['gt_fields'].append('label')
@@ -116,4 +133,28 @@ class ADE20K(Dataset):
                 edge_mask = F.mask_to_binary_edge(
                     label, radius=2, num_classes=self.num_classes)
                 data['edge'] = edge_mask
-            return data
+
+        if self.to_mask:
+            # ignore the pad image with size_divisibility here
+            sem_seg_gt = data['label'].numpy()
+            instances = Instances(data['image'].shape)
+            classes = np.unique(sem_seg_gt)
+            classes = classes[classes != self.ignore_index]
+
+            instances.gt_classes = paddle.to_tensor(classes, dtype="float32")
+
+            masks = []
+            for cid in classes:
+                masks.append(sem_seg_gt == cid)  # [C, H, W] 
+
+            if len(masks) == 0:
+                instances.gt_masks = paddle.zeros(shape=data['label'].shape)
+            else:
+                # ignore bitmask in masks, let's see what we are missing here?
+                masks = paddle.stack(
+                    paddle.to_tensor(np.ascontiguousarray(x.copy()))
+                    for x in masks)
+                instances.gt_masks = masks
+            data['instances'] = instances
+
+        return data

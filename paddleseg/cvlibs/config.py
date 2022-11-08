@@ -277,16 +277,26 @@ class Config(object):
                     'params': other_params
                 }]
 
-        if optimizer_type == 'sgd':
-            return paddle.optimizer.Momentum(lr, parameters=params, **args)
-        elif optimizer_type == 'adam':
-            return paddle.optimizer.Adam(lr, parameters=params, **args)
-        elif optimizer_type in paddle.optimizer.__all__:
-            return getattr(paddle.optimizer, optimizer_type)(lr,
-                                                             parameters=params,
-                                                             **args)
+        if 'gradient_clipper' in self.dic:  # currently only support clip per params
+            clipper_args = self.dic.get('gradient_clipper', {}).copy()
+            enable_clipper = clipper_args.pop('enabled')
+            if not enable_clipper:
+                gradient_clipper = None
+            gradient_clipper = paddle.nn.ClipGradByNorm(
+                clip_norm=clipper_args['clip_value'])
 
-        raise RuntimeError('Unknown optimizer type {}.'.format(optimizer_type))
+        if optimizer_type == 'sgd':
+            opt = paddle.optimizer.Momentum(
+                lr, parameters=params, grad_clip=gradient_clipper, **args)
+        elif optimizer_type == 'adam':
+            opt = paddle.optimizer.Adam(
+                lr, parameters=params, grad_clip=gradient_clipper, **args)
+        elif optimizer_type in paddle.optimizer.__all__:
+            opt = getattr(paddle.optimizer, optimizer_type)(
+                lr, parameters=params, grad_clip=gradient_clipper, **args)
+        else:
+            raise RuntimeError('Unknown optimizer type {}.'.format(
+                optimizer_type))
 
     @property
     def optimizer_args(self) -> dict:
