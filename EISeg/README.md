@@ -93,6 +93,14 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
 如果我们的项目在学术上帮助到你，请考虑以下引用：
 
 ```latex
+@article{hao2022eiseg,
+  title={EISeg: An Efficient Interactive Segmentation Tool based on PaddlePaddle},
+  author={Hao, Yuying and Liu, Yi and Chen, Yizhou and Han, Lin and Peng, Juncai and Tang, Shiyu and Chen, Guowei and Wu, Zewu and Chen, Zeyu and Lai, Baohua},
+  journal={arXiv e-prints},
+  pages={arXiv--2210},
+  year={2022}
+}
+
 @inproceedings{hao2021edgeflow,
   title={Edgeflow: Achieving practical interactive segmentation with edge-guided flow},
   author={Hao, Yuying and Liu, Yi and Wu, Zewu and Han, Lin and Chen, Yizhou and Chen, Guowei and Chu, Lutao and Tang, Shiyu and Yu, Zhiliang and Chen, Zeyu and others},
