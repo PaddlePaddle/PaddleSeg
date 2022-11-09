@@ -5,4 +5,4 @@ tqdm
 filelock
 scipy
 prettytable
-sklearn == 0.0
+sklearn==0.0
