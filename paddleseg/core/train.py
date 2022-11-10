@@ -230,7 +230,7 @@ def train(model,
             train_profiler.add_profiler_step(profiler_options)
 
             model.clear_gradients()
-            avg_loss += loss.numpy()[0]
+            avg_loss += float(loss)
             if not avg_loss_list:
                 avg_loss_list = [l.numpy() for l in loss_list]
             else:

@@ -5,3 +5,4 @@ from .human_matting import HumanMatting
 from .dim import DIM
 from .ppmatting import PPMatting
 from .gca import GCABaseline, GCA
+from .ppmattingv2 import PPMattingV2
