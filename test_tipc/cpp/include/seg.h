@@ -62,7 +62,7 @@ public:
   void LoadModel(const std::string &model_path, const std::string &params_path);
 
   // Run predictor
-  std::tuple<std::vector<int64>, std::vector<int>, double> Run(cv::Mat &img);
+  std::tuple<std::vector<int32_t>, std::vector<int>, double> Run(cv::Mat &img);
 
 private:
   std::shared_ptr<Predictor> predictor_;

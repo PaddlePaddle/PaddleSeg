@@ -5,8 +5,9 @@
 <p align="center">
   <img src="https://user-images.githubusercontent.com/35907364/179460858-7dfb19b1-cabf-4f8a-9e81-eb15b6cc7d5f.png" align="middle" alt="LOGO" width = "500" />
 </p>
-**An Efficient Interactive Segmentation Tool based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
 
+**An Efficient Interactive Segmentation Tool based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
+  
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
 
 </div>
@@ -41,15 +42,25 @@
 
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> Latest Developments
+* [2022-09-16] :fire: The annotation model MUSCLE has been accepted by MICCAI 2022. For details, please refer to [MUSCLE](docs/MUSCLE_en.md), the model can be downloaded [here](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_resnet50_deeplab_chest_xray.zip).
 * [2022-07-20] :fire: EISeg 1.0 is released!
   - Added  interactive video object segmentation for general scenes, this work is based on EISeg interactive segmentation model and [MiVOS](https://github.com/hkchengrex/MiVOS).
   - Added 3D segmentation capabilities for abdominal multi-organ and CT vertebral data, and provides 3D visualization tools. For details, please refer to [3D Anotations](docs/video.md).
+
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> Introduction
 
 EISeg (Efficient Interactive Segmentation) is an efficient and intelligent interactive segmentation annotation software developed based on PaddlePaddle. It covers a large number of high-quality segmentation models in different directions such as generic scenarios, portrait, remote sensing, medical treatment, video, etc., providing convenience to the rapid annotation of semantic and instance labels with reduced cost. In addition, by applying the annotations obtained by EISeg to other segmentation models provided by PaddleSeg for training, high-performance models with customized scenarios can be created, integrating the whole process of segmentation tasks from data annotation to model training and inference.
 
 [![4a9ed-a91y1](https://user-images.githubusercontent.com/71769312/141130688-e1529c27-aba8-4bf7-aad8-dda49808c5c7.gif)](https://user-images.githubusercontent.com/71769312/141130688-e1529c27-aba8-4bf7-aad8-dda49808c5c7.gif)
+
+## <img src="../docs/images/chat.png" width="20"/> Community
+
+* If you have any problem or suggestion on EISeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* Welcome to Join EISeg WeChat Group
+<div align="center">
+<img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
+</div>
 
 ## <img src="../docs/images/teach.png" width="20"/> Tutorials
 * [Installation](docs/install_en.md)
@@ -79,18 +90,19 @@ EISeg (Efficient Interactive Segmentation) is an efficient and intelligent inter
 If you find our project useful in your research, please consider citing ：
 
 ```
-@article{hao2021edgeflow,
-  title={EdgeFlow: Achieving Practical Interactive Segmentation with Edge-Guided Flow},
+@article{hao2022eiseg,
+  title={EISeg: An Efficient Interactive Segmentation Tool based on PaddlePaddle},
+  author={Hao, Yuying and Liu, Yi and Chen, Yizhou and Han, Lin and Peng, Juncai and Tang, Shiyu and Chen, Guowei and Wu, Zewu and Chen, Zeyu and Lai, Baohua},
+  journal={arXiv e-prints},
+  pages={arXiv--2210},
+  year={2022}
+}
+
+@inproceedings{hao2021edgeflow,
+  title={Edgeflow: Achieving practical interactive segmentation with edge-guided flow},
   author={Hao, Yuying and Liu, Yi and Wu, Zewu and Han, Lin and Chen, Yizhou and Chen, Guowei and Chu, Lutao and Tang, Shiyu and Yu, Zhiliang and Chen, Zeyu and others},
-  journal={arXiv preprint arXiv:2109.09406},
+  booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision},
+  pages={1551--1560},
   year={2021}
 }
 ```
-
-## <img src="../docs/images/chat.png" width="20"/> Community
-
-* If you have any problem or suggestion on EISeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* Welcome to Join EISeg WeChat Group
-<div align="center">
-<img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
-</div>

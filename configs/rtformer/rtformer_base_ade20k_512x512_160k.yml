@@ -1,0 +1,70 @@
+_base_: '../_base_/ade20k.yml'
+
+batch_size: 4 # total batch size:  4 * 4
+iters: 160000
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+val_dataset:
+  transforms:
+    - type: Resize
+      target_size: [2048, 512]
+      keep_ratio: True
+      size_divisor: 32
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  
+export:
+  transforms:
+    - type: Resize
+      target_size: [2048, 512]
+      keep_ratio: True
+      size_divisor: 32
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+optimizer:
+  _inherited_: False
+  type: AdamW
+  beta1: 0.9
+  beta2: 0.999
+  weight_decay: 0.05
+
+lr_scheduler:
+  _inherited_: False
+  type: PolynomialDecay
+  learning_rate: 1.0e-4
+  power: 1.
+  end_lr: 1.0e-7
+  warmup_iters: 1500
+  warmup_start_lr: 1.0e-6
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
+
+model:
+  type: RTFormer
+  base_channels: 64
+  head_channels: 128
+  drop_path_rate: 0.1
+  use_injection: [True, False]
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/rtformer_base_backbone_imagenet_pretrained.zip

@@ -47,24 +47,6 @@ from plugin.n2grid import RSGrids, Grids, checkOpenGrid
 from plugin.video import InferenceCore, overlay_davis
 
 
-# TODO: 研究paddle子线程
-class ModelThread(QThread):
-    _signal = Signal(dict)
-
-    def __init__(self, controller, param_path):
-        super().__init__()
-        self.controller = controller
-        self.param_path = param_path
-
-    def run(self):
-        success, res = self.controller.setModel(self.param_path, False)
-        self._signal.emit({
-            "success": success,
-            "res": res,
-            "param_path": self.param_path
-        })
-
-
 class APP_EISeg(QMainWindow, Ui_EISeg):
     IDILE, ANNING, EDITING = 0, 1, 2
     # IDILE：网络，权重，图像三者任一没有加载
@@ -458,6 +440,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             tr("针对每张图片启用宫格检测"),
             checkable=True, )
         self.grid_message.setChecked(True)
+        eiseg_med3D = action(
+            tr("&EISeg-Med3D"),
+            self.enterEISegMed3D,
+            "enterEISegMed3D",
+            "EISegMed3D",
+            tr("3D医疗交互式分割插件"), )
         save_cutout = action(
             tr("&抠图保存"),
             partial(self.toggleSave, "cutout"),
@@ -701,6 +689,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 report_bug,
                 edit_shortcuts,
                 toggle_logging, ),
+            expandMenu=(eiseg_med3D, ),
             toolBar=(
                 finish_object,
                 clear,
@@ -729,6 +718,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         menu(tr("功能"), self.menus.functionMenu)
         menu(tr("显示"), self.menus.showMenu)
         menu(tr("帮助"), self.menus.helpMenu)
+        menu(tr("更多"), self.menus.expandMenu)
         util.addActions(self.toolBar, self.menus.toolBar)
 
     def __setColor(self, action, setting_name):
@@ -746,7 +736,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.ratio = int(20 * float(text[4:-1]))
         if self.timer.isActive():
             self.timer.stop()
-            self.timer.start(1000 / self.ratio)
+            self.timer.start(1000 // self.ratio)
 
     def setCutoutBackground(self):
         self.cutoutBackground = self.__setColor(self.cutoutBackground,
@@ -889,10 +879,24 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.warn(self.tr("参数路径存在中文"), self.tr("请修改参数路径为非中文路径！"))
             return False
 
-        # success, res = self.controller.setModel(param_path)
-        self.load_thread = ModelThread(self.controller, param_path)
-        self.load_thread._signal.connect(self.__change_model_callback)
-        self.load_thread.start()
+        success, res = self.controller.setModel(param_path)
+
+        if success:
+            model_dict = {"param_path": param_path}
+            if model_dict not in self.recentModels:
+                self.recentModels.insert(0, model_dict)
+                if len(self.recentModels) > 10:
+                    del self.recentModels[-1]
+            else:  # 如果存在移动位置，确保加载最近模型的正确
+                self.recentModels.remove(model_dict)
+                self.recentModels.insert(0, model_dict)
+            self.settings.setValue("recent_models", self.recentModels)
+            self.statusbar.showMessage(
+                osp.basename(param_path) + self.tr(" 模型加载成功"), 10000)
+            return True
+        else:
+            self.warnException(res)
+            return False
 
     def changePropgationParam(self, param_path: str=None):
         if not param_path:
@@ -934,27 +938,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                                    self.video_recentModels)
             self.statusbar.showMessage(
                 osp.basename(param_path) + self.tr("视频传播模型加载成功"), 10000)
-            return True
-        else:
-            self.warnException(res)
-            return False
-
-    def __change_model_callback(self, signal_dict: dict):
-        success = signal_dict["success"]
-        res = signal_dict["res"]
-        param_path = signal_dict["param_path"]
-        if success:
-            model_dict = {"param_path": param_path}
-            if model_dict not in self.recentModels:
-                self.recentModels.insert(0, model_dict)
-                if len(self.recentModels) > 10:
-                    del self.recentModels[-1]
-            else:  # 如果存在移动位置，确保加载最近模型的正确
-                self.recentModels.remove(model_dict)
-                self.recentModels.insert(0, model_dict)
-            self.settings.setValue("recent_models", self.recentModels)
-            self.statusbar.showMessage(
-                osp.basename(param_path) + self.tr(" 模型加载成功"), 10000)
             return True
         else:
             self.warnException(res)
@@ -2387,7 +2370,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 for p in points:
                     poly.addPointLast(QtCore.QPointF(p[0], p[1]))
             [self.grid.json_labels.remove(celement) for \
-                celement in [self.grid.json_labels[i] for i in idxs]]
+             celement in [self.grid.json_labels[i] for i in idxs]]
         else:
             self.gridTable.item(row,
                                 col).setBackground(self.GRID_COLOR["current"])
@@ -2617,6 +2600,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def reportBug(self):
         webbrowser.open("https://github.com/PaddlePaddle/PaddleSeg/issues")
 
+    def enterEISegMed3D(self):
+        webbrowser.open(
+            "https://github.com/PaddlePaddle/PaddleSeg/tree/develop/EISeg/med3d")
+
     def quickStart(self):
         # self.saveImage(True)
         # self.canvas.setStyleSheet(self.note_style)
@@ -2751,7 +2738,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
         else:
             # self.delAllPolygon()
-            self.timer.start(1000 / self.ratio)
+            self.timer.start(1000 // self.ratio)
             self.videoPlay.setText(self.tr("暂停"))
             self.videoPlay.setIcon(
                 QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))

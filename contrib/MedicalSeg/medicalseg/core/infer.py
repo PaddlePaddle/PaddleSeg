@@ -78,7 +78,13 @@ def inference(model, im, ori_shape=None, transforms=None, sw_num=None):
     # If you want to use sliding window inference, make sure the model has the img_shape parameter
 
     if sw_num:
-        logits = sliding_window_inference(im, model.img_shape, sw_num, model)
+        if hasattr(model, 'data_format') and model.data_format == 'NCDHW':
+            data_format = model.data_format
+            logits = sliding_window_inference(
+                im, model.img_shape, sw_num, model, data_format=data_format)
+        else:
+            logits = sliding_window_inference(im, model.img_shape, sw_num,
+                                              model)
     else:
         logits = model(im)
     if not isinstance(logits, collections.abc.Sequence):
@@ -152,7 +158,11 @@ def dense_patch_slices(image_size, patch_size, scan_interval):
     return slices
 
 
-def sliding_window_inference(inputs, roi_size, sw_batch_size, predictor):
+def sliding_window_inference(inputs,
+                             roi_size,
+                             sw_batch_size,
+                             predictor,
+                             data_format="NDHWC"):
     """Use SlidingWindow method to execute inference.
     Args:
         inputs (torch Tensor): input image to be processed (assuming NCHW[D])
@@ -194,8 +204,7 @@ def sliding_window_inference(inputs, roi_size, sw_batch_size, predictor):
                    pad=pad_size,
                    mode='constant',
                    value=0,
-                   data_format="NDHWC")
-
+                   data_format=data_format)
     # TODO: interval from user's specification
     scan_interval = _get_scan_interval(image_size, roi_size, num_spatial_dims)
 

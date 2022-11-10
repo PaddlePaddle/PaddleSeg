@@ -79,7 +79,7 @@ LableMe产出的真值文件可参考我们给出的[文件夹](https://github.c
 运行以下代码进行转换，其中`<PATH/TO/LABEL_JSON_FILE>`为图片以及LabelMe产出的json文件所在文件夹的目录，同时也是转换后的标注集所在文件夹的目录。
 
 ```
-python tools/labelme2seg.py <PATH/TO/LABEL_JSON_FILE>
+python tools/data/labelme2seg.py <PATH/TO/LABEL_JSON_FILE>
 ```
 
 经过数据格式转换后的数据集目录结构如下：

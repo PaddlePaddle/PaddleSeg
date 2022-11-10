@@ -43,7 +43,7 @@ def loss_computation(logits_list, labels, losses, edges=None):
         elif loss_i.__class__.__name__ in ("KLLoss", ):
             loss_list.append(coef_i *
                              loss_i(logits_list[0], logits_list[1].detach()))
-        elif loss_i.__class__.__name__ == "DiceLoss":
+        elif loss_i.__class__.__name__ in ["DiceLoss", "MultipleLoss"]:
             loss, per_channel_dice = loss_i(logits, labels)
             loss_list.append(coef_i * loss)
         else:

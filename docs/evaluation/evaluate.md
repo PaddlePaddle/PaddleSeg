@@ -8,7 +8,7 @@ English|[简体中文](evaluate_cn.md)
 After the training, the user can use the evaluation script val.py to evaluate the effect of the model. Assuming that the number of iterations (iters) in the training process is 1000, the interval for saving the model is 500, that is, the training model is saved twice for every 1000 iterations of the data set. Therefore, a total of 2 regularly saved models will be generated, plus the best saved model `best_model`, there are a total of 3 models, and the model file that you want to evaluate can be specified by `model_path`.
 
 ```
-!python val.py \
+!python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams
 ```
@@ -16,7 +16,7 @@ After the training, the user can use the evaluation script val.py to evaluate th
 If you want to perform multi-scale flip evaluation, you can turn it on by passing in `--aug_eval`, and then passing in scale information via `--scales`, `--flip_horizontal` turns on horizontal flip, and `flip_vertical` turns on vertical flip. Examples are as follows:
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --aug_eval \
@@ -27,7 +27,7 @@ python val.py \
 If you want to perform sliding window evaluation, you can open it by passing in `--is_slide`, pass in the window size by `--crop_size`, and pass in the step size by `--stride`. Examples of usage are as follows:
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --is_slide \

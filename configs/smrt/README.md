@@ -119,7 +119,7 @@ export CUDA_VISIBLE_DEVICES=0 # Linux下设置1张可用的卡
 
 cd PaddleSeg
 
-python train.py \
+python tools/train.py \
        --config configs/smrt/pp_liteseg_stdc2.yml \
        --do_eval \
        --use_vdl \
@@ -142,7 +142,7 @@ python train.py \
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
 
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
        --config configs/smrt/pp_liteseg_stdc2.yml \
        --do_eval \
        --use_vdl \
@@ -155,7 +155,7 @@ python -m paddle.distributed.launch train.py \
 训练得到精度符合预期的模型后，可以导出预测模型，进行部署。详细的模型导出方法请参考[文档](../../docs/model_export_cn.md)。
 
 ```
-python export.py \
+python tools/export.py \
        --config configs/smrt/pp_liteseg_stdc2.yml \
        --model_path output/pp_liteseg_stdc2/best_model/model.pdparams \
        --save_dir output/pp_liteseg_stdc2/infer_models

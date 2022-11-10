@@ -77,7 +77,7 @@ class paddleseg.datasets.Cityscapes(transforms, dataset_root, mode='train', edge
 class paddleseg.datasets.PascalVOC(transforms, dataset_root=None, mode='train', edge=False)
 ```
     PascalVOC2012 数据集 `http://host.robots.ox.ac.uk/pascal/VOC/`。
-    如果你想对数据集做数据增强, 请运行 tools 中的 voc_augment.py。
+    如果你想对数据集做数据增强, 请运行 tools/data 中的 voc_augment.py。
 
 ### 参数
 * **transforms** (list): 对图像的变换方法。

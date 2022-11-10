@@ -21,6 +21,7 @@ import numpy as np
 from medicalseg.cvlibs import manager, Config
 from medicalseg.utils import get_sys_env, logger
 from medicalseg.core import train
+import nnunet
 
 
 def parse_args():
@@ -111,6 +112,15 @@ def parse_args():
         help='The option of train profiler. If profiler_options is not None, the train ' \
             'profiler is enabled. Refer to the medseg/utils/train_profiler.py for details.'
     )
+    parser.add_argument(
+        '--nnunet', dest='nnunet', help='nnunet training', action='store_true')
+    parser.add_argument(
+        "--precision",
+        default="fp32",
+        type=str,
+        choices=["fp32", "fp16"],
+        help="Use AMP (Auto mixed precision) if precision='fp16'. If precision='fp32', the training is normal."
+    )
 
     parser.add_argument('--sw_num', default=None, type=int, help='sw_num')
 
@@ -175,26 +185,46 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    train(
-        cfg.model,
-        train_dataset,
-        val_dataset=val_dataset,
-        optimizer=cfg.optimizer,
-        save_dir=args.save_dir,
-        iters=cfg.iters,
-        batch_size=cfg.batch_size,
-        resume_model=args.resume_model,
-        save_interval=args.save_interval,
-        log_iters=args.log_iters,
-        num_workers=args.num_workers,
-        use_vdl=args.use_vdl,
-        losses=losses,
-        keep_checkpoint_max=args.keep_checkpoint_max,
-        profiler_options=args.profiler_options,
-        to_static_training=cfg.to_static_training,
-        sw_num=args.sw_num,
-        is_save_data=args.is_save_data,
-        has_dataset_json=args.has_dataset_json)
+    if args.nnunet:
+        nnunet.core.train(
+            cfg.model,
+            train_dataset,
+            val_dataset=val_dataset,
+            optimizer=cfg.optimizer,
+            save_dir=args.save_dir,
+            iters=cfg.iters,
+            batch_size=cfg.batch_size,
+            resume_model=args.resume_model,
+            save_interval=args.save_interval,
+            log_iters=args.log_iters,
+            num_workers=args.num_workers,
+            use_vdl=args.use_vdl,
+            losses=losses,
+            keep_checkpoint_max=args.keep_checkpoint_max,
+            precision=args.precision,
+            profiler_options=args.profiler_options,
+            to_static_training=cfg.to_static_training)
+    else:
+        train(
+            cfg.model,
+            train_dataset,
+            val_dataset=val_dataset,
+            optimizer=cfg.optimizer,
+            save_dir=args.save_dir,
+            iters=cfg.iters,
+            batch_size=cfg.batch_size,
+            resume_model=args.resume_model,
+            save_interval=args.save_interval,
+            log_iters=args.log_iters,
+            num_workers=args.num_workers,
+            use_vdl=args.use_vdl,
+            losses=losses,
+            keep_checkpoint_max=args.keep_checkpoint_max,
+            profiler_options=args.profiler_options,
+            to_static_training=cfg.to_static_training,
+            sw_num=args.sw_num,
+            is_save_data=args.is_save_data,
+            has_dataset_json=args.has_dataset_json)
 
 
 if __name__ == '__main__':

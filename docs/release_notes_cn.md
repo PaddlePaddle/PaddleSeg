@@ -68,7 +68,7 @@
   **`v0.4.0`**
   * 新增适用于实时场景且不需要预训练模型的分割网络Fast-SCNN，提供基于Cityscapes的[预训练模型](./model_zoo.md)1个
   * 新增LaneNet车道线检测网络，提供[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/tree/release/v0.4.0/contrib/LaneNet#%E4%B8%83-%E5%8F%AF%E8%A7%86%E5%8C%96)一个
-  * 新增基于PaddleSlim的分割库压缩策略([量化](../slim/quantization/README.md), [蒸馏](../slim/distillation/README.md), [剪枝](../slim/prune/README.md), [搜索](../slim/nas/README.md))
+  * 新增基于PaddleSlim的分割库压缩策略([量化](../deployment/slim/quantization/README.md), [蒸馏](../deployment/slim/distillation/README.md), [剪枝](../deployment/slim/prune/README.md), [搜索](../deployment/slim/nas/README.md))
 
 
 * 2019.12.15

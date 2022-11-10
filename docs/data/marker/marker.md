@@ -28,7 +28,7 @@ At the same time, PaddleSeg is also compatible with gray-scale icon annotations.
 If users need to convert to pseudo-color annotation maps, they can use our conversion tool. Applies to the following two common situations:
 * If you want to convert all grayscale annotation images in a specified directory to pseudo-color annotation images, execute the following command to specify the directory where the grayscale annotations are located.
 ```buildoutcfg
-python tools/gray2pseudo_color.py <dir_or_file> <output_dir>
+python tools/data/gray2pseudo_color.py <dir_or_file> <output_dir>
 ```
 
 |Parameter|Effection|
@@ -38,7 +38,7 @@ python tools/gray2pseudo_color.py <dir_or_file> <output_dir>
 
 * If you only want to convert part of the gray scale annotated image in the specified dataset to pseudo-color annotated image, execute the following command, you need an existing file list, and read the specified image according to the list.
 ```buildoutcfg
-python tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <dataset directory> --file_separator <file list separator>
+python tools/data/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <dataset directory> --file_separator <file list separator>
 ```
 |Parameter|Effection|
 |-|-|
@@ -84,7 +84,7 @@ For all data that is not divided into training set, validation set, and test set
 The following commands support enabling specific functions through different Flags.
 
 ```
-python tools/split_dataset_list.py <dataset_root> <images_dir_name> <labels_dir_name> ${FLAGS}
+python tools/data/split_dataset_list.py <dataset_root> <images_dir_name> <labels_dir_name> ${FLAGS}
 ```
 
 Parameters:
@@ -103,7 +103,7 @@ FLAGS:
 
 The example of usage:
 ```
-python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
+python tools/data/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
 ```
 
 After running, `train.txt`, `val.txt`, `test.txt` and `labels.txt` will be generated in the root directory of the dataset.
