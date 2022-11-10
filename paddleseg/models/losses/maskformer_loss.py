@@ -22,7 +22,8 @@ from paddleseg.cvlibs import manager
 
 @manager.LOSSES.add_component
 class MaskFormerLoss(nn.Layer):
-    def __init__(self, loss=("labels", 'masks')):
+    def __init__(self, loss=("labels", 'masks'), ignore_index=255):
+        super().__init__()
         mask_weight = 20.0
         dice_weight = 1.0
 
@@ -39,10 +40,10 @@ class MaskFormerLoss(nn.Layer):
                  for k, v in weight_dict.items()})
             weight_dict.update(aux_weight_dict)
         self.weight_dict = weight_dict
-        self.matcher = HungarianMatcher(  #TODO
-            cost_class=1,
-            cost_mask=mask_weight,
-            cost_dice=dice_weight, )
+        # self.matcher = HungarianMatcher(  #TODO
+        #     cost_class=1,
+        #     cost_mask=mask_weight,
+        #     cost_dice=dice_weight, )
 
     def forward(self, logit, targets):
         logits_without_aux = {
@@ -51,7 +52,7 @@ class MaskFormerLoss(nn.Layer):
         }
         #TODO: add loss
         # Retrieve the matching between the outputs of the last layer and the targets
-        indices = self.matcher(logits_without_aux, targets)
+        # indices = self.matcher(logits_without_aux, targets)
 
         losses = {'loss_ce': 0.0, "loss_mask": 0.0, "loss_dice": 0.0}
 

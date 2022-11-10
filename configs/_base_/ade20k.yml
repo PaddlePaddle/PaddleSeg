@@ -26,7 +26,6 @@ val_dataset:
     - type: Normalize
   mode: val
 
-
 optimizer:
   type: sgd
   momentum: 0.9

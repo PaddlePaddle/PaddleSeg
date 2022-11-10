@@ -345,8 +345,6 @@ class DownSampler(nn.Layer):
                 inputs = F.avg_pool2d(
                     inputs, kernel_size=3, padding=1, stride=2)
                 w2 = paddle.shape(inputs)[2]
-            # import pdb
-            # pdb.set_trace()
             output = output + self.shortcut_layer(inputs)
         return self._act(output)
 
