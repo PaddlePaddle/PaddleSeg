@@ -39,7 +39,7 @@ output_name_key=$(func_parser_key "${lines[16]}")
 output_name_value=$(func_parser_value "${lines[16]}")
 
 
-LOG_PATH="./test_tipc/output/${model_name}/${MODE}"  ##
+LOG_PATH="${PWD}/test_tipc/output/${model_name}/${MODE}"  ##
 mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_cpp.log"
 
@@ -85,7 +85,8 @@ function func_serving(){
             last_status=${PIPESTATUS[0]}
             status_check $last_status "${clinet_cmd}" "${status_log}" "${model_name}" "${clinet_log_path}"
             eval "cat ${clinet_log_path}"
-            ps ux | grep -i ${port_value} | awk '{print $2}' | xargs kill -s 9
+            #ps ux | grep -i ${port_value} | awk '{print $2}' | xargs kill -s 9
+            ${python} -m paddle_serving_server.serve stop
             sleep 5s
         else
             cpp_server_log_path="${LOG_PATH}/cpp_server_gpu.log"
@@ -100,7 +101,8 @@ function func_serving(){
             last_status=${PIPESTATUS[0]}
             status_check $last_status "${clinet_cmd}" "${status_log}" "${model_name}" "${clinet_log_path}"
             eval "cat ${clinet_log_path}"
-            ps ux | grep -i ${port_value} | awk '{print $2}' | xargs kill -s 9
+            #ps ux | grep -i ${port_value} | awk '{print $2}' | xargs kill -s 9
+            ${python} -m paddle_serving_server.serve stop
             sleep 5s
         fi
     done
