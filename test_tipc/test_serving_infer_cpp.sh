@@ -39,7 +39,7 @@ output_name_key=$(func_parser_key "${lines[16]}")
 output_name_value=$(func_parser_value "${lines[16]}")
 
 
-LOG_PATH="./test_tipc/output/${model_name}/${MODE}"  ##
+LOG_PATH="${PWD}/test_tipc/output/${model_name}/${MODE}"  ##
 mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_cpp.log"
 
