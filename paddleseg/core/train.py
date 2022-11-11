@@ -207,7 +207,8 @@ def train(model,
                         logits_list=logits_list,
                         labels=labels,
                         edges=edges,
-                        losses=losses)
+                        losses=losses,
+                        targets=targets)
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss

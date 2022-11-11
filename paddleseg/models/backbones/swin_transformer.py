@@ -722,7 +722,7 @@ class SwinTransformer_tiny_patch4_window7_384(SwinTransformer):
             depths=[2, 2, 6, 2],
             num_heads=[3, 6, 12, 24],
             window_size=7,
-            drop_path_rate=0.3,
+            drop_path_rate=0,  # TODO change back to 0.3
             patch_norm=True,
             **kwargs)
 

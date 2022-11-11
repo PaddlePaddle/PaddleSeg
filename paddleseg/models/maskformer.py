@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import math
+import copy
 
 import paddle
 import paddle.nn as nn
@@ -280,6 +281,7 @@ class TransformerDecoderLayer(nn.Layer):
         tgt = tgt.transpose(perm=(1, 0, 2))  # [100, 2, 256]
 
         tgt += self.dropout1(attn)
+
         tgt = self.norm1(tgt)  # [100, 2, 256]
         q = self.with_pos_embed(tgt, query_pos).transpose(perm=(1, 0, 2))
         k = self.with_pos_embed(memory, pos).transpose(perm=(1, 0, 2))
@@ -305,7 +307,7 @@ class TransformerDecoder(nn.Layer):
         super().__init__()
         self.decoder_list = nn.LayerList()
         for i in range(num_layers):
-            self.decoder_list.append(decoder_layer)
+            self.decoder_list.append(copy.deepcopy(decoder_layer))
         self.norm = norm
         self.return_intermediate = return_intermediate
 
@@ -428,21 +430,22 @@ class MLP(nn.Layer):
 
 
 class TransformerPredictor(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 mask_classification,
-                 num_classes=150,
-                 hidden_dim=256,
-                 num_queries=100,
-                 nheads=8,
-                 dropout=0.1,
-                 dim_feedforward=2048,
-                 enc_layers=0,
-                 dec_layers=6,
-                 pre_norm=False,
-                 deep_supervision=True,
-                 mask_dim=256,
-                 enforce_input_project=False):
+    def __init__(
+            self,
+            in_channels,
+            mask_classification,
+            num_classes=150,
+            hidden_dim=256,
+            num_queries=100,
+            nheads=8,
+            dropout=0.0,  # TODO change to 0.1
+            dim_feedforward=2048,
+            enc_layers=0,
+            dec_layers=6,
+            pre_norm=False,
+            deep_supervision=True,
+            mask_dim=256,
+            enforce_input_project=False):
         super().__init__()
         self.mask_classification = mask_classification
         self.pe_layer = PositionEmbeddingSine(hidden_dim // 2, normalize=True)
@@ -478,25 +481,25 @@ class TransformerPredictor(nn.Layer):
         mask = None
         hs, memory = self.transformer(
             self.input_proj(x), mask, self.query_embed.weight, pos)
-        import pdb
-        pdb.set_trace()
 
         out = {}
         if self.mask_classification:
             outputs_class = self.class_embed(hs)
-            out["pred_logits"] = outputs_class[-1]
+            out["pred_logits"] = outputs_class[-1]  # done align
 
         if self.aux_loss:
             mask_embed = self.mask_embed(hs)
 
             output_seg_masks = paddle.einsum("lbqc,bchw->lbqhw", mask_embed,
                                              mask_features)
-            out["pre_masks"] = output_seg_masks[-1]
+            out["pred_masks"] = output_seg_masks[-1]  # done align
             if self.mask_classification:
-                out['aux_outputs'] = [{
-                    "pred_logits": a,
-                    "pred_masks": b
-                } for a, b in zip(outputs_class[:-1], output_seg_masks[:-1])]
+                out['aux_outputs'] = [
+                    {  # done align
+                        "pred_logits": a,
+                        "pred_masks": b
+                    } for a, b in zip(outputs_class[:-1], output_seg_masks[:-1])
+                ]
             else:
                 out['aux_outputs'] = [{
                     "pred_masks": b
@@ -563,6 +566,7 @@ class MaskFormer(nn.Layer):
                  num_classes,
                  backbone,
                  size_divisibility=32,
+                 sem_seg_postprocess_before_inference=False,
                  pretrained=None):
         """
         Args:
@@ -574,6 +578,7 @@ class MaskFormer(nn.Layer):
         self.num_classes = num_classes
         self.size_divisibility = size_divisibility
         self.backbone = backbone
+        self.sem_seg_postprocess_before_inference = sem_seg_postprocess_before_inference
         self.seghead = MaskFormerHead(backbone.output_shape(), num_classes)
         self.pretrained = pretrained
         self.init_weight()
@@ -584,7 +589,7 @@ class MaskFormer(nn.Layer):
 
     def semantic_inference(self, mask_cls, mask_pred):
         mask_cls = F.softmax(mask_cls)[..., :-1]
-        mask_pred = mask_pred.sigmoid()
+        mask_pred = F.sigmoid(mask_pred)
         semseg = paddle.einsum("qc,qhw->chw", mask_cls, mask_pred)
         return semseg
 
@@ -594,9 +599,9 @@ class MaskFormer(nn.Layer):
 
         if self.training:
             return outputs
-        else:
-            mask_cls_results = outputs["pred_logits"]
-            mask_pred_results = outputs["pred_masks"]
+        else:  # done 
+            mask_cls_results = outputs["pred_logits"]  # [2, 100, 151]
+            mask_pred_results = outputs["pred_masks"]  # # [2, 100, 512, 512]
 
             mask_pred_results = F.interpolate(
                 mask_pred_results,
@@ -604,8 +609,9 @@ class MaskFormer(nn.Layer):
                 mode="bilinear",
                 align_corners=False, )
             processed_results = []  #TODO can we change slice to pack here?
-            for mask_cls_result, mask_pred_result, input_per_image in zip(
-                    mask_cls_results, mask_pred_results, x):
+
+            for mask_cls_result, mask_pred_result in zip(mask_cls_results,
+                                                         mask_pred_results):
 
                 image_size = x.shape[-2:]
 
@@ -615,7 +621,9 @@ class MaskFormer(nn.Layer):
                         image_size[1])
 
                 # semantic segmentation inference
-                r = self.semantic_inference(mask_cls_result, mask_pred_result)
+                r = self.semantic_inference(mask_cls_result,
+                                            mask_pred_result)  # done
+
                 if not self.sem_seg_postprocess_before_inference:
                     r = sem_seg_postprocess(r, image_size, image_size[0],
                                             image_size[1])
@@ -631,5 +639,9 @@ if __name__ == "__main__":
         backbone=backbone,
         num_classes=150,
         pretrained="saved_model/maskformer_tiny.pdparams")
+
+    # with open('maskformer_tiny_paddle_model.txt', 'w') as f:
+    #     for keys, values in model.named_parameters():
+    #         f.write(keys +'\t'+str(values.shape)+'\t'+str(values.mean())+"\n")
     x = paddle.ones([2, 3, 512, 512]) * 0.7620
     out = model(x)
