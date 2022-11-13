@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import defaultdict
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddleseg.models import layers
-from paddleseg import utils
 from paddleseg.cvlibs import manager
 
 
@@ -61,14 +58,14 @@ class AIM(nn.Layer):
 
         # matting decoder
         self.bridge_block = nn.Sequential(
-            nn.Conv2d(512, 512, 3, dilation=2, padding=2),
-            nn.BatchNorm2d(512),
+            nn.Conv2D(512, 512, 3, dilation=2, padding=2),
+            nn.BatchNorm2D(512),
             nn.ReLU(),
-            nn.Conv2d(512, 512, 3, dilation=2, padding=2),
-            nn.BatchNorm2d(512),
+            nn.Conv2D(512, 512, 3, dilation=2, padding=2),
+            nn.BatchNorm2D(512),
             nn.ReLU(),
-            nn.Conv2d(512, 512, 3, dilation=2, padding=2),
-            nn.BatchNorm2d(512),
+            nn.Conv2D(512, 512, 3, dilation=2, padding=2),
+            nn.BatchNorm2D(512),
             nn.ReLU())
 
         self.decoder4_l = Decoder(
@@ -82,8 +79,8 @@ class AIM(nn.Layer):
         self.decoder0_l = Decoder(
             in_channels=128, out_channels=64, mode="local")
 
-        self.decoder_final_l = nn.Conv2d(
-            in_channels=64, out_channels=1, stride=3, padding=1)
+        self.decoder_final_l = nn.Conv2D(
+            in_channels=64, out_channels=1, kernel_size=3, padding=1)
 
     def forward(self, inputs):
         e0 = self.encoder0(inputs)
@@ -127,15 +124,15 @@ class SELayer(nn.Layer):
             nn.Linear(in_features=channel, out_features=channel //
                       reduction, bias_attr=False),
             nn.ReLU(),
-            nn.Linear(in_features=channel, out_features=channel //
-                      reduction, bias_attr=False),
+            nn.Linear(in_features=channel // reduction,
+                      out_features=channel, bias_attr=False),
             nn.Sigmoid()
         )
 
     def forward(self, x):
-        b, c, _, _ = x.size()
-        y = self.avg_pool(x).reshape(b, c)
-        y = self.fc(y).reshape(b, c, 1, 1)
+        b, c, _, _ = x.shape
+        y = self.avg_pool(x).reshape([b, c])
+        y = self.fc(y).reshape([b, c, 1, 1])
         return x * y.expand_as(x)
 
 
@@ -218,7 +215,6 @@ class ResNet34Encoder(nn.Layer):
     def __init__(self,
                  block,
                  layers,
-                 zero_init_residual=False,
                  groups=1,
                  width_per_group=64,
                  replace_stride_with_dilation=None,
@@ -263,7 +259,7 @@ class ResNet34Encoder(nn.Layer):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=1,
                                        dilate=replace_stride_with_dilation[2])
 
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.avgpool = nn.AdaptiveAvgPool2D((1, 1))
         self.fc = nn.Linear(
             in_features=512 * block.expansion, out_features=1000)
 
@@ -318,7 +314,7 @@ class ResNet34Encoder(nn.Layer):
         x5 = self.layer4(x5)
 
         x_cls = self.avgpool(x5)
-        x_cls = torch.flatten(x_cls, 1)
+        x_cls = paddle.flatten(x_cls, 1)
         x_cls = self.fc(x_cls)
 
         return x_cls
@@ -328,16 +324,17 @@ class Decoder(nn.Layer):
     def __init__(self, in_channels, out_channels, mode="global"):
         super().__init__()
         self.conv1 = nn.Conv2D(
-            in_channels, in_channels // 2, stride=3, padding=1)
-        self.bn1 = nn.BatchNorm2d(in_channels // 2)
+            in_channels, in_channels // 2, kernel_size=3, padding=1)
+        self.bn1 = nn.BatchNorm2D(in_channels // 2)
         self.conv2 = nn.Conv2D(
-            in_channels // 2, in_channels // 2, stride=3, padding=1)
-        self.bn2 = nn.BatchNorm2d(in_channels // 2)
+            in_channels // 2, in_channels // 2, kernel_size=3, padding=1)
+        self.bn2 = nn.BatchNorm2D(in_channels // 2)
         self.conv3 = nn.Conv2D(
-            in_channels // 2, out_channels, stride=3, padding=1)
-        self.bn3 = nn.BatchNorm2d(out_channels)
+            in_channels // 2, out_channels, kernel_size=3, padding=1)
+        self.bn3 = nn.BatchNorm2D(out_channels)
 
         self.relu = nn.ReLU()
+        self.up = None
         if mode == "global":
             self.up = nn.Upsample(scale_factor=2, mode='bilinear')
 
@@ -357,7 +354,7 @@ class Decoder(nn.Layer):
 class SemanticDecoder(nn.Layer):
     def __init__(self):
         super(SemanticDecoder, self).__init__()
-        self.psp = PSPModule(
+        self.psp_module = PSPModule(
             in_features=512, out_features=512, sizes=(1, 3, 5))
         self.psp4 = conv_up_psp(512, 256, 2)
         self.psp3 = conv_up_psp(512, 128, 4)
@@ -369,21 +366,21 @@ class SemanticDecoder(nn.Layer):
         self.decoder4_g_se = SELayer(channel=256)
         self.decoder3_g = Decoder(
             in_channels=512, out_channels=128, mode="global")
-        self.decoder3_g_se = SELayer(128)
+        self.decoder3_g_se = SELayer(channel=128)
         self.decoder2_g = Decoder(
             in_channels=256, out_channels=64, mode="global")
-        self.decoder2_g_se = SELayer(64)
+        self.decoder2_g_se = SELayer(channel=64)
         self.decoder1_g = Decoder(
             in_channels=128, out_channels=64, mode="global")
-        self.decoder1_g_se = SELayer(64)
+        self.decoder1_g_se = SELayer(channel=64)
         self.decoder0_g = Decoder(
             in_channels=128, out_channels=64, mode="global")
-        self.decoder0_g_se = SELayer(64)
+        self.decoder0_g_se = SELayer(channel=64)
 
         self.decoder0_g_spatial = nn.Conv2D(
-            in_channels=2, out_channels=1, stride=7, padding=3)
+            in_channels=2, out_channels=1, kernel_size=7, padding=3)
         self.decoder_final_g = nn.Conv2D(
-            in_channels=64, out_channels=3, stride=3, padding=1)
+            in_channels=64, out_channels=3, kernel_size=3, padding=1)
 
     def forward(self, inputs):
         """
@@ -405,8 +402,8 @@ class SemanticDecoder(nn.Layer):
         d1_g = self.decoder1_g_se(d1_g)
         d0_g = self.decoder0_g(paddle.concat((self.psp1(psp), d1_g), 1))
 
-        d0_g_avg = paddle.mean(d0_g, dim=1, keepdim=True)
-        d0_g_max = paddle.max(d0_g, dim=1, keepdim=True)
+        d0_g_avg = paddle.mean(d0_g, axis=1, keepdim=True)
+        d0_g_max = paddle.max(d0_g, axis=1, keepdim=True)
         d0_g_cat = paddle.concat([d0_g_avg, d0_g_max], axis=1)
 
         d0_g_spatial = self.decoder0_g_spatial(d0_g_cat)
@@ -419,8 +416,9 @@ class SemanticDecoder(nn.Layer):
 
 
 def get_masked_local_from_global(global_sigmoid, local_sigmoid):
-    values, index = paddle.max(global_sigmoid, 1)
-    index = index[:, None, :, :].float()
+    # values = paddle.max(global_sigmoid, 1)
+    index = paddle.argmax(global_sigmoid, axis=1)
+    index = index[:, None, :, :].astype(paddle.float32)
     # index <===> [0, 1, 2]
     # bg_mask <===> [1, 0, 0]
     bg_mask = index.clone()
@@ -440,10 +438,11 @@ def get_masked_local_from_global(global_sigmoid, local_sigmoid):
 
 def conv_up_psp(in_channels, out_channels, up_sample):
     return nn.Sequential(
-        nn.Conv2d(in_channels, out_channels, 3, padding=1),
-        nn.BatchNorm2d(out_channels),
+        nn.Conv2D(in_channels, out_channels, 3, padding=1),
+        nn.BatchNorm2D(out_channels),
         nn.ReLU(),
         nn.Upsample(scale_factor=up_sample, mode='bilinear'))
+
 
 def get_resnet34_mp(**kwargs):
     model = ResNet34Encoder(BasicBlock, [3, 4, 6, 3], **kwargs)
