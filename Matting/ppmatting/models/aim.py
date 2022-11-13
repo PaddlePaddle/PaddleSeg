@@ -63,13 +63,13 @@ class AIM(nn.Layer):
         self.bridge_block = nn.Sequential(
             nn.Conv2d(512, 512, 3, dilation=2, padding=2),
             nn.BatchNorm2d(512),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.Conv2d(512, 512, 3, dilation=2, padding=2),
             nn.BatchNorm2d(512),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.Conv2d(512, 512, 3, dilation=2, padding=2),
             nn.BatchNorm2d(512),
-            nn.ReLU(inplace=True))
+            nn.ReLU())
 
         self.decoder4_l = Decoder(
             in_channels=1024, out_channels=256, mode="local")
@@ -162,7 +162,7 @@ class PSPModule(nn.Layer):
         return self.relu(bottle)
 
 
-class BasicBlock(nn.Module):
+class BasicBlock(nn.Layer):
     expansion = 1
 
     def __init__(
@@ -189,7 +189,7 @@ class BasicBlock(nn.Module):
         self.conv1 = nn.Conv2D(
             inplanes, planes, 3, padding=1, stride=stride, bias_attr=False)
         self.bn1 = norm_layer(planes)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU()
         self.conv2 = nn.Conv2D(
             planes, planes, 3, padding=1, stride=stride, bias_attr=False)
         self.bn2 = norm_layer(planes)
@@ -442,7 +442,7 @@ def conv_up_psp(in_channels, out_channels, up_sample):
     return nn.Sequential(
         nn.Conv2d(in_channels, out_channels, 3, padding=1),
         nn.BatchNorm2d(out_channels),
-        nn.ReLU(inplace=True),
+        nn.ReLU(),
         nn.Upsample(scale_factor=up_sample, mode='bilinear'))
 
 def get_resnet34_mp(**kwargs):
