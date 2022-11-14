@@ -301,6 +301,7 @@ class ViTAdapter(VisionTransformer):
         self.interaction_indexes = interaction_indexes
         self.add_vit_feature = add_vit_feature
         embed_dim = self.embed_dim
+        self.feat_channels = [embed_dim] * 4
 
         self.level_embed = self.create_parameter(
             shape=(3, embed_dim),
@@ -418,7 +419,7 @@ class ViTAdapter(VisionTransformer):
                 print(x.numpy().mean())
                 print(c.numpy().mean())
 
-# Split & Reshape
+        # Split & Reshape
         c2 = c[:, 0:c2.shape[1], :]
         c3 = c[:, c2.shape[1]:c2.shape[1] + c3.shape[1], :]
         c4 = c[:, c2.shape[1] + c3.shape[1]:, :]
@@ -454,5 +455,4 @@ class ViTAdapter(VisionTransformer):
             #assert np.allclose(f1, -0.03254774, rtol=0.0, atol=1e-6)
             # without msdeformatt
             #assert np.allclose(f1, -0.024487903, rtol=0.0, atol=1e-6)
-            exit()
         return [f1, f2, f3, f4]

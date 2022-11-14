@@ -59,7 +59,7 @@ loss:
   coef: [1]
 
 model:
-  type: TopFormer
+  type: UPerNetViTAdapter
   backbone:
     type: ViTAdapter
     num_heads: 3
@@ -74,4 +74,6 @@ model:
     cffn_ratio: 0.25
     deform_ratio: 1.0
     interaction_indexes: [[0, 2], [3, 5], [6, 8], [9, 11]]
+  backbone_indices: [0, 1, 2, 3]
+  aux_loss: True
   pretrained: pretrained_model/upernet_deit_adapter_tiny_512_160_ade20k_from_torch.pdparams
