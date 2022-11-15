@@ -1,4 +1,4 @@
-# The ViT-Adapter code was heavily based on https://github.com/czczup/ViT-Adapter
+# This is heavily based on https://github.com/czczup/ViT-Adapter
 
 import math
 from functools import partial
@@ -18,7 +18,8 @@ from paddleseg.cvlibs.param_init import normal_init, trunc_normal_init, constant
 from paddleseg.utils import utils, logger
 from paddleseg.models.backbones.transformer_utils import to_2tuple, DropPath
 
-from paddleseg.models.layers.vit_adapter_layers import SpatialPriorModule, InteractionBlock, deform_inputs
+from paddleseg.models.layers.vit_adapter_layers import (
+    SpatialPriorModule, InteractionBlock, deform_inputs, MSDeformAttn)
 
 __all__ = ['ViTAdapter']
 
@@ -360,11 +361,8 @@ class ViTAdapter(VisionTransformer):
         return pos_embed
 
     def _init_deform_weights(self, m):
-        '''
         if isinstance(m, MSDeformAttn):
             m._reset_parameters()
-        '''
-        pass
 
     def _add_level_embed(self, c2, c3, c4):
         c2 = c2 + self.level_embed[0]
@@ -450,6 +448,7 @@ class ViTAdapter(VisionTransformer):
             print(f2.cpu().numpy().mean())
             print(f3.cpu().numpy().mean())
             print(f4.cpu().numpy().mean())
+            exit()
             # f1 = f1.cpu().numpy().mean()
             # with msdeformatt
             #assert np.allclose(f1, -0.03254774, rtol=0.0, atol=1e-6)

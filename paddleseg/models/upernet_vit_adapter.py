@@ -162,6 +162,8 @@ class UPerNetHead(nn.Layer):
     This head is the implementation of `UPerNet
     <https://arxiv.org/abs/1807.10221>`_.
 
+    This is heavily based on https://github.com/czczup/ViT-Adapter
+
     Args:
         pool_scales (tuple[int]): Pooling scales used in Pooling Pyramid
             Module applied on the last feature. Default: (1, 2, 3, 6).
