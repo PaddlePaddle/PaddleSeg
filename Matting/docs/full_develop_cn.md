@@ -2,7 +2,8 @@
 
 ## 目录
 * [环境配置](#环境配置)
-* [示例数据集](#示例数据集)
+* [数据集准备](#数据集准备)
+* [模型选择](#模型选择)
 * [训练](#训练)
 * [评估](#评估)
 * [预测](#预测)
@@ -68,7 +69,15 @@ PPM-100/
 
 **注意** : 该数据集仅仅作为教程演示，无法利用其训练得到一个收敛的模型。
 
+## 模型选择
+
+Matting项目支持配置化直接驱动，模型配置文件均放置于[configs](../configs/)目录下，大家可根据实际情况选择相应的配置文件进行训练、预测等流程。
+
+该教程中使用[configs/quick_start/ppmattingv2-stdc1-human_512.yml](../configs/quick_start/ppmattingv2-stdc1-human_512.yml)模型配置文件进行教学演示。
+
+
 ## 训练
+
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python tools/train.py \
@@ -188,6 +197,3 @@ python deploy/python/infer.py \
 ```shell
 python deploy/python/infer.py --help
 ```
-
-## 备注
-该教程适用于[configs](../configs)下的所有模型。
