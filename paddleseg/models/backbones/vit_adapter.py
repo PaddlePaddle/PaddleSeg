@@ -371,7 +371,7 @@ class ViTAdapter(VisionTransformer):
         return c2, c3, c4
 
     def forward(self, x):
-        debug = True
+        debug = False
         if debug:
             import random
             import numpy as np
@@ -448,10 +448,7 @@ class ViTAdapter(VisionTransformer):
             print(f2.cpu().numpy().mean())
             print(f3.cpu().numpy().mean())
             print(f4.cpu().numpy().mean())
-            exit()
             # f1 = f1.cpu().numpy().mean()
             # with msdeformatt
-            #assert np.allclose(f1, -0.03254774, rtol=0.0, atol=1e-6)
-            # without msdeformatt
-            #assert np.allclose(f1, -0.024487903, rtol=0.0, atol=1e-6)
+            #assert np.allclose(f1, -0.03252137, rtol=0.0, atol=1e-6)
         return [f1, f2, f3, f4]

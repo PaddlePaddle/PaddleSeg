@@ -209,6 +209,7 @@ def evaluate(model,
             if local_rank == 0 and print_detail:
                 progbar_val.update(iter + 1, [('batch_cost', batch_cost),
                                               ('reader cost', reader_cost)])
+                print(total_iters, iter + 1)
             reader_cost_averager.reset()
             batch_cost_averager.reset()
             batch_start = time.time()

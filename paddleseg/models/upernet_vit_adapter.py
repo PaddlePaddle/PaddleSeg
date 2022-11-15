@@ -50,6 +50,7 @@ class UPerNetViTAdapter(nn.Layer):
                  pool_scales=[1, 2, 3, 6],
                  dropout_ratio=0.1,
                  aux_loss=True,
+                 aux_channels=256,
                  align_corners=False,
                  pretrained=None):
         super().__init__()
@@ -65,6 +66,7 @@ class UPerNetViTAdapter(nn.Layer):
             pool_scales=pool_scales,
             dropout_ratio=dropout_ratio,
             aux_loss=aux_loss,
+            aux_channels=aux_channels,
             align_corners=align_corners)
 
         self.pretrained = pretrained
@@ -227,8 +229,7 @@ class UPerNetHead(nn.Layer):
 
     def forward(self, inputs):
         """Forward function."""
-        debug = True
-
+        debug = False
         if debug:
             print('-------head 1----')
             for x in inputs:
@@ -286,7 +287,7 @@ class UPerNetHead(nn.Layer):
         output = self.conv_seg(output)
         logits_list = [output]
 
-        if self.aux_loss:
+        if self.aux_loss and self.training:
             aux_output = self.aux_conv(inputs[2])
             aux_output = self.aux_conv_seg(aux_output)
             logits_list.append(aux_output)
@@ -295,5 +296,7 @@ class UPerNetHead(nn.Layer):
             print('-------head 5----')
             for x in logits_list:
                 print(x.shape, x.numpy().mean())
+            # -20.250404  -15.875856
             exit()
-        return output
+
+        return logits_list

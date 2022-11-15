@@ -1,6 +1,6 @@
 _base_: '../_base_/ade20k.yml'
 
-batch_size: 4  # total batch size is 16
+batch_size: 2  # total batch size is 16
 iters: 160000
 
 train_dataset:
@@ -30,6 +30,11 @@ val_dataset:
       mean: [0.485, 0.456, 0.406]
       std: [0.229, 0.224, 0.225]
   
+test_config:
+  is_slide: True
+  crop_size: [512, 512]
+  stride: [341, 341]
+  
 export:
   transforms:
     - type: Resize
@@ -47,7 +52,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.0012
+  learning_rate: 1.2e-4
   end_lr: 0
   power: 1.0
   warmup_iters: 1500
@@ -56,7 +61,8 @@ lr_scheduler:
 loss:
   types:
     - type: CrossEntropyLoss
-  coef: [1]
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
 
 model:
   type: UPerNetViTAdapter
@@ -75,5 +81,9 @@ model:
     deform_ratio: 1.0
     interaction_indexes: [[0, 2], [3, 5], [6, 8], [9, 11]]
   backbone_indices: [0, 1, 2, 3]
+  channels: 512
+  pool_scales: [1, 2, 3, 6]
+  dropout_ratio: 0.1
   aux_loss: True
+  aux_channels: 256
   pretrained: pretrained_model/upernet_deit_adapter_tiny_512_160_ade20k_from_torch.pdparams
