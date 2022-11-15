@@ -298,6 +298,8 @@ class Config(object):
             raise RuntimeError('Unknown optimizer type {}.'.format(
                 optimizer_type))
 
+        return opt
+
     @property
     def optimizer_args(self) -> dict:
         args = self.dic.get('optimizer', {}).copy()

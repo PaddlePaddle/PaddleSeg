@@ -27,16 +27,15 @@ import paddleseg.transforms.functional as F
 
 URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
 
+# class Instances(object):
+#     """
+#     Construct the Instances in detectron2/strutures/instances.py in a very simple way.
+#     """
 
-class Instances(object):
-    """
-    Construct the Instances in detectron2/strutures/instances.py in a very simple way.
-    """
-
-    def __init__(self, image_shape):
-        self.image_shape = image_shape
-        self.gt_classes = None
-        self.gt_masks = None
+#     def __init__(self, image_shape):
+#         self.image_shape = image_shape
+#         self.gt_classes = None
+#         self.gt_masks = None
 
 
 @manager.DATASETS.add_component
@@ -57,7 +56,7 @@ class ADE20K(Dataset):
                  dataset_root=None,
                  mode='train',
                  edge=False,
-                 to_mask=False):
+                 to_mask=True):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
@@ -136,25 +135,43 @@ class ADE20K(Dataset):
 
         if self.to_mask:
             # ignore the pad image with size_divisibility here
-            sem_seg_gt = data['label'].numpy()
-            instances = Instances(data['image'].shape)
+            sem_seg_gt = data['label']
+            instances = {"image_shape": data['img'].shape}
+            # instances = Instances(data['img'].shape)
             classes = np.unique(sem_seg_gt)
             classes = classes[classes != self.ignore_index]
 
-            instances.gt_classes = paddle.to_tensor(classes, dtype="float32")
+            # compat with dataloader
+            classes_cpt = np.array([
+                self.ignore_index
+                for i in range(self.num_classes - len(classes))
+            ])
+            classes_cpt = np.append(classes, classes_cpt)
+            instances["gt_classes"] = paddle.to_tensor(
+                classes_cpt, dtype="int64")
 
             masks = []
             for cid in classes:
                 masks.append(sem_seg_gt == cid)  # [C, H, W] 
 
-            if len(masks) == 0:
-                instances.gt_masks = paddle.zeros(shape=data['label'].shape)
-            else:
-                # ignore bitmask in masks, let's see what we are missing here?
-                masks = paddle.stack(
-                    paddle.to_tensor(np.ascontiguousarray(x.copy()))
-                    for x in masks)
-                instances.gt_masks = masks
-            data['instances'] = instances
+            shape = [self.num_classes - len(masks)] + list(data['label'].shape)
+            masks_cpt = paddle.zeros(shape=shape)
 
+            # ignore bitmask in masks, let's see what we are missing here?
+            # stack does not have kernel for {data_type[bool];
+            instances['gt_masks'] = paddle.concat(
+                [
+                    paddle.stack([
+                        paddle.cast(
+                            paddle.to_tensor(np.ascontiguousarray(x.copy())),
+                            "float32") for x in masks
+                    ]), masks_cpt
+                ],
+                axis=0)
+
+            # print("sem_seg_gt.shape, classes", sem_seg_gt.shape, classes_cpt, instances['gt_masks'].shape)
+
+            data['instances'] = instances
+        # batch data con only contains: tensor, numpy.ndarray, dict, list, number
+        # ValueError: (InvalidArgument) Dims of all Inputs(X) must be the same
         return data

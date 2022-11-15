@@ -183,11 +183,13 @@ def train(model,
             targets = None
             if "instances" in data.keys():
                 targets = []
-                for target_per_image in data['instances']:
+                for target_per_image_idx in range(batch_size):  # 每个去i个位置
                     # ignore the pad gt because we did not pad image
                     targets.append({
-                        "labels": target_per_image.gt_classes,
-                        "masks": target_per_image.gt_masks
+                        "labels": data['instances']['gt_classes'][
+                            target_per_image_idx, ...],
+                        "masks":
+                        data['instances']['gt_masks'][target_per_image_idx, ...]
                     })
 
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':

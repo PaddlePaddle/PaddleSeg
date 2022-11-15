@@ -66,6 +66,8 @@ lr_scheduler:
 loss:
   types:
     - type: MaskFormerLoss
+      num_classes: 150
+      eos_coef: 0.1
   coef: [1]
 
 export:

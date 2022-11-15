@@ -598,7 +598,7 @@ class MaskFormer(nn.Layer):
         outputs = self.seghead(features)
 
         if self.training:
-            return outputs
+            return [outputs]
         else:  # done 
             mask_cls_results = outputs["pred_logits"]  # [2, 100, 151]
             mask_pred_results = outputs["pred_masks"]  # # [2, 100, 512, 512]
