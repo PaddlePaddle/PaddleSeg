@@ -180,7 +180,11 @@ class HungarianMatcher(nn.Layer):
             tgt_ids = targets[b]["labels"]
             # gt masks are already padded when preparing target
             tgt_mask = paddle.cast(targets[b]["masks"], out_mask.dtype)
-
+            if targets[b]["labels"].shape[0] == 0:
+                indices.append((np.array(
+                    [], dtype='int64'), np.array(
+                        [], dtype='int64')))
+                continue
             # Compute the classification cost. Contrary to the loss, we don't use the NLL,
             # but approximate it in 1 - proba[target class].
             # The 1 is a constant that doesn't change the matching, it can be ommitted.            
@@ -188,13 +192,8 @@ class HungarianMatcher(nn.Layer):
 
             # Downsample gt masks to save memory
             # ValueError: (InvalidArgument) The shape of input(x) should be larged than 0, bug received shape[0] is 0 
-            try:
-                tgt_mask = F.interpolate(
-                    tgt_mask[:, None], size=out_mask.shape[-2:], mode="nearest")
-            except:
-                print('here')
-                import pdb
-                pdb.set_trace()
+            tgt_mask = F.interpolate(
+                tgt_mask[:, None], size=out_mask.shape[-2:], mode="nearest")
 
             # Flatten spatial dimension
             out_mask = out_mask.flatten(1)  # [batch_size * num_queries, H*W]
@@ -283,12 +282,16 @@ class MaskFormerLoss(nn.Layer):
         """Classification loss (NLL)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
         """
+        targets_cpt, indices_cpt = [], []
+        for t, indice in zip(targets, indices):
+            if t['labels'].shape[0] != 0:
+                targets_cpt.append(t)
+                indices_cpt.append(indice)
         assert "pred_logits" in outputs
         src_logits = outputs["pred_logits"]
-
         idx = self._get_src_permutation_idx(indices)
         target_classes_o = paddle.concat(
-            [t["labels"][J] for t, (_, J) in zip(targets, indices)])
+            [t["labels"][J] for t, (_, J) in zip(targets_cpt, indices_cpt)])
         target_classes = paddle.full(
             src_logits.shape[:2], self.num_classes, dtype='int64')
         target_classes[idx] = target_classes_o
@@ -308,12 +311,16 @@ class MaskFormerLoss(nn.Layer):
         targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
         """
         assert "pred_masks" in outputs
-
+        targets_cpt, indices_cpt = [], []
+        for t, indice in zip(targets, indices):
+            if t['labels'].shape[0] != 0:
+                targets_cpt.append(t)
+                indices_cpt.append(indice)
         src_idx = self._get_src_permutation_idx(indices)
-        tgt_idx = self._get_tgt_permutation_idx(indices)
+        tgt_idx = self._get_tgt_permutation_idx(indices_cpt)
         src_masks = outputs["pred_masks"]
         src_masks = src_masks[src_idx]
-        masks = [t["masks"] for t in targets]
+        masks = [t["masks"] for t in targets_cpt]
         # TODO use valid to mask invalid areas due to padding in loss
 
         target_masks, valid = nested_tensor_from_tensor_list(masks)
@@ -395,8 +402,16 @@ class MaskFormerLoss(nn.Layer):
 
             for i in range(2):
                 for key in ("labels", "masks"):
-                    targets[i][key] = paddle.to_tensor(t[i][key])
+                    if "label" in key:
+                        targets[i][key] = paddle.to_tensor(t[i][key])
+                    else:
+                        targets[i][key] = paddle.to_tensor(t[i][key]).cast(
+                            'bool')
+            targets[0]['labels'] = paddle.to_tensor([])
+            # targets[0]['masks']=paddle.to_tensor([]).reshape([0, 512, 512])
 
+        # targets[0]['labels'];targets[1]['labels'];targets[0]['masks'].cast('float32').mean();targets[1]['masks'].cast('float32').mean()
+        # targets[0]['labels'];targets[1]['labels'];targets[0]['masks'].float().mean();targets[1]['masks'].float().mean()
         logits_without_aux = {
             k: v
             for k, v in logits.items() if k != "aux_outputs"
@@ -422,7 +437,6 @@ class MaskFormerLoss(nn.Layer):
 
         if "aux_outputs" in logits:
             for i in range(len(logits['aux_outputs'])):
-
                 indices = self.matcher(logits['aux_outputs'][i], targets)
                 for loss in self.losses:
                     l_dict = self.get_loss(loss, logits['aux_outputs'][i],
@@ -436,6 +450,5 @@ class MaskFormerLoss(nn.Layer):
             else:
                 # remove this loss if not specified in `weight_dict`
                 losses.pop(k)
-        print(sum(losses.values()))
 
         return sum(losses.values())

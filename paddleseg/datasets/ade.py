@@ -109,6 +109,8 @@ class ADE20K(Dataset):
         data = {}
         data['trans_info'] = []
         image_path, label_path = self.file_list[idx]
+        # image_path, label_path = '/ssd2/tangshiyu/PaddleSeg/data/ADEChallengeData2016/images/training/ADE_train_00019747.jpg', \
+        #                 '/ssd2/tangshiyu/PaddleSeg/data/ADEChallengeData2016/annotations/training/ADE_train_00019747.png'
         data['img'] = image_path
         data['gt_fields'] = [
         ]  # If key in gt_fields, the data[key] have transforms synchronous.
@@ -138,7 +140,7 @@ class ADE20K(Dataset):
             sem_seg_gt = data['label']
             instances = {"image_shape": data['img'].shape}
             # instances = Instances(data['img'].shape)
-            classes = np.unique(sem_seg_gt)
+            classes = np.unique(sem_seg_gt)  # 255
             classes = classes[classes != self.ignore_index]
 
             # compat with dataloader
@@ -148,7 +150,8 @@ class ADE20K(Dataset):
             ])
             classes_cpt = np.append(classes, classes_cpt)
             instances["gt_classes"] = paddle.to_tensor(
-                classes_cpt, dtype="int64")
+                classes_cpt, dtype="int64")  # all 255
+            # instances["gt_classes"] = paddle.to_tensor([255 for i in range(self.num_classes)], dtype='int64')
 
             masks = []
             for cid in classes:
@@ -165,7 +168,8 @@ class ADE20K(Dataset):
                 instances['gt_masks'] = paddle.zeros(
                     (150, sem_seg_gt.shape[-2],
                      sem_seg_gt.shape[-1]))  #150, 512, 512
-                print("image_path", image_path)
+                print("image_path", image_path, classes)
+
             else:
                 instances['gt_masks'] = paddle.concat(
                     [
@@ -177,9 +181,15 @@ class ADE20K(Dataset):
                         ]), masks_cpt
                     ],
                     axis=0)
-            # print("sem_seg_gt.shape, classes", sem_seg_gt.shape, classes_cpt, instances['gt_masks'].shape)
 
             data['instances'] = instances
         # batch data con only contains: tensor, numpy.ndarray, dict, list, number
         # ValueError: (InvalidArgument) Dims of all Inputs(X) must be the same
         return data
+
+
+if __name__ == "__main__":
+    d = ADE20K([], '/ssd2/tangshiyu/PaddleSeg/data/ADEChallengeData2016/')
+    for i in range(len(d)):
+        # print(data)
+        data = d[i]
