@@ -44,12 +44,13 @@ model:
   type: MaskFormer
   num_classes: 150
   backbone:
-    type: SwinTransformer_tiny_patch4_window7_384
+    type: SwinTransformer_tiny_patch4_window7_224_maskformer
   pretrained: saved_model/maskformer_tiny.pdparams #https://github.com/SwinTransformer/storage/releases/download/v1.0.8/swin_tiny_patch4_window7_224_22k.pth
 
 optimizer:
   type: AdamW
-  backbone_lr_mult: 0.1
+  backbone_lr_mult: 1.0
+  weight_decay: 0.01
 
 gradient_clipper:
   enabled: True

@@ -714,10 +714,10 @@ class SwinTransformer(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-class SwinTransformer_tiny_patch4_window7_384(SwinTransformer):
+class SwinTransformer_tiny_patch4_window7_224_maskformer(SwinTransformer):
     def __init__(self, **kwargs):
         super().__init__(
-            pretrain_img_size=384,
+            pretrain_img_size=224,
             embed_dim=96,
             depths=[2, 2, 6, 2],
             num_heads=[3, 6, 12, 24],

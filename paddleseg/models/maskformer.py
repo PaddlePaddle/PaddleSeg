@@ -593,7 +593,14 @@ class MaskFormer(nn.Layer):
         semseg = paddle.einsum("qc,qhw->chw", mask_cls, mask_pred)
         return semseg
 
-    def forward(self, x):
+    def forward(self, x, test=True):
+        if test:
+            import numpy as np
+            np.random.seed(0)
+            a = np.random.random([2, 3, 512, 512]) * 0.7620
+            x = paddle.to_tensor(a, dtype='float32')
+            # x = paddle.ones([2, 3, 512, 512]) * 0.7620
+
         features = self.backbone(x)
         outputs = self.seghead(features)
 
@@ -629,7 +636,8 @@ class MaskFormer(nn.Layer):
                                             image_size[1])
                 processed_results.append({"sem_seg": r})
 
-            return processed_results
+            r = r[None, ...]
+            return [r]
 
 
 if __name__ == "__main__":

@@ -159,16 +159,24 @@ class ADE20K(Dataset):
 
             # ignore bitmask in masks, let's see what we are missing here?
             # stack does not have kernel for {data_type[bool];
-            instances['gt_masks'] = paddle.concat(
-                [
-                    paddle.stack([
-                        paddle.cast(
-                            paddle.to_tensor(np.ascontiguousarray(x.copy())),
-                            "float32") for x in masks
-                    ]), masks_cpt
-                ],
-                axis=0)
-
+            # stack empyty masks
+            if len(masks) == 0:
+                # Some image does not have annotation (all ignored)
+                instances['gt_masks'] = paddle.zeros(
+                    (150, sem_seg_gt.shape[-2],
+                     sem_seg_gt.shape[-1]))  #150, 512, 512
+                print("image_path", image_path)
+            else:
+                instances['gt_masks'] = paddle.concat(
+                    [
+                        paddle.stack([
+                            paddle.cast(
+                                paddle.to_tensor(
+                                    np.ascontiguousarray(x.copy())), "float32")
+                            for x in masks
+                        ]), masks_cpt
+                    ],
+                    axis=0)
             # print("sem_seg_gt.shape, classes", sem_seg_gt.shape, classes_cpt, instances['gt_masks'].shape)
 
             data['instances'] = instances
