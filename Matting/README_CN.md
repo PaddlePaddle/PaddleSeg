@@ -14,7 +14,8 @@
 
 ## 简介
 
-Image Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜色和透明度，将前景从影像中撷取出来的技术，可用于替换背景、影像合成、视觉特效，在电影工业中被广泛地使用。影像中的每个像素会有代表其前景透明度的值，称作阿法值（Alpha），一张影像中所有阿法值的集合称作阿法遮罩（Alpha Matte），将影像被遮罩所涵盖的部分取出即可完成前景的分离。
+Image Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜色和透明度，将前景从影像中撷取出来的技术，可用于替换背景、影像合成、视觉特效，在电影工业中被广泛地使用。
+影像中的每个像素会有代表其前景透明度的值，称作阿法值（Alpha），一张影像中所有阿法值的集合称作阿法遮罩（Alpha Matte），将影像被遮罩所涵盖的部分取出即可完成前景的分离。
 
 
 <p align="center">
@@ -22,31 +23,20 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 </p>
 
 ## 更新动态
-2022.11
-【1】开源自研轻量级抠图模型**PP-MattingV2**。对比MODNet, PP-MattingV2推理速度提升**44.6%**， 误差平均相对减小**17.91%**。
-【2】调整文档结构，完善模型库信息。
-【3】[FastDeploy](https://github.com/PaddlePaddle/FastDeploy)支持PP-MattingV2, PP-Matting, PP-HumanMatting和MODNet模型。
-
-2022.07
-【1】开源PP-Matting代码。
-【2】新增ClosedFormMatting、KNNMatting、FastMatting、LearningBaseMatting和RandomWalksMatting传统机器学习算法。
-【3】新增GCA模型。
-【4】完善目录结构。
-【5】支持指定指标进行评估。
-
-2022.04
-【1】新增PP-Matting模型。
-【2】新增PP-HumanMatting高分辨人像抠图模型。
-【3】新增Grad、Conn评估指标。
-【4】新增前景评估功能，利用[ML](https://arxiv.org/pdf/2006.14970.pdf)算法在预测和背景替换时进行前景评估。
-【5】新增GradientLoss和LaplacianLoss。
-【6】新增RandomSharpen、RandomSharpen、RandomReJpeg、RSSN数据增强策略。
-
-2021.11 Matting项目开源, 实现图像抠图功能。
-【1】支持Matting模型：DIM， MODNet。
-【2】支持模型导出及Python部署。
-【3】支持背景替换功能。
-【4】支持人像抠图Android部署
+* 2022.11
+  * **开源自研轻量级抠图SOTA模型PP-MattingV2**。对比MODNet, PP-MattingV2推理速度提升44.6%， 误差平均相对减小17.91%。
+  * 调整文档结构，完善模型库信息。
+  * [FastDeploy](https://github.com/PaddlePaddle/FastDeploy)部署支持PP-MattingV2, PP-Matting, PP-HumanMatting和MODNet模型。
+* 2022.07
+  * 开源PP-Matting代码；新增ClosedFormMatting、KNNMatting、FastMatting、LearningBaseMatting和RandomWalksMatting传统机器学习算法；新增GCA模型。
+  * 完善目录结构；支持指定指标进行评估。
+* 2022.04
+  * **开源自研高精度抠图SOTA模型PP-Matting**；新增PP-HumanMatting高分辨人像抠图模型。
+  * 新增Grad、Conn评估指标；新增前景评估功能，利用[ML](https://arxiv.org/pdf/2006.14970.pdf)算法在预测和背景替换时进行前景评估。
+  * 新增GradientLoss和LaplacianLoss；新增RandomSharpen、RandomSharpen、RandomReJpeg、RSSN数据增强策略。
+* 2021.11 
+  * **Matting项目开源**, 实现图像抠图功能。
+  * 支持Matting模型：DIM， MODNet；支持模型导出及Python部署；支持背景替换功能；支持人像抠图Android部署。
 
 ## 技术交流
 
@@ -61,8 +51,10 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 </div>
 
 ## 模型库
-针对高频应用场景——人像抠图，我们训练并开源了高质量人像抠图模型库。根据实际应用场景，大家可以直接部署应用，也可以进行微调训练。
 
+针对高频应用场景 —— 人像抠图，我们训练并开源了**高质量人像抠图模型库**。根据实际应用场景，大家可以直接部署应用，也支持进行微调训练。
+
+模型库中包括我们自研的高精度PP-Matting模型和轻量级PP-MattingV2模型。
 - PP-Matting是PaddleSeg自研的高精度抠图模型，通过引导流设计实现语义引导下高分辨率图像抠图。追求更高精度，推荐使用该模型。
     且该模行提供了512和1024两个分辨率级别的预训练模型。
 - PP-MattingV2是PaddleSeg自研的轻量级抠图SOTA模型，通过双层金字塔池化及空间注意力提取高级语义信息，并利用多级特征融合机制兼顾语义和细节的预测。
@@ -91,17 +83,19 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 * [人像抠图Android部署](deploy/human_matting_android_demo/README_CN.md)
 * [数据集准备](docs/data_prepare_cn.md)
 * AI Studio第三方教程
-  * [PaddleSeg——Matting教程](https://aistudio.baidu.com/aistudio/projectdetail/3876411?contributionType=1)
-  * [【PaddleSeg——Matting实践范例】PP-Matting图像抠图](https://aistudio.baidu.com/aistudio/projectdetail/5002963?contributionType=1)
+  * [PaddleSeg的Matting教程](https://aistudio.baidu.com/aistudio/projectdetail/3876411?contributionType=1)
+  * [PP-Matting图像抠图教程](https://aistudio.baidu.com/aistudio/projectdetail/5002963?contributionType=1)
 
 ## 社区贡献
 * 感谢[钱彬(Qianbin)](https://github.com/qianbin1989228)等开发者的贡献。
 * 感谢Jizhizi Li等提出的[GFM](https://arxiv.org/abs/2010.16188) Matting框架助力PP-Matting的算法研发。
 
 ## 学术引用
+```
 @article{chen2022pp,
   title={PP-Matting: High-Accuracy Natural Image Matting},
   author={Chen, Guowei and Liu, Yi and Wang, Jian and Peng, Juncai and Hao, Yuying and Chu, Lutao and Tang, Shiyu and Wu, Zewu and Chen, Zeyu and Yu, Zhiliang and others},
   journal={arXiv preprint arXiv:2204.09433},
   year={2022}
 }
+```
