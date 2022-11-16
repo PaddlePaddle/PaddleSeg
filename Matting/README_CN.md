@@ -34,7 +34,7 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
   * **开源自研高精度抠图SOTA模型PP-Matting**；新增PP-HumanMatting高分辨人像抠图模型。
   * 新增Grad、Conn评估指标；新增前景评估功能，利用[ML](https://arxiv.org/pdf/2006.14970.pdf)算法在预测和背景替换时进行前景评估。
   * 新增GradientLoss和LaplacianLoss；新增RandomSharpen、RandomSharpen、RandomReJpeg、RSSN数据增强策略。
-* 2021.11 
+* 2021.11
   * **Matting项目开源**, 实现图像抠图功能。
   * 支持Matting模型：DIM， MODNet；支持模型导出及Python部署；支持背景替换功能；支持人像抠图Android部署。
 
