@@ -156,11 +156,11 @@ class MSDeformAttn(nn.Layer):
         for i in range(self.n_points):
             grid_init[:, :, i, :] *= i + 1
 
-        with paddle.no_grad():
-            grid_init = grid_init.reshape([-1])
-            self.sampling_offsets.bias = self.create_parameter(
-                shape=grid_init.shape,
-                default_initializer=paddle.nn.initializer.Assign(grid_init))
+        grid_init = grid_init.reshape([-1])
+        self.sampling_offsets.bias = self.create_parameter(
+            shape=grid_init.shape,
+            default_initializer=paddle.nn.initializer.Assign(grid_init))
+        self.sampling_offsets.bias.stop_gradient = True
 
         constant_init(self.attention_weights.weight, value=0.)
         constant_init(self.attention_weights.bias, value=0.)

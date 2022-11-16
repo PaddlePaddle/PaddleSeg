@@ -256,20 +256,6 @@ class VisionTransformer(nn.Layer):
     def init_weight(self):
         utils.load_pretrained_model(self, self.pretrained)
 
-    def forward_features(self, x):
-        x, H, W = self.patch_embed(x)
-        cls_token = self.cls_token.expand(
-            x.shape[0], -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
-        x = paddle.concat([cls_tokens, x], axis=1)
-        x = self.pos_drop(x + self.pos_embed)
-        for blk in self.blocks:
-            x = blk(x, H, W)
-        return x
-
-    def forward(self, x):
-        x = self.forward_features(x)
-        return x
-
 
 @manager.BACKBONES.add_component
 class ViTAdapter(VisionTransformer):

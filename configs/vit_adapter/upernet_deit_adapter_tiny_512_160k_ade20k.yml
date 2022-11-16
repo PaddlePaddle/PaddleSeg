@@ -80,10 +80,11 @@ model:
     cffn_ratio: 0.25
     deform_ratio: 1.0
     interaction_indexes: [[0, 2], [3, 5], [6, 8], [9, 11]]
+    pretrained: pretrained_model/deit_tiny_patch16_224-a1311bcf_from_torch.pdparams
   backbone_indices: [0, 1, 2, 3]
   channels: 512
   pool_scales: [1, 2, 3, 6]
   dropout_ratio: 0.1
   aux_loss: True
   aux_channels: 256
-  pretrained: pretrained_model/upernet_deit_adapter_tiny_512_160_ade20k_from_torch.pdparams
+  #pretrained: pretrained_model/upernet_deit_adapter_tiny_512_160_ade20k_from_torch.pdparams
