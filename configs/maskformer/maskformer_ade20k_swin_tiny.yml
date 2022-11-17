@@ -1,4 +1,4 @@
-batch_size: 2
+batch_size: 4
 iters: 160000
 
 train_dataset:
@@ -45,7 +45,7 @@ model:
   num_classes: 150
   backbone:
     type: SwinTransformer_tiny_patch4_window7_224_maskformer
-  pretrained: saved_model/maskformer_tiny.pdparams #https://github.com/SwinTransformer/storage/releases/download/v1.0.8/swin_tiny_patch4_window7_224_22k.pth
+  pretrained: saved_model/maskformer_tiny_backbone.pdparams #https://github.com/SwinTransformer/storage/releases/download/v1.0.8/swin_tiny_patch4_window7_224_22k.pth
 
 optimizer:
   type: AdamW

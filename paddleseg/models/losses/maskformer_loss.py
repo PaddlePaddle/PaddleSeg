@@ -210,6 +210,7 @@ class HungarianMatcher(nn.Layer):
                  self.cost_dice * cost_dice)
             C = C.reshape([num_queries, -1])
 
+            #ValueError: matrix contains invalid numeric entries 
             indices.append(linear_sum_assignment(C))
 
         return [(paddle.to_tensor(
@@ -362,7 +363,7 @@ class MaskFormerLoss(nn.Layer):
         assert loss in loss_map, f"do you really want to compute {loss} loss?"
         return loss_map[loss](outputs, targets, indices, num_masks)
 
-    def forward(self, logits, targets_cpt, test=True):
+    def forward(self, logits, targets_cpt, test=False):
         targets = []  # each data have a mask.
         for item in targets_cpt:
             start_idx = paddle.nonzero(

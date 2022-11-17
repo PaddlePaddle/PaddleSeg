@@ -438,7 +438,7 @@ class TransformerPredictor(nn.Layer):
             hidden_dim=256,
             num_queries=100,
             nheads=8,
-            dropout=0.0,  # TODO change to 0.1
+            dropout=0.1,  # TODO change to 0.1
             dim_feedforward=2048,
             enc_layers=0,
             dec_layers=6,
@@ -593,7 +593,7 @@ class MaskFormer(nn.Layer):
         semseg = paddle.einsum("qc,qhw->chw", mask_cls, mask_pred)
         return semseg
 
-    def forward(self, x, test=True):
+    def forward(self, x, test=False):
         if test:
             import numpy as np
             np.random.seed(0)

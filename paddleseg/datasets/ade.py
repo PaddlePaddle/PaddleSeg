@@ -168,7 +168,7 @@ class ADE20K(Dataset):
                 instances['gt_masks'] = paddle.zeros(
                     (150, sem_seg_gt.shape[-2],
                      sem_seg_gt.shape[-1]))  #150, 512, 512
-                print("image_path", image_path, classes)
+                # print("image_path", image_path, classes)
 
             else:
                 instances['gt_masks'] = paddle.concat(
