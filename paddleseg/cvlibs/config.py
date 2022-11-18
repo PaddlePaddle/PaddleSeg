@@ -277,13 +277,25 @@ class Config(object):
                     'params': other_params
                 }]
 
+        if self.dic.get('model').copy()['type'] == 'MaskFormer':
+            print('initialize parameters for MaskFormer')
+            params = []
+
+            for name, param in self.model.named_parameters():
+                hyperparams_dict = {'params': param}
+                if 'backbone' in name:  # assume backbone_lr_mult exists
+                    hyperparams_dict['learning_rate'] = backbone_lr_mult
+                if 'relative_position_bias_table' in name or 'norm' in name:
+                    hyperparams_dict['weight_decay'] = 0.0
+                params.append(hyperparams_dict)
+
         if 'gradient_clipper' in self.dic:  # currently only support clip per params
             clipper_args = self.dic.get('gradient_clipper', {}).copy()
             enable_clipper = clipper_args.pop('enabled')
             if not enable_clipper:
                 gradient_clipper = None
             gradient_clipper = paddle.nn.ClipGradByNorm(
-                clip_norm=clipper_args['clip_value'])
+                clip_norm=clipper_args['clip_value'] / 400)
 
         if optimizer_type == 'sgd':
             opt = paddle.optimizer.Momentum(

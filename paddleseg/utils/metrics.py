@@ -50,9 +50,23 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
         pred_i = paddle.logical_and(pred == i, mask)
         label_i = label == i
         intersect_i = paddle.logical_and(pred_i, label_i)
-        pred_area.append(paddle.sum(paddle.cast(pred_i, "int32")))
-        label_area.append(paddle.sum(paddle.cast(label_i, "int32")))
-        intersect_area.append(paddle.sum(paddle.cast(intersect_i, "int32")))
+        pred_area.append(paddle.sum(paddle.cast(pred_i, "int64")))
+        label_area.append(paddle.sum(paddle.cast(label_i, "int64")))
+        intersect_area.append(paddle.sum(paddle.cast(intersect_i, "int64")))
+        if paddle.sum(paddle.cast(pred_i, "int64")) < 0 or paddle.sum(
+                paddle.cast(label_i, "int64")) < 0 or paddle.sum(
+                    paddle.cast(intersect_i, "int64")) < 0:
+            import pdb
+            pdb.set_trace()
+            save_dict = {
+                'pred': pred.detach().numpy(),
+                "pred_i": pred_i.detach().numpy().astype('float32').sum(),
+                'label_i': label_i.detach().numpy(),
+                'intersect_i': intersect_i.detach().numpy()
+            }
+            # import pickle
+            # with open('save_dict.pkl', 'wb') as f:
+            #     pickle.dump(save_dict, f)
 
     pred_area = paddle.concat(pred_area)
     label_area = paddle.concat(label_area)
