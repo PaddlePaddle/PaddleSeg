@@ -251,7 +251,7 @@ def merge_semantic_and_instance(semantic, instance, label_divisor, thing_list,
                 -1, ))))  # equal to semantic[thing_mask]
         v, c = paddle.unique(sem_ins_id, return_counts=True)
         class_id = paddle.gather(v, c.argmax())
-        class_id = class_id.numpy()[0]
+        class_id = int(class_id)
         if class_id in class_id_tracker:
             new_ins_id = class_id_tracker[class_id]
         else:

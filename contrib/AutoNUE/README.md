@@ -6,7 +6,7 @@ Implementation of the 1st solution for AutoNUE@CVPR 2021 Challenge Semenatic Seg
 #### step 1. Install PaddlePaddle
 
 System Requirements:
-* PaddlePaddle >= 2.0.0
+* PaddlePaddle == 2.0.2
 * Python >= 3.6+
 
 Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/)。
@@ -17,7 +17,7 @@ Highly recommend you install the GPU version of PaddlePaddle, due to large overh
 You should use *API Calling* method to install PaddleSeg for flexible development.
 
 ```shell
-pip install paddleseg -U
+pip install paddleseg==2.5.0
 ```
 
 ## Data Preparation
