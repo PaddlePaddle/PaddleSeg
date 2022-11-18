@@ -379,6 +379,8 @@ class TransUNet(nn.Layer):
         return [logits]
 
     def postprocess(self, logits, labels):
-        logits = [logits]
-        labels = paddle.squeeze(labels, axis=0)
+        # NOTE: During training we use xyz format for higher efficiency;
+        # in the inference stage, we use zxy format for consistency with other models.
+        logits = [logits.transpose((0, 1, 3, 4, 2))]
+        labels = paddle.squeeze(labels.transpose((0, 1, 3, 4, 2)), axis=0)
         return logits, labels

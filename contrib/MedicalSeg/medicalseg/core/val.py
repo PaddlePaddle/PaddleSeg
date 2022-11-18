@@ -129,6 +129,9 @@ def evaluate(
 
             if hasattr(model, "postprocess"):
                 logits, label = model.postprocess(logits, label)
+                # Update pred from postprocessed logits
+                pred = paddle.argmax(
+                    logits[0], axis=1, keepdim=True, dtype='int32')
 
             # logits [N, num_classes, D, H, W] Compute loss to get dice
             loss, per_channel_dice = loss_computation(logits, label, new_loss)
