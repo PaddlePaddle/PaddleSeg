@@ -8,7 +8,6 @@ tqdm
 filelock
 scipy
 prettytable
-paddleseg
 scikit-image
 numba
 pymatting
