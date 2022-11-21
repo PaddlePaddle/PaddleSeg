@@ -146,6 +146,11 @@ def parse_args():
         default=1,
         help="Repeat the samples in the dataset for `repeats` times in each epoch."
     )
+    parser.add_argument(
+        "--to_static",
+        action='store_true',
+        default=False,
+        help="Enable dy2st to train.")
 
     return parser.parse_args()
 
@@ -251,7 +256,8 @@ def main(args):
         precision=args.precision,
         amp_level=args.amp_level,
         profiler_options=args.profiler_options,
-        to_static_training=cfg.to_static_training)
+        to_static_training=args.to_static
+        if args.to_static else cfg.to_static_training)
 
 
 if __name__ == '__main__':

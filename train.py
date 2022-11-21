@@ -146,11 +146,6 @@ def parse_args():
         default=1,
         help="Repeat the samples in the dataset for `repeats` times in each epoch."
     )
-    parser.add_argument(
-        "--to_static",
-        action='store_true',
-        default=False,
-        help="Enable dy2st to train.")
 
     return parser.parse_args()
 

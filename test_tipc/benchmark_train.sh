@@ -181,7 +181,7 @@ to_static=""
 # parse "to_static" options and modify trainer into "to_static_trainer"
 if [[ ${model_type} = "dynamicTostatic" ]];then
     to_static="d2sT_"
-    sed -i 's/trainer:norm/trainer:to_static_train/g' $FILENAME
+    sed -i 's/trainer:norm_train/trainer:to_static_train/g' $FILENAME
 fi
 
 IFS="|"
