@@ -95,26 +95,16 @@ mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_python.log"
 echo "------------------------ ${MODE} ------------------------" >> $status_log
 
-# Parse extra args
-parse_extra_args "${lines[@]}"
-for params in ${extra_args[*]}; do
-    IFS=":"
-    arr=(${params})
-    key=${arr[0]}
-    value=${arr[1]}
-    if [ "${key}" = 'log_iters' ]; then
-        log_iters="${value}"
-    elif [ "${key}" = "repeats" ]; then
-        repeats="${value}"
-    fi
-done
+line_num=`grep -n -w "to_static_train_benchmark_params" $FILENAME  | cut -d ":" -f 1`
+to_static_key=$(func_parser_key "${lines[line_num]}")
+to_static_trainer=$(func_parser_value "${lines[line_num]}")
 
 if [ "${MODE}" = 'benchmark_train' ];then
     if [ "${autocast_key}" = 'Global.auto_cast' ];then
         echo 'Replcace ${autocast_key}'"('${autocast_key}') with '--precision'"
         autocast_key="--precision"
     fi
-fi
+
 
 function func_inference(){
     IFS='|'
@@ -293,6 +283,9 @@ else
                 elif [[ ${trainer} = ${trainer_key2} ]]; then
                     run_train=${trainer_value2}
                     run_export=${export_value2}
+                elif [ ${trainer} = "${to_static_key}" ]; then
+                    run_train="${norm_trainer} ${to_static_trainer}"
+                    run_export=${norm_export}
                 else
                     run_train=${norm_trainer}
                     run_export=${norm_export}

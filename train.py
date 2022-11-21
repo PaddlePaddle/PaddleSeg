@@ -146,6 +146,11 @@ def parse_args():
         default=1,
         help="Repeat the samples in the dataset for `repeats` times in each epoch."
     )
+    parser.add_argument(
+        "--to_static",
+        action='store_true',
+        default=False,
+        help="Enable dy2st to train.")
 
     return parser.parse_args()
 
@@ -252,9 +257,6 @@ def main(args):
         amp_level=args.amp_level,
         profiler_options=args.profiler_options,
         to_static_training=cfg.to_static_training)
-
-    logger.warning("This `train.py` will be removed in version 2.8, "
-                   "please use `tools/train.py`.")
 
 
 if __name__ == '__main__':
