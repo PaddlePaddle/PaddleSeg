@@ -99,12 +99,26 @@ line_num=`grep -n -w "to_static_train_benchmark_params" $FILENAME  | cut -d ":" 
 to_static_key=$(func_parser_key "${lines[line_num]}")
 to_static_trainer=$(func_parser_value "${lines[line_num]}")
 
+# Parse extra args
+parse_extra_args "${lines[@]}"
+for params in ${extra_args[*]}; do
+    IFS=":"
+    arr=(${params})
+    key=${arr[0]}
+    value=${arr[1]}
+    if [ "${key}" = 'log_iters' ]; then
+        log_iters="${value}"
+    elif [ "${key}" = "repeats" ]; then
+        repeats="${value}"
+    fi
+done
+
 if [ "${MODE}" = 'benchmark_train' ];then
     if [ "${autocast_key}" = 'Global.auto_cast' ];then
         echo 'Replcace ${autocast_key}'"('${autocast_key}') with '--precision'"
         autocast_key="--precision"
     fi
-
+fi
 
 function func_inference(){
     IFS='|'

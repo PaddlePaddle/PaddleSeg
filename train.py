@@ -258,6 +258,9 @@ def main(args):
         profiler_options=args.profiler_options,
         to_static_training=cfg.to_static_training)
 
+    logger.warning("This `train.py` will be removed in version 2.8, "
+                   "please use `tools/train.py`.")
+
 
 if __name__ == '__main__':
     args = parse_args()
