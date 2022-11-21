@@ -17,6 +17,7 @@ import os
 import numpy as np
 from PIL import Image
 import paddle
+import paddle.nn as nn
 
 from paddleseg.datasets import Dataset
 from paddleseg.utils.download import download_file_and_uncompress
@@ -56,7 +57,9 @@ class ADE20K(Dataset):
                  dataset_root=None,
                  mode='train',
                  edge=False,
-                 to_mask=True):
+                 to_mask=True,
+                 size_divisibility=512,
+                 normalize=True):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
@@ -66,6 +69,8 @@ class ADE20K(Dataset):
         self.ignore_index = 255
         self.edge = edge
         self.to_mask = to_mask
+        self.size_divisibility = size_divisibility
+        self.normalize = normalize
 
         if mode not in ['train', 'val']:
             raise ValueError(
@@ -105,16 +110,20 @@ class ADE20K(Dataset):
             label_path = os.path.join(label_dir, label_files[i])
             self.file_list.append([img_path, label_path])
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx, test=False):
         data = {}
         data['trans_info'] = []
         image_path, label_path = self.file_list[idx]
-        # image_path, label_path = '/ssd2/tangshiyu/PaddleSeg/data/ADEChallengeData2016/images/training/ADE_train_00019747.jpg', \
-        #                 '/ssd2/tangshiyu/PaddleSeg/data/ADEChallengeData2016/annotations/training/ADE_train_00019747.png'
+        if test:
+            image_path, label_path = '/ssd2/tangshiyu/PaddleSeg/data/ADEChallengeData2016/images/training/ADE_train_00019747.jpg', \
+                            '/ssd2/tangshiyu/PaddleSeg/data/ADEChallengeData2016/annotations/training/ADE_train_00019747.png'
+            self.mode = 'val'
+
         data['img'] = image_path
         data['gt_fields'] = [
         ]  # If key in gt_fields, the data[key] have transforms synchronous.
 
+        # import pdb; pdb.set_trace()
         if self.mode == 'val':
             data = self.transforms(data)
             label = np.asarray(Image.open(label_path))
@@ -122,23 +131,52 @@ class ADE20K(Dataset):
             # subtracted 1, because the dtype of label is uint8.
             # label = label - 1
             label = label[np.newaxis, :, :]
-            data['label'] = label
+            data['label'] = label - 1
+            data['img'] = paddle.to_tensor(data['img'])
         else:
             data['label'] = label_path
             data['gt_fields'].append('label')
             data = self.transforms(data)
-            # data['label'] = data['label'] - 1
-            # Recover the ignore pixels adding by transform
-            # data['label'][data['label'] == 254] = 255
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(
                     label, radius=2, num_classes=self.num_classes)
                 data['edge'] = edge_mask
 
+            if self.size_divisibility > 0:
+                image_size = (data['img'].shape[-2], data['img'].shape[-1])
+                padding_size = [
+                    0,
+                    self.size_divisibility - image_size[1],
+                    0,
+                    self.size_divisibility - image_size[0],
+                ]
+                data['img'] = nn.functional.pad(
+                    paddle.to_tensor(data['img']).unsqueeze(0),
+                    padding_size,
+                    value=128).squeeze(0)
+
+                if data['label'] is not None:
+                    data['label'] = nn.functional.pad(
+                        paddle.to_tensor(
+                            data['label'],
+                            dtype='int64').unsqueeze(0).unsqueeze(0),
+                        padding_size,
+                        value=self.ignore_index).squeeze(0).squeeze(0).numpy()
+
+        if self.normalize:
+            data['img'] = data['img'].cast('float32')
+            mean = paddle.to_tensor(np.array([123.675, 116.280, 103.530
+                                              ])).reshape([3, 1, 1])
+            std = paddle.to_tensor(np.array([58.395, 57.120, 57.375])).reshape(
+                [3, 1, 1])
+            data['img'] -= mean
+            data['img'] /= std
+            data['img'] = data['img'].numpy()
+
         if self.to_mask:
             # ignore the pad image with size_divisibility here
             sem_seg_gt = data['label']
-            instances = {"image_shape": data['img'].shape}
+            instances = {"image_shape": data['img'].shape[1:]}
             # instances = Instances(data['img'].shape)
             classes = np.unique(sem_seg_gt)  # 255
             classes = classes[classes != self.ignore_index]
@@ -163,6 +201,7 @@ class ADE20K(Dataset):
             # ignore bitmask in masks, let's see what we are missing here?
             # stack does not have kernel for {data_type[bool];
             # stack empyty masks
+
             if len(masks) == 0:
                 # Some image does not have annotation (all ignored)
                 instances['gt_masks'] = paddle.zeros(
@@ -178,7 +217,8 @@ class ADE20K(Dataset):
                                 paddle.to_tensor(
                                     np.ascontiguousarray(x.copy())), "float32")
                             for x in masks
-                        ]), masks_cpt
+                        ]),  # dfg.cast('float32').mean() [0.05092621]
+                        masks_cpt
                     ],
                     axis=0)
 

@@ -4,40 +4,40 @@ iters: 160000
 train_dataset:
   type: ADE20K
   dataset_root: data/ADEChallengeData2016/
-  transforms:
-    - type: ResizeByShort
-      short_size: 640 # sample from [320, 384, 448,512,576,640,704,768,832,896,960,1024,1088,1152,1216,1280] samlpe by choice, maxsize=2560
-    - type: RandomPaddingCrop
-      crop_size: [512, 512] 
-    #  - type: RandomCrop_CategoryAreaConstraint #random  crop the image such that no single category occupies a ratio of more than `single_category_max_area`
-    #    crop_type: 'absolute'
-    #    crop_size: [512, 512]
-    #    single_category_max_area: 1.0
-    #    ignore_category: 255
-    - type: RandomDistort
-      brightness_range: 0.125
-      brightness_prob: 1.0
-      contrast_range: 0.5
-      contrast_prob: 1.0
-      saturation_range: 0.5
-      saturation_prob: 1.0
-      hue_range: 18
-      hue_prob: 1.0
-   # - type: ColorAugSSDTransform
-    - type: RandomHorizontalFlip
-    - type: Normalize # 没有，需要进一步看看
-      mean: [0.485, 0.456, 0.406]
-      std: [0.229, 0.224, 0.225]
+  transforms: []
+  #   - type: ResizeByShort
+  #     short_size: 640 # sample from [320, 384, 448,512,576,640,704,768,832,896,960,1024,1088,1152,1216,1280] samlpe by choice, maxsize=2560
+  #   - type: RandomPaddingCrop
+  #     crop_size: [512, 512] 
+  #   #  - type: RandomCrop_CategoryAreaConstraint #random  crop the image such that no single category occupies a ratio of more than `single_category_max_area`
+  #   #    crop_type: 'absolute'
+  #   #    crop_size: [512, 512]
+  #   #    single_category_max_area: 1.0
+  #   #    ignore_category: 255
+  #   - type: RandomDistort
+  #     brightness_range: 0.125
+  #     brightness_prob: 1.0
+  #     contrast_range: 0.5
+  #     contrast_prob: 1.0
+  #     saturation_range: 0.5
+  #     saturation_prob: 1.0
+  #     hue_range: 18
+  #     hue_prob: 1.0
+  #  # - type: ColorAugSSDTransform
+  #   - type: RandomHorizontalFlip
+    # - type: Normalize # 没有，需要进一步看看
+    #   mean: [0.485, 0.456, 0.406]
+    #   std: [0.229, 0.224, 0.225]
 
 val_dataset:
   type: ADE20K
   dataset_root: data/ADEChallengeData2016/
   transforms:
     - type: ResizeByShort
-      short_size: 640
-    - type: Normalize # 没有，需要进一步看看
-      mean: [0.485, 0.456, 0.406]
-      std: [0.229, 0.224, 0.225]
+      short_size: 512
+    # - type: Normalize # 没有，需要进一步看看
+    #   mean: [0.485, 0.456, 0.406]
+    #   std: [0.229, 0.224, 0.225]
   mode: val
 
 model:

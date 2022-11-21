@@ -184,12 +184,18 @@ def train(model,
             if "instances" in data.keys():
                 targets = []
                 for target_per_image_idx in range(batch_size):  # 每个去i个位置
-                    # ignore the pad gt because we did not pad image
+                    gt_masks = data['instances']['gt_masks'][
+                        target_per_image_idx, ...]
+                    padded_masks = paddle.zeros(
+                        (gt_masks.shape[0], gt_masks.shape[-2],
+                         gt_masks.shape[-1]),
+                        dtype=gt_masks.dtype)
+                    padded_masks[:, :gt_masks.shape[1], :gt_masks.shape[
+                        2]] = gt_masks
                     targets.append({
                         "labels": data['instances']['gt_classes'][
                             target_per_image_idx, ...],
-                        "masks":
-                        data['instances']['gt_masks'][target_per_image_idx, ...]
+                        "masks": padded_masks
                     })
 
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':
