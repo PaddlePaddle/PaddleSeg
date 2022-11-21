@@ -119,7 +119,8 @@ def download_file_and_uncompress(url,
                                  extraname=None,
                                  print_progress=True,
                                  cover=False,
-                                 delete_file=True):
+                                 delete_file=True,
+                                 filename=None):
     if savepath is None:
         savepath = "."
 
@@ -143,8 +144,10 @@ def download_file_and_uncompress(url,
             shutil.rmtree(savename)
         if os.path.exists(extraname):
             shutil.rmtree(extraname)
-
-    if not os.path.exists(extraname):
+    full_path = os.path.join(extraname,
+                             filename) if filename is not None else extraname
+    if not os.path.exists(
+            full_path):  # If pretrained model exists, skip download process.
         if not os.path.exists(savename):
             if not os.path.exists(savepath):
                 _download_file(url, savepath, print_progress)
