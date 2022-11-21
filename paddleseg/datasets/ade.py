@@ -120,16 +120,16 @@ class ADE20K(Dataset):
             label = np.asarray(Image.open(label_path))
             # The class 0 is ignored. And it will equal to 255 after
             # subtracted 1, because the dtype of label is uint8.
-            label = label - 1
+            # label = label - 1
             label = label[np.newaxis, :, :]
             data['label'] = label
         else:
             data['label'] = label_path
             data['gt_fields'].append('label')
             data = self.transforms(data)
-            data['label'] = data['label'] - 1
+            # data['label'] = data['label'] - 1
             # Recover the ignore pixels adding by transform
-            data['label'][data['label'] == 254] = 255
+            # data['label'][data['label'] == 254] = 255
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(
                     label, radius=2, num_classes=self.num_classes)
@@ -183,6 +183,8 @@ class ADE20K(Dataset):
                     axis=0)
 
             data['instances'] = instances
+        # print('data[\'instances\'][\'gt_masks\'].shape',  data['instances']['gt_masks'].shape, sem_seg_gt.shape, sem_seg_gt.mean(), len(masks), data['img'].shape)
+
         # batch data con only contains: tensor, numpy.ndarray, dict, list, number
         # ValueError: (InvalidArgument) Dims of all Inputs(X) must be the same
         return data

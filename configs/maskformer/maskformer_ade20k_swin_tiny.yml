@@ -53,7 +53,7 @@ optimizer:
   weight_decay: 0.01
 
 gradient_clipper:
-  enabled: False
+  enabled: True
   clip_value: 0.01
 
 lr_scheduler:

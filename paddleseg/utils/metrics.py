@@ -47,8 +47,9 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
     mask = label != ignore_index
 
     for i in range(num_classes):
-        pred_i = paddle.logical_and(pred == i, mask)
-        label_i = label == i
+        pred_i = paddle.logical_and(pred == i,
+                                    mask)  # pred sum/mean is problematic
+        label_i = label == i  # label sum/mean is problematic
         intersect_i = paddle.logical_and(pred_i, label_i)
         pred_area.append(paddle.sum(paddle.cast(pred_i, "int64")))
         label_area.append(paddle.sum(paddle.cast(label_i, "int64")))
