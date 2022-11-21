@@ -54,12 +54,12 @@ def download_pretrained_model(pretrained_model):
 
     pretrained_model = unquote(pretrained_model)
     savename = pretrained_model.split('/')[-1]
-    filename = 'model.pdparams'
     if not savename.endswith(('tgz', 'tar.gz', 'tar', 'zip')):
         savename = pretrained_model.split('/')[-2]
         filename = pretrained_model.split('/')[-1]
     else:
         savename = savename.split('.')[0]
+        filename = 'model.pdparams'
 
     with generate_tempdir() as _dir:
         with filelock.FileLock(os.path.join(seg_env.TMP_HOME, savename)):
