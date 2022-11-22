@@ -358,14 +358,6 @@ class ViTAdapter(VisionTransformer):
 
     def forward(self, x):
         debug = False
-        if False:
-            import random
-            import numpy as np
-            random.seed(0)
-            np.random.seed(0)
-            x = np.random.rand(1, 3, 512, 512).astype("float32")
-            x = paddle.to_tensor(x, dtype='float32')
-            print('x0:', x.numpy().mean())
 
         deform_inputs1, deform_inputs2 = deform_inputs(x)
 
@@ -436,7 +428,4 @@ class ViTAdapter(VisionTransformer):
             print(f2.cpu().numpy().mean())
             print(f3.cpu().numpy().mean())
             print(f4.cpu().numpy().mean())
-            # f1 = f1.cpu().numpy().mean()
-            # with msdeformatt
-            #assert np.allclose(f1, -0.03252137, rtol=0.0, atol=1e-6)
         return [f1, f2, f3, f4]

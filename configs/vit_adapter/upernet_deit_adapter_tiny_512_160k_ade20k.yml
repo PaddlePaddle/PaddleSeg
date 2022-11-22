@@ -52,7 +52,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 1.2e-4
+  learning_rate: 6.0e-5   # the origin lr is 1.2e-6, but the real used lr in vit_adapter is 6e-5
   end_lr: 0
   power: 1.0
   warmup_iters: 1500

@@ -296,7 +296,6 @@ class UPerNetHead(nn.Layer):
             print('-------head 5----')
             for x in logits_list:
                 print(x.shape, x.numpy().mean())
-            # -20.250404  -15.875856
             exit()
 
         return logits_list
