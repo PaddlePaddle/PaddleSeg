@@ -358,7 +358,7 @@ class ViTAdapter(VisionTransformer):
 
     def forward(self, x):
         debug = False
-        if debug:
+        if False:
             import random
             import numpy as np
             random.seed(0)
@@ -380,6 +380,8 @@ class ViTAdapter(VisionTransformer):
                 print(i.numpy().mean())
             for i in deform_inputs2:
                 print(i.numpy().mean())
+            print(x.numpy().mean())
+            print(c.numpy().mean())
 
         # Patch Embedding forward
         x, H, W = self.patch_embed(x)

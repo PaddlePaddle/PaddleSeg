@@ -61,7 +61,7 @@ lr_scheduler:
 loss:
   types:
     - type: CrossEntropyLoss
-    - type: CrossEntropyLoss
+      avg_non_ignore: False
   coef: [1, 0.4]
 
 model:
