@@ -155,6 +155,10 @@ def evaluate(
                 channel_dice_array += per_channel_dice
             if is_save_data:
                 if iter < 5:
+                    if image_json is None:
+                        raise ValueError(
+                            "No json file is loaded. Please check if the dataset is preprocessed and `has_dataset_json` is True."
+                        )
                     save_array(
                         save_path=os.path.join(save_dir, str(iter)),
                         save_content={
@@ -162,15 +166,14 @@ def evaluate(
                             'label': label.numpy(),
                             'img': im.numpy()
                         },
-                        form=('npy', 'nii.gz')
-                        if image_json is not None else ('npy', ),
+                        form=('npy', 'nii.gz'),
                         image_infor={
                             "spacing": image_json.get("spacing_resample",
                                                       image_json["spacing"]),
                             'direction': image_json["direction"],
                             "origin": image_json["origin"],
                             'format': "xyz"
-                        } if image_json is not None else {})
+                        })
 
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))
