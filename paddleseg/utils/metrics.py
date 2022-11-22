@@ -57,14 +57,15 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
         if paddle.sum(paddle.cast(pred_i, "int64")) < 0 or paddle.sum(
                 paddle.cast(label_i, "int64")) < 0 or paddle.sum(
                     paddle.cast(intersect_i, "int64")) < 0:
-            import pdb
-            pdb.set_trace()
-            save_dict = {
-                'pred': pred.detach().numpy(),
-                "pred_i": pred_i.detach().numpy().astype('float32').sum(),
-                'label_i': label_i.detach().numpy(),
-                'intersect_i': intersect_i.detach().numpy()
-            }
+            print('somthing is off here')
+            # import pdb
+            # pdb.set_trace()
+            # save_dict = {
+            #     'pred': pred.detach().numpy(),
+            #     "pred_i": pred_i.detach().numpy().astype('float32').sum(),
+            #     'label_i': label_i.detach().numpy(),
+            #     'intersect_i': intersect_i.detach().numpy()
+            # }
             # import pickle
             # with open('save_dict.pkl', 'wb') as f:
             #     pickle.dump(save_dict, f)

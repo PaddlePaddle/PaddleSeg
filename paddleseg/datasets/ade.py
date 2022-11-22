@@ -137,6 +137,8 @@ class ADE20K(Dataset):
             data['label'] = label_path
             data['gt_fields'].append('label')
             data = self.transforms(data)
+            data['label'] = data['label'] - 1
+            data['label'][data['label'] == 254] = 255
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(
                     label, radius=2, num_classes=self.num_classes)
