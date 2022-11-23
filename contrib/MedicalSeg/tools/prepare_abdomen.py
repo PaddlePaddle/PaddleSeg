@@ -143,6 +143,8 @@ class Prep_abdomen(Prep):
                         i])):
 
                 f_nps = Prep.load_medical_data(f)[0]
+                # xyz to zxy
+                f_nps = f_nps.transpose(2, 0, 1)
                 if mode == 'train':
                     for volume_idx, f_np in enumerate(f_nps):
                         for op in pre:

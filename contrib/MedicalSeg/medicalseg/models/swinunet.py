@@ -205,8 +205,8 @@ class SwinUNet(nn.Layer):
         return [x]
 
     def postprocess(self, logits, labels):
-        logits = [logits]
-        labels = paddle.squeeze(labels, axis=0)
+        logits = [logits.transpose((2, 1, 0, 3, 4))]
+        labels = labels.squeeze(2)
         return logits, labels
 
 
