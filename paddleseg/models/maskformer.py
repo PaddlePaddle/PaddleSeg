@@ -393,9 +393,11 @@ class Transformer(nn.Layer):
         pos_embed = paddle.transpose(
             paddle.flatten(
                 pos_embed, start_axis=2), (2, 0, 1))
-        query_embed = paddle.repeat_interleave(
-            paddle.unsqueeze(
-                query_embed, axis=1), repeats=bs, axis=1)  # Noquerry, N, hdim
+        query_embed = paddle.stack([query_embed for i in range(bs)], axis=1)
+        # print('query_embed', query_embed.shape)
+        # query_embed = paddle.repeat_interleave(
+        #     paddle.unsqueeze(
+        #         query_embed, axis=1), repeats=bs, axis=1)  # Noquerry, N, hdim
         if mask is not None:
             mask = paddle.flatten(mask, start_axis=1)
 

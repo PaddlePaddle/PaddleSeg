@@ -179,12 +179,12 @@ class HungarianMatcher(nn.Layer):
 
             tgt_ids = targets[b]["labels"]
             # gt masks are already padded when preparing target
-            tgt_mask = paddle.cast(targets[b]["masks"], out_mask.dtype)
             if targets[b]["labels"].shape[0] == 0:
                 indices.append((np.array(
                     [], dtype='int64'), np.array(
                         [], dtype='int64')))
                 continue
+            tgt_mask = paddle.cast(targets[b]["masks"], out_mask.dtype)
             # Compute the classification cost. Contrary to the loss, we don't use the NLL,
             # but approximate it in 1 - proba[target class].
             # The 1 is a constant that doesn't change the matching, it can be ommitted.            
@@ -366,15 +366,15 @@ class MaskFormerLoss(nn.Layer):
     def forward(self, logits, targets_cpt, test=False):
         targets = []  # each data have a mask.
         for item in targets_cpt:
+            paddle.cast(item['masks'], 'bool')
             start_idx = paddle.nonzero(
                 paddle.cast(item["labels"] == self.ignore_index, 'int64'))[
                     0].numpy()[0]
             index = paddle.to_tensor([i for i in range(start_idx)])
             item['labels'] = paddle.gather(
                 item['labels'], index, axis=0)  # [n] n<150
-            item['masks'] = paddle.cast(
-                paddle.gather(
-                    item["masks"], index, axis=0), 'bool')  # [n,512,512]
+            item['masks'] = paddle.gather(
+                item["masks"], index, axis=0)  # [n,512,512]
             targets.append(item)
 
         if test:
