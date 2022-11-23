@@ -1,4 +1,4 @@
-# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -181,7 +181,7 @@ class MobileNetV3(nn.Layer):
         self.out_index = out_index
         self.scale = scale
         self.pretrained = pretrained
-        self.class_squeeze=class_squeeze
+        self.class_squeeze = class_squeeze
         self.return_last_conv = return_last_conv
         inplanes = 16
 
@@ -321,15 +321,20 @@ class ResidualUnit(nn.Layer):
         super().__init__()
         self.if_shortcut = stride == 1 and in_c == out_c
         self.if_se = use_se
+        self.in_c = in_c
+        self.mid_c = mid_c
 
-        self.expand_conv = ConvBNLayer(
-            in_c=in_c,
-            out_c=mid_c,
-            filter_size=1,
-            stride=1,
-            padding=0,
-            if_act=True,
-            act=act)
+        # There is not expand conv in pytorch version when in_c equaled to mid_c.
+
+        if in_c != mid_c:
+            self.expand_conv = ConvBNLayer(
+                in_c=in_c,
+                out_c=mid_c,
+                filter_size=1,
+                stride=1,
+                padding=0,
+                if_act=True,
+                act=act)
         self.bottleneck_conv = ConvBNLayer(
             in_c=mid_c,
             out_c=mid_c,
@@ -353,7 +358,8 @@ class ResidualUnit(nn.Layer):
 
     def forward(self, x):
         identity = x
-        x = self.expand_conv(x)
+        if self.in_c != self.mid_c:
+            x = self.expand_conv(x)
         x = self.bottleneck_conv(x)
         if self.if_se:
             x = self.mid_se(x)
@@ -381,13 +387,13 @@ class SEModule(nn.Layer):
         self.avg_pool = AdaptiveAvgPool2D(1)
         self.conv1 = Conv2D(
             in_channels=channel,
-            out_channels=channel // reduction,
+            out_channels=_make_divisible(channel // reduction, 8),
             kernel_size=1,
             stride=1,
             padding=0)
         self.relu = nn.ReLU()
         self.conv2 = Conv2D(
-            in_channels=channel // reduction,
+            in_channels=_make_divisible(channel // reduction, 8),
             out_channels=channel,
             kernel_size=1,
             stride=1,
@@ -535,14 +541,15 @@ def MobileNetV3_small_x1_0_os8(**kwargs):
         **kwargs)
     return model
 
+
 @manager.BACKBONES.add_component
 def MobileNetV3_large_x1_0_os16(**kwargs):
     if 'out_index' in kwargs:
         model = MobileNetV3(
-        config=NET_CONFIG["large_os16"],
-        scale=1.0,
-        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
-        **kwargs)
+            config=NET_CONFIG["large_os16"],
+            scale=1.0,
+            stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
+            **kwargs)
     else:
         model = MobileNetV3(
             config=NET_CONFIG["large_os16"],
