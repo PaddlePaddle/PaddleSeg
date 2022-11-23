@@ -13,8 +13,11 @@
 |3D fullres|80x192x160|0.01|30000|66.281% |[model](https://aistudio.baidu.com/aistudio/datasetdetail/162872)  \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
 |3D cascade|80x192x160|0.01|40000|67.996%|[model](https://aistudio.baidu.com/aistudio/datasetdetail/163284) \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
 
+# 使用示例  
+AiStudio使用示例：[MedicalSeg-nnUNet使用教程](https://aistudio.baidu.com/aistudio/projectdetail/4884907?contributionType=1)
+
 # 简介
-nnUNet包含2D-UNet，3d-UNet，Cascade UNet共3个模型，每个模型使用五折交叉验证的方式训练，故共有15个模型，对应15个配置文件。
+nnUNet包含2D-UNet，3d-UNet，Cascade UNet共3个模型，每个模型使用五折交叉验证的方式训练，由于Cascade UNet包含low resolution和high resolution 2个模型，故共有20个模型，对应20个配置文件。
 
 # 数据准备
 本教程以[MSD Lung](http://medicaldecathlon.com/)数据集为例，如果使用其他数据集，仅需要修改配置文件中的数据集路径和plan路径即可。解压数据集，目录结构为
