@@ -24,6 +24,7 @@
 通常而言，医疗图像分割可以分为2D医疗图像分割和3D医疗图像分割。对于2D医疗图像分割，大家可以直接使用PaddleSeg提供的通用语义分割能力，示例请参考[眼底数据分割](../../configs/unet/)。对于3D医疗图像分割，我们提供 MedicalSeg 方案进行专门支持。
 
 **MedicalSeg 是一个简易、强大、全流程的 3D 医学图像分割方案**，支持从数据处理、模型训练、模型评估和模型部署的全套流程。
+
 MedicalSeg 全景图如下，其主要特性包括：
 * 包含了从数据标注、训练、部署的全流程医疗影像分割流程调用接口。
 * 涵盖医疗影像3D职能标注平台EISeg-Med3D，实现标注的高效、准确、好用。
@@ -35,7 +36,7 @@ MedicalSeg 全景图如下，其主要特性包括：
 </p>
 
 
-MedicalSeg 中 Vnet 模型训练的可视化结果如下，该模型在 COVID-19 CT scans 评估集上的 mDice 为 97.04% 、 MRISpineSeg 评估集上 16 类的 mDice 为 89.14%。
+MedicalSeg 模型预测可视化效果如下。
 
 <p align="center">
 <img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="30.6%" height="20%"><img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="40.6%" height="20%">
@@ -43,8 +44,12 @@ MedicalSeg 中 Vnet 模型训练的可视化结果如下，该模型在 COVID-19
 
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043516-eed25535-10e8-4853-8601-6bcf7ff58197.png" width="25"/> 最新消息
-- [2022-9] 新增3大前沿模型支持全流程部署应用，包含 **nnFormer, TransUNet, SwinUNet 和可部署的 nnUNet-D**，让你体会更强更精准的分割效果；新增 3D 医疗图像智能标注平台 [EISeg-Med3D](../../EISeg/med3d/README.md)，方便快捷地实现精准3D医疗图像标注。
-- [2022-4] **MedicalSeg 发布0.1版本**，提供了3D医疗图像分割中的数据预处理到到训练部署全流程，包含了对五个数据集的原生支持，以及椎骨和肺部上的高精度预训练模型。
+* [2022-9] 
+  * 新增**3D医疗影像交互式标注工具 [EISeg-Med3D](../../EISeg/med3d/README.md)**，方便快捷地实现精准3D医疗图像标注。
+  * 新增3个前沿3D医疗图像分割模型，**nnFormer, TransUNet, SwinUNet**，实现更精准的分割效果，而且支持全流程部署应用。
+  * 新增**高精度分割方案nnUNet-D**，涵盖数据分析、超参优化、模型构建、模型训练、模型融合等模块，而且新增模型部署的能力。
+* [2022-4] 
+  * **MedicalSeg 发布0.1版本**，提供了3D医疗图像分割中的数据预处理到到训练部署全流程，包含了对五个数据集的原生支持，以及椎骨和肺部上的高精度预训练模型。
 
 ## <img src="../../docs/images/chat.png" width="25"/> 技术交流
 * 如果大家有使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
@@ -79,14 +84,13 @@ EISeg-Med3D详细的使用文档，请参考[链接](../../EISeg/med3d/README.md
 ------------------
 
 
-## <img src="https://user-images.githubusercontent.com/34859558/190044217-8f6befc2-7f20-473d-b356-148e06265205.png" width="25"/> MedicalSeg模型性能
+## <img src="https://user-images.githubusercontent.com/34859558/190044217-8f6befc2-7f20-473d-b356-148e06265205.png" width="25"/> MedicalSeg 高精模型库
 
 ###  1. 精度
 
-我们新增包含nnUNet、nnFormer、SwinUNet、TransUNet的前沿模型，并均在分割精度上不同程度上超越了原论文，其中复现的TransUNet精度超越原论文3.6%，在多器官数据集Synapse上达到了81.8%的mDice分割精度。
+MedicalSeg支持nnUNet、nnFormer、SwinUNet、TransUNet等前沿3D医疗图像分割模型，并均在分割精度上不同程度上超越了原论文，其中复现的TransUNet精度超越原论文3.6%，在多器官数据集Synapse上达到了81.8%的mDice分割精度。
 
 下面我们以表格的形式展示了我们已有的模型、预训练模型参数和精度，欢迎下载日志以查看结果或加载预训练模型用于相关数据集上的训练效果提升:)。
-
 
 |模型| 分割对象 | 数据集 | mDice | 说明文档 | 链接 |
 |:-:|:-:|:-:|:-:|:-:|:-:|
@@ -136,7 +140,7 @@ EISeg-Med3D详细的使用文档，请参考[链接](../../EISeg/med3d/README.md
    sh run-vnet.sh
    ```
 
-## <img src="https://user-images.githubusercontent.com/34859558/188439970-18e51958-61bf-4b43-a73c-a9de3eb4fc79.png" width="25"/> 完整教程
+## <img src="https://user-images.githubusercontent.com/34859558/188439970-18e51958-61bf-4b43-a73c-a9de3eb4fc79.png" width="25"/> 详细教程
 这一部分，我们将会介绍参数配置、训练、评估、部署部分的完整内容。
 
 
@@ -161,7 +165,10 @@ python tools/prepare_lung_coronavirus.py  # 以 CONVID-19 CT scans 为例。
 ```
 
 ### 3. 训练、评估
-准备好配置之后，只需要一键运行 [run-vnet.sh](../run-vnet.sh) 就可以进行训练和评估。让我们看看这个脚本中的命令是什么样子的：
+
+准备好配置之后，只需要一键运行 [run-vnet.sh](../run-vnet.sh) 就可以进行训练和评估。
+
+run-vnet.sh脚本具体内容如下。该示例使用VNet模型进行演示，也支持修改并使用上述模型库中的其他模型进行训练和评估。
 
 ```bash
 # 设置使用的单卡 GPU id
