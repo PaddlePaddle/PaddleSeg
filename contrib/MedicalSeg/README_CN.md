@@ -4,18 +4,18 @@
 
 **目录**
 
-* [简介](#简介)
-* [最新消息](#最新消息)
-* [技术交流](#技术交流)
-* [3D智能标注EISeg-Med3D](#3D智能标注EISeg-Med3D)
-* [MedicalSeg模型性能](#MedicalSeg模型性能)
-* [快速在肺部数据上开始](#快速在肺部数据上开始)
-* [完整教程](#完整教程)
-* [在自己的数据上训练](#在自己的数据上训练)
-* [代码结构](#代码结构)
-* [TODO](#TODO)
-* [License](#License)
-* [致谢](#致谢)
+* 简介
+* 最新消息
+* 技术交流
+* 3D智能标注EISeg-Med3D
+* MedicalSeg模型性能
+* 快速在肺部数据上开始
+* 完整教程
+* 在自己的数据上训练
+* 代码结构
+* TODO
+* License
+* 致谢
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043857-bfbdaf8b-d2dc-4fff-81c7-e0aac50851f9.png" width="25"/> 简介
 
@@ -25,9 +25,10 @@
 
 **MedicalSeg 是一个简易、强大、全流程的 3D 医学图像分割方案**，支持从数据处理、模型训练、模型评估和模型部署的全套流程。
 MedicalSeg 全景图如下，其主要特性包括：
-* 支持 [MSD](http://medicaldecathlon.com/)、[Promise12](https://promise12.grand-challenge.org/)、[Prostate_mri](https://liuquande.github.io/SAML/)等数据集，提供了数据预处理加速能力；
-* 支持了肺部数据 [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) 和椎骨数据 [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) 上的多个高精度3D医疗图像分割模型；
-* 支持基于[itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets) 的 3D 可视化[Demo](visualize.ipynb)。
+* 包含了从数据标注、训练、部署的全流程医疗影像分割流程调用接口。
+* 涵盖医疗影像3D职能标注平台EISeg-Med3D，实现标注的高效、准确、好用。
+* 支持六大前沿模型nnUNet、nnFormer、SwinUNet、TransUNet、UNETR、VNet，七大数据集，以及对应的高精度预训练模型。
+
 
 <p align="center">
 <img src="https://github.com/shiyutang/files/raw/main/meeicalsegall.png" width="70.6%" height="20%">
@@ -82,18 +83,20 @@ EISeg-Med3D详细的使用文档，请参考[链接](../../EISeg/med3d/README.md
 
 ###  1. 精度
 
-我们新增包含nnUNet、nnFormer、SwinUNet、TransUNet的前沿模型，并均在分割精度上不同程度上超越了原论文，其中复现的TransUNet精度超越原论文3.6%，在多器官数据集Synapse上达到了81.8%的mDice分割精度。下面以表格的形式展示了我们已有的模型、预训练模型参数和精度，欢迎下载日志以查看结果或加载预训练模型用于相关数据集上的训练效果提升:)。
+我们新增包含nnUNet、nnFormer、SwinUNet、TransUNet的前沿模型，并均在分割精度上不同程度上超越了原论文，其中复现的TransUNet精度超越原论文3.6%，在多器官数据集Synapse上达到了81.8%的mDice分割精度。
+
+下面我们以表格的形式展示了我们已有的模型、预训练模型参数和精度，欢迎下载日志以查看结果或加载预训练模型用于相关数据集上的训练效果提升:)。
 
 
-| 分割对象 | 数据集 | 模型 | mDice | 说明文档 | 链接 |
+|模型| 分割对象 | 数据集 | mDice | 说明文档 | 链接 |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-|心脏 |[ACDC](https://acdc.creatis.insa-lyon.fr/#phase/5846c3ab6a3c7735e84b67f2)|[nnFormer](https://arxiv.org/abs/2109.03201)|91.8%|[README](configs/acdc/README.md)|[model](https://paddleseg.bj.bcebos.com/paddleseg3d/acdc/nnformer_acdc_160_160_14_250k_4e-4/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/paddleseg3d/acdc/nnformer_acdc_160_160_14_250k_4e-4/train.log)\| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=b9a90b8aba579997a6f088b840a6e96d)|
-|肺部|[COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans)|[Vnet](https://arxiv.org/abs/1606.04797)|97.0%|[README](configs/lung_coronavirus/README.md)|[model](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_1e-3/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_1e-3/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=9db5c1e11ebc82f9a470f01a9114bd3c)|
-|肺肿瘤|[MSD-Lung](http://medicaldecathlon.com/)|[nnUNet](https://www.nature.com/articles/s41592-020-01008-z)|67.9%|[README](configs/nnunet/msd_lung/README.md)|[model](https://aistudio.baidu.com/aistudio/datasetdetail/162872)  \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
-|椎骨|[MRISpineSeg](https://www.spinesegmentation-challenge.com/)|[Vnet](https://arxiv.org/abs/1606.04797)|74.7%|[README](configs/mri_spine_seg/README.md)|[model](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_5e-1/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_5e-1/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=08b0f9f62ebb255cdfc93fd6bd8f2c06)|
-|脑肿瘤|[MSD-brain](http://medicaldecathlon.com/)|[UNETR](https://arxiv.org/abs/2103.10504)|71.8%|[README](configs/msd_brain_seg/README.md)|[model](https://bj.bcebos.com/paddleseg/paddleseg/medicalseg/msd_brain_seg/unetr_msd_brain_seg_1e-4/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg/medicalseg/msd_brain_seg/unetr_msd_brain_seg_1e-4/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=04e012eef21ea8478bdc03f9c5b1032f)|
-|多器官|[Synapse](https://www.synapse.org/#!Synapse:syn3193805/files/)|[SwinUNet](https://arxiv.org/abs/2105.05537)|82.1%|[README](configs/synapse/README.md)|[model](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/swinunet_abdomen_224_224_1_14k_5e-2/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/swinunet_abdomen_224_224_1_14k_5e-2/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=f62f69b8e9e9210c680dcfc862e3b65b) |
-|多器官|[Synapse](https://www.synapse.org/#!Synapse:syn3193805/files/)|[TransUNet](https://arxiv.org/abs/2102.04306)|81.1%|[README](configs/synapse/README.md)|[model](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/transunet_abdomen_224_224_1_14k_1e-2/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/transunet_abdomen_224_224_1_14k_1e-2/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=d933d970394436aa6969c9c00cf8a6da)|
+|[nnFormer](https://arxiv.org/abs/2109.03201)|心脏 |[ACDC](https://acdc.creatis.insa-lyon.fr/#phase/5846c3ab6a3c7735e84b67f2)|91.8%|[README](configs/acdc/README.md)|[model](https://paddleseg.bj.bcebos.com/paddleseg3d/acdc/nnformer_acdc_160_160_14_250k_4e-4/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/paddleseg3d/acdc/nnformer_acdc_160_160_14_250k_4e-4/train.log)\| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=b9a90b8aba579997a6f088b840a6e96d)|
+|[Vnet](https://arxiv.org/abs/1606.04797)|肺部|[COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans)|97.0%|[README](configs/lung_coronavirus/README.md)|[model](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_1e-3/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_1e-3/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=9db5c1e11ebc82f9a470f01a9114bd3c)|
+|[nnUNet](https://www.nature.com/articles/s41592-020-01008-z)|肺肿瘤|[MSD-Lung](http://medicaldecathlon.com/)|67.9%|[README](configs/nnunet/msd_lung/README.md)|[model](https://aistudio.baidu.com/aistudio/datasetdetail/162872)  \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
+|[Vnet](https://arxiv.org/abs/1606.04797)|椎骨|[MRISpineSeg](https://www.spinesegmentation-challenge.com/)|74.7%|[README](configs/mri_spine_seg/README.md)|[model](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_5e-1/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_5e-1/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=08b0f9f62ebb255cdfc93fd6bd8f2c06)|
+|[UNETR](https://arxiv.org/abs/2103.10504)|脑肿瘤|[MSD-brain](http://medicaldecathlon.com/)|71.8%|[README](configs/msd_brain_seg/README.md)|[model](https://bj.bcebos.com/paddleseg/paddleseg/medicalseg/msd_brain_seg/unetr_msd_brain_seg_1e-4/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg/medicalseg/msd_brain_seg/unetr_msd_brain_seg_1e-4/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=04e012eef21ea8478bdc03f9c5b1032f)|
+|[SwinUNet](https://arxiv.org/abs/2105.05537)|多器官|[Synapse](https://www.synapse.org/#!Synapse:syn3193805/files/)|82.1%|[README](configs/synapse/README.md)|[model](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/swinunet_abdomen_224_224_1_14k_5e-2/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/swinunet_abdomen_224_224_1_14k_5e-2/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=f62f69b8e9e9210c680dcfc862e3b65b) |
+|[TransUNet](https://arxiv.org/abs/2102.04306)|多器官|[Synapse](https://www.synapse.org/#!Synapse:syn3193805/files/)|81.1%|[README](configs/synapse/README.md)|[model](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/transunet_abdomen_224_224_1_14k_1e-2/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/transunet_abdomen_224_224_1_14k_1e-2/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=d933d970394436aa6969c9c00cf8a6da)|
 
 
 ### 2. 速度
