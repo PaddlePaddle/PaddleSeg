@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import cv2
-import numbers
 import numpy as np
 from PIL import Image, ImageEnhance
 from scipy.ndimage import distance_transform_edt
