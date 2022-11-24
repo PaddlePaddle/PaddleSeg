@@ -1,6 +1,6 @@
 _base_: '../_base_/ade20k.yml'
 
-batch_size: 1
+batch_size: 4
 iters: 160000
 
 model:
