@@ -31,11 +31,14 @@ train_dataset:
   type: ADE20K
   dataset_root: data/ADEChallengeData2016/
   transforms:
-    - type: Resize_CAE
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.0
     - type: RandomPaddingCrop
       crop_size: [512, 512]
     - type: RandomHorizontalFlip
-    - type: PhotoMetricDistortion
+    - type: RandomDistort
     - type: Normalize
       mean: [0.485, 0.456, 0.406]
       std: [0.229, 0.224, 0.225]
@@ -63,6 +66,7 @@ loss:
   coef: [1, 0.4]
 
 optimizer:
+  _inherited_: False
   type: adamwdl
   weight_decay: 0.0
   beta1: 0.9
