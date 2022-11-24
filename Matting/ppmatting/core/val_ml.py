@@ -44,10 +44,10 @@ def reverse_transform(alpha, trans_info):
     """recover pred to origin shape"""
     for item in trans_info[::-1]:
         if item[0][0] == 'resize':
-            h, w = item[1][0].numpy()[0], item[1][1].numpy()[0]
+            h, w = int(item[1][0]), int(item[1][1])
             alpha = cv2.resize(alpha, dsize=(w, h))
         elif item[0][0] == 'padding':
-            h, w = item[1][0].numpy()[0], item[1][1].numpy()[0]
+            h, w = int(item[1][0]), int(item[1][1])
             alpha = alpha[0:h, 0:w]
         else:
             raise Exception("Unexpected info '{}' in im_info".format(item[0]))

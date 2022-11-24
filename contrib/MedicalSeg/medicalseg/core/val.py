@@ -104,6 +104,8 @@ def evaluate(
             if has_dataset_json:
                 image_json = dataset_json_dict["training"][idx[0].split("/")[-1]
                                                            .split(".")[0]]
+            else:
+                image_json = None
 
             label = label.astype('int32')
 
@@ -124,6 +126,12 @@ def evaluate(
 
             if writer is not None:  # TODO visualdl single channel pseudo label map transfer to
                 pass
+
+            if hasattr(model, "postprocess"):
+                logits, label = model.postprocess(logits, label)
+                # Update pred from postprocessed logits
+                pred = paddle.argmax(
+                    logits[0], axis=1, keepdim=True, dtype='int32')
 
             # logits [N, num_classes, D, H, W] Compute loss to get dice
             loss, per_channel_dice = loss_computation(logits, label, new_loss)
@@ -147,6 +155,10 @@ def evaluate(
                 channel_dice_array += per_channel_dice
             if is_save_data:
                 if iter < 5:
+                    if image_json is None:
+                        raise ValueError(
+                            "No json file is loaded. Please check if the dataset is preprocessed and `has_dataset_json` is True."
+                        )
                     save_array(
                         save_path=os.path.join(save_dir, str(iter)),
                         save_content={
@@ -156,7 +168,8 @@ def evaluate(
                         },
                         form=('npy', 'nii.gz'),
                         image_infor={
-                            "spacing": image_json["spacing_resample"],
+                            "spacing": image_json.get("spacing_resample",
+                                                      image_json["spacing"]),
                             'direction': image_json["direction"],
                             "origin": image_json["origin"],
                             'format': "xyz"

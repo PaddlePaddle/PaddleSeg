@@ -108,7 +108,9 @@ def predict(model,
         for i, im_path in enumerate(img_lists[local_rank]):
             ori_im = cv2.imread(im_path)
             ori_shape = ori_im.shape[:2]
-            im, _ = transforms(ori_im)
+            data = {'img': ori_im}
+            data = transforms(data)
+            im = data['img']
             im = im[np.newaxis, ...]
             im = paddle.to_tensor(im)
 

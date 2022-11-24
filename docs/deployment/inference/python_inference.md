@@ -5,7 +5,7 @@ English|[简体中文](python_inference_cn.md)
 
 This document introduces how to deploy the segmentation model on the server side (Nvidia GPU or X86 CPU) by Python api of Paddle Inference.
 
-Paddle provides multiple prediction engine deployment models for different scenarios (as shown in the figure below), for more details, please refer to [document](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html).
+Paddle provides multiple prediction engine deployment models for different scenarios (as shown in the figure below), for more details, please refer to [document](https://www.paddlepaddle.org.cn/inference/v2.3/product_introduction/summary.html).
 
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
@@ -32,10 +32,11 @@ If you use the Naive method to deploy the model on the Nvidia GPU, you can refer
 python -m pip install paddlepaddle-gpu==2.1.2.post101 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 ```
 
-If you use TensorRT to deploy the model on the Nvidia GPU, please refer to the [document](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html) to prepare the CUDA environment and install the corresponding GPU version of PaddlePaddle（recoment paddlepaddle-gpu>=2.1. For example:
+If you use TensorRT to deploy the model on the Nvidia GPU, please refer to the [document](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/download_lib.html#python) to prepare the CUDA environment and install the corresponding GPU version of PaddlePaddle（recoment paddlepaddle-gpu>=2.1. For example:
 
 ```
-python -m pip install paddlepaddle-gpu==[version] -f https://www.paddlepaddle.org.cn/whl/stable/tensorrt.html
+wget https://paddle-inference-lib.bj.bcebos.com/2.3.2/python/Linux/GPU/x86-64_gcc8.2_avx_mkl_cuda10.2_cudnn8.1.1_trt7.2.3.4/paddlepaddle_gpu-2.3.2-cp37-cp37m-linux_x86_64.whl
+pip install paddlepaddle_gpu-2.3.2-cp37-cp37m-linux_x86_64.whl
 ```
 
 To deploy the model using TensorRT on Nvidia GPU, you need to download the TensorRT library.

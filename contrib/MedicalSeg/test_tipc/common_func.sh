@@ -53,12 +53,24 @@ function func_parser_params(){
 }
 
 function status_check(){
-    last_status=$1   # the exit code
-    run_command=$2
-    run_log=$3
+    local last_status=$1   # the exit code
+    local run_command=$2
+    local run_log=$3
+    local model_name=$4
     if [ $last_status -eq 0 ]; then
-        echo -e "\033[33m Run successfully with command - ${run_command}!  \033[0m" | tee -a ${run_log}
+        echo -e "\033[33m Run successfully with command - ${model_name} - ${run_command}!  \033[0m" | tee -a ${run_log}
     else
-        echo -e "\033[33m Run failed with command - ${run_command}!  \033[0m" | tee -a ${run_log}
+        echo -e "\033[33m Run failed with command - ${model_name} - ${run_command}!  \033[0m" | tee -a ${run_log}
+    fi
+}
+
+function run_command() {
+    local cmd="$1"
+    local log_path="$2"
+    if [ -n "${log_path}" ]; then
+        eval ${cmd} | tee "${log_path}"
+        test ${PIPESTATUS[0]} -eq 0
+    else
+        eval ${cmd}
     fi
 }

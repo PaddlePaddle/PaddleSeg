@@ -57,6 +57,7 @@ def par_line_dist(L1, L2):
 
 # 计算点在直线的投影位置
 def point_in_line(m, n, x1, y1, x2, y2):
+    eps = 1e-12
     x = (m * (x2 - x1) * (x2 - x1) + n * (y2 - y1) * (x2 - x1) +
          (x1 * y2 - x2 * y1) * (y2 - y1)) / (
              (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))

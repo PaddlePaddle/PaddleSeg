@@ -1,3 +1,5 @@
+English | [简体中文](medical.md)
+
 # Medical Treatment
 
 This part presents documents related to medical treatment in EISeg, including its environment configuration and functions.

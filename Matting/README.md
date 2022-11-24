@@ -1,278 +1,105 @@
 English | [简体中文](README_CN.md)
 
-# Matting
-Image Matting is the technique of extracting foreground from an image by calculating its color and transparency. It is widely used in the film industry to replace background, image composition, and visual effects. Each pixel in the image will have a value that represents its foreground transparency, called Alpha. The set of all Alpha values in an image is called Alpha Matte. The part of the image covered by the mask can be extracted to complete foreground separation.
+# Image Matting
+
+## Contents
+* [Introduction](#Introduction)
+* [Update Notes](#Update-Notes)
+* [Community](#Community)
+* [Models](#Models)
+* [Tutorials](#Tutorials)
+* [Acknowledgement](#Acknowledgement)
+* [Citation](#Citation)
+
+
+## Introduction
+
+Image Matting is the technique of extracting foreground from an image by calculating its color and transparency.
+It is widely used in the film industry to replace background, image composition, and visual effects.
+Each pixel in the image will have a value that represents its foreground transparency, called Alpha.
+The set of all Alpha values in an image is called Alpha Matte.
+The part of the image covered by the mask can be extracted to complete foreground separation.
+
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
-</p>
-
-# One-click experience
-Matting is widely used in a variety of industries, such as video clip, video synthesis and other fields，Some developers also built a one-click Matting website named "No code Matting" based on PP-Matting，Welcome to use it.
-- [using Link](http://seg.itmanbu.com/)
-
-<p align="center">
-<img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">
+<img src="https://user-images.githubusercontent.com/30919197/179751613-d26f2261-7bcf-4066-a0a4-4c818e7065f0.gif" width="100%" height="100%">
 </p>
 
 ## Update Notes
-2022.04
-[1] Add PPMatting model.
-[2] Add PPHumanMatting high-resolution human matting model.
-[3] Add Grad, Conn evaluation metrics.
-[4] Add foreground evaluation funciton. use [ML](https://arxiv.org/pdf/2006.14970.pdf) algorithm to evaluate foreground when prediction or background replacement.
-[5] Add GradientLoss and LaplacianLoss.
-[6] Add RandomSharpen, RandomSharpen, RandomReJpeg, RSSN data augmentation strategies.
+* 2022.11
+  * **Release self developed lite matting SOTA model PP-MattingV2**. Compared with MODNet, the inference speed of PP-MattingV2 is increased by 44.6%, and the average error is decreased by 17.91%.
+  * Adjust the document structure and improve the model zoo information.
+  * [FastDeploy](https://github.com/PaddlePaddle/FastDeploy) support PP-MattingV2, PP-Matting, PP-HumanMatting and MODNet models.
+* 2022.07
+  * Release PP-Matting code. Add ClosedFormMatting, KNNMatting, FastMatting, LearningBaseMatting and RandomWalksMatting traditional machine learning algorithms.
+  Add GCA model.
+  * upport to specify metrics for evaluation. Support to specify metrics for evaluation.
+* 2022.04
+  * **Release self developed high accuracy matting SOTA model PP-Matting**. Add PP-HumanMatting high-resolution human matting model.
+  * Add Grad, Conn evaluation metrics. Add foreground evaluation funciton, which use [ML](https://arxiv.org/pdf/2006.14970.pdf) algorithm to evaluate foreground when prediction or background replacement.
+  * Add GradientLoss and LaplacianLoss. Add RandomSharpen, RandomSharpen, RandomReJpeg, RSSN data augmentation strategies.
 
-2021.11 Matting Project is released.
-[1] Support Matting models: DIM, MODNet.
-[2] Support model export and python deployment.
-[3] Support background replacement function.
-[4] Support human matting deployment in Android.
+* 2021.11
+  * **Matting Project is released**, which Realizes image matting function.
+  * Support Matting models: DIM, MODNet. Support model export and python deployment. Support background replacement function. Support human matting deployment in Android.
 
-## Contents
-- [Installation](#Installation)
-- [Models](#Models)
-- [Dataset Preparation](#Dataset-Preparation)
-- [Training, Evaluation and Prediction](#Training-Evaluation-and-Prediction)
-- [Background Replacement](#Background-Replacement)
-- [Export and Deploy](#Export-and-Deploy)
-- [Human Matting Deployment in Android](./deploy/human_matting_android_demo/README.md)
+## Community
 
-## Installation
-
-#### 1. Install PaddlePaddle
-
-Versions
-
-* PaddlePaddle >= 2.0.2
-
-* Python >= 3.7+
-
-Due to the high computational cost of model, PaddleSeg is recommended for GPU version PaddlePaddle. CUDA 10.0 or later is recommended. See [PaddlePaddle official website](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html) for the installation tutorial.
-
-#### 2. Download the PaddleSeg repository
-
-```shell
-git clone https://github.com/PaddlePaddle/PaddleSeg
-```
-
-#### 3. Installation
-
-```shell
-cd PaddleSeg/Matting
-pip install -r requirements.txt
-```
+* If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+</div>
 
 ## Models
-A variety of human matting models are provided for you to select according the actual situation.
 
-Model recommend:
-- for accuracy: PP-Matting, using PP-Matting-512 in low resolution situation, using PP-Matting-1024 in high resolution situation.
-- for speed: ModNet-MobileNetV2.
-- high resolution (>2048) human matting with simple background: PP-HumanMatting.
-- providing trimap：DIM-VGG16.
+For the widely application scenario -- human matting, we have trained and open source the ** high-quality human matting models**.
+According the actual application scenario, you can directly deploy or finetune.
 
-| Model | Params(M) | FLOPs(G) | FPS | Checkpoint | Inference Model |
-| - | - | -| - | - | - |
-| PP-Matting-512     | 24.5 | 91.28 | 28.9 | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_512.zip) |
-| PP-Matting-1024    | 24.5 | 91.28 | 13.4(1024X1024) | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_1024.zip) |
-| PP-HumanMatting    | 63.9 | 135.8 (2048X2048)| 32.8(2048X2048)| [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-humanmatting-resnet34_vd.zip) |
-| ModNet-MobileNetV2 | 6.5 | 15.7 | 68.4 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-mobilenetv2.zip) |
-| ModNet-ResNet50_vd | 92.2 | 151.6 | 29.0 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-resnet50_vd.zip) |
-| ModNet-HRNet_W18   | 10.2 | 28.5 | 32.6 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-hrnet_w18.zip) |
-| DIM-VGG16          | 28.4 | 175.5| 30.4 | [model](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/dim-vgg16.zip) |
+The model zoo includes our self developded high accuracy model PP-Matting and lite model PP-MattingV2.
+- PP-Matting is a high accuracy matting model developded by PaddleSeg, which realizes high-resolution image matting under semantic guidance by the design of Guidance Flow.
+    For high accuracy, this model is recommended. Two pre-trained models are opened source with 512 and 1024 resolution level.
 
-Note: The model default input size is (512, 512) while calcuting FLOPs and FPS and the GPU is Tesla V100 32G.
+- PP-MattingV2 is a lite matting SOTA model developed by PaddleSeg. It extracts high-level semantc informating by double-pyramid pool and spatial attention,
+    and uses multi-level feature fusion mechanism for both semantic and detail prediciton.
 
-## Dataset preparation
+| Model | SAD | MSE | Grad | Conn |Params(M) | FLOPs(G) | FPS | Config File | Checkpoint | Inference Model |
+| - | - | -| - | - | - | - | -| - | - | - |
+| PP-MattingV2-512   |40.59|0.0038|33.86|38.90| 8.95 | 7.51 | 98.89 |[cfg](../configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml)| [model](https://paddleseg.bj.bcebos.com/matting/models/ppmattingv2-stdc1-human_512.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/ppmattingv2-stdc1-human_512.zip) |
+| PP-Matting-512     |31.56|0.0022|31.80|30.13| 24.5 | 91.28 | 28.9 |[cfg](../configs/ppmatting/ppmatting-hrnet_w18-human_512.yml)| [model](https://paddleseg.bj.bcebos.com/matting/models/ppmatting-hrnet_w18-human_512.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/ppmatting-hrnet_w18-human_512.zip) |
+| PP-Matting-1024    |66.22|0.0088|32.90|64.80| 24.5 | 91.28 | 13.4(1024X1024) |[cfg](../configs/ppmatting/ppmatting-hrnet_w18-human_1024.yml)| [model](https://paddleseg.bj.bcebos.com/matting/models/ppmatting-hrnet_w18-human_1024.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/ppmatting-hrnet_w18-human_1024.zip) |
+| PP-HumanMatting    |53.15|0.0054|43.75|52.03| 63.9 | 135.8 (2048X2048)| 32.8(2048X2048)|[cfg](../configs/human_matting/human_matting-resnet34_vd.yml)| [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-humanmatting-resnet34_vd.zip) |
+| MODNet-MobileNetV2 |50.07|0.0053|35.55|48.37| 6.5 | 15.7 | 68.4 |[cfg](../configs/modnet/modnet-mobilenetv2.yml)| [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-mobilenetv2.zip) |
+| MODNet-ResNet50_vd |39.01|0.0038|32.29|37.38| 92.2 | 151.6 | 29.0 |[cfg](../configs/modnet/modnet-resnet50_vd.yml)| [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-resnet50_vd.zip) |
+| MODNet-HRNet_W18   |35.55|0.0035|31.73|34.07| 10.2 | 28.5 | 62.6 |[cfg](../configs/modnet/modnet-hrnet_w18.yml)| [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-hrnet_w18.zip) |
+| DIM-VGG16          |32.31|0.0233|28.89|31.45| 28.4 | 175.5| 30.4 |[cfg](../configs/dim/dim-vgg16.yml)| [model](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/dim-vgg16.zip) |
 
-Using MODNet's open source [PPM-100](https://github.com/ZHKKKe/PPM) dataset as our demo dataset for the tutorial.
+**Note**：
+* The dataset for metrics is composed of PPM-100 and human part of AIM-500, with a total of 195 images, which named [PPM-AIM-195](https://paddleseg.bj.bcebos.com/matting/datasets/PPM-AIM-195.zip).
+* The model default input size is (512, 512) while calculating FLOPs and FPS and the GPU is Tesla V100 32G. FPS is calculated base on Paddle Inference.
+* DIM is a trimap-base matting method, which metrics are calculated in transition area.
+    If no trimap image is provided, the area  0<alpha<255 is used as the transition area after dilation erosion with a radius of 25 pixels.
 
-Organize the dataset into the following structure and place the dataset under the `data` directory.
+## Tutorials
+* [Online experience](docs/online_demo_en.md)
+* [Quick start](docs/quick_start_en.md)
+* [Full development](docs/full_develop_en.md)
+* [Human matting android deployment](deploy/human_matting_android_demo/README.md)
+* [Dataset preparation](docs/data_prepare_en.md)
+* AI Studio tutorials
+  * [The Matting tutorial of PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/3876411?contributionType=1)
+  * [The image matting tutorial of PP-Matting](https://aistudio.baidu.com/aistudio/projectdetail/5002963?contributionType=1)
 
-```
-PPM-100/
-|--train/
-|  |--fg/
-|  |--alpha/
-|
-|--val/
-|  |--fg/
-|  |--alpha
-|
-|--train.txt
-|
-|--val.txt
-```
-
-The image name in the fg directory must be the same as the that in the alpha directory.
-
-The contents of train.txt and val.txt are as follows:
-```
-train/fg/14299313536_ea3e61076c_o.jpg
-train/fg/14429083354_23c8fddff5_o.jpg
-train/fg/14559969490_d33552a324_o.jpg
-...
-```
-
-You can download the organized [PPM-100](https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip) dataset directly for subsequent tutorials.
-
-If the full image is composited of foreground and background like the Composition-1k dataset used in [Deep Image Matting](https://arxiv.org/pdf/1703.03872.pdf), the dataset should be organized as follows:
-```
-Composition-1k/
-|--bg/
-|
-|--train/
-|  |--fg/
-|  |--alpha/
-|
-|--val/
-|  |--fg/
-|  |--alpha/
-|  |--trimap/ (if existing)
-|
-|--train.txt
-|
-|--val.txt
-```
-The contents of train.txt is as follows:
-```
-train/fg/fg1.jpg bg/bg1.jpg
-train/fg/fg2.jpg bg/bg2.jpg
-train/fg/fg3.jpg bg/bg3.jpg
-...
-```
-
-The contents of val.txt is as follows. If trimap does not exist in dataset, the third column is not needed and the code will generate trimap automatically.
-```
-val/fg/fg1.jpg bg/bg1.jpg val/trimap/trimap1.jpg
-val/fg/fg2.jpg bg/bg2.jpg val/trimap/trimap2.jpg
-val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
-...
-```
-## Training, Evaluation and Prediction
-### Training
-```shell
-export CUDA_VISIBLE_DEVICES=0
-python tools/train.py \
-       --config configs/quick_start/modnet-mobilenetv2.yml \
-       --do_eval \
-       --use_vdl \
-       --save_interval 500 \
-       --num_workers 5 \
-       --save_dir output
-```
-
-**note:** Using `--do_eval` will affect training speed and increase memory consumption, turning on and off according to needs.
-If opening the `--do_eval`, the historical best model will be saved to '{save_dir}/best_model' according to SAD. At the same time, 'best_sad.txt' will be generated in this directory to record the information of metrics and iter at this time.
-
-`--num_workers` Read data in multi-process mode. Speed up data preprocessing.
-
-Run the following command to view more parameters.
-```shell
-python tools/train.py --help
-```
-If you want to use multiple GPUs，please use `python -m paddle.distributed.launch` to run.
-
-### Evaluation
-```shell
-export CUDA_VISIBLE_DEVICES=0
-python tools/val.py \
-       --config configs/quick_start/modnet-mobilenetv2.yml \
-       --model_path output/best_model/model.pdparams \
-       --save_dir ./output/results \
-       --save_results
-```
-`--save_result` The prediction results will be saved if turn on. If it is off, it will speed up the evaluation.
-
-You can directly download the provided model for evaluation.
-
-Run the following command to view more parameters.
-```shell
-python tools/val.py --help
-```
-
-### Prediction
-```shell
-export CUDA_VISIBLE_DEVICES=0
-python tools/predict.py \
-    --config configs/quick_start/modnet-mobilenetv2.yml \
-    --model_path output/best_model/model.pdparams \
-    --image_path data/PPM-100/val/fg/ \
-    --save_dir ./output/results \
-    --fg_estimate True
-```
-If the model requires trimap information, pass the trimap path through '--trimap_path'.
-
-`--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
-
-You can directly download the provided model for evaluation.
-
-Run the following command to view more parameters.
-```shell
-python tools/predict.py --help
-```
-
-## Background Replacement
-```shell
-export CUDA_VISIBLE_DEVICES=0
-python tools/bg_replace.py \
-    --config configs/quick_start/modnet-mobilenetv2.yml \
-    --model_path output/best_model/model.pdparams \
-    --image_path path/to/your/image \
-    --background path/to/your/background/image \
-    --save_dir ./output/results \
-    --fg_estimate True
-```
-If the model requires trimap information, pass the trimap path through `--trimap_path`.
-
-`--background` can pass a path of brackground image or select one of ('r', 'g', 'b', 'w') which represent red, green, blue and white. If it is not specified, a green background is used.
-
-`--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
-
-**note：** `--image_path` must be a image path。
-
-You can directly download the provided model for background replacement.
-
-Run the following command to view more parameters.
-```shell
-python tools/bg_replace.py --help
-```
-
-## Export and Deploy
-### Model Export
-```shell
-python tools/export.py \
-    --config configs/quick_start/modnet-mobilenetv2.yml \
-    --model_path output/best_model/model.pdparams \
-    --save_dir output/export
-```
-If the model requires trimap information, `--trimap` is need.
-
-Run the following command to view more parameters.
-```shell
-python tools/export.py --help
-```
-
-### Deploy
-```shell
-python deploy/python/infer.py \
-    --config output/export/deploy.yaml \
-    --image_path data/PPM-100/val/fg/ \
-    --save_dir output/results \
-    --fg_estimate True
-```
-If the model requires trimap information, pass the trimap path through '--trimap_path'.
-
-`--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
-
-Run the following command to view more parameters.
-```shell
-python deploy/python/infer.py --help
-```
 ## Acknowledgement
-
 * Thanks [Qian bin](https://github.com/qianbin1989228) for their contributons.
-
 * Thanks for the algorithm support of [GFM](https://arxiv.org/abs/2010.16188).
+
+## Citation
+```
+@article{chen2022pp,
+  title={PP-Matting: High-Accuracy Natural Image Matting},
+  author={Chen, Guowei and Liu, Yi and Wang, Jian and Peng, Juncai and Hao, Yuying and Chu, Lutao and Tang, Shiyu and Wu, Zewu and Chen, Zeyu and Yu, Zhiliang and others},
+  journal={arXiv preprint arXiv:2204.09433},
+  year={2022}
+}
+```

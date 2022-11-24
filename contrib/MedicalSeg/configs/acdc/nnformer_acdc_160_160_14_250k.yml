@@ -1,0 +1,14 @@
+_base_: 'acdc_4e-4.yml'
+
+model:
+  type: nnFormer
+  crop_size: [14, 160, 160]
+  embedding_dim: 96
+  input_channels: 1
+  num_classes: 4
+  depths: [2, 2, 2, 2]
+  num_heads: [3, 6, 12, 24]
+  patch_size: [1, 4, 4]
+  window_size: [[3, 5, 5], [3, 5, 5], [7, 10, 10], [3, 5, 5]]
+  down_stride: [[1, 4, 4], [1, 8, 8], [2, 16, 16], [4, 32, 32]]
+  deep_supervision: True

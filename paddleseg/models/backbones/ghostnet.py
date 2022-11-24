@@ -213,7 +213,7 @@ class GhostBottleneck(nn.Layer):
 
 
 class GhostNet(nn.Layer):
-    def __init__(self, scale, pretrained=None):
+    def __init__(self, scale, in_channels=3, pretrained=None):
         super(GhostNet, self).__init__()
         self.cfgs = [
             # k, t, c, SE, s
@@ -239,7 +239,7 @@ class GhostNet(nn.Layer):
 
         output_channels = int(self._make_divisible(16 * self.scale, 4))
         self.conv1 = ConvBNLayer(
-            in_channels=3,
+            in_channels=in_channels,
             out_channels=output_channels,
             kernel_size=3,
             stride=2,

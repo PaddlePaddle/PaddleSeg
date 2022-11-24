@@ -106,7 +106,7 @@ def parse_args():
     parser.add_argument(
         '--device',
         dest='device',
-        help='Device place to be set, which can be GPU, XPU, NPU, CPU',
+        help='Device place to be set, which can be GPU, XPU, NPU, MLU, CPU',
         default='gpu',
         type=str)
 
@@ -149,6 +149,8 @@ def main(args):
         place = 'xpu'
     elif args.device == 'npu' and paddle.is_compiled_with_npu():
         place = 'npu'
+    elif args.device == 'mlu' and paddle.is_compiled_with_mlu():
+        place = 'mlu'
     else:
         place = 'cpu'
 
@@ -157,6 +159,7 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    cfg.check_sync_info()
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -178,6 +181,9 @@ def main(args):
         image_dir=image_dir,
         save_dir=args.save_dir,
         **test_config)
+
+    logger.warning("This `predict.py` will be removed in version 2.8, "
+                   "please use `tools/predict.py`.")
 
 
 if __name__ == '__main__':

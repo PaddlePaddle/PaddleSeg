@@ -17,9 +17,6 @@ import codecs
 import os
 import sys
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
-
 import cv2
 import tqdm
 import yaml
@@ -30,8 +27,13 @@ from paddle.inference import Config as PredictConfig
 from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
 
-from ppmatting.utils import get_image_list, mkdir, estimate_foreground_ml
+LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
+manager.BACKBONES._components_dict.clear()
+manager.TRANSFORMS._components_dict.clear()
+
 import ppmatting.transforms as T
+from ppmatting.utils import get_image_list, mkdir, estimate_foreground_ml
 
 
 def parse_args():
@@ -397,10 +399,10 @@ class Predictor:
 
             self.predictor.run()
 
+            results = output_handle.copy_to_cpu()
+
             if args.benchmark:
                 self.autolog.times.stamp()
-
-            results = output_handle.copy_to_cpu()
 
             results = results.squeeze(1)
             for j in range(args.batch_size):

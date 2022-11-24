@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .backbones import *
 from .losses import *
 from .vnet import VNet
 from .vnet_deepsup import VNetDeepSup
 from .unetr import UNETR
+from .nnunet import NNUNet
+from .transunet import TransUNet
+from .swinunet import SwinUNet
+from .nnformer import nnFormer

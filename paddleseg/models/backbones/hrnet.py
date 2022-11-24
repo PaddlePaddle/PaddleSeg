@@ -37,6 +37,7 @@ class HRNet(nn.Layer):
     (https://arxiv.org/pdf/1908.07919.pdf).
 
     Args:
+        in_channels (int, optional): The channels of input image. Default: 3.
         pretrained (str, optional): The path of pretrained model.
         stage1_num_modules (int, optional): Number of modules for stage1. Default 1.
         stage1_num_blocks (list, optional): Number of blocks per module for stage1. Default (4).
@@ -53,9 +54,11 @@ class HRNet(nn.Layer):
         has_se (bool, optional): Whether to use Squeeze-and-Excitation module. Default False.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
+        use_psa (bool, optional): Usage of the polarized self attention moudle. Default False.
     """
 
     def __init__(self,
+                 in_channels=3,
                  pretrained=None,
                  stage1_num_modules=1,
                  stage1_num_blocks=(4, ),
@@ -71,7 +74,8 @@ class HRNet(nn.Layer):
                  stage4_num_channels=(18, 36, 72, 144),
                  has_se=False,
                  align_corners=False,
-                 padding_same=True):
+                 padding_same=True,
+                 use_psa=False):
         super(HRNet, self).__init__()
         self.pretrained = pretrained
         self.stage1_num_modules = stage1_num_modules
@@ -91,7 +95,7 @@ class HRNet(nn.Layer):
         self.feat_channels = [sum(stage4_num_channels)]
 
         self.conv_layer1_1 = layers.ConvBNReLU(
-            in_channels=3,
+            in_channels=in_channels,
             out_channels=64,
             kernel_size=3,
             stride=2,
@@ -128,7 +132,8 @@ class HRNet(nn.Layer):
             has_se=self.has_se,
             name="st2",
             align_corners=align_corners,
-            padding_same=padding_same)
+            padding_same=padding_same,
+            use_psa=use_psa)
 
         self.tr2 = TransitionLayer(
             in_channels=self.stage2_num_channels,
@@ -143,7 +148,8 @@ class HRNet(nn.Layer):
             has_se=self.has_se,
             name="st3",
             align_corners=align_corners,
-            padding_same=padding_same)
+            padding_same=padding_same,
+            use_psa=use_psa)
 
         self.tr3 = TransitionLayer(
             in_channels=self.stage3_num_channels,
@@ -158,7 +164,8 @@ class HRNet(nn.Layer):
             has_se=self.has_se,
             name="st4",
             align_corners=align_corners,
-            padding_same=padding_same)
+            padding_same=padding_same,
+            use_psa=use_psa)
 
         self.init_weight()
 
@@ -282,7 +289,8 @@ class Branches(nn.Layer):
                  out_channels,
                  has_se=False,
                  name=None,
-                 padding_same=True):
+                 padding_same=True,
+                 use_psa=False):
         super(Branches, self).__init__()
 
         self.basic_block_list = []
@@ -299,7 +307,8 @@ class Branches(nn.Layer):
                         has_se=has_se,
                         name=name + '_branch_layer_' + str(i + 1) + '_' +
                         str(j + 1),
-                        padding_same=padding_same))
+                        padding_same=padding_same,
+                        use_psa=use_psa))
                 self.basic_block_list[i].append(basic_block_func)
 
     def forward(self, x):
@@ -388,7 +397,8 @@ class BasicBlock(nn.Layer):
                  has_se=False,
                  downsample=False,
                  name=None,
-                 padding_same=True):
+                 padding_same=True,
+                 use_psa=False):
         super(BasicBlock, self).__init__()
 
         self.has_se = has_se
@@ -401,6 +411,8 @@ class BasicBlock(nn.Layer):
             stride=stride,
             padding=1 if not padding_same else 'same',
             bias_attr=False)
+        self.deattn = layers.PolarizedSelfAttentionModule(
+            num_filters, num_filters) if use_psa else nn.Identity()
         self.conv2 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters,
@@ -428,6 +440,7 @@ class BasicBlock(nn.Layer):
     def forward(self, x):
         residual = x
         conv1 = self.conv1(x)
+        conv1 = self.deattn(conv1)
         conv2 = self.conv2(conv1)
 
         if self.downsample:
@@ -487,7 +500,8 @@ class Stage(nn.Layer):
                  multi_scale_output=True,
                  name=None,
                  align_corners=False,
-                 padding_same=True):
+                 padding_same=True,
+                 use_psa=False):
         super(Stage, self).__init__()
 
         self._num_modules = num_modules
@@ -516,7 +530,8 @@ class Stage(nn.Layer):
                         has_se=has_se,
                         name=name + '_' + str(i + 1),
                         align_corners=align_corners,
-                        padding_same=padding_same))
+                        padding_same=padding_same,
+                        use_psa=use_psa))
 
             self.stage_func_list.append(stage_func)
 
@@ -536,7 +551,8 @@ class HighResolutionModule(nn.Layer):
                  multi_scale_output=True,
                  name=None,
                  align_corners=False,
-                 padding_same=True):
+                 padding_same=True,
+                 use_psa=False):
         super(HighResolutionModule, self).__init__()
 
         self.branches_func = Branches(
@@ -545,7 +561,8 @@ class HighResolutionModule(nn.Layer):
             out_channels=num_filters,
             has_se=has_se,
             name=name,
-            padding_same=padding_same)
+            padding_same=padding_same,
+            use_psa=use_psa)
 
         self.fuse_func = FuseLayers(
             in_channels=num_filters,

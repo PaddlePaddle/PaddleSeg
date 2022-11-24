@@ -1,7 +1,6 @@
 简体中文 | [English](whole_process.md)
-# PaddleSeg全流程跑通
-
-本文给大家介绍使用PaddleSeg**配置化驱动方式**完成一个全流程的示例。
+# 20分钟快速上手PaddleSeg
+PaddleSeg 通过模块组建，并通过配置化启动的方式，实现了从数据到模型部署的全部流程。本教程将以视盘分割为例，帮助大家轻松上手PaddleSeg。
 
 本示例的主要流程如下：
 1. 环境安装
@@ -20,13 +19,9 @@
 参考[安装文档](./install_cn.md)进行环境配置。
 
 ## 2. 准备数据集
+本示例将使用视盘分割（optic disc segmentation）数据集，它是我们目前支持的数十种数据集之一。实际使用过程中，大家可以参考[文档](./data/pre_data_cn.md)使用常见公开数据集，也可以参考[文档](./data/marker/marker_cn.md)准备自定义数据集。
 
-### 2.1 示例数据集下载
-
-本示例将使用视盘分割（optic disc segmentation）数据集。
-该数据集是一组眼底医疗分割数据集，包含了267张训练图片、76张验证图片、38张测试图片。
-
-通过以下命令可以下载[视盘分割数据集](https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip)，解压保存到`PaddleSeg/data`目录下。
+该数据集是一组眼底医疗分割数据集，包含了267张训练图片、76张验证图片、38张测试图片。通过以下命令可以下载[视盘分割数据集](https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip)，解压保存到`PaddleSeg/data`目录下。
 
 ```
 mkdir data
@@ -38,45 +33,10 @@ cd ..
 
 数据集的原始图像和分割效果图如下所示，本示例的任务将是将眼球图片中的视盘区域分割出来。
 
-![](./images/fig1.png)
 
-
-### 2.2 准备其他数据集
-
-如果是大家自己构建、标注的数据集，推荐整理成如下结构。
-
-```
-  custom_dataset
-  |
-  |--images
-  |  |--image1.jpg
-  |  |--image2.jpg
-  |  |--...
-  |
-  |--labels
-  |  |--label1.png
-  |  |--label2.png
-  |  |--...
-  |
-  |--train.txt
-  |
-  |--val.txt
-  |
-  |--test.txt
-```
-
-images文件夹存放原始图像（通道数为3），labels文件夹存放标注图像（通道数为1）。
-
-train.txt、val.txt、test.txt指定训练集、验证集和测试集，具体内容如下所示。每一行由两个路径组成，第一是原始图像的相对路径，第二个是标注图像的相对路径。（注意，此处相对路径是指图像相对于txt文件）
-```
-  images/image1.jpg labels/label1.png
-  images/image2.jpg labels/label2.png
-  ...
-```
-
-整理好数据集后，建议将数据集放置在PaddleSeg下的data文件夹下，方便后续使用。
-
-更多关于数据集标注和数据划分的文档，请参考[数据标注](data/marker/marker_cn.md)与[数据集划分](data/custom/data_prepare_cn.md)。
+<div align="center">
+<img src="./images/fig1.png"  width = "400" />  
+</div>
 
 
 ## 3. 准备配置文件
@@ -101,7 +61,7 @@ PP-LiteSeg模型的结构如下图。更多详细介绍，请参考[链接](../c
 
 PaddleSeg中，配置文件包括超参、训练数据集、验证数据集、优化器、损失函数、模型等信息。**所有的配置文件在PaddleSeg/configs文件夹下面**。
 
-大家可以灵活修改配置文件的内容，如自定义模型使用的骨干网络、模型使用的损失函数以及关于网络结构等配置，自定义配置数据处理的策略，如改变尺寸、归一化和翻转等数据增强的策略。
+大家可以灵活修改配置文件的内容，如自定义模型使用的骨干网络、模型使用的损失函数以及关于网络结构等配置，自定义配置数据处理的策略，如改变尺寸、归一化和翻转等数据增强的策略，这些修改可以参考对应模块的代码，传入相应参数即可。
 
 以`PaddleSeg/configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml`为例，详细解读配置文件如下。
 
@@ -165,7 +125,6 @@ model:  #模型说明
 注意：
 - 对于训练和测试数据集的预处理，PaddleSeg默认会添加读取图像操作、HWC转CHW的操作，所以这两个操作不用添加到transform配置字段中。
 - 只有"PaddleSeg/configs/quick_start"下面配置文件中的学习率为单卡学习率，其他配置文件中均为4卡的学习率。如果大家单卡训练来复现公开数据集上的指标，学习率设置应变成原来的1/4。
-- PaddleSeg提供了多种损失函数：CrossEntropy Loss、BootstrappedCrossEntropy Loss、Dice Loss、BCE Loss、OhemCrossEntropyLoss、RelaxBoundaryLoss、OhemEdgeAttentionLoss、Lovasz Hinge Loss、Lovasz Softmax Loss，大家可根据自身需求进行更改。
 
 
 上面我们介绍的PP-LiteSeg配置文件，所有的配置信息都放置在同一个yml文件中。为了具有更好的复用性，PaddleSeg的配置文件采用了更加耦合的设计，配置文件支持包含复用。
@@ -190,7 +149,7 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 
 **windows下请执行以下命令**
 **set CUDA_VISIBLE_DEVICES=0**
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --save_interval 500 \
        --do_eval \
@@ -248,7 +207,7 @@ output
 
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
@@ -267,7 +226,7 @@ python -m paddle.distributed.launch train.py \
 单卡和多卡训练，都采用相同的方法设置`resume_model`输入参数，即可恢复训练。
 
 ```
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
@@ -305,7 +264,7 @@ visualdl --logdir output/
 在PP-LiteSeg示例中，执行如下命令进行模型评估。其中，通过`--model_path`输入参数来指定评估的模型权重。
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams
 ```
@@ -313,7 +272,7 @@ python val.py \
 如果想进行多尺度翻转评估，可以通过传入`--aug_eval`进行开启，然后通过`--scales`传入尺度信息， `--flip_horizontal`开启水平翻转，`--flip_vertical`开启垂直翻转。使用示例如下：
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --aug_eval \
@@ -324,7 +283,7 @@ python val.py \
 如果想进行滑窗评估，可以传入`--is_slide`进行开启， 通过`--crop_size`传入窗口大小， `--stride`传入步长。使用示例如下：
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --is_slide \
@@ -362,7 +321,7 @@ python val.py \
 `predict.py`脚本是专门用来可视化预测的，命令格式如下所示。
 
 ```
-python predict.py \
+python tools/predict.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0002.jpg \
@@ -375,7 +334,10 @@ python predict.py \
 
 我们选择1张图片进行查看，如下图。
 
-![](./images/fig5.png)
+<div align="center">
+<img src="./images/fig5.png"  width = "600" />  
+</div>
+
 ## 7 模型导出
 
 上述模型训练、评估和预测，都是使用飞桨的动态图模式。动态图模式具有灵活、方便的优点，但是不适合工业级部署的速度要求。
@@ -384,7 +346,7 @@ python predict.py \
 
 执行如下命令，加载精度最高的模型权重，导出预测模型。
 ```
-python export.py \
+python tools/export.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir output/infer_model
@@ -463,11 +425,11 @@ PaddleSeg
             ├── functional.py
             └── transforms.py
         └── utils
-            ├── config_check.py
             ├── visualize.py
             └── ...
-     ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
-     ├──  predict.py # 预测文件
+     ├──  tools
+          ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
+          ├──  predict.py # 预测文件
      └── ...
 ```
 

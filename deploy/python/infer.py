@@ -61,7 +61,7 @@ def parse_args():
         default='./output')
     parser.add_argument(
         '--device',
-        choices=['cpu', 'gpu'],
+        choices=['cpu', 'gpu', 'xpu', 'npu'],
         default="gpu",
         help="Select which device to inference, defaults to gpu.")
 
@@ -176,7 +176,8 @@ def auto_tune(args, imgs, img_nums):
 
     for i in range(0, num):
         if isinstance(imgs[i], str):
-            data = np.array([cfg.transforms(imgs[i])[0]])
+            data = {'img': imgs[i]}
+            data = np.array([cfg.transforms(data)['img']])
         else:
             data = imgs[i]
         input_handle.reshape(data.shape)
@@ -242,6 +243,10 @@ class Predictor:
 
         if args.device == 'cpu':
             self._init_cpu_config()
+        elif args.device == 'npu':
+            self.pred_cfg.enable_npu()
+        elif args.device == 'xpu':
+            self.pred_cfg.enable_xpu()
         else:
             self._init_gpu_config()
 
@@ -387,7 +392,9 @@ class Predictor:
         logger.info("Finish")
 
     def _preprocess(self, img):
-        return self.cfg.transforms(img)[0]
+        data = {}
+        data['img'] = img
+        return self.cfg.transforms(data)['img']
 
     def _postprocess(self, results):
         if self.args.with_argmax:

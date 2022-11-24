@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
                         config.is_normalize, config.is_resize,
                         config.resize_width, config.resize_height);
 
-  std::vector<int64> out_data;
+  std::vector<int32_t> out_data;
   std::vector<int> out_shape;
   double run_time;
   double elapsed_time = 0.0;
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
     }
     cv::cvtColor(srcimg, srcimg, cv::COLOR_BGR2RGB);
 
-    std::tuple<std::vector<int64>, std::vector<int>, double> result = segmentor.Run(srcimg);
+    std::tuple<std::vector<int32_t>, std::vector<int>, double> result = segmentor.Run(srcimg);
 
     std::tie(out_data, out_shape, run_time) = result;
     int out_num = std::accumulate(out_shape.begin(), out_shape.end(), 1,

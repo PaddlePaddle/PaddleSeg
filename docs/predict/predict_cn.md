@@ -6,8 +6,8 @@
 predict.py脚本是专门用来可视化预测案例的，命令格式如下所示：
 
 ```
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+python tools/predict.py \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result
@@ -114,8 +114,8 @@ predict(
 
 在该分割结果中，前景以红色标明，背景以黑色标明。如果你想要使用其他颜色，可以参考如下命令：
 ```python
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+python tools/predict.py \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result \
@@ -130,8 +130,8 @@ python predict.py \
 - 可以看到我们在最后添加了 `--custom_color 0 0 0 255 255 255`，这是什么意思呢？在RGB图像中，每个像素最终呈现出来的颜色是由RGB三个通道的分量共同决定的，因此该命令行参数后每三位代表一种像素的颜色，位置与`label.txt`中各类像素点一一对应。
 - 如果使用自定义color map，输入的`color值`的个数应该等于`3 * 像素种类`（取决于你所使用的数据集）。比如，你的数据集有 3 种像素，则可考虑执行:
 ```python
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+python tools/predict.py \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result \
