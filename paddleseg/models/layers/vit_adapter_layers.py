@@ -10,7 +10,13 @@ import paddle.nn.functional as F
 from paddleseg.models.backbones.transformer_utils import DropPath
 from paddleseg.cvlibs.param_init import constant_init, xavier_uniform
 
-import ms_deform_attn as msda  # first install ms_deform_attn
+try:
+    import ms_deform_attn as msda
+except:
+    print(
+        "import ms_deform_attn failed, please refer the following doc to install ms_deform_attn lib: "
+        "https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/upernet_vit_adapter"
+    )
 
 
 def get_reference_points(spatial_shapes):

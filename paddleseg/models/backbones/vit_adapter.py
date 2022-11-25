@@ -8,16 +8,11 @@ import numpy as np
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle import ParamAttr
-from paddle.regularizer import L2Decay
-from paddle.nn.initializer import Uniform, KaimingNormal
-from paddle.nn import Conv2D, BatchNorm, AdaptiveAvgPool2D, Linear
 
 from paddleseg.cvlibs import manager
-from paddleseg.cvlibs.param_init import normal_init, trunc_normal_init, constant_init
 from paddleseg.utils import utils, logger
+from paddleseg.cvlibs.param_init import normal_init, trunc_normal_init, constant_init
 from paddleseg.models.backbones.transformer_utils import to_2tuple, DropPath
-
 from paddleseg.models.layers.vit_adapter_layers import (
     SpatialPriorModule, InteractionBlock, deform_inputs, MSDeformAttn)
 

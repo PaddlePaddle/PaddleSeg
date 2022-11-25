@@ -174,17 +174,6 @@ def train(model,
             images = data['img']
             labels = data['label'].astype('int64')
 
-            debug = False  # set debug as True, change yml to load pretrained weights, and set dropout as 0
-            if debug:
-                import numpy as np
-                images = paddle.to_tensor(np.load('img.npy'))
-                labels = paddle.to_tensor(np.load(
-                    'gt_semantic_seg.npy')).squeeze()
-                '''
-                print('img', images.detach().cpu().numpy().mean())
-                print('gt_semantic_seg', labels.detach().cpu().numpy().mean())
-                '''
-
             edges = None
             if 'edge' in data.keys():
                 edges = data['edge'].astype('int64')
@@ -223,19 +212,6 @@ def train(model,
                     losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
-
-                if debug:
-                    print(loss_list)
-                    '''
-                    loss = sum(loss_list) * 1e3
-                    loss.backward()
-                    
-                    print(loss)
-                    for name, tensor in model.named_parameters():
-                        if tensor.grad is not None:
-                            print(name, tensor.grad.numpy().mean())
-                    exit()
-                    '''
 
                 # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
                 if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
