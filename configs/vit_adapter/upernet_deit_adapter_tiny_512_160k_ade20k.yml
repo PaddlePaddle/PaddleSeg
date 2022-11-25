@@ -1,6 +1,6 @@
 _base_: '../_base_/ade20k.yml'
 
-batch_size: 2  # total batch size is 16
+batch_size: 4  # total batch size is 16
 iters: 160000
 
 train_dataset:
@@ -8,7 +8,6 @@ train_dataset:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
       max_scale_factor: 2.0
-      scale_step_size: 0.25
     - type: RandomPaddingCrop
       crop_size: [512, 512]
     - type: RandomHorizontalFlip
@@ -52,7 +51,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 6.0e-5   # the origin lr is 1.2e-6, but the real used lr in vit_adapter is 6e-5
+  learning_rate: 6.0e-5
   end_lr: 0
   power: 1.0
   warmup_iters: 1500
@@ -87,4 +86,3 @@ model:
   dropout_ratio: 0.1
   aux_loss: True
   aux_channels: 256
-  #pretrained: pretrained_model/upernet_deit_adapter_tiny_512_160_ade20k_from_torch.pdparams
