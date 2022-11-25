@@ -31,6 +31,8 @@ class UPerNetViTAdapter(nn.Layer):
     "Vision Transformer Adapter for Dense Predictions." 
     (https://arxiv.org/abs/2205.08534).
 
+    The implementation is based on https://github.com/czczup/ViT-Adapter
+
     Args:
         num_classes (int): The unique number of target classes.
         backbone (nn.Layer): The backbone network.

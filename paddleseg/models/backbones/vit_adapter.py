@@ -16,7 +16,7 @@ from paddleseg.models.backbones.transformer_utils import to_2tuple, DropPath
 from paddleseg.models.layers.vit_adapter_layers import (
     SpatialPriorModule, InteractionBlock, deform_inputs, MSDeformAttn)
 
-__all__ = ['ViTAdapter']
+__all__ = ['ViTAdapter', 'ViTAdapter_Tiny']
 
 
 class PatchEmbed(nn.Layer):
@@ -352,8 +352,6 @@ class ViTAdapter(VisionTransformer):
         return c2, c3, c4
 
     def forward(self, x):
-        debug = False
-
         deform_inputs1, deform_inputs2 = deform_inputs(x)
 
         # SPM forward
@@ -361,24 +359,11 @@ class ViTAdapter(VisionTransformer):
         c2, c3, c4 = self._add_level_embed(c2, c3, c4)
         c = paddle.concat([c2, c3, c4], axis=1)
 
-        if debug:
-            print('----2----')
-            for i in deform_inputs1:
-                print(i.numpy().mean())
-            for i in deform_inputs2:
-                print(i.numpy().mean())
-            print(x.numpy().mean())
-            print(c.numpy().mean())
-
         # Patch Embedding forward
         x, H, W = self.patch_embed(x)
         bs, n, dim = x.shape
         pos_embed = self._get_pos_embed(self.pos_embed[:, 1:], H, W)
         x = self.pos_drop(x + pos_embed)
-
-        if debug:
-            print('-------3----')
-            print(x.numpy().mean())
 
         # Interaction
         outs = list()
@@ -387,10 +372,6 @@ class ViTAdapter(VisionTransformer):
             x, c = layer(x, c, self.blocks[indexes[0]:indexes[-1] + 1],
                          deform_inputs1, deform_inputs2, H, W)
             outs.append(x.transpose([0, 2, 1]).reshape([bs, dim, H, W]))
-            if debug:
-                print('-----4-{}------'.format(i))
-                print(x.numpy().mean())
-                print(c.numpy().mean())
 
         # Split & Reshape
         c2 = c[:, 0:c2.shape[1], :]
@@ -417,10 +398,22 @@ class ViTAdapter(VisionTransformer):
         f2 = self.norm2(c2)
         f3 = self.norm3(c3)
         f4 = self.norm4(c4)
-        if debug:
-            print('-----5------')
-            print(f1.cpu().numpy().mean())
-            print(f2.cpu().numpy().mean())
-            print(f3.cpu().numpy().mean())
-            print(f4.cpu().numpy().mean())
         return [f1, f2, f3, f4]
+
+
+@manager.BACKBONES.add_component
+def ViTAdapter_Tiny(**kwargs):
+    return ViTAdapter(
+        num_heads=3,
+        patch_size=16,
+        embed_dim=192,
+        depth=12,
+        mlp_ratio=4,
+        drop_path_rate=0.1,
+        conv_inplane=64,
+        n_points=4,
+        deform_num_heads=6,
+        cffn_ratio=0.25,
+        deform_ratio=1.0,
+        interaction_indexes=[[0, 2], [3, 5], [6, 8], [9, 11]],
+        **kwargs)

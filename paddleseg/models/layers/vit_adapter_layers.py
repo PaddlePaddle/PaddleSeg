@@ -8,15 +8,7 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 from paddleseg.models.backbones.transformer_utils import DropPath
-from paddleseg.cvlibs.param_init import constant_init, xavier_uniform
-
-try:
-    import ms_deform_attn as msda
-except:
-    print(
-        "import ms_deform_attn failed, please refer the following doc to install ms_deform_attn lib: "
-        "https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/upernet_vit_adapter"
-    )
+from paddleseg.models.layers.ms_deformable_attention import MSDeformAttn
 
 
 def get_reference_points(spatial_shapes):
@@ -37,7 +29,7 @@ def get_reference_points(spatial_shapes):
 
 
 def deform_inputs(x):
-    bs, c, h, w = x.shape
+    _, _, h, w = x.shape
     spatial_shapes = paddle.to_tensor(
         [(h // 8, w // 8), (h // 16, w // 16), (h // 32, w // 32)],
         dtype='int64')
@@ -56,14 +48,35 @@ def deform_inputs(x):
     return deform_inputs1, deform_inputs2
 
 
-def _is_power_of_2(n):
-    if (not isinstance(n, int)) or (n < 0):
-        raise ValueError('invalid input for _is_power_of_2: {} (type: {})'.
-                         format(n, type(n)))
-    return (n & (n - 1) == 0) and n != 0
+class DWConv(nn.Layer):
+    """
+    The specific DWConv unsed in ConvFFN. 
+    """
+
+    def __init__(self, dim=768):
+        super().__init__()
+        self.dwconv = nn.Conv2D(dim, dim, 3, 1, 1, bias_attr=True, groups=dim)
+
+    def forward(self, x, H, W):
+        B, N, C = x.shape
+        n = N // 21
+        x1 = x[:, 0:16 * n, :].transpose([0, 2, 1]).reshape(
+            [B, C, H * 2, W * 2])
+        x2 = x[:, 16 * n:20 * n, :].transpose([0, 2, 1]).reshape([B, C, H, W])
+        x3 = x[:, 20 * n:, :].transpose([0, 2, 1]).reshape(
+            [B, C, H // 2, W // 2])
+        x1 = self.dwconv(x1).flatten(2).transpose([0, 2, 1])
+        x2 = self.dwconv(x2).flatten(2).transpose([0, 2, 1])
+        x3 = self.dwconv(x3).flatten(2).transpose([0, 2, 1])
+        x = paddle.concat([x1, x2, x3], axis=1)
+        return x
 
 
 class ConvFFN(nn.Layer):
+    """
+    The implementation of ConvFFN unsed in Extractor.
+    """
+
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -89,156 +102,11 @@ class ConvFFN(nn.Layer):
         return x
 
 
-class DWConv(nn.Layer):
-    def __init__(self, dim=768):
-        super().__init__()
-        self.dwconv = nn.Conv2D(dim, dim, 3, 1, 1, bias_attr=True, groups=dim)
-
-    def forward(self, x, H, W):
-        B, N, C = x.shape
-        n = N // 21
-        x1 = x[:, 0:16 * n, :].transpose([0, 2, 1]).reshape(
-            [B, C, H * 2, W * 2])
-        x2 = x[:, 16 * n:20 * n, :].transpose([0, 2, 1]).reshape([B, C, H, W])
-        x3 = x[:, 20 * n:, :].transpose([0, 2, 1]).reshape(
-            [B, C, H // 2, W // 2])
-        x1 = self.dwconv(x1).flatten(2).transpose([0, 2, 1])
-        x2 = self.dwconv(x2).flatten(2).transpose([0, 2, 1])
-        x3 = self.dwconv(x3).flatten(2).transpose([0, 2, 1])
-        x = paddle.concat([x1, x2, x3], axis=1)
-        return x
-
-
-class MSDeformAttn(nn.Layer):
-    def __init__(self,
-                 d_model=256,
-                 n_levels=4,
-                 n_heads=8,
-                 n_points=4,
-                 ratio=1.0):
-        """Multi-Scale Deformable Attention Module.
-
-        :param d_model      hidden dimension
-        :param n_levels     number of feature levels
-        :param n_heads      number of attention heads
-        :param n_points     number of sampling points per attention head per feature level
-        """
-        super().__init__()
-        if d_model % n_heads != 0:
-            raise ValueError('d_model must be divisible by n_heads, '
-                             'but got {} and {}'.format(d_model, n_heads))
-        _d_per_head = d_model // n_heads
-        # you'd better set _d_per_head to a power of 2
-        # which is more efficient in our CUDA implementation
-        if not _is_power_of_2(_d_per_head):
-            warnings.warn("You'd better set d_model in MSDeformAttn to make "
-                          'the dimension of each attention head a power of 2 '
-                          'which is more efficient in our CUDA implementation.')
-
-        self.im2col_step = 64
-
-        self.d_model = d_model
-        self.n_levels = n_levels
-        self.n_heads = n_heads
-        self.n_points = n_points
-        self.ratio = ratio
-        self.sampling_offsets = nn.Linear(d_model,
-                                          n_heads * n_levels * n_points * 2)
-        self.attention_weights = nn.Linear(d_model,
-                                           n_heads * n_levels * n_points)
-        self.value_proj = nn.Linear(d_model, int(d_model * ratio))
-        self.output_proj = nn.Linear(int(d_model * ratio), d_model)
-
-        self._reset_parameters()
-
-    def _reset_parameters(self):
-        constant_init(self.sampling_offsets.weight, value=0.)
-        thetas = paddle.arange(
-            self.n_heads, dtype='float32') * (2.0 * math.pi / self.n_heads)
-        grid_init = paddle.stack([thetas.cos(), thetas.sin()], -1)
-        grid_init = (grid_init / grid_init.abs().max(
-            -1, keepdim=True)[0]).reshape([self.n_heads, 1, 1, 2]).tile(
-                [1, self.n_levels, self.n_points, 1])
-        for i in range(self.n_points):
-            grid_init[:, :, i, :] *= i + 1
-
-        grid_init = grid_init.reshape([-1])
-        self.sampling_offsets.bias = self.create_parameter(
-            shape=grid_init.shape,
-            default_initializer=paddle.nn.initializer.Assign(grid_init))
-        self.sampling_offsets.bias.stop_gradient = True
-
-        constant_init(self.attention_weights.weight, value=0.)
-        constant_init(self.attention_weights.bias, value=0.)
-        xavier_uniform(self.value_proj.weight)
-        constant_init(self.value_proj.bias, value=0.)
-        xavier_uniform(self.output_proj.weight)
-        constant_init(self.output_proj.bias, value=0.)
-
-    def forward(self,
-                query,
-                reference_points,
-                input_flatten,
-                input_spatial_shapes,
-                input_level_start_index,
-                input_padding_mask=None):
-        """
-        :param query                       (N, Length_{query}, C)
-        :param reference_points            (N, Length_{query}, n_levels, 2), range in [0, 1], top-left (0,0), bottom-right (1, 1), including padding area
-                                        or (N, Length_{query}, n_levels, 4), add additional (w, h) to form reference boxes
-        :param input_flatten               (N, \sum_{l=0}^{L-1} H_l \cdot W_l, C)
-        :param input_spatial_shapes        (n_levels, 2), [(H_0, W_0), (H_1, W_1), ..., (H_{L-1}, W_{L-1})]
-        :param input_level_start_index     (n_levels, ), [0, H_0*W_0, H_0*W_0+H_1*W_1, H_0*W_0+H_1*W_1+H_2*W_2, ..., H_0*W_0+H_1*W_1+...+H_{L-1}*W_{L-1}]
-        :param input_padding_mask          (N, \sum_{l=0}^{L-1} H_l \cdot W_l), True for padding elements, False for non-padding elements
-
-        :return output                     (N, Length_{query}, C)
-        """
-
-        def masked_fill(x, mask, value):
-            y = paddle.full(x.shape, value, x.dtype)
-            return paddle.where(mask, y, x)
-
-        N, Len_q, _ = query.shape
-        N, Len_in, _ = input_flatten.shape
-        assert (input_spatial_shapes[:, 0] * input_spatial_shapes[:, 1]
-                ).sum() == Len_in
-
-        value = self.value_proj(input_flatten)
-        if input_padding_mask is not None:
-            value = masked_fill(value, input_padding_mask[..., None], float(0))
-
-        value = value.reshape([
-            N, Len_in, self.n_heads,
-            int(self.ratio * self.d_model) // self.n_heads
-        ])
-        sampling_offsets = self.sampling_offsets(query).reshape(
-            [N, Len_q, self.n_heads, self.n_levels, self.n_points, 2])
-        attention_weights = self.attention_weights(query).reshape(
-            [N, Len_q, self.n_heads, self.n_levels * self.n_points])
-        attention_weights = F.softmax(attention_weights, -1).\
-            reshape([N, Len_q, self.n_heads, self.n_levels, self.n_points])
-
-        if reference_points.shape[-1] == 2:
-            offset_normalizer = paddle.stack(
-                [input_spatial_shapes[..., 1], input_spatial_shapes[..., 0]],
-                -1)
-            sampling_locations = reference_points[:, :, None, :, None, :] \
-                                 + sampling_offsets / offset_normalizer[None, None, None, :, None, :]
-        elif reference_points.shape[-1] == 4:
-            sampling_locations = reference_points[:, :, None, :, None, :2] \
-                                 + sampling_offsets / self.n_points * reference_points[:, :, None, :, None, 2:] * 0.5
-        else:
-            raise ValueError(
-                'Last dim of reference_points must be 2 or 4, but get {} instead.'
-                .format(reference_points.shape[-1]))
-        output = msda.ms_deform_attn(
-            value, input_spatial_shapes, input_level_start_index,
-            sampling_locations, attention_weights, self.im2col_step)
-        output = self.output_proj(output)
-        return output
-
-
 class Extractor(nn.Layer):
+    """
+    The Extractor module in ViT-Adapter.
+    """
+
     def __init__(self,
                  dim,
                  num_heads=6,
@@ -272,23 +140,21 @@ class Extractor(nn.Layer):
 
     def forward(self, query, reference_points, feat, spatial_shapes,
                 level_start_index, H, W):
-        def _inner_forward(query, feat):
-            attn = self.attn(
-                self.query_norm(query), reference_points,
-                self.feat_norm(feat), spatial_shapes, level_start_index, None)
-            query = query + attn
+        attn = self.attn(
+            self.query_norm(query), reference_points,
+            self.feat_norm(feat), spatial_shapes, level_start_index, None)
+        query = query + attn
 
-            if self.with_cffn:
-                query = query + self.drop_path(
-                    self.ffn(self.ffn_norm(query), H, W))
-            return query
-
-        query = _inner_forward(query, feat)
-
+        if self.with_cffn:
+            query = query + self.drop_path(self.ffn(self.ffn_norm(query), H, W))
         return query
 
 
 class Injector(nn.Layer):
+    """
+    The Injector module in ViT-Adapter.
+    """
+
     def __init__(self,
                  dim,
                  num_heads=6,
@@ -314,18 +180,17 @@ class Injector(nn.Layer):
 
     def forward(self, query, reference_points, feat, spatial_shapes,
                 level_start_index):
-        def _inner_forward(query, feat):
-            attn = self.attn(
-                self.query_norm(query), reference_points,
-                self.feat_norm(feat), spatial_shapes, level_start_index, None)
-            return query + self.gamma * attn
-
-        query = _inner_forward(query, feat)
-
-        return query
+        attn = self.attn(
+            self.query_norm(query), reference_points,
+            self.feat_norm(feat), spatial_shapes, level_start_index, None)
+        return query + self.gamma * attn
 
 
 class InteractionBlock(nn.Layer):
+    """
+    Combine the Extractor, Extractor and ViT Blocks.
+    """
+
     def __init__(self,
                  dim,
                  num_heads=6,
@@ -377,20 +242,15 @@ class InteractionBlock(nn.Layer):
             self.extra_extractors = None
 
     def forward(self, x, c, blocks, deform_inputs1, deform_inputs2, H, W):
-        debug = False
         x = self.injector(
             query=x,
             reference_points=deform_inputs1[0],
             feat=c,
             spatial_shapes=deform_inputs1[1],
             level_start_index=deform_inputs1[2])
-        if debug:
-            print('x', x.cpu().numpy().mean())
 
         for idx, blk in enumerate(blocks):
             x = blk(x, H, W)
-            if debug:
-                print('x block_{}'.format(idx), x.cpu().numpy().mean())
 
         c = self.extractor(
             query=c,
@@ -400,8 +260,6 @@ class InteractionBlock(nn.Layer):
             level_start_index=deform_inputs2[2],
             H=H,
             W=W)
-        if debug:
-            print('c', c.cpu().numpy().mean())
 
         if self.extra_extractors is not None:
             for extractor in self.extra_extractors:
@@ -413,8 +271,6 @@ class InteractionBlock(nn.Layer):
                     level_start_index=deform_inputs2[2],
                     H=H,
                     W=W)
-            if debug:
-                print('c', c.cpu().numpy().mean())
 
         return x, c
 
@@ -588,22 +444,18 @@ class SpatialPriorModule(nn.Layer):
             bias_attr=True)
 
     def forward(self, x):
-        def _inner_forward(x):
-            c1 = self.stem(x)
-            c2 = self.conv2(c1)
-            c3 = self.conv3(c2)
-            c4 = self.conv4(c3)
-            c1 = self.fc1(c1)
-            c2 = self.fc2(c2)
-            c3 = self.fc3(c3)
-            c4 = self.fc4(c4)
+        c1 = self.stem(x)
+        c2 = self.conv2(c1)
+        c3 = self.conv3(c2)
+        c4 = self.conv4(c3)
+        c1 = self.fc1(c1)
+        c2 = self.fc2(c2)
+        c3 = self.fc3(c3)
+        c4 = self.fc4(c4)
 
-            bs, dim, _, _ = c1.shape
-            c2 = c2.reshape([bs, dim, -1]).transpose([0, 2, 1])  # 8s
-            c3 = c3.reshape([bs, dim, -1]).transpose([0, 2, 1])  # 16s
-            c4 = c4.reshape([bs, dim, -1]).transpose([0, 2, 1])  # 32s
+        bs, dim, _, _ = c1.shape
+        c2 = c2.reshape([bs, dim, -1]).transpose([0, 2, 1])  # 8s
+        c3 = c3.reshape([bs, dim, -1]).transpose([0, 2, 1])  # 16s
+        c4 = c4.reshape([bs, dim, -1]).transpose([0, 2, 1])  # 32s
 
-            return c1, c2, c3, c4
-
-        outs = _inner_forward(x)
-        return outs
+        return c1, c2, c3, c4
