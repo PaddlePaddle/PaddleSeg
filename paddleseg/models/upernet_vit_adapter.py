@@ -24,21 +24,24 @@ from paddleseg.models import layers
 @manager.MODELS.add_component
 class UPerNetViTAdapter(nn.Layer):
     """
-    The UPerNet implementation based on PaddlePaddle.
+    The UPerNetViTAdapter implementation based on PaddlePaddle.
 
     The original article refers to
-    Tete Xiao, et, al. "Unified Perceptual Parsing for Scene Understanding"
-    (https://arxiv.org/abs/1807.10221).
+    Chen, Zhe, Yuchen Duan, Wenhai Wang, Junjun He, Tong Lu, Jifeng Dai, and Yu Qiao. 
+    "Vision Transformer Adapter for Dense Predictions." 
+    (https://arxiv.org/abs/2205.08534).
 
     Args:
         num_classes (int): The unique number of target classes.
-        backbone (Paddle.nn.Layer): Backbone network, currently support Resnet50/101.
-        backbone_indices (tuple): Four values in the tuple indicate the indices of output of backbone.
-        channels (int): The channels of inter layers. Default: 512.
-        aux_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: False.
+        backbone (nn.Layer): The backbone network.
+        backbone_indices (tuple | list): The values indicate the indices of output of backbone.
+        channels (int, optional): The channels of inter layers in upernet head. Default: 512.
+        pool_scales (list, optional): The scales in PPM. Default: [1, 2, 3, 6].
+        dropout_ratio (float, optional): The dropout ratio for upernet head. Default: 0.1.
+        aux_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+        aux_channels (int, optional): The channels of inter layers in auxiliary head. Default: 256.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
-        dropout_ratio (float): Dropout ratio for upernet head. Default: 0.1.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -72,6 +75,10 @@ class UPerNetViTAdapter(nn.Layer):
         self.pretrained = pretrained
         self.init_weight()
 
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
     def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
@@ -84,10 +91,6 @@ class UPerNetViTAdapter(nn.Layer):
                 align_corners=self.align_corners) for logit in logit_list
         ]
         return logit_list
-
-    def init_weight(self):
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
 
 
 class ConvBNReLU(nn.Layer):
@@ -118,12 +121,9 @@ class PPM(nn.Layer):
     """Pooling Pyramid Module used in PSPNet.
 
     Args:
-        pool_scales (tuple[int]): Pooling scales used in Pooling Pyramid
-            Module.
+        pool_scales (tuple | list): Pooling scales used in PPM.
         in_channels (int): Input channels.
-        channels (int): Channels after modules, before conv_seg.
-        conv_cfg (dict|None): Config of conv layers.
-        norm_cfg (dict|None): Config of norm layers.
+        channels (int): Output Channels after modules, before conv_seg.
         act_cfg (dict): Config of activation layers.
         align_corners (bool): align_corners argument of F.interpolate.
     """
@@ -145,7 +145,6 @@ class PPM(nn.Layer):
                         kernel_size=1)))
 
     def forward(self, x):
-        """Forward function."""
         ppm_outs = []
         for ppm in self.stages:
             ppm_out = ppm(x)
@@ -159,16 +158,20 @@ class PPM(nn.Layer):
 
 
 class UPerNetHead(nn.Layer):
-    """Unified Perceptual Parsing for Scene Understanding.
-
-    This head is the implementation of `UPerNet
-    <https://arxiv.org/abs/1807.10221>`_.
-
+    """
+    This head is the implementation of "Unified Perceptual Parsing for Scene Understanding".
     This is heavily based on https://github.com/czczup/ViT-Adapter
 
     Args:
-        pool_scales (tuple[int]): Pooling scales used in Pooling Pyramid
-            Module applied on the last feature. Default: (1, 2, 3, 6).
+        num_classes (int): The unique number of target classes.
+        in_channels (list[int]): The channels of input features.
+        channels (int, optional): The channels of inter layers in upernet head. Default: 512.
+        pool_scales (list, optional): The scales in PPM. Default: [1, 2, 3, 6].
+        dropout_ratio (float, optional): The dropout ratio for upernet head. Default: 0.1.
+        aux_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+        aux_channels (int, optional): The channels of inter layers in auxiliary head. Default: 256.
+        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
     """
 
     def __init__(self,
@@ -204,7 +207,6 @@ class UPerNetHead(nn.Layer):
 
         self.fpn_bottleneck = ConvBNReLU(
             len(in_channels) * channels, channels, 3, padding=1)
-
         if dropout_ratio > 0:
             self.dropout = nn.Dropout2D(dropout_ratio)
         else:
@@ -219,7 +221,6 @@ class UPerNetHead(nn.Layer):
                 aux_channels, num_classes, kernel_size=1)
 
     def psp_forward(self, inputs):
-        """Forward function of PSP module."""
         x = inputs[-1]
         psp_outs = [x]
         psp_outs.extend(self.psp_modules(x))
@@ -228,24 +229,12 @@ class UPerNetHead(nn.Layer):
         return output
 
     def forward(self, inputs):
-        """Forward function."""
-        debug = False
-        if debug:
-            print('-------head 1----')
-            for x in inputs:
-                print(x.shape, x.numpy().mean())
-
         # build laterals
         laterals = [
             lateral_conv(inputs[i])
             for i, lateral_conv in enumerate(self.lateral_convs)
         ]
         laterals.append(self.psp_forward(inputs))
-
-        if debug:
-            print('-------head 2----')
-            for x in laterals:
-                print(x.shape, x.numpy().mean())
 
         # build top-down path
         used_backbone_levels = len(laterals)
@@ -264,11 +253,6 @@ class UPerNetHead(nn.Layer):
         ]
         fpn_outs.append(laterals[-1])  # append psp feature
 
-        if debug:
-            print('-------head 3----')
-            for x in fpn_outs:
-                print(x.shape, x.numpy().mean())
-
         for i in range(used_backbone_levels - 1, 0, -1):
             fpn_outs[i] = F.interpolate(
                 fpn_outs[i],
@@ -277,10 +261,6 @@ class UPerNetHead(nn.Layer):
                 align_corners=self.align_corners)
         fpn_outs = paddle.concat(fpn_outs, axis=1)
         output = self.fpn_bottleneck(fpn_outs)
-
-        if debug:
-            print('-------head 4----')
-            print(output.shape, output.numpy().mean())
 
         if self.dropout is not None:
             output = self.dropout(output)
@@ -291,11 +271,5 @@ class UPerNetHead(nn.Layer):
             aux_output = self.aux_conv(inputs[2])
             aux_output = self.aux_conv_seg(aux_output)
             logits_list.append(aux_output)
-
-        if debug:
-            print('-------head 5----')
-            for x in logits_list:
-                print(x.shape, x.numpy().mean())
-            exit()
 
         return logits_list

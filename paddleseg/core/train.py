@@ -173,7 +173,6 @@ def train(model,
             reader_cost_averager.record(time.time() - batch_start)
             images = data['img']
             labels = data['label'].astype('int64')
-
             edges = None
             if 'edge' in data.keys():
                 edges = data['edge'].astype('int64')
@@ -212,7 +211,6 @@ def train(model,
                     losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
-
                 # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
                 if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
                     optimizer.step(loss)
