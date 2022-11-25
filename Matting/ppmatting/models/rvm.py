@@ -59,7 +59,9 @@ class RVM(nn.Layer):
             src_sm = self._interpolate(src, scale_factor=downsample_ratio)
         else:
             src_sm = src
-        f1, f2, f3, f4 = self.backbone(src_sm)
+
+        f1, f2, f3, f4 = self.backbone_forward(src_sm)
+
         f4 = self.aspp(f4)
         hid, *rec = self.decoder(src_sm, f1, f2, f3, f4, r1, r2, r3, r4)
 
@@ -75,6 +77,16 @@ class RVM(nn.Layer):
         else:
             seg = self.project_seg(hid)
             return [seg, *rec]
+
+    def backbone_forward(self, x):
+        if x.ndim == 5:
+            B, T = paddle.shape(x)[:2]
+            features = self.backbone(x.flatten(0, 1))
+            for i, f in enumerate(features):
+                features[i] = f.reshape((B, T, *(paddle.shape(f)[1:])))
+        else:
+            features = self.backbone(x)
+        return features
 
     def _interpolate(self, x: Tensor, scale_factor: float):
         if x.ndim == 5:
@@ -114,7 +126,8 @@ class LRASPP(nn.Layer):
 
     def forward_time_series(self, x):
         B, T = x.shape[:2]
-        x = self.forward_single_frame(x.flatten(0, 1)).unflatten(0, (B, T))
+        x = self.forward_single_frame(x.flatten(0, 1))
+        x = x.reshape((B, T, *(paddle.shape(x)[1:])))
         return x
 
     def forward(self, x):
@@ -169,7 +182,7 @@ class AvgPool(nn.Layer):
 
     def forward_time_series(self, s0):
         B, T = paddle.shape(s0)[:2]
-        s0 = s0.flatten_(0, 1)
+        s0 = s0.flatten(0, 1)
         s1, s2, s3 = self.forward_single_frame(s0)
         s1 = s1.reshape((B, T, *(paddle.shape(s1)[1:])))
         s2 = s2.reshape((B, T, *(paddle.shape(s2)[1:])))
@@ -469,7 +482,7 @@ if __name__ == '__main__':
     import ppmatting
     backbone = ppmatting.models.MobileNetV3_large_x1_0_os16(
         pretrained='mobilenetv3_large_x1_0_ssld/model.pdparams',
-        out_index=[0, 2, 4],
+        out_index=[0, 2, 5],
         return_last_conv=True)
     model = RVM(backbone=backbone, refiner='deep_guider_filter')
     print(model)

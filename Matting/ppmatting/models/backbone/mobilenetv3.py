@@ -225,6 +225,9 @@ class MobileNetV3(nn.Layer):
             _make_divisible(self.scale * c) for c in out_channels
         ]
 
+        self.mean = paddle.to_tensor([0.485, 0.456, 0.406]).unsqueeze((0, 2, 3))
+        self.std = paddle.to_tensor([0.229, 0.224, 0.225]).unsqueeze((0, 2, 3))
+
         self.init_res(stages_pattern)
         self.init_weight()
 
@@ -256,6 +259,7 @@ class MobileNetV3(nn.Layer):
             return_patterns = [stages_pattern[i] for i in return_stages]
 
     def forward(self, x):
+        x = (x - self.mean) / self.std
         x = self.conv(x)
 
         feat_list = []
@@ -295,6 +299,8 @@ class ConvBNLayer(nn.Layer):
         self.bn = BatchNorm(
             num_channels=out_c,
             act=None,
+            epsilon=0.001,
+            momentum=0.99,
             param_attr=ParamAttr(regularizer=L2Decay(0.0)),
             bias_attr=ParamAttr(regularizer=L2Decay(0.0)))
         self.if_act = if_act
@@ -398,7 +404,7 @@ class SEModule(nn.Layer):
             kernel_size=1,
             stride=1,
             padding=0)
-        self.hardsigmoid = Hardsigmoid(slope=0.2, offset=0.5)
+        self.hardsigmoid = Hardsigmoid(slope=0.1666667, offset=0.5)
 
     def forward(self, x):
         identity = x
