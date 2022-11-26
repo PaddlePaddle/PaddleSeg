@@ -24,6 +24,8 @@ from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
                              worker_init_fn, train_profiler, op_flops_funs)
 from paddleseg.core.val import evaluate
 
+_iter = iter
+
 
 def check_logits_losses(logits_list, losses):
     len_logits = len(logits_list)
@@ -160,7 +162,7 @@ def train(model,
     save_models = deque()
     batch_start = time.time()
 
-    save_interval = iter(save_interval)
+    save_interval = _iter(save_interval)
     last_update_iters = 0
     update_iters, save_pre_inter = next(save_interval)
 
