@@ -181,15 +181,16 @@ def get_image_list(image_path):
 
 def get_save_interval(save_interval, update_save_interval, total_iters):
     if update_save_interval is None:
-        updated_interval = [(total_iters + 1, 0)]
+        updated_interval = [(total_iters, 0)]
+        first_save_point = total_iters
     else:
         if len(update_save_interval) % 2 != 0:
             raise ValueError(
                 f"The length of args 'save_last_interval' should be even, but got {len(update_save_interval)}"
             )
+        first_save_point = update_save_interval[0]
         check = [(update_save_interval[2 * i], update_save_interval[2 * i + 1])
                  for i in range(len(update_save_interval) // 2)]
-        print(check)
         for i in check:
             if i[1] > total_iters - i[0]:
                 raise ValueError(
@@ -201,4 +202,4 @@ def get_save_interval(save_interval, update_save_interval, total_iters):
             for i in range(len(update_save_interval) // 2)
         ]
     # (update_point, save_frquency)
-    return [(update_save_interval[0], save_interval), *updated_interval]
+    return [(first_save_point, save_interval), *updated_interval]
