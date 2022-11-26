@@ -20,7 +20,7 @@ import numpy as np
 import cv2
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils import get_save_interval, get_sys_env, logger
 from paddleseg.core import train
 
 
@@ -58,6 +58,14 @@ def parse_args():
         help='How many iters to save a model snapshot once during training.',
         type=int,
         default=1000)
+    parser.add_argument(
+        '--update_save_interval',
+        dest='update_save_interval',
+        help='Update save frquency. \
+            The format should be "--save_last_interval update_point, save_frq, ..."',
+        type=int,
+        nargs="+",
+        default=None)
     parser.add_argument(
         '--resume_model',
         dest='resume_model',
@@ -232,6 +240,9 @@ def main(args):
     else:
         model = cfg.model
 
+    save_interval = get_save_interval(args.save_interval,
+                                      args.update_save_interval, cfg.iters)
+
     train(
         model,
         train_dataset,
@@ -241,7 +252,7 @@ def main(args):
         iters=cfg.iters,
         batch_size=cfg.batch_size,
         resume_model=args.resume_model,
-        save_interval=args.save_interval,
+        save_interval=save_interval,
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,

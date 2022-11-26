@@ -177,3 +177,28 @@ def get_image_list(image_path):
             'There are not image file in `--image_path`={}'.format(image_path))
 
     return image_list, image_dir
+
+
+def get_save_interval(save_interval, update_save_interval, total_iters):
+    if update_save_interval is None:
+        updated_interval = [(total_iters + 1, 0)]
+    else:
+        if len(update_save_interval) % 2 != 0:
+            raise ValueError(
+                f"The length of args 'save_last_interval' should be even, but got {len(update_save_interval)}"
+            )
+        check = [(update_save_interval[2 * i], update_save_interval[2 * i + 1])
+                 for i in range(len(update_save_interval) // 2)]
+        print(check)
+        for i in check:
+            if i[1] > total_iters - i[0]:
+                raise ValueError(
+                    f"update_point should be greater than save_frq in args 'save_last_interval'"
+                )
+        update_save_interval.append(total_iters)
+        updated_interval = [
+            (update_save_interval[2 * i + 2], update_save_interval[2 * i + 1])
+            for i in range(len(update_save_interval) // 2)
+        ]
+    # (update_point, save_frquency)
+    return [(update_save_interval[0], save_interval), *updated_interval]

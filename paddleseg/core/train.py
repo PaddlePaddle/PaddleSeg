@@ -64,7 +64,7 @@ def train(model,
           iters=10000,
           batch_size=2,
           resume_model=None,
-          save_interval=1000,
+          save_interval=[1000, 0, 0],
           log_iters=10,
           num_workers=0,
           use_vdl=False,
@@ -79,7 +79,7 @@ def train(model,
     Launch training.
 
     Args:
-        model（nn.Layer): A semantic segmentation model.
+        model(nn.Layer): A semantic segmentation model.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
         optimizer (paddle.optimizer.Optimizer): The optimizer.
@@ -87,7 +87,7 @@ def train(model,
         iters (int, optional): How may iters to train the model. Defualt: 10000.
         batch_size (int, optional): Mini batch size of one gpu or cpu. Default: 2.
         resume_model (str, optional): The path of resume model.
-        save_interval (int, optional): How many iters to save a model snapshot once during training. Default: 1000.
+        save_interval (List[Tuple[int, int], ...], optional): How many iters to save a model snapshot once during training. Default: [1000, 0, 0].
         log_iters (int, optional): Display logging information at every log_iters. Default: 10.
         num_workers (int, optional): Num workers for data loader. Default: 0.
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
@@ -160,7 +160,16 @@ def train(model,
     save_models = deque()
     batch_start = time.time()
 
+    save_interval = iter(save_interval)
+    last_update_iters = 0
+    update_iters, save_pre_inter = next(save_interval)
+
     iter = start_iter
+
+    while update_iters < iter:
+        last_update_iters = update_iters
+        update_iters, save_pre_inter = next(save_interval)
+
     while iter < iters:
         for data in loader:
             iter += 1
@@ -273,7 +282,7 @@ def train(model,
                 reader_cost_averager.reset()
                 batch_cost_averager.reset()
 
-            if (iter % save_interval == 0 or
+            if ((iter - last_update_iters) % save_pre_inter == 0 or
                     iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
 
@@ -290,7 +299,8 @@ def train(model,
 
                 model.train()
 
-            if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
+            if ((iter - last_update_iters) % save_pre_inter == 0 or
+                    iter == update_iters) and local_rank == 0:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
@@ -319,6 +329,9 @@ def train(model,
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
+                if iter == update_iters and iter != iters:
+                    last_update_iters = update_iters
+                    update_iters, save_pre_inter = next(save_interval)
             batch_start = time.time()
 
     # Calculate flops.
