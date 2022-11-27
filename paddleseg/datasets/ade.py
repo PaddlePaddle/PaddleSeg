@@ -28,16 +28,6 @@ import paddleseg.transforms.functional as F
 
 URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
 
-# class Instances(object):
-#     """
-#     Construct the Instances in detectron2/strutures/instances.py in a very simple way.
-#     """
-
-#     def __init__(self, image_shape):
-#         self.image_shape = image_shape
-#         self.gt_classes = None
-#         self.gt_masks = None
-
 
 @manager.DATASETS.add_component
 class ADE20K(Dataset):
@@ -176,10 +166,8 @@ class ADE20K(Dataset):
             data['img'] = data['img'].numpy()
 
         if self.to_mask:
-            # ignore the pad image with size_divisibility here
             sem_seg_gt = data['label']
             instances = {"image_shape": data['img'].shape[1:]}
-            # instances = Instances(data['img'].shape)
             classes = np.unique(sem_seg_gt)  # 255
             classes = classes[classes != self.ignore_index]
 
@@ -191,7 +179,6 @@ class ADE20K(Dataset):
             classes_cpt = np.append(classes, classes_cpt)
             instances["gt_classes"] = paddle.to_tensor(
                 classes_cpt, dtype="int64")  # all 255
-            # instances["gt_classes"] = paddle.to_tensor([255 for i in range(self.num_classes)], dtype='int64')
 
             masks = []
             for cid in classes:
@@ -209,7 +196,6 @@ class ADE20K(Dataset):
                 instances['gt_masks'] = paddle.zeros(
                     (150, sem_seg_gt.shape[-2],
                      sem_seg_gt.shape[-1]))  #150, 512, 512
-                # print("image_path", image_path, classes)
 
             else:
                 instances['gt_masks'] = paddle.concat(
@@ -225,7 +211,6 @@ class ADE20K(Dataset):
                     axis=0)
 
             data['instances'] = instances
-        # print('data[\'instances\'][\'gt_masks\'].shape',  data['instances']['gt_masks'].shape, sem_seg_gt.shape, sem_seg_gt.mean(), len(masks), data['img'].shape)
 
         # batch data con only contains: tensor, numpy.ndarray, dict, list, number
         # ValueError: (InvalidArgument) Dims of all Inputs(X) must be the same

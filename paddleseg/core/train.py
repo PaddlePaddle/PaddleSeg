@@ -34,7 +34,7 @@ def check_logits_losses(logits_list, losses):
             .format(len_logits, len_losses))
 
 
-def loss_computation(logits_list, labels, edges, losses, targets):
+def loss_computation(logits_list, labels, edges, losses, targets=None):
     check_logits_losses(logits_list, losses)
     loss_list = []
     for i in range(len(logits_list)):

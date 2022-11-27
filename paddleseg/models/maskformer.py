@@ -601,7 +601,6 @@ class MaskFormer(nn.Layer):
             np.random.seed(0)
             a = np.random.random([2, 3, 512, 512]) * 0.7620
             x = paddle.to_tensor(a, dtype='float32')
-            # x = paddle.ones([2, 3, 512, 512]) * 0.7620
 
         features = self.backbone(x)
         outputs = self.seghead(features)
@@ -617,7 +616,7 @@ class MaskFormer(nn.Layer):
                 size=(x.shape[-2], x.shape[-1]),
                 mode="bilinear",
                 align_corners=False, )
-            processed_results = []  #TODO can we change slice to pack here?
+            processed_results = []
 
             for mask_cls_result, mask_pred_result in zip(mask_cls_results,
                                                          mask_pred_results):

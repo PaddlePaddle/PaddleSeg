@@ -17,7 +17,7 @@ train_dataset:
       crop_type: 'absolute'
       crop_size: [512, 512]
       single_category_max_area: 1.0
-      ignore_category: 255
+      ignored_category: 255
     # - type: RandomDistort
     #   brightness_range: 0.125
     #   brightness_prob: 1.0
@@ -28,11 +28,12 @@ train_dataset:
     #   hue_range: 18
     #   hue_prob: 1.0
     - type: ColorAugSSDTransform
-      image_format: 'RGB'
+      img_format: 'RGB'
     - type: RandomHorizontalFlip
     # - type: Normalize # 没有，需要进一步看看
     #   mean: [0.485, 0.456, 0.406]
     #   std: [0.229, 0.224, 0.225]
+  to_mask: True
 
 val_dataset:
   type: ADE20K
@@ -44,6 +45,7 @@ val_dataset:
     #   mean: [0.485, 0.456, 0.406]
     #   std: [0.229, 0.224, 0.225]
   mode: val
+  to_mask: True
 
 model:
   type: MaskFormer
