@@ -84,7 +84,7 @@ self.train_val_split(train_split=0.8)
 Then you can start the training program, such as the following command for TransUnet:
 
 ```shell
-python train.py --config configs/transunet/transunet_abdomen_224_224_1_14k_1e-2.yml --do_eval --save_interval 1000 --has_dataset_json False --is_save_data False --num_workers 4 --log_iters 10 --use_vdl
+python train.py --config configs/synapse/transunet_abdomen_224_224_1_14k_1e-2.yml --do_eval --save_interval 1000 --has_dataset_json False --is_save_data False --num_workers 4 --log_iters 10 --use_vdl
 ```
 
 ### Inference helper User Guide
