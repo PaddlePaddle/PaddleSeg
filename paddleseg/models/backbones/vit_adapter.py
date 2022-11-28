@@ -14,7 +14,8 @@ from paddleseg.utils import utils, logger
 from paddleseg.cvlibs.param_init import normal_init, trunc_normal_init, constant_init
 from paddleseg.models.backbones.transformer_utils import to_2tuple, DropPath
 from paddleseg.models.layers.vit_adapter_layers import (
-    SpatialPriorModule, InteractionBlock, deform_inputs, MSDeformAttn)
+    SpatialPriorModule, InteractionBlock, deform_inputs)
+from paddleseg.models.layers.ms_deformable_attention import MSDeformAttn
 
 __all__ = ['ViTAdapter', 'ViTAdapter_Tiny']
 
