@@ -379,7 +379,7 @@ PaddleSeg目前支持以下部署方式：
 | 服务端部署   | HubServing   | 完善中 |
 | 前端部署     | PaddleJS     | [示例](../deploy/web/) |
 
-比如使用Python端部署方式，运行如下命令，会在output文件下面生成一张H0003.png的分割图像。
+比如使用Python端部署方式，运行如下命令，会在output文件下面生成一张H0002.png的分割图像。
 
 ```
 python deploy/python/infer.py \
