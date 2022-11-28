@@ -10,12 +10,12 @@ from paddleseg.cvlibs import param_init
 from paddleseg.cvlibs.param_init import constant_init, xavier_uniform
 
 try:
-    import ms_deform_attn as msda
+    import ms_deform_attn
 except:
     print(
-        "Import ms_deform_attn failed. Please first refer to the following document to install "
-        "ms_deform_attn lib, and then use multi-scale deformable attention module: "
-        "https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/upernet_vit_adapter"
+        "Import ms_deform_attn failed. Please download the following file and refer to "
+        "the readme to install ms_deform_attn lib: "
+        "https://paddleseg.bj.bcebos.com/dygraph/customized_ops/ms_deform_attn.zip"
     )
 
 
@@ -152,7 +152,7 @@ class MSDeformAttn(nn.Layer):
             raise ValueError(
                 'Last dim of reference_points must be 2 or 4, but get {} instead.'
                 .format(reference_points.shape[-1]))
-        output = msda.ms_deform_attn(
+        output = ms_deform_attn.ms_deform_attn(
             value, input_spatial_shapes, input_level_start_index,
             sampling_locations, attention_weights, self.im2col_step)
         output = self.output_proj(output)

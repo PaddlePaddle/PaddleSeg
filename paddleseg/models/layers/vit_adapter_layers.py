@@ -249,7 +249,7 @@ class InteractionBlock(nn.Layer):
             spatial_shapes=deform_inputs1[1],
             level_start_index=deform_inputs1[2])
 
-        for idx, blk in enumerate(blocks):
+        for _, blk in enumerate(blocks):
             x = blk(x, H, W)
 
         c = self.extractor(
@@ -334,7 +334,7 @@ class InteractionBlockWithCls(nn.Layer):
             spatial_shapes=deform_inputs1[1],
             level_start_index=deform_inputs1[2])
         x = paddle.concat((cls, x), axis=1)
-        for idx, blk in enumerate(blocks):
+        for _, blk in enumerate(blocks):
             x = blk(x, H, W)
         cls, x = x[:, :1, ], x[:, 1:, ]
         c = self.extractor(
