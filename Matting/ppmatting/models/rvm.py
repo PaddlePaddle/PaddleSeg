@@ -29,6 +29,7 @@ class RVM(nn.Layer):
             lraspp_out_channels=128,
             decoder_channels=(80, 40, 32, 16),
             refiner='deep_guided_filter',
+            downsample_ratio=1.,
             pretrained=None, ):
         super().__init__()
 
@@ -47,14 +48,42 @@ class RVM(nn.Layer):
         else:
             self.refiner = FastGuidedFilterRefiner()
 
-    def forward(self,
-                src,
-                r1=None,
-                r2=None,
-                r3=None,
-                r4=None,
-                downsample_ratio=1.,
-                segmentation_pass=False):
+        self.downsample_ratio = downsample_ratio
+        self.r1 = None
+        self.r2 = None
+        self.r3 = None
+        self.r4 = None
+
+    def forward(self, data, downsample_ratio=None, segmentation_pass=False):
+        src = data['img']
+        if downsample_ratio is None:
+            downsample_ratio = self.downsample_ratio
+        result = self.forward_(
+            src,
+            r1=self.r1,
+            r2=self.r2,
+            r3=self.r3,
+            r4=self.r4,
+            downsample_ratio=downsample_ratio,
+            segmentation_pass=segmentation_pass)
+        if self.training:
+            raise RuntimeError('Sorry! RVM now do not support training')
+        else:
+            if segmentation_pass:
+                seg, self.r1, self.r2, self.r3, self.r4 = result
+                return {'alpha': seg}
+            else:
+                fgr, pha, self.r1, self.r2, self.r3, self.r4 = result
+                return {'alpha': pha, "fg": fgr}
+
+    def forward_(self,
+                 src,
+                 r1=None,
+                 r2=None,
+                 r3=None,
+                 r4=None,
+                 downsample_ratio=1.,
+                 segmentation_pass=False):
         if downsample_ratio != 1:
             src_sm = self._interpolate(src, scale_factor=downsample_ratio)
         else:
@@ -77,6 +106,15 @@ class RVM(nn.Layer):
         else:
             seg = self.project_seg(hid)
             return [seg, *rec]
+
+    def reset():
+        """
+        When a video is predicted, the history memory shoulb be reset.
+        """
+        self.r1 = None
+        self.r2 = None
+        self.r3 = None
+        self.r4 = None
 
     def backbone_forward(self, x):
         if x.ndim == 5:

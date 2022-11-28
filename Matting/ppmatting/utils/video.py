@@ -27,7 +27,14 @@ class VideoReader(paddle.io.Dataset):
         self.height = int(self.cap_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         transforms = [] if transforms is None else transforms
-        self.transforms = T.Compose(transforms)
+        if transforms is None or isinstance(transforms, list):
+            self.transforms = T.Compose(transforms)
+        elif isinstance(transforms, T.Compose):
+            self.transforms = transforms
+        else:
+            raise ValueError(
+                "transforms type is error, it should be list or ppmatting,transforms.Compose"
+            )
 
     def __len__(self):
         return self.frames
