@@ -1,5 +1,4 @@
 # This file is heavily based on https://github.com/czczup/ViT-Adapter
-
 import math
 import warnings
 
@@ -18,6 +17,7 @@ except:
         "the readme to install ms_deform_attn lib: "
         "https://paddleseg.bj.bcebos.com/dygraph/customized_ops/ms_deform_attn.zip"
     )
+    exit()
 
 
 class MSDeformAttn(nn.Layer):
