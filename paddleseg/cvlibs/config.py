@@ -295,7 +295,7 @@ class Config(object):
             if not enable_clipper:
                 gradient_clipper = None
             gradient_clipper = paddle.nn.ClipGradByNorm(
-                clip_norm=clipper_args['clip_value'] / 100)
+                clip_norm=clipper_args['clip_value'])
 
         if optimizer_type == 'sgd':
             opt = paddle.optimizer.Momentum(

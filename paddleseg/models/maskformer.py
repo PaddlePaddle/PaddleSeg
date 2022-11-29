@@ -94,6 +94,8 @@ class BasePixelDecoder(nn.Layer):
         for idx, f in enumerate(self.in_features[::-1]):
             x = features[f]
             lateral_conv = self.lateral_convs[idx]
+            # import pdb; pdb.set_trace()
+
             if lateral_conv is None:
                 y = self.output_convs[idx](x)
             else:
@@ -527,6 +529,8 @@ class MaskFormerHead(nn.Layer):
             num_classes=num_classes)
 
     def forward(self, x):  # {"res2": xx, "res3": xx, "res4": xx, "res5": xx}
+        # import pdb; pdb.set_trace()
+
         mask_features, transformer_encoder_features = self.pixel_decoder(x)
         predictions = self.predictor(x[self.transformer_in_feature],
                                      mask_features)
@@ -604,6 +608,7 @@ class MaskFormer(nn.Layer):
             # x = paddle.ones([2, 3, 512, 512]) * 0.7620
 
         features = self.backbone(x)
+        # import pdb; pdb.set_trace()
         outputs = self.seghead(features)
 
         if self.training:

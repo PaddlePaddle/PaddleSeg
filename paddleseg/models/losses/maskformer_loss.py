@@ -211,7 +211,13 @@ class HungarianMatcher(nn.Layer):
             C = C.reshape([num_queries, -1])
 
             #ValueError: matrix contains invalid numeric entries 
-            indices.append(linear_sum_assignment(C))
+            # ValueError: matrix contains invalid numeric entries 
+            # OSError: (External) CUDA error(719), unspecified launch failure.
+            try:
+                indices.append(linear_sum_assignment(C))
+            except:
+                import pdb
+                pdb.set_trace()
 
         return [(paddle.to_tensor(
             i, dtype='int64'), paddle.to_tensor(
@@ -288,6 +294,10 @@ class MaskFormerLoss(nn.Layer):
             if t['labels'].shape[0] != 0:
                 targets_cpt.append(t)
                 indices_cpt.append(indice)
+        else:
+            if indices_cpt == []:
+                losses = {"loss_ce": paddle.to_tensor([0.0])}
+                return losses
         assert "pred_logits" in outputs
         src_logits = outputs["pred_logits"]
         idx = self._get_src_permutation_idx(indices)
@@ -317,6 +327,13 @@ class MaskFormerLoss(nn.Layer):
             if t['labels'].shape[0] != 0:
                 targets_cpt.append(t)
                 indices_cpt.append(indice)
+        else:
+            if indices_cpt == []:
+                losses = {
+                    "loss_mask": paddle.to_tensor([0.0]),
+                    "loss_dice": paddle.to_tensor([0.0]),
+                }
+                return losses
         src_idx = self._get_src_permutation_idx(indices)
         tgt_idx = self._get_tgt_permutation_idx(indices_cpt)
         src_masks = outputs["pred_masks"]
