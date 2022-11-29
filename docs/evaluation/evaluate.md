@@ -1,4 +1,4 @@
-English|[简体中文](evaluate_cn.md)
+English | [简体中文](evaluate_cn.md)
 ## Model Evaluating
 
 ### 1. Evaluation and Prediction under **Configuration-Driven** Approach

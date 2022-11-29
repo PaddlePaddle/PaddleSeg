@@ -1,4 +1,4 @@
-English|[简体中文](python_inference_cn.md)
+English | [简体中文](python_inference_cn.md)
 # Paddle Inference Deployment（Python）
 
 ## 1. Description
