@@ -1,3 +1,4 @@
+English | [简体中文](lite_cn.md)
 # Deployment by PaddleLite
 
 ## 1. Introduction

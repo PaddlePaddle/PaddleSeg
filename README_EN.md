@@ -49,7 +49,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 
 ## <img src="./docs/images/feature.png" width="20"/> Features
 
-* **High-Performance Model**: Following the state of the art segmentation methods and use the high-performance backbone trained by semi-supervised label knowledge distillation scheme ([SSLD]((https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))), we provide 40+ models and 140+ high-quality pre-training models, which are better than other open-source implementations.
+* **High-Performance Model**: Following the state of the art segmentation methods and use the high-performance backbone, we provide 40+ models and 140+ high-quality pre-training models, which are better than other open-source implementations.
 
 * **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
@@ -369,24 +369,25 @@ Note that:
 
 * [Installation](./docs/install.md)
 * [Quick Start](./docs/quick_start.md)
-* [A 20 minutes Blitz to learn PaddleSeg](./docs/whole_process.md)
+* [A 20 minutes Blitz to Learn PaddleSeg](./docs/whole_process.md)
+* [Model Zoo](./docs/model_zoo_overview.md)
 
 **Basic Tutorials**
 
-*  Data Preparation
+* Data Preparation
     * [Prepare Public Dataset](./docs/data/pre_data.md)
     * [Prepare Customized Dataset](./docs/data/marker/marker.md)
     * [Label Data with EISeg](./EISeg)
-
+* [Config Preparation](./docs/config/pre_config.md)
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate.md)
-* [Prediction](./docs/predict/predict.md)
+* [Model Prediction](./docs/predict/predict.md)
 
 * Model Export
     * [Export Inference Model](./docs/model_export.md)
     * [Export ONNX Model](./docs/model_export_onnx.md)
 
-*  Model Deploy
+* Model Deploy
     * [Paddle Inference (Python)](./docs/deployment/inference/python_inference.md)
     * [Paddle Inference (C++)](./docs/deployment/inference/cpp_inference.md)
     * [Paddle Lite](./docs/deployment/lite/lite.md)
@@ -414,7 +415,7 @@ Note that:
     * [Create Your Own Model](./docs/design/create/add_new_model.md)
 *  Pull Request
     * [PR Tutorial](./docs/pr/pr/pr.md)
-    * [PR Style](./docs/pr/pr/style_cn.md)
+    * [PR Style](./docs/pr/pr/style.md)
 
 ## <img src="./docs/images/anli.png" width="20"/> Special Features
   * [Interactive Segmentation](./EISeg)
