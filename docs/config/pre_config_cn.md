@@ -3,20 +3,22 @@
 # 准备配置文件
 
 PaddleSeg的配置文件按照模块化进行定义，包括超参、训练数据集、验证数据集、优化器、损失函数、模型等模块信息。
+
 不同模块信息都对应PaddleSeg中定义的模块类，所以PaddleSeg基于配置文件构建对应的模块，进行模型训练、评估和导出。
 
-PaddleSeg中所有语义分割模型都针对公开数据集，提供了对应的配置文件，都保存在`PaddleSeg/configs`目录下。
+PaddleSeg中所有语义分割模型都针对公开数据集，提供了对应的配置文件，保存在`PaddleSeg/configs`目录下。
 
-下面是`PaddleSeg/configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml`配置文件，我们以此为例进行详细解读，让大家熟悉修改配置文件的方法。
+下面是`PaddleSeg/configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml`配置文件。我们以这个配置文件为例进行详细解读，让大家熟悉修改配置文件的方法。
 
 * 超参主要包括batch_size和iters，前者是单卡的batch_size，后者表示训练迭代的轮数（单个batch进行一次前向和反向表示一轮）。
-* 每个模块信息中，`type`字段对应到PaddleSeg代码中的类名（Python Class Name），其他字段对应类（Python Class）中`__init__`函数的初始化参数。所以大家需要参考PaddleSeg代码中的模块类来修改模块信息。
-* 数据集dataset模块，支持的类在`PaddleSeg/paddleseg/datasets`[目录](../../paddleseg/datasets/)下，使用`@manager.DATASETS.add_component`进行注册。
-* 数据预处理方式transforms模块，支持的类在`PaddleSeg/paddleseg/transforms/transforms.py`[文件](../../paddleseg/transforms/transforms.py)中，使用`@manager.TRANSFORMS.add_component`进行注册。
+* 每个模块信息中，`type`字段对应到PaddleSeg代码中的模块类名(python class name)，其他字段对应模块类`__init__`函数的初始化参数。所以大家需要参考PaddleSeg代码中的模块类来修改模块信息。
+* 数据集dataset模块，支持的dataset类在`PaddleSeg/paddleseg/datasets`[目录](../../paddleseg/datasets/)下，使用`@manager.DATASETS.add_component`进行注册。
+* 数据预处理方式transforms模块，支持的transform类在`PaddleSeg/paddleseg/transforms/transforms.py`[文件](../../paddleseg/transforms/transforms.py)中，使用`@manager.TRANSFORMS.add_component`进行注册。
 * 优化器optimizer模块，支持Paddle提供的所有优化器类，具体参考[文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html#api)。
 * 学习率衰减lr_scheduler模块，支持Paddle提供的所有lr_scheduler类，具体参考[文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html#about-lr)。
 * 损失函数Loss模块，在`types`字段下分别定义使用的损失函数类，`coef`字段定义每个损失函数的权重。`types`字段下损失函数个数，应该等于`coef`字段数组的长度。如果所有损失函数相同，可以只定义一个损失函数。支持的损失函数类在`PaddleSeg/paddleseg/models/losses/`[目录](../../paddleseg/models/losses/)下，使用`@manager.LOSSES.add_component注册`。
-* 模型Model模块，支持的model类在`PaddleSeg/paddleseg/models/`[目录](../../paddleseg/models)下，使用`@manager.MODELS.add_component`注册；支持的backbone类在`PaddleSeg/paddleseg/models/backbones`[目录](../../paddleseg/models/backbones/)下，使用`@manager.BACKBONES.add_component`注册。
+* 模型Model模块，支持的model类在`PaddleSeg/paddleseg/models/`[目录](../../paddleseg/models)下，使用`@manager.MODELS.add_component`注册。
+* 模型Model模块，支持的backbone类在`PaddleSeg/paddleseg/models/backbones`[目录](../../paddleseg/models/backbones/)下，使用`@manager.BACKBONES.add_component`注册。
 
 ```
 batch_size: 4  #设定batch_size的值即为迭代一次送入网络的图片数量，一般显卡显存越大，batch_size的值可以越大。如果使用多卡训练，总得batch size等于该batch size乘以卡数。
