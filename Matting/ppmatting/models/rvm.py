@@ -107,7 +107,7 @@ class RVM(nn.Layer):
             seg = self.project_seg(hid)
             return [seg, *rec]
 
-    def reset():
+    def reset(self):
         """
         When a video is predicted, the history memory shoulb be reset.
         """

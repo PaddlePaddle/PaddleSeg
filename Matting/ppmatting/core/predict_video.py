@@ -24,62 +24,69 @@ from paddleseg import utils
 from paddleseg.core import infer
 from paddleseg.utils import logger, progbar, TimeAverager
 
-from ppmatting.utils import mkdir, estimate_foreground_ml, VideoReader
+from ppmatting.utils import mkdir, estimate_foreground_ml, VideoReader, VideoWriter
 
 
-def save_result(alpha, path, im_path, trimap=None, fg_estimate=True):
-    """
-    The value of alpha is range [0, 1], shape should be [h,w]
-    """
-    dirname = os.path.dirname(path)
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
-    basename = os.path.basename(path)
-    name = os.path.splitext(basename)[0]
-    alpha_save_path = os.path.join(dirname, name + '_alpha.png')
-    rgba_save_path = os.path.join(dirname, name + '_rgba.png')
+def build_loader_writter(video_path, transforms, save_dir):
+    reader = VideoReader(video_path, transforms)
+    loader = paddle.io.DataLoader(reader)
+    base_name = os.path.basename(video_path)
+    name = os.path.splitext(base_name)[0]
+    alpha_save_path = os.path.join(save_dir, name + '_alpha.avi')
+    fg_save_path = os.path.join(save_dir, name + '_fg.avi')
 
-    # save alpha matte
-    if trimap is not None:
-        trimap = cv2.imread(trimap, 0)
-        alpha[trimap == 0] = 0
-        alpha[trimap == 255] = 255
-    alpha = (alpha).astype('uint8')
-    cv2.imwrite(alpha_save_path, alpha)
+    writer_alpha = VideoWriter(
+        alpha_save_path,
+        reader.fps,
+        frame_size=(reader.width, reader.height),
+        is_color=False)
+    writer_fg = VideoWriter(
+        fg_save_path,
+        reader.fps,
+        frame_size=(reader.width, reader.height),
+        is_color=True)
+    writers = {'alpha': writer_alpha, 'fg': writer_fg}
 
-    # save rgba
-    im = cv2.imread(im_path)
-    if fg_estimate:
-        fg = estimate_foreground_ml(im / 255.0, alpha / 255.0) * 255
-    else:
-        fg = im
-    fg = fg.astype('uint8')
-    alpha = alpha[:, :, np.newaxis]
-    rgba = np.concatenate((fg, alpha), axis=-1)
-    cv2.imwrite(rgba_save_path, rgba)
-
-    return fg
+    return loader, writers
 
 
-def reverse_transform(alpha, trans_info):
+def reverse_transform(img, trans_info):
     """recover pred to origin shape"""
     for item in trans_info[::-1]:
         if item[0] == 'resize':
             h, w = item[1][0], item[1][1]
-            alpha = F.interpolate(alpha, [h, w], mode='bilinear')
+            img = F.interpolate(img, [h, w], mode='bilinear')
         elif item[0] == 'padding':
             h, w = item[1][0], item[1][1]
-            alpha = alpha[:, :, 0:h, 0:w]
+            img = img[:, :, 0:h, 0:w]
         else:
             raise Exception("Unexpected info '{}' in im_info".format(item[0]))
-    return alpha
+    return img
 
 
-def video_dataloader(video_path, transforms):
-    dataset = VideoReader(video_path, transforms)
-    loader = paddle.io.DataLoader(dataset)
+def postprocess(fg, alpha, img, trans_info, writers, fg_estimate):
+    """
+    Postprocess for prediction results.
 
-    return loader
+    Args:
+        fg (Tensor): The foreground, value should be in [0, 1].
+        alpha (Tensor): The alpha, value should be in [0, 1].
+        img (Tensor): The original image, value should be in [0, 1].
+        trans_info (list): A list of the shape transformations.
+        writers (dict): A dict of VideoWriter instance.
+        fg_estimate (bool): Whether to estimate foreground. It is invalid when fg is not None.
+
+    """
+    if fg is None:
+        if fg_estimate:
+            fg = estimate_foreground_ml(img, alpha)
+        else:
+            fg = img
+    fg = alpha * fg
+    alpha = reverse_transform(alpha, trans_info)
+    fg = reverse_transform(fg, trans_info)
+    writers['alpha'].write(alpha)
+    writers['fg'].write(fg)
 
 
 def predict_video(model,
@@ -97,14 +104,14 @@ def predict_video(model,
         transforms (transforms.Compose): Preprocess for frames of video.
         video_path (str): the video path to be predicted.
         save_dir (str, optional): The directory to save the visualized results. Default: 'output'.
-        fa
         fg_estimate (bool, optional): Whether to estimate foreground when predicting. It is invalid if the foreground is predicted by model. Default: True
     """
     utils.utils.load_entire_model(model, model_path)
     model.eval()
 
-    # Build DataLoader for video
-    loader = video_dataloader(video_path, transforms)
+    # Build loader and writer for video
+    loader, writers = build_loader_writter(
+        video_path, transforms, save_dir=save_dir)
 
     logger.info("Start to predict...")
     progbar_pred = progbar.Progbar(target=len(loader), verbose=1)
@@ -123,44 +130,32 @@ def predict_video(model,
             else:
                 alpha = result['alpha']
                 fg = result.get('fg', None)
-            print(alpha.shape, fg.shape)
-
+            # print(alpha.shape, fg.shape)
             infer_cost_averager.record(time.time() - infer_start)
 
-            # postprocess_start = time.time()
-            # alpha_pred = reverse_transform(alpha_pred, data['trans_info'])
-            # alpha_pred = (alpha_pred.numpy()).squeeze()
-            # alpha_pred = (alpha_pred * 255).astype('uint8')
+            postprocess_start = time.time()
+            postprocess(
+                fg,
+                alpha,
+                data['img'],
+                trans_info=data['trans_info'],
+                writers=writers,
+                fg_estimate=fg_estimate)
+            postprocess_cost_averager.record(time.time() - postprocess_start)
 
-            # # get the saved name
-            # if image_dir is not None:
-            #     im_file = im_path.replace(image_dir, '')
-            # else:
-            #     im_file = os.path.basename(im_path)
-            # if im_file[0] == '/' or im_file[0] == '\\':
-            #     im_file = im_file[1:]
-
-            # save_path = os.path.join(save_dir, im_file)
-            # mkdir(save_path)
-            # fg = save_result(
-            #     alpha_pred,
-            #     save_path,
-            #     im_path=im_path,
-            #     trimap=trimap,
-            #     fg_estimate=fg_estimate)
-
-            # postprocess_cost_averager.record(time.time() - postprocess_start)
-
-            # preprocess_cost = preprocess_cost_averager.get_average()
-            # infer_cost = infer_cost_averager.get_average()
-            # postprocess_cost = postprocess_cost_averager.get_average()
-            # if local_rank == 0:
-            #     progbar_pred.update(i + 1,
-            #                         [('preprocess_cost', preprocess_cost),
-            #                          ('infer_cost cost', infer_cost),
-            #                          ('postprocess_cost', postprocess_cost)])
+            preprocess_cost = preprocess_cost_averager.get_average()
+            infer_cost = infer_cost_averager.get_average()
+            postprocess_cost = postprocess_cost_averager.get_average()
+            progbar_pred.update(i + 1, [('preprocess_cost', preprocess_cost),
+                                        ('infer_cost cost', infer_cost),
+                                        ('postprocess_cost', postprocess_cost)])
 
             preprocess_cost_averager.reset()
             infer_cost_averager.reset()
             postprocess_cost_averager.reset()
             batch_start = time.time()
+    if hasattr(model, 'reset'):
+        model.reset()
+    loader.dataset.release()
+    for k, v in writers.items():
+        v.release()

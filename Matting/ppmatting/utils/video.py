@@ -2,6 +2,7 @@ import os
 
 import cv2
 import paddle
+import numpy as np
 
 import ppmatting.transforms as T
 
@@ -53,16 +54,70 @@ class VideoReader(paddle.io.Dataset):
 
         return data
 
+    def release(self):
+        self.cap_video.release()
+
+
+class VideoWriter:
+    """
+    Video writer.
+
+    Args:
+        path (str): The path to save a video.
+        fps (int): The fps of the saved video.
+        frame_size (tuple): The frame size (width, height) of the saved video.
+        is_color (bool): Whethe to save the video in color format.
+    """
+
+    def __init__(self, path, fps, frame_size, is_color=True):
+        self.is_color = is_color
+
+        fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+        self.cap_out = cv2.VideoWriter(
+            filename=path,
+            fourcc=fourcc,
+            fps=fps,
+            frameSize=frame_size,
+            isColor=is_color)
+
+    def write(self, frames):
+        """ frames: [N, C, H, W]"""
+        if frames.ndim != 4:
+            raise ValueError(
+                'The frames should have the shape like [N, C, H, W], but it is {}'.
+                format(frames.shape))
+        n, c, h, w = frames.shape
+        if not (c == 1 or c == 3):
+            raise ValueError(
+                'the channels of frames should be 1 or 3, but it is {}'.format(
+                    c))
+        if c == 1 and self.is_color:
+            frames = paddle.repeat_interleave(frames, repeats=3, axis=1)
+
+        frames = (frames.transpose((0, 2, 3, 1)).numpy() * 255).astype('uint8')
+        for i in range(n):
+            frame = frames[i]
+            self.cap_out.write(frame)
+
+    def release(self):
+        self.cap_out.release()
+
 
 if __name__ == "__main__":
-    import time
-    transforms = [T.Normalize(mean=[0, 0, 0], std=[1, 1, 1])]
+    import time, tqdm
+    transforms = [
+        T.Resize(target_size=(270, 480)), T.Normalize(
+            mean=[0, 0, 0], std=[1, 1, 1])
+    ]
     vr = VideoReader(
         path='/ssd1/home/chenguowei01/github/PaddleSeg/Matting/test/test_real_video/img_9652.mov',
         transforms=transforms)
-    print(len(vr))
-    for i, data in enumerate(vr):
-        print(data.keys())
-        print(data['img'].max(), data['img'].min())
-        # print(f.sum(), end=' ')
     print(vr.fps, vr.frames, vr.width, vr.height)
+    vw = VideoWriter(
+        'output/output.avi', vr.fps, frame_size=(270, 480), is_color=True)
+    for i, data in tqdm.tqdm(enumerate(vr)):
+        # print(data.keys())
+        # print(data['img'].max(), data['img'].min())
+        frames = paddle.to_tensor(data['img'][np.newaxis, :, :, :])
+        vw.write(frames)
+    # vw.cap_out.release()
