@@ -1,4 +1,5 @@
 English | [简体中文 ](pre_config_cn.md)
+# Config Preparation
 
 The config file contains the information of train dataset, val dataset, optimizer, loss and model in PaddleSeg.
 All config files of SOTA models are saved in `PaddleSeg/configs`.
