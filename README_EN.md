@@ -27,7 +27,7 @@ English | [简体中文](README_CN.md)
     <ul>
         <li>Release <a href="./Matting/">PP-MattingV2</a>, an real-time human matting model with SOTA performance. Compared to previous models, the mean of error is reduced by 17.91%, the inference speed is improved by 44.6% on GPU. </li>
         <li>Release <a href="./contrib/MedicalSeg/">MedicalSegV2</a>, a superior 3D medical image segmentation solution, including an intelligent annotation toolkit called EISeg-Med3D, several state-of-the-art models and an optimized nnUNet-D with high performance.</li>
-        <li>Official Release <a href="./configs/rtformer/">RTFormer</a>, an real-time semantic segmentation model, is proposed by Baidu and accepted by NeurIPS 2022.
+        <li>Official Release <a href="./configs/rtformer/">RTFormer</a>, an real-time semantic segmentation model. It is proposed by Baidu and accepted by NeurIPS 2022.
     </ul>
   <li>[2022-07-20] PaddleSeg v2.6 released an real-time human segmentation SOTA solution <a href="./contrib/PP-HumanSeg">PP-HumanSegV2</a>,  a stable-version semi-automatic segmentation annotation <a href="./EISeg">EISeg v1.0</a>, a pseudo label pre-training method <a href="./configs/pssl">PSSL</a> and the source code of <a href="./Matting">PP-MattingV1</a> </li>
   <li>[2022-04-20] PaddleSeg v2.5 released a real-time semantic segmentation model <a href="./configs/pp_liteseg">PP-LiteSeg</a>, a trimap-free image matting model <a href="./Matting">PP-MattingV1</a>, and an easy-to-use solution for 3D medical image segmentation <a href="./contrib/MedicalSeg">MedicalSegV1</a>.</li>
