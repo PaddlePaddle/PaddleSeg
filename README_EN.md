@@ -415,7 +415,7 @@ Note that:
     * [Create Your Own Model](./docs/design/create/add_new_model.md)
 *  Pull Request
     * [PR Tutorial](./docs/pr/pr/pr.md)
-    * [PR Style](./docs/pr/pr/style_cn.md)
+    * [PR Style](./docs/pr/pr/style.md)
 
 ## <img src="./docs/images/anli.png" width="20"/> Special Features
   * [Interactive Segmentation](./EISeg)
