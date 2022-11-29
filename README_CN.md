@@ -374,8 +374,8 @@
    * [准备公开数据集](./docs/data/pre_data_cn.md)
    * [准备自定义数据集](./docs/data/marker/marker_cn.md)
    * [EISeg 数据标注](./EISeg)
-
-* [模型训练](/docs/train/train_cn.md)
+* [准备配置文件](./docs/config/pre_config_cn.md)
+* [模型训练](./docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate_cn.md)
 * [模型预测](./docs/predict/predict_cn.md)
 

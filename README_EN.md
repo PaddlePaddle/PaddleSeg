@@ -377,10 +377,10 @@ Note that:
     * [Prepare Public Dataset](./docs/data/pre_data.md)
     * [Prepare Customized Dataset](./docs/data/marker/marker.md)
     * [Label Data with EISeg](./EISeg)
-
+* [Config Preparation](./docs/config/pre_config.md)
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate.md)
-* [Prediction](./docs/predict/predict.md)
+* [Model Prediction](./docs/predict/predict.md)
 
 * Model Export
     * [Export Inference Model](./docs/model_export.md)
