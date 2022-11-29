@@ -22,9 +22,9 @@
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
 * [2022-11-30] :fire:  PaddleSeg 2.7版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
+  * 官方发布轻量级语义分割模型[RTFormer](./configs/rtformer/)：由百度提出并发表于NeurIPS 2022，在公开数据集上实现SOTA性能。
   * 发布实时人像抠图模型[PP-MattingV2](./Matting/)：推理速度提升44.6%，平均误差减小17.91%，完美超越此前SOTA模型，支持零成本开箱即用。
   * 发布3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)：涵盖3D医疗影像交互式标注工具EISeg-Med3D、3个高精分割模型，集成并优化前沿分割方案nnUNet-D。
-  * 官方发布轻量级语义分割模型[RTFormer](./configs/rtformer/)：由百度提出并发表于NeurIPS 2022，在公开数据集上实现SOTA性能。
 * [2022-07-20] PaddleSeg 2.6版本发布实时人像分割SOTA方案[PP-HumanSegV2](./contrib/PP-HumanSeg)、高性能智能标注工具[EISeg v1.0](./EISeg)正式版、ImageNet分割伪标签数据预训练方法[PSSL](./configs/pssl)，开源[PP-MattingV1](./Matting)代码和预训练模型。
 * [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-Matting，3D医疗影像开发套件[MedicalSegV1](./contrib/MedicalSeg)，交互式分割工具EISeg v0.5。
 * [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSeg，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
