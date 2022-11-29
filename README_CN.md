@@ -44,7 +44,7 @@
 
 ## <img src="./docs/images/feature.png" width="20"/> 特性
 
-* **高精度**：跟踪学术界的前沿分割技术，结合半监督标签知识蒸馏方案([SSLD](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))训练的骨干网络，提供40+主流分割网络、140+的高质量预训练模型，效果优于其他开源实现。
+* **高精度**：跟踪学术界的前沿分割技术，结合高精度训练的骨干网络，提供40+主流分割网络、140+的高质量预训练模型，效果优于其他开源实现。
 
 * **高性能**：使用多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
 
@@ -370,7 +370,7 @@
 
 **基础教程**
 
-* 准备数据
+* 准备数据集
    * [准备公开数据集](./docs/data/pre_data_cn.md)
    * [准备自定义数据集](./docs/data/marker/marker_cn.md)
    * [EISeg 数据标注](./EISeg)
@@ -387,7 +387,7 @@
     * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference_cn.md)
     * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference_cn.md)
     * [Paddle Lite部署](./docs/deployment/lite/lite_cn.md)
-    * [Paddle Serving部署](./docs/deployment/serving/serving.md)
+    * [Paddle Serving部署](./docs/deployment/serving/serving_cn.md)
     * [Paddle JS部署](./docs/deployment/web/web_cn.md)
     * [推理Benchmark](./docs/deployment/inference/infer_benchmark_cn.md)
 

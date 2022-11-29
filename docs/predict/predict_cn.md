@@ -1,4 +1,4 @@
-简体中文|[English](predict.md)
+简体中文 | [English](predict.md)
 # 预测
 
 除了分析模型的IOU、ACC和Kappa指标之外，我们还可以查阅一些具体样本的切割样本效果，从Bad Case启发进一步优化的思路。

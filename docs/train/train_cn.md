@@ -1,4 +1,4 @@
-简体中文|[English](train.md)
+简体中文 | [English](train.md)
 # 模型训练
 
 ## 1、单卡训练

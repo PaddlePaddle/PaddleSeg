@@ -1,4 +1,4 @@
-English|[简体中文](predict_cn.md)
+English | [简体中文](predict_cn.md)
 
 # Prediction
 

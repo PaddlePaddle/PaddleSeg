@@ -1,4 +1,4 @@
-English|[简体中文](LabelMe_cn.md)
+English | [简体中文](LabelMe_cn.md)
 # LabelMe
 
 If you have not installed it before, please refer to [LabelMe installation](https://paddlex.readthedocs.io/zh_CN/develop/data/annotation/labelme.html)

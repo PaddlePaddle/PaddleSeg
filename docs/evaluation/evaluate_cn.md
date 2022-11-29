@@ -1,4 +1,4 @@
-简体中文|[English](evaluate.md)
+简体中文 | [English](evaluate.md)
 ## 模型评估
 
 ### 1.**配置化驱动**方式下评估
