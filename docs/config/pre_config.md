@@ -5,7 +5,10 @@ The config file contains the information of train dataset, val dataset, optimize
 All config files of SOTA models are saved in `PaddleSeg/configs`.
 Based on these config files, we can modify the content at will and then conduct model training.
 
-The config file of `PaddleSeg/configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml` are as following. The details are explained:
+The config file of `PaddleSeg/configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml` are as following.
+
+## Explain Details
+
 * PaddleSeg employes the config file to build dataset, optimizer, model, etc, and then it conducts model training, evaluation and exporting.
 * Hyperparameters have batch_size and iters.
 * In each config module, `type` is the class name of corresponding component, and other values are the input params of `__init__` function.
@@ -15,6 +18,9 @@ The config file of `PaddleSeg/configs/quick_start/pp_liteseg_optic_disc_512x512_
 * For lr_scheduler config module, it supports all lr_scheduler provided by PaddlePaddle. Please refer to the [document](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html#about-lr).
 * For loss config module, `types` containes several loss name, `coef` defines the weights of each loss. The number of losses and weights must be equal. If all losses are the same, we can only add one loss name. All supported classes in `PaddleSeg/paddleseg/models/losses/` are registered by `@manager.LOSSES.add_component`.
 * For model config module, the supported classes in `PaddleSeg/paddleseg/models/` are registered by `@manager.MODELS.add_component`, and the supported backbone in `PaddleSeg/paddleseg/models/backbones` are registered by `@manager.BACKBONES.add_component`.
+
+
+## Config File Demo
 
 ```
 batch_size: 4  # batch size on single GPU
@@ -73,6 +79,7 @@ model:
 
 ```
 
+## Others
 
 Note that:
 * In the data transforms of train and val dataset, PaddleSeg will add read image operation in the beginning, add HWC->CHW transform operation in the end.
