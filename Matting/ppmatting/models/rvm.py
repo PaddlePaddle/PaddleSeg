@@ -10,9 +10,6 @@ from paddleseg.models import layers
 from paddleseg.cvlibs import manager
 from typing import Tuple, Optional
 
-manager.BACKBONES._components_dict.clear()
-manager.TRANSFORMS._components_dict.clear()
-
 from ppmatting.models import FastGuidedFilter
 
 
@@ -49,6 +46,7 @@ class RVM(nn.Layer):
             self.refiner = FastGuidedFilterRefiner()
 
         self.downsample_ratio = downsample_ratio
+        self.pretrained = pretrained
         self.r1 = None
         self.r2 = None
         self.r3 = None
@@ -143,6 +141,10 @@ class RVM(nn.Layer):
                 mode='bilinear',
                 align_corners=False)
         return x
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class LRASPP(nn.Layer):

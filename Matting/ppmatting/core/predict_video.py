@@ -53,10 +53,10 @@ def build_loader_writter(video_path, transforms, save_dir):
 def reverse_transform(img, trans_info):
     """recover pred to origin shape"""
     for item in trans_info[::-1]:
-        if item[0] == 'resize':
+        if item[0][0] == 'resize':
             h, w = item[1][0], item[1][1]
             img = F.interpolate(img, [h, w], mode='bilinear')
-        elif item[0] == 'padding':
+        elif item[0][0] == 'padding':
             h, w = item[1][0], item[1][1]
             img = img[:, :, 0:h, 0:w]
         else:

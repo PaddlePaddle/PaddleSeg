@@ -4,6 +4,7 @@ import cv2
 import paddle
 import numpy as np
 
+import ppmatting
 import ppmatting.transforms as T
 
 
@@ -72,6 +73,7 @@ class VideoWriter:
     def __init__(self, path, fps, frame_size, is_color=True):
         self.is_color = is_color
 
+        ppmatting.utils.mkdir(path)
         fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
         self.cap_out = cv2.VideoWriter(
             filename=path,
