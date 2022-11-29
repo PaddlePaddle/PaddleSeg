@@ -369,11 +369,12 @@ Note that:
 
 * [Installation](./docs/install.md)
 * [Quick Start](./docs/quick_start.md)
-* [A 20 minutes Blitz to learn PaddleSeg](./docs/whole_process.md)
+* [A 20 minutes Blitz to Learn PaddleSeg](./docs/whole_process.md)
+* [Model Zoo](./docs/model_zoo_overview.md)
 
 **Basic Tutorials**
 
-*  Data Preparation
+* Data Preparation
     * [Prepare Public Dataset](./docs/data/pre_data.md)
     * [Prepare Customized Dataset](./docs/data/marker/marker.md)
     * [Label Data with EISeg](./EISeg)
@@ -386,7 +387,7 @@ Note that:
     * [Export Inference Model](./docs/model_export.md)
     * [Export ONNX Model](./docs/model_export_onnx.md)
 
-*  Model Deploy
+* Model Deploy
     * [Paddle Inference (Python)](./docs/deployment/inference/python_inference.md)
     * [Paddle Inference (C++)](./docs/deployment/inference/cpp_inference.md)
     * [Paddle Lite](./docs/deployment/lite/lite.md)

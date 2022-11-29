@@ -367,6 +367,7 @@
 * [安装说明](./docs/install_cn.md)
 * [快速体验](./docs/quick_start_cn.md)
 * [20分钟快速上手PaddleSeg](./docs/whole_process_cn.md)
+* [模型库](./docs/model_zoo_overview_cn.md)
 
 **基础教程**
 
