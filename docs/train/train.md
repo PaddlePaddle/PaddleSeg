@@ -1,4 +1,4 @@
-English|[简体中文](train_cn.md)
+English | [简体中文](train_cn.md)
 # Model Training
 
 ## 1、Start Training

@@ -1,4 +1,4 @@
-English|[简体中文](model_export_onnx_cn.md)
+English | [简体中文](model_export_onnx_cn.md)
 # Export model with ONNX format
 
 After training the model by PaddleSeg, we also support exporting model with ONNX format. This tutorial provides an example to introduce it.
