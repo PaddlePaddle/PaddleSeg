@@ -89,32 +89,70 @@ The process of AI-assisted labelling
 1. Download and install 3D slicer：[Slicer website](https://www.slicer.org/)
 
 2. Download code of EISeg-Med3D：
-```
+```bash
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 ```
 
-3. Install PaddlePaddle in python interpreter of slicer，refer to [install doc](https://www.paddlepaddle.org.cn/en/install/quick?docurl=/documentation/docs/en/develop/install/pip/linux-pip_en.html). If you install on Windows with CUDA 11.1 GPU, follow the command here：
-```
+3. Find the slicer python executor in python interpreter of slicer. Then install PaddlePaddle refer to [install doc](https://www.paddlepaddle.org.cn/en/install/quick?docurl=/documentation/docs/en/develop/install/pip/linux-pip_en.html) in windows cmd.
+
+```bash
 import sys
 import os
-sys.executable # 'D:/slicer/Slicer 5.0.3/bin/PythonSlicer.exe'
+sys.executable # "D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe"
+```
+In CMD, If you install on Windows with CUDA 11.1 GPU, follow the command here：：
 
-os.system(f"'{sys.executable}' -m pip install paddlepaddle-gpu==2.3.1.post111 -f  https://www.paddlepaddle.org.cn/whl/windows/mkl/avx/stable.html")
-
+```bash
+"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe" -m pip install paddlepaddle-gpu==2.3.1.post111 -f https://www.paddlepaddle.org.cn/whl/windows/mkl/avx/stable.html
 ```
 
-The final line should output 0. Anything else indicates the installation has failed. If you started 3D Slicer from a terminal, you should be able to see pip install progress there.
+<summary><b> Common FAQ </b></summary>
+
+1. FileNotFoundError when install PaddlePaddle：
 
 <details>
-<summary><b> Common FAQ </b></summary>
-1. Error after install PaddlePaddle：
 <p align="center">
 <img src="https://user-images.githubusercontent.com/34859558/189288387-4773c35a-ac8e-421d-bfed-2264ac57cda5.png" width="70.6%" height="20%">
 </p>
+Solution：Find the subprocess.py that raise the error, change the attribute of Popen shell=True。
+</details>
 
-Enter the corresponding subprocess.py change shell=True in Popen class.
+2. ERROR: No .egg-info directory found in xxx:
+
+<details>
+Solution：Please refer to https://github.com/PaddlePaddle/PaddleSeg/issues/2718. Execute the following code will solve the error.
+
+```python
+"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe" -m pip uninstall setuptools
+"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe"  -m pip install paddleseg simpleitk
+"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe" -m pip install setuptools
+```
+</details>
+
+3. When load module, the poped window says "One or more requested modules and/or depandencoes may not have been loaded".
+
+<details>
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/204699311-8a12e976-904f-46e0-8bbf-9d9f0290393d.png" width="30.6%" height="20%">
+</p>
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/204699334-a31e6827-b907-456a-a686-1c1f3ac6014d.png" width="50.6%" height="20%">
+</p>
+Solution：You may forget to install some library we need to import, eg: paddle, paddleseg, simpleitk and etc. Please refer to step 1 and 2 to install and restart Slicer to import.
 
 </details>
+
+4. Fail to open extention: xxx/PaddleSeg/EISeg/med3d/EISefMed3D
+
+<details>
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/204699489-6b75d9f2-5cf6-42d2-9d74-17894fc3e00b.png" width="50.6%" height="20%">
+</p>
+Solution：The path you need to choose is "xxx/PaddleSeg/EISeg/med3d/" but not "xxx/PaddleSeg/EISeg/med3d/EISefMed3D"
+
+</details>
+
 
 
 ### Model and Data Downloading
@@ -138,7 +176,9 @@ Currently we provide trial experience on the following models and data:
 <p align="center">
 <img src="https://user-images.githubusercontent.com/34859558/188458463-066ff0b6-ff80-4d0d-aca0-3b3b12f710ef.png" width="70.6%" height="20%">
 </p>
-
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/204699311-8a12e976-904f-46e0-8bbf-9d9f0290393d.png" width="70.6%" height="20%">
+</p>
 * After loading, switch to EISegMed3D。
 <p align="center">
 <img src="https://user-images.githubusercontent.com/34859558/188458684-46465fed-fdde-43dd-a97c-5da7678f3f99.png" width="70.6%" height="20%">
