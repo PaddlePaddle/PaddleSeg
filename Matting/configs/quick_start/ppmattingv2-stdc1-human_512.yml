@@ -1,0 +1,66 @@
+batch_size: 1 
+iters: 1000
+
+train_dataset:
+  type: MattingDataset
+  dataset_root: data/PPM-100
+  train_file: train.txt
+  transforms:
+    - type: LoadImages
+    - type: LimitShort
+      max_short: 512
+    - type: RandomCrop
+      crop_size: [512, 512]
+    - type: Padding
+      target_size: [512, 512]
+    - type: RandomDistort
+    - type: RandomBlur
+      prob: 0.1
+    - type: RandomSharpen
+      prob: 0.2
+    - type: RandomNoise
+      prob: 0.5
+    - type: RandomReJpeg
+      prob: 0.2
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: MattingDataset
+  dataset_root: data/PPM-100
+  val_file: val.txt
+  transforms:
+    - type: LoadImages
+    - type: LimitShort
+      max_short: 512
+    - type: ResizeToIntMult
+      mult_int: 32
+    - type: Normalize
+  mode: val
+  get_trimap: False
+
+model:
+  type: PPMattingV2
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+  decoder_channels: [128, 96, 64, 32, 16]
+  head_channel: 8
+  dpp_output_channel: 256
+  dpp_merge_type: add
+  
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 5.0e-4
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+  warmup_iters: 100
+  warmup_start_lr: 1.0e-5
+

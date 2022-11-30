@@ -226,7 +226,7 @@ class MattingDataset(paddle.io.Dataset):
         return image, fg, bg
 
     @staticmethod
-    def gen_trimap(alpha, mode='train', eval_kernel=7):
+    def gen_trimap(alpha, mode='train', eval_kernel=25):
         if mode == 'train':
             k_size = random.choice(range(2, 5))
             iterations = np.random.randint(5, 15)
@@ -243,9 +243,10 @@ class MattingDataset(paddle.io.Dataset):
             kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
                                                (k_size, k_size))
             dilated = cv2.dilate(alpha, kernel)
+            eroded = cv2.erode(alpha, kernel)
             trimap = np.zeros(alpha.shape)
             trimap.fill(128)
-            trimap[alpha >= 250] = 255
-            trimap[dilated <= 5] = 0
+            trimap[eroded > 254.5] = 255
+            trimap[dilated < 0.5] = 0
 
         return trimap

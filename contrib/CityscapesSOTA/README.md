@@ -148,13 +148,29 @@ If you run out of memory, try to lower the crop size.
 
 ## Deploy
 
-- Inference with TensorRT in C++
-- Inference with ONNX Runtime in Python
-- Inference with TensorFlow Lite in Python
+Run the following command to export the inference model.
 
-Please refer to
-- https://github.com/PINTO0309/PINTO_model_zoo/tree/main/201_CityscapesSOTA/demo
-- https://github.com/iwatake2222/play_with_tensorrt/tree/master/pj_tensorrt_seg_paddleseg_cityscapessota
-- https://github.com/axinc-ai/ailia-models/tree/master/image_segmentation/paddleseg
+```shell
+python export.py \
+    --config configs/mscale_ocr_cityscapes_autolabel_mapillary_ms_val.yml \
+    --save_dir ./output \
+    --input_shape 1 3 2048 1024
+```
+
+We can use the following deployment methods to deploy the inference model.
+
+| Platform         | Library           | Tutorial  |
+| :----------- | :----------- | :----- |
+| Python | Paddle prediction library | [e.g.](../../docs/deployment/inference/python_inference.md) |
+| C++ | Paddle prediction library | [e.g.](../../docs/deployment/inference/cpp_inference.md) |
+| Mobile | PaddleLite   | [e.g.](../../docs/deployment/lite/lite.md) |
+| Front-end | PaddleJS     | [e.g.](../../docs/deployment/web/web.md) |
+
+
+
+Other deployment documents:
+* [Inference with TensorRT in C++](https://github.com/PINTO0309/PINTO_model_zoo/tree/main/201_CityscapesSOTA/demo)
+* [Inference with ONNX Runtime in Python](https://github.com/iwatake2222/play_with_tensorrt/tree/master/pj_tensorrt_seg_paddleseg_cityscapessota)
+* Inference with TensorFlow Lite in Python https://github.com/axinc-ai/ailia-models/tree/master/image_segmentation/paddleseg
 
 Thanks for their contributions!

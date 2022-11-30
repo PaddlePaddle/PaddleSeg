@@ -177,8 +177,8 @@ class Trainer():
                                                      labels_src)
 
                 loss_src_seg = loss_src_seg_main + loss_src_seg_aux
-                loss_dict["source_main"] = loss_src_seg_main.numpy()[0]
-                loss_dict["source_aux"] = loss_src_seg_aux.numpy()[0]
+                loss_dict["source_main"] = float(loss_src_seg_main)
+                loss_dict["source_aux"] = float(loss_src_seg_aux)
                 loss = loss_src_seg
                 del loss_src_seg, loss_src_seg_aux, loss_src_seg_main
 
@@ -224,8 +224,8 @@ class Trainer():
 
                     loss += loss_edge
 
-                    loss_dict['target_edge'] = loss_tgt_edge.numpy()[0]
-                    loss_dict['source_edge'] = loss_src_edge.numpy()[0]
+                    loss_dict['target_edge'] = float(loss_tgt_edge)
+                    loss_dict['source_edge'] = float(loss_src_edge)
 
                     del loss_edge, loss_tgt_edge, loss_src_edge
 
@@ -260,8 +260,8 @@ class Trainer():
 
                 loss += loss_tgt_aug
 
-                loss_dict['target_aug_main'] = loss_tgt_aug_main.numpy()[0]
-                loss_dict['target_aug_aux'] = loss_tgt_aug_aux.numpy()[0]
+                loss_dict['target_aug_main'] = float(loss_tgt_aug_main)
+                loss_dict['target_aug_aux'] = float(loss_tgt_aug_aux)
                 del images_tgt_aug, labels_tgt_aug_aux, images_tgt, \
                     loss_tgt_aug, loss_tgt_aug_aux, loss_tgt_aug_main
 
@@ -287,8 +287,8 @@ class Trainer():
                     loss_edge_rec = loss_tgt_edge_rec + loss_src_edge_rec
                     loss += loss_edge_rec
 
-                    loss_dict['src_edge_rec'] = loss_src_edge_rec.numpy()[0]
-                    loss_dict['tgt_edge_rec'] = loss_tgt_edge_rec.numpy()[0]
+                    loss_dict['src_edge_rec'] = float(loss_src_edge_rec)
+                    loss_dict['tgt_edge_rec'] = float(loss_tgt_edge_rec)
 
                     del loss_tgt_edge_rec, loss_src_edge_rec
 
@@ -358,12 +358,12 @@ class Trainer():
 
                         loss += loss_feat_align
 
-                        loss_dict['loss_pix_align_src'] = \
-                                loss_pix_align_src.numpy()[0]
-                        loss_dict['loss_pix_align_tgt'] = \
-                                loss_pix_align_tgt.numpy()[0]
-                        loss_dict['loss_intra_relate'] = \
-                                loss_intra_relate.numpy()[0]
+                        loss_dict['loss_pix_align_src'] = float(
+                            loss_pix_align_src)
+                        loss_dict['loss_pix_align_tgt'] = float(
+                            loss_pix_align_tgt)
+                        loss_dict['loss_intra_relate'] = float(
+                            loss_intra_relate)
 
                         del loss_pix_align_tgt, loss_pix_align_src, loss_intra_relate,
 
