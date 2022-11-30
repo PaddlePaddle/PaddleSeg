@@ -19,29 +19,29 @@ import paddle.nn.functional as F
 from paddleseg.utils import utils
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
-
-
-class Identity(nn.Layer):
-    def __init__(self):
-        super(Identity, self).__init__()
-
-    def forward(self, input):
-        return input
+from paddleseg.models.backbones.transformer_utils import Identity
 
 
 @manager.MODELS.add_component
 class UPerNetCAE(nn.Layer):
     """ 
-    Unified Perceptual Parsing for Scene Understanding
+    The UPerNet  with CAE as backbone implementation with PaddlePaddle.
+
+    The original paper refers to Unified Perceptual Parsing for Scene Understanding.
     (https://arxiv.org/abs/1807.10221)
-    The UPerNet implementation based on PaddlePaddle.
+
     Args:
         num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): Backbone network, currently support Resnet50/101.
         backbone_indices (tuple): Four values in the tuple indicate the indices of output of backbone.
+        channels(int): Hidden layer channels of upernet head.
+        fpn_channels(int): The fpn_channels of upernet head.
+        head_channels(int): The inplane of upernet head.
+        channels_fpn(int): The channels_fpn of upernet head.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: False.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
+        dropout_ratio(float): The dropout ratio of upernet head.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -50,9 +50,9 @@ class UPerNetCAE(nn.Layer):
                  backbone,
                  backbone_indices,
                  channels,
-                 fpn_dim,
-                 inplane_head,
-                 fpn_inplanes,
+                 fpn_channels,
+                 head_channels,
+                 channels_fpn,
                  enable_auxiliary_loss=True,
                  align_corners=True,
                  dropout_ratio=0.1,
@@ -65,17 +65,17 @@ class UPerNetCAE(nn.Layer):
         self.pretrained = pretrained
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
-        self.fpn_dim = fpn_dim
-        self.inplane_head = inplane_head
-        self.fpn_inplanes = fpn_inplanes
+        self.fpn_channels = fpn_channels
+        self.head_channels = head_channels
+        self.channels_fpn = channels_fpn
 
         self.decode_head = UPerNetHead(
-            inplane=inplane_head,
+            inplane=head_channels,
             num_class=num_classes,
-            fpn_inplanes=fpn_inplanes,
+            channels_fpn=channels_fpn,
             dropout_ratio=dropout_ratio,
             channels=channels,
-            fpn_dim=fpn_dim,
+            fpn_channels=fpn_channels,
             enable_auxiliary_loss=self.enable_auxiliary_loss)
         self.init_weight()
 
@@ -178,7 +178,7 @@ class PPModuleCAE(nn.Layer):
             out_channels=out_channels,
             kernel_size=3,
             padding=1,
-            bias_attr=False)  # todo
+            bias_attr=False)
 
         self.align_corners = align_corners
 
@@ -205,7 +205,7 @@ class PPModuleCAE(nn.Layer):
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=1,
-            bias_attr=False)  # todo
+            bias_attr=False)
 
         return nn.Sequential(prior, conv)
 
@@ -219,7 +219,7 @@ class PPModuleCAE(nn.Layer):
                 mode='bilinear',
                 align_corners=self.align_corners)
             cat_layers.append(x)
-        cat_layers = [input] + cat_layers  #[::-1]
+        cat_layers = [input] + cat_layers
         cat = paddle.concat(cat_layers, axis=1)
         out = self.conv_bn_relu2(cat)
 
@@ -233,23 +233,23 @@ class UPerNetHead(nn.Layer):
     Args:
         inplane (int): Input channels of PPM module.
         num_class (int): The unique number of target classes.
-        fpn_inplanes (list): The feature channels from backbone.
-        fpn_dim (int, optional): The input channels of FPN module. Default: 512.
+        channels_fpn (list): The feature channels from backbone.
+        fpn_channels (int, optional): The input channels of FPN module. Default: 512.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: False.
     """
 
     def __init__(self,
                  inplane,
                  num_class,
-                 fpn_inplanes,
+                 channels_fpn,
                  channels,
                  dropout_ratio=0.1,
-                 fpn_dim=512,
+                 fpn_channels=512,
                  enable_auxiliary_loss=False):
         super(UPerNetHead, self).__init__()
         self.psp_modules = PPModuleCAE(
             in_channels=inplane,
-            out_channels=fpn_dim,
+            out_channels=fpn_channels,
             bin_sizes=(1, 2, 3, 6),
             dim_reduction=False,
             align_corners=False)
@@ -258,17 +258,17 @@ class UPerNetHead(nn.Layer):
         self.lateral_convs = []
         self.fpn_convs = []
 
-        for fpn_inplane in fpn_inplanes[:-1]:
+        for fpn_inplane in channels_fpn[:-1]:
             self.lateral_convs.append(
                 nn.Sequential(
                     nn.Conv2D(
-                        fpn_inplane, fpn_dim, 1, bias_attr=False),
-                    layers.SyncBatchNorm(fpn_dim),
+                        fpn_inplane, fpn_channels, 1, bias_attr=False),
+                    layers.SyncBatchNorm(fpn_channels),
                     nn.ReLU()))
             self.fpn_convs.append(
                 nn.Sequential(
                     layers.ConvBNReLU(
-                        fpn_dim, fpn_dim, 3, bias_attr=False)))
+                        fpn_channels, fpn_channels, 3, bias_attr=False)))
 
         self.lateral_convs = nn.LayerList(self.lateral_convs)
         self.fpn_convs = nn.LayerList(self.fpn_convs)
@@ -277,14 +277,14 @@ class UPerNetHead(nn.Layer):
             if dropout_ratio is not None:
                 self.dsn = nn.Sequential(
                     layers.ConvBNReLU(
-                        fpn_inplanes[2], 256, 3, padding=1, bias_attr=False),
+                        channels_fpn[2], 256, 3, padding=1, bias_attr=False),
                     nn.Dropout2D(dropout_ratio),
                     nn.Conv2D(
                         256, num_class, kernel_size=1))
             else:
                 self.dsn = nn.Sequential(
                     layers.ConvBNReLU(
-                        fpn_inplanes[2], 256, 3, padding=1, bias_attr=False),
+                        channels_fpn[2], 256, 3, padding=1, bias_attr=False),
                     nn.Conv2D(
                         256, num_class, kernel_size=1))
 
@@ -294,15 +294,11 @@ class UPerNetHead(nn.Layer):
             self.dropout = None
 
         self.fpn_bottleneck = layers.ConvBNReLU(
-            len(fpn_inplanes) * channels,
+            len(channels_fpn) * channels,
             channels,
             3,
             padding=1,
             bias_attr=False)
-        #self.conv_last = nn.Sequential(
-        #    layers.ConvBNReLU(
-        #        len(fpn_inplanes) * fpn_dim, fpn_dim, 3, bias_attr=False),
-        #    nn.Conv2D(fpn_dim, num_class, kernel_size=1))
         self.conv_seg = nn.Conv2D(channels, num_class, kernel_size=1)
 
     def cls_seg(self, feat):

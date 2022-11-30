@@ -1,9 +1,9 @@
 # Context Autoencoder for Self-Supervised Representation Learning
 
-
 ## Reference
 
 > Chen, Xiaokang, Mingyu Ding, Xiaodi Wang, Ying Xin, Shentong Mo, Yunhao Wang, Shumin Han, Ping Luo, Gang Zeng, and Jingdong Wang. "Context autoencoder for self-supervised representation learning." arXiv preprint arXiv:2202.03026 (2022).
+
 ## Performance
 
 ### ADE20k

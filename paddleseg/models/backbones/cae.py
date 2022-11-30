@@ -1,4 +1,4 @@
-# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,12 +13,13 @@
 
 import os
 import math
+import numpy as np
 
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-import numpy as np
 from paddle.nn.initializer import TruncatedNormal, Constant, Normal
+
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils, logger
 from paddleseg.models.backbones.transformer_utils import to_2tuple, DropPath, Identity
@@ -71,8 +72,6 @@ class Attention(nn.Layer):
                 shape=([dim]), default_initializer=zeros_)
             self.v_bias = self.create_parameter(
                 shape=([dim]), default_initializer=zeros_)
-            #self.q_bias = nn.Parameter(paddle.zeros(dim)) 
-            #self.v_bias = nn.Parameter(paddle.zeros(dim))
         else:
             self.q_bias = None
             self.v_bias = None
@@ -83,9 +82,7 @@ class Attention(nn.Layer):
             self.relative_position_bias_table = self.create_parameter(
                 shape=(self.num_relative_distance, num_heads),
                 default_initializer=zeros_)  # 2*Wh-1 * 2*Ww-1, nH
-            # cls to token & token 2 cls & cls to cls
 
-            # get pair-wise relative position index for each token inside the window
             coords_h = paddle.arange(window_size[0])
             coords_w = paddle.arange(window_size[1])
             coords = paddle.stack(paddle.meshgrid(
@@ -96,9 +93,8 @@ class Attention(nn.Layer):
             relative_coords = coords_flatten_1.clone() - coords_flatten_2.clone(
             )
 
-            #relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]  # 2, Wh*Ww, Wh*Wh
             relative_coords = relative_coords.transpose(
-                (1, 2, 0))  #.contiguous()  # Wh*Ww, Wh*Ww, 2
+                (1, 2, 0))  # Wh*Ww, Wh*Ww, 2
             relative_coords[:, :, 0] += window_size[
                 0] - 1  # shift to start from 0
             relative_coords[:, :, 1] += window_size[1] - 1
@@ -113,7 +109,6 @@ class Attention(nn.Layer):
 
             self.register_buffer("relative_position_index",
                                  relative_position_index)
-            # trunc_normal_(self.relative_position_bias_table, std=.0)
         else:
             self.window_size = None
             self.relative_position_bias_table = None
@@ -145,7 +140,7 @@ class Attention(nn.Layer):
                     self.window_size[0] * self.window_size[1] + 1, -1
                 ])  # Wh*Ww,Wh*Ww,nH
             relative_position_bias = relative_position_bias.transpose(
-                (2, 0, 1))  #.contiguous()  # nH, Wh*Ww, Wh*Ww
+                (2, 0, 1))  # nH, Wh*Ww, Wh*Ww
             attn = attn + relative_position_bias.unsqueeze(0)
         if rel_pos_bias is not None:
             attn = attn + rel_pos_bias
@@ -175,7 +170,6 @@ class Block(nn.Layer):
                  norm_layer='nn.LayerNorm',
                  epsilon=1e-5):
         super().__init__()
-        # self.norm1 = eval(norm_layer)(dim, epsilon=1e-6)
         self.norm1 = nn.LayerNorm(dim, epsilon=1e-6)
         self.attn = Attention(
             dim,
@@ -199,8 +193,6 @@ class Block(nn.Layer):
                 shape=([dim]), default_initializer=Constant(value=init_values))
             self.gamma_2 = self.create_parameter(
                 shape=([dim]), default_initializer=Constant(value=init_values))
-            #self.gamma_1 = nn.Parameter(init_values * torch.ones((dim)),requires_grad=True)
-            #self.gamma_2 = nn.Parameter(init_values * torch.ones((dim)),requires_grad=True)
         else:
             self.gamma_1, self.gamma_2 = None, None
 
@@ -255,7 +247,6 @@ class RelativePositionBias(nn.Layer):
         self.relative_position_bias_table = self.create_parameter(
             shape=(self.num_relative_distance, num_heads),
             default_initialize=zeros_)
-        # cls to token & token 2 cls & cls to cls
 
         # get pair-wise relative position index for each token inside the window
         coords_h = paddle.arange(window_size[0])
@@ -268,7 +259,7 @@ class RelativePositionBias(nn.Layer):
                                          None] - coords_flatten[:,
                                                                 None, :]  # 2, Wh*Ww, Wh*Ww
         relative_coords = relative_coords.transpos(
-            (1, 2, 0))  #.contiguous()  # Wh*Ww, Wh*Ww, 2 
+            (1, 2, 0))  # Wh*Ww, Wh*Ww, 2 
         relative_coords[:, :, 0] += window_size[0] - 1  # shift to start from 0
         relative_coords[:, :, 1] += window_size[1] - 1
         relative_coords[:, :, 0] *= 2 * window_size[1] - 1
@@ -280,15 +271,13 @@ class RelativePositionBias(nn.Layer):
         relative_position_index[0:, 0] = self.num_relative_distance - 2
         relative_position_index[0, 0] = self.num_relative_distance - 1
         self.register_buffer("relative_position_index", relative_position_index)
-        # trunc_normal_(self.relative_position_bias_table, std=.02)
 
     def forward(self):
         relative_position_bias = \
             self.relative_position_bias_table[self.relative_position_index.view(-1)].view(
                  self.window_size[0] * self.window_size[1] + 1,
                  self.window_size[0] * self.window_size[1] + 1, -1)  # Wh*Ww,Wh*Ww,nH 
-        return relative_position_bias.transpose(
-            (2, 0, 1))  #.contiguous()  # nH, Wh*Ww, Wh*Ww
+        return relative_position_bias.transpose((2, 0, 1))  # nH, Wh*Ww, Wh*Ww
 
 
 def get_sinusoid_encoding_table(n_position, d_hid, token=False):
@@ -313,7 +302,31 @@ def get_sinusoid_encoding_table(n_position, d_hid, token=False):
 @manager.BACKBONES.add_component
 class CAE(nn.Layer):
     """
-     CAE with support for patch input
+    The Context Autoencoder for Self-Supervised Representation Learning implemetation based on PaddlePaddle
+
+    The original article refers to Chen, Xiaokang, Mingyu Ding, Xiaodi Wang, Ying Xin, Shentong Mo, Yunhao Wang, Shumin Han, Ping Luo, Gang Zeng, and Jingdong Wang. "Context autoencoder for self-supervised representation learning." arXiv preprint arXiv:2202.03026 (2022).
+    (https://arxiv.org/abs/2202.03026)
+
+    Args:
+        img_size (int): Input image size for training the pretrained model, used in absolute postion embedding. Default: 224.
+        patch_size (int | tuple(int)): Patch size. Default: 4.
+        in_chans (int): Number of input image channels. Default: 3.
+        embed_dim (int): Number of linear projection output channels. Default: 96.
+        depths (tuple[int]): Depths of each Swin Transformer stage.
+        num_heads (tuple[int]): Number of attention head of each stage.
+        window_size (int): Window size. Default: 7.
+        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim. Default: 4.
+        qkv_bias (bool): If True, add a learnable bias to query, key, value. Default: True
+        qk_scale (float): Override default qk scale of head_dim ** -0.5 if set.
+        drop_rate (float): Dropout rate. Default: 0.
+        attn_drop_rate (float): Attention dropout rate. Default: 0.
+        drop_path_rate (float): Stochastic depth rate. Default: 0.0.
+        norm_layer (nn.Layer): Normalization layer. Default: nn.LayerNorm.
+        init_values(float): The initial value of dropout in the block. Default: None.
+        use_rel_pos_bias(bool): Whether to use relative position bias. Default: False.
+        use_shared_rel_pos_bias(bool): Whether to use relative position bias. Default: False.
+        epsilon(float): Epsilon in first norm of block. Default: 1e-5.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,
@@ -334,7 +347,6 @@ class CAE(nn.Layer):
                  use_rel_pos_bias=False,
                  use_shared_rel_pos_bias=False,
                  epsilon=1e-5,
-                 final_norm=False,
                  pretrained=None,
                  **args):
         super().__init__()
@@ -383,9 +395,6 @@ class CAE(nn.Layer):
                 epsilon=epsilon) for i in range(depth)
         ])
 
-        self.final_norm = final_norm
-        #if self.final_norm:
-        #    self.norm = eval(norm_layer)(embed_dim, epsilon=epsilon)
         self.pretrained = pretrained
         self.init_weight()
 
@@ -393,7 +402,6 @@ class CAE(nn.Layer):
         if self.pretrained:
             utils.load_pretrained_model(self, self.pretrained)
 
-        # load and resize pos_embed
         model_path = self.pretrained
         if not os.path.exists(model_path):
             model_path = utils.download_pretrained_model(model_path)
@@ -455,8 +463,6 @@ class CAE(nn.Layer):
         res = []
         for idx, blk in enumerate(self.blocks):
             x = blk(x, rel_pos_bias)
-            #if self.final_norm and idx == len(self.blocks) - 1:
-            #    x = self.norm(x)
             res.append(x[:, 1:, :])
         return res, x_shape
 
