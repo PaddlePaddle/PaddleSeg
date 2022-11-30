@@ -1,4 +1,4 @@
-简体中文|[English](install.md)
+简体中文 | [English](install.md)
 # 安装文档
 
 

@@ -1,4 +1,4 @@
-[English](./quick_start.md) | 简体中文
+简体中文 | [English](./quick_start.md)
 
 # 快速开始
 

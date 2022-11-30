@@ -23,17 +23,15 @@ English | [简体中文](README_CN.md)
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> News
 <ul class="nobull">
-  <li>[2022-08-18] :fire: PaddleLabel, an intelligent annotation tool has been released in beta. It can annotate data for computer vision tasks such as classification, detection, and segmentation. For more details, please refer to <a href="./contrib/PaddleLabel/README.md">PaddleLabel</a>. </li>
-  <li>[2022-07-20] :fire: PaddleSeg v2.6 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
+  <li>[2022-11-30] :fire: PaddleSeg v2.7 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
     <ul>
-        <li>Release <a href="./contrib/PP-HumanSeg">PP-HumanSeg v2</a>, an off-the-shelf human segmentation model. It achieves 64.26 FPS on the mobile device, which is 45.5% faster than before. </li>
-        <li>Release <a href="./EISeg">EISeg v1.0</a>, the stable-version semi-automatic tool for image, video and 3D slice data annotation. It achieves "Once for All" (training once, and labelling all) performance. </li>
-        <li>Release <a href="./configs/pssl">PSSL</a>, a novel pre-training method, including a large dataset that consists of 1.2M+ pseudo semantic segmentation labels corresponding to the whole ImageNet training set. It boosts the performances of various models on all downstream tasks.
-        <li>Release <a href="./Matting">PP-Matting</a> source code and the pre-trained models. Also, add five more matting methods in machine learning that allow direct usage without training.</li>
-        <li>Release the industrial model series: high-accuracy models, light-weight models, and super light-weight models, to help developers pick up the most suitable one.</li>
+        <li>Release <a href="./Matting/">PP-MattingV2</a>, a real-time human matting model with SOTA performance. Compared to previous models, the mean of error is reduced by 17.91%, the inference speed is improved by 44.6% on GPU. </li>
+        <li>Release <a href="./contrib/MedicalSeg/">MedicalSegV2</a>, a superior 3D medical image segmentation solution, including an intelligent annotation toolkit called EISeg-Med3D, several state-of-the-art models and an optimized nnUNet-D with high performance.</li>
+        <li>Official release <a href="./configs/rtformer/">RTFormer</a>, a real-time semantic segmentation model. It is proposed by Baidu and accepted by NeurIPS 2022.
     </ul>
-<li>[2022-04-20] PaddleSeg v2.5 released a real-time semantic segmentation model <a href="./configs/pp_liteseg">PP-LiteSeg</a>, a trimap-free image matting model <a href="./Matting">PP-Matting</a>, and an easy-to-use toolkit for 3D medical image segmentation <a href="./contrib/MedicalSeg">MedicalSeg</a>.</li>
- <li>[2022-01-20] We release PaddleSeg v2.4 with EISeg v0.4, and <a href="./contrib/PP-HumanSeg">PP-HumanSeg</a> including open-sourced dataset <a href="./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset">PP-HumanSeg14K</a>. </li>
+  <li>[2022-07-20] PaddleSeg v2.6 released a real-time human segmentation SOTA solution <a href="./contrib/PP-HumanSeg">PP-HumanSegV2</a>,  a stable-version semi-automatic segmentation annotation <a href="./EISeg">EISeg v1.0</a>, a pseudo label pre-training method PSSL and the source code of PP-MattingV1. </li>
+  <li>[2022-04-20] PaddleSeg v2.5 released a real-time semantic segmentation model <a href="./configs/pp_liteseg">PP-LiteSeg</a>, a trimap-free image matting model PP-MattingV1, and an easy-to-use solution for 3D medical image segmentation MedicalSegV1.</li>
+  <li>[2022-01-20] We release PaddleSeg v2.4 with EISeg v0.4, and PP-HumanSegV1 including open-sourced dataset <a href="./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset">PP-HumanSeg14K</a>. </li>
 
 </ul>
 
@@ -49,7 +47,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 
 ## <img src="./docs/images/feature.png" width="20"/> Features
 
-* **High-Performance Model**: Following the state of the art segmentation methods and use the high-performance backbone trained by semi-supervised label knowledge distillation scheme ([SSLD]((https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))), we provide 40+ models and 140+ high-quality pre-training models, which are better than other open-source implementations.
+* **High-Performance Model**: Following the state of the art segmentation methods and use the high-performance backbone, we provide 40+ models and 140+ high-quality pre-training models, which are better than other open-source implementations.
 
 * **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
@@ -137,6 +135,10 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li><a href="./configs/unet_plusplus">UNet++</a></li>
             <li><a href="./configs/unet_3plus">UNet3+</a></li>
             <li><a href="./configs/upernet">UperNet</a></li>
+            <li><a href="./configs/rtformer">RTFormer</a></li>
+            <li><a href="./configs/uhrnet">UHRNet</a></li>
+            <li><a href="./configs/topformer">TopFormer</a></li>
+            <li><a href="./configs/mscale_ocrnet">MscaleOCRNet-PSA</a></li>
           </ul>
         </details>
         <details><summary><b>Interactive Segmentation</b></summary>
@@ -148,7 +150,8 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
         <details><summary><b>Image Matting</b></summary>
           <ul>
-              <li><a href="./Matting/configs/ppmatting">PP-Matting</a></li>
+              <li><a href="./Matting/configs/ppmattingv2">PP-MattingV2</a></li>
+              <li><a href="./Matting/configs/ppmatting">PP-MattingV1</a></li>
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
@@ -269,6 +272,10 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
           <ul>
             <li><a href="./contrib/MedicalSeg/configs/lung_coronavirus">VNet</a></li>
             <li><a href="./contrib/MedicalSeg/configs/msd_brain_seg">UNETR</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/acdc">nnFormer</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/nnunet/msd_lung">nnUNet-D</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/synapse">TransUNet</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/synapse">SwinUNet</a></li>
           </ul>
         </details>
         <details><summary><b>Cityscapes SOTA Model</b></summary>
@@ -369,24 +376,25 @@ Note that:
 
 * [Installation](./docs/install.md)
 * [Quick Start](./docs/quick_start.md)
-* [A 20 minutes Blitz to learn PaddleSeg](./docs/whole_process.md)
+* [A 20 minutes Blitz to Learn PaddleSeg](./docs/whole_process.md)
+* [Model Zoo](./docs/model_zoo_overview.md)
 
 **Basic Tutorials**
 
-*  Data Preparation
+* Data Preparation
     * [Prepare Public Dataset](./docs/data/pre_data.md)
     * [Prepare Customized Dataset](./docs/data/marker/marker.md)
     * [Label Data with EISeg](./EISeg)
-
+* [Config Preparation](./docs/config/pre_config.md)
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate.md)
-* [Prediction](./docs/predict/predict.md)
+* [Model Prediction](./docs/predict/predict.md)
 
 * Model Export
     * [Export Inference Model](./docs/model_export.md)
     * [Export ONNX Model](./docs/model_export_onnx.md)
 
-*  Model Deploy
+* Model Deploy
     * [Paddle Inference (Python)](./docs/deployment/inference/python_inference.md)
     * [Paddle Inference (C++)](./docs/deployment/inference/cpp_inference.md)
     * [Paddle Lite](./docs/deployment/lite/lite.md)
@@ -414,7 +422,7 @@ Note that:
     * [Create Your Own Model](./docs/design/create/add_new_model.md)
 *  Pull Request
     * [PR Tutorial](./docs/pr/pr/pr.md)
-    * [PR Style](./docs/pr/pr/style_cn.md)
+    * [PR Style](./docs/pr/pr/style.md)
 
 ## <img src="./docs/images/anli.png" width="20"/> Special Features
   * [Interactive Segmentation](./EISeg)
