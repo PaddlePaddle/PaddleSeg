@@ -60,11 +60,6 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
 
 * 如果您对EISeg有任何问题和建议，欢迎在[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
 * 欢迎您加入EISeg微信群，和大家交流讨论、一起共建EISeg，而且可以**领取重磅学习大礼包🎁**。
-  * 🔥 获取深度学习视频教程、图像分割论文合集
-  * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
-  * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
-  * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
-  * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
 <div align="center">
 <img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
 </div>
@@ -72,10 +67,11 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
 
 ## <img src="../docs/images/teach.png" width="20"/> 使用教程
 * [安装说明](docs/install.md)
-* [图像标注](docs/image.md)
-* [视频及3D医疗标注](docs/video.md)
-* [遥感特色功能](docs/remote_sensing.md)
-* [医疗特色功能](docs/medical.md)
+* [图像分割标注](docs/image.md)
+* [视频及3D医疗分割标注](docs/video.md)
+* [遥感分割特色功能](docs/remote_sensing.md)
+* [医疗分割特色功能](docs/medical.md)
+* [图像检测标注](docs/det.md)
 * [数据处理脚本文档](docs/tools.md)
 
 

@@ -9,3 +9,4 @@ from .view import AnnotationView
 from .create import (create_text, create_button, create_slider, DockWidget,
                      creat_dock)
 from .table import TableWidget
+from .label_corres import LabelCorresWidget
