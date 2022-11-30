@@ -1,4 +1,4 @@
-English|[简体中文](data_prepare_cn.md)
+English | [简体中文](data_prepare_cn.md)
 # Prepare Custom Dataset Data
 If you want to train on custom dataset, please prepare the dataset using following steps.
 

@@ -1,4 +1,4 @@
-简体中文|[English](model_export_onnx.md)
+简体中文 | [English](model_export_onnx.md)
 # 导出ONNX格式模型
 
 PaddleSeg训练好模型后，也支持导出ONNX格式模型，本教程提供一个示例介绍使用方法。

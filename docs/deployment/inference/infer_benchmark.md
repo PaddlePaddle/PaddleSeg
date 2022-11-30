@@ -1,4 +1,4 @@
-English|[简体中文](infer_benchmark_cn.md)
+English | [简体中文](infer_benchmark_cn.md)
 # Inference Benchmark
 
 Test Environment：

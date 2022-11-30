@@ -1,4 +1,4 @@
-English|[简体中文](style_cn.md)
+English | [简体中文](style_cn.md)
 # PaddleSeg model development specification
 
 Model specifications includes following parts: new file self-inspection, expandable module specifications, PR checklist, and export and infer prediction models.

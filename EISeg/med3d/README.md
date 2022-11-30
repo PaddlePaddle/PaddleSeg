@@ -153,7 +153,7 @@ sys.executable # "D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe"
 
 | 数据 | 模型 | 下载链接 |
 |:-:|:-:|:-:|
-| MRI椎骨数据 | 交互式 Vnet |[模型](链接: https://pan.baidu.com/s/1vu0ZIbGumlFvRlMGbMvWAg)-pw: dt8q \|  [椎骨数据](https://aistudio.baidu.com/aistudio/datasetdetail/81211)|
+| MRI椎骨数据 | 交互式 Vnet |[模型](链接: https://pan.baidu.com/s/1vu0ZIbGumlFvRlMGbMvWAg )-pw: dt8q \|  [椎骨数据](https://aistudio.baidu.com/aistudio/datasetdetail/81211)|
 
 </p>
 

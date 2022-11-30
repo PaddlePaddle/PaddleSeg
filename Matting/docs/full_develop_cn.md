@@ -172,7 +172,8 @@ python tools/bg_replace.py --help
 python tools/export.py \
     --config configs/quick_start/ppmattingv2-stdc1-human_512.yml \
     --model_path output/best_model/model.pdparams \
-    --save_dir output/export
+    --save_dir output/export \
+    --input_shape 1 3 512 512
 ```
 如果模型（比如：DIM）需要trimap的输入，需要增加参数`--trimap`
 
