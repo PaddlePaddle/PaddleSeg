@@ -135,6 +135,10 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li><a href="./configs/unet_plusplus">UNet++</a></li>
             <li><a href="./configs/unet_3plus">UNet3+</a></li>
             <li><a href="./configs/upernet">UperNet</a></li>
+            <li><a href="./configs/rtformer">RTFormer</a></li>
+            <li><a href="./configs/uhrnet">UHRNet</a></li>
+            <li><a href="./configs/topformer">TopFormer</a></li>
+            <li><a href="./configs/mscale_ocrnet">MscaleOCRNet-PSA</a></li>
           </ul>
         </details>
         <details><summary><b>Interactive Segmentation</b></summary>
@@ -146,7 +150,8 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
         <details><summary><b>Image Matting</b></summary>
           <ul>
-              <li><a href="./Matting/configs/ppmatting">PP-Matting</a></li>
+              <li><a href="./Matting/configs/ppmattingv2">PP-MattingV2</a></li>
+              <li><a href="./Matting/configs/ppmatting">PP-MattingV1</a></li>
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
@@ -267,6 +272,10 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
           <ul>
             <li><a href="./contrib/MedicalSeg/configs/lung_coronavirus">VNet</a></li>
             <li><a href="./contrib/MedicalSeg/configs/msd_brain_seg">UNETR</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/acdc">nnFormer</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/nnunet/msd_lung">nnUNet-D</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/synapse">TransUNet</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/synapse">SwinUNet</a></li>
           </ul>
         </details>
         <details><summary><b>Cityscapes SOTA Model</b></summary>
