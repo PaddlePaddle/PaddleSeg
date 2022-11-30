@@ -44,12 +44,14 @@ MedicalSeg 模型预测可视化效果如下。
 
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043516-eed25535-10e8-4853-8601-6bcf7ff58197.png" width="25"/> 最新消息
+
 * [2022-11] **发布3D医疗影像分割方案MedicalSegV2**
   * 新增3D医疗影像交互式标注工具 **[EISeg-Med3D](../../EISeg/med3d/README.md)**，方便快捷地实现精准3D医疗图像标注。
   * 新增3个前沿3D医疗图像分割模型，**nnFormer, TransUNet, SwinUNet**，实现更精准的分割效果，而且支持全流程部署应用。
   * 新增高精度分割方案**nnUNet-D**，涵盖数据分析、超参优化、模型构建、模型训练、模型融合等模块，而且新增模型部署的能力。
-* [2022-4] **发布3D医疗影像分割方案MedicalSegV1&&
+* [2022-4] **发布3D医疗影像分割方案MedicalSegV1**
   * 提供了3D医疗图像分割中的数据预处理到到训练部署全流程，包含了对五个数据集的原生支持，以及椎骨和肺部上的高精度预训练模型。
+
 
 ## <img src="../../docs/images/chat.png" width="25"/> 技术交流
 * 如果大家有使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
