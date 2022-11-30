@@ -52,10 +52,19 @@ class RVM(nn.Layer):
         self.r3 = None
         self.r4 = None
 
-    def forward(self, data, downsample_ratio=None, segmentation_pass=False):
+    def forward(self,
+                data,
+                r1=None,
+                r2=None,
+                r3=None,
+                r4=None,
+                downsample_ratio=None,
+                segmentation_pass=False):
         src = data['img']
         if downsample_ratio is None:
             downsample_ratio = self.downsample_ratio
+        if r1 is not None and r2 is not None and r3 is not None and r4 is not None:
+            self.r1, self.r2, self.r3, self.r4 = r1, r2, r3, r4
         result = self.forward_(
             src,
             r1=self.r1,
@@ -72,7 +81,14 @@ class RVM(nn.Layer):
                 return {'alpha': seg}
             else:
                 fgr, pha, self.r1, self.r2, self.r3, self.r4 = result
-                return {'alpha': pha, "fg": fgr}
+                return {
+                    'alpha': pha,
+                    "fg": fgr,
+                    "r1": self.r1,
+                    "r2": self.r2,
+                    "r3": self.r3,
+                    "r4": self.r4
+                }
 
     def forward_(self,
                  src,

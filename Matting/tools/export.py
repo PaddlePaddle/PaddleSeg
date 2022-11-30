@@ -28,6 +28,7 @@ manager.BACKBONES._components_dict.clear()
 manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting
+from ppmatting.utils import get_input_spec
 
 
 def parse_args():
@@ -83,11 +84,8 @@ def main(args):
     else:
         shape = args.input_shape
 
-    input_spec = [{"img": paddle.static.InputSpec(shape=shape, name='img')}]
-    if args.trimap:
-        shape[1] = 1
-        input_spec[0]['trimap'] = paddle.static.InputSpec(
-            shape=shape, name='trimap')
+    input_spec = get_input_spec(
+        net.__class__.__name__, shape=arg.shape, trimap=args.trimap)
 
     net = paddle.jit.to_static(net, input_spec=input_spec)
     save_path = os.path.join(args.save_dir, 'model')
