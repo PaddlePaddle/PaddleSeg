@@ -92,29 +92,55 @@ EISeg-Med3D 的使用整体流程如下图所示，我们将按照环境安装�
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 ```
 
-3. 安装Paddle，在slicer的python interpreter中，参考[快速安装文档](https://www.paddlepaddle.org.cn/install/quick)安装PaddlePaddle。 比如Windows、CUDA 11.1，安装GPU版本，执行如下命令：
+3. 安装Paddle，先在slicer的python interpreter中找到解释器名称，随后在cmd中参考[快速安装文档](https://www.paddlepaddle.org.cn/install/quick)安装PaddlePaddle。
 ```
 import sys
 import os
-sys.executable # 'D:/slicer/Slicer 5.0.3/bin/PythonSlicer.exe'
-
-os.system(f"'{sys.executable}' -m pip install paddlepaddle-gpu==2.3.1.post111 -f  https://www.paddlepaddle.org.cn/whl/windows/mkl/avx/stable.html")
-
+sys.executable # "D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe"
 ```
-<details>
+进入Windows 下CMD，比如Windows、CUDA 11.1，安装GPU版本，执行如下命令：
+```
+"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe" -m pip install paddlepaddle-gpu==2.3.1.post111 -f https://www.paddlepaddle.org.cn/whl/windows/mkl/avx/stable.html
+```
+
 <summary><b> 常见问题 </b></summary>
-1. 安装PaddlePaddle之后出现下面报错：
+1. 安装PaddlePaddle之后出现FileNotFoundError：
+<details>
 <p align="center">
 <img src="https://user-images.githubusercontent.com/34859558/189288387-4773c35a-ac8e-421d-bfed-2264ac57cda5.png" width="70.6%" height="20%">
 </p>
-
 进入到报错位置所在的 subprocess.py， 修改Popen类的属性 shell=True 即可。
-
-
 </details>
 
-<!-- <details>
-<summary><b>使用步骤</b></summary> -->
+2. ERROR: No .egg-info directory found in xxx:
+<details>
+参考 [#2718](https://github.com/PaddlePaddle/PaddleSeg/issues/2718)，执行以下指令能成功进行安装。
+```
+"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe" -m pip uninstall setuptools
+"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe"  -m pip install paddleseg simpleitk
+"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe" -m pip install setuptools
+```
+</details>
+
+3. 点击确认load module后，提示 One or more requested modules and/or depandencoes may not have been loaded。
+<details>
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/204699311-8a12e976-904f-46e0-8bbf-9d9f0290393d.png" width="60.6%" height="20%">
+</p>
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/204699334-a31e6827-b907-456a-a686-1c1f3ac6014d.png" width="60.6%" height="20%">
+</p>
+有部分需要import的库没有安装，例如paddle/paddleseg/simpleitk等，使用第二步的步骤进行安装后重启slicer并重新导入。
+</details>
+
+4. Fail to open extention: xxx/PaddleSeg/EISeg/med3d/EISefMed3D
+<details>
+需要选择的加载路径为xxx/PaddleSeg/EISeg/med3d/ 而不是xxx/PaddleSeg/EISeg/med3d/EISefMed3D
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/204699489-6b75d9f2-5cf6-42d2-9d74-17894fc3e00b.png" width="60.6%" height="20%">
+</p>
+</details>
+
 ### 2. 模型、数据下载
 目前我们提供在下列模型和数据上的试用体验，可以下载表格中模型和数据到指定目录，并将模型和数据进行解压缩操作用于后续加载：
 <p align="center">
@@ -142,7 +168,9 @@ os.system(f"'{sys.executable}' -m pip install paddlepaddle-gpu==2.3.1.post111 -f
 <p align="center">
 <img src="https://user-images.githubusercontent.com/34859558/188458463-066ff0b6-ff80-4d0d-aca0-3b3b12f710ef.png" width="60.6%" height="20%">
 </p>
-
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/204699311-8a12e976-904f-46e0-8bbf-9d9f0290393d.png" width="60.6%" height="20%">
+</p>
 * 加载完后，切换到 EISegMed3D模块。
 <p align="center">
 <img src="https://user-images.githubusercontent.com/34859558/188458684-46465fed-fdde-43dd-a97c-5da7678f3f99.png" width="60.6%" height="20%">
