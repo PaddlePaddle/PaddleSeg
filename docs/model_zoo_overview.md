@@ -4,7 +4,7 @@ English | [简体中文](model_zoo_overview_cn.md)
 
 ## Semantic Segmentation Model Zoo
 
-PaddleSeg provides 40+ semantic segmentation models, 150+ well-trained models, 10+ backbones.
+PaddleSeg provides 45+ semantic segmentation models, 150+ well-trained models, 10+ backbones.
 
 In [`PaddleSeg/configs`](../configs), we provide the config files and readme.md for all models on common dataset, e.g., [PP-LiteSeg](../configs/pp_liteseg/).
 Besides, the readme.md file introduces the origin paper, the performance and the trained weights.

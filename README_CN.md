@@ -25,16 +25,16 @@
   * 发布实时人像抠图模型[PP-MattingV2](./Matting/)：推理速度提升44.6%，平均误差减小17.91%，完美超越此前SOTA模型，支持零成本开箱即用。
   * 发布3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)：涵盖3D医疗影像交互式标注工具EISeg-Med3D、3个高精分割模型，集成并优化前沿分割方案nnUNet-D。
   * 官方发布轻量级语义分割模型[RTFormer](./configs/rtformer/)：由百度提出并发表于NeurIPS 2022，在公开数据集上实现SOTA性能。
-* [2022-07-20] PaddleSeg 2.6版本发布实时人像分割SOTA方案[PP-HumanSegV2](./contrib/PP-HumanSeg)、高性能智能标注工具[EISeg v1.0](./EISeg)正式版、ImageNet分割伪标签数据预训练方法[PSSL](./configs/pssl)，开源[PP-MattingV1](./Matting)代码和预训练模型。
-* [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-Matting，3D医疗影像开发套件[MedicalSegV1](./contrib/MedicalSeg)，交互式分割工具EISeg v0.5。
-* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSeg，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
+* [2022-07-20] PaddleSeg 2.6版本发布实时人像分割SOTA方案[PP-HumanSegV2](./contrib/PP-HumanSeg)、高性能智能标注工具[EISeg v1.0](./EISeg)正式版、ImageNet分割伪标签数据预训练方法PSSL，开源PP-MattingV1代码和预训练模型。
+* [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-Matting，3D医疗影像开发套件MedicalSegV1，交互式分割工具EISeg v0.5。
+* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSegV1，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
 
 
 
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> 简介
 
-**PaddleSeg**是基于飞桨PaddlePaddle的端到端图像分割套件，内置**40+模型算法**及**140+预训练模型**，支持**配置化驱动**和**API调用**开发方式，打通数据标注、模型开发、训练、压缩、部署的**全流程**，提供**语义分割、交互式分割、Matting、全景分割**四大分割能力，助力算法在医疗、工业、遥感、娱乐等场景落地应用。
+**PaddleSeg**是基于飞桨PaddlePaddle的端到端图像分割套件，内置**45+模型算法**及**140+预训练模型**，支持**配置化驱动**和**API调用**开发方式，打通数据标注、模型开发、训练、压缩、部署的**全流程**，提供**语义分割、交互式分割、Matting、全景分割**四大分割能力，助力算法在医疗、工业、遥感、娱乐等场景落地应用。
 
 <div align="center">
 <img src="https://github.com/shiyutang/files/raw/main/teasor_new.gif"  width = "800" />  
@@ -134,6 +134,10 @@
             <li><a href="./configs/unet_plusplus">UNet++</a></li>
             <li><a href="./configs/unet_3plus">UNet3+</a></li>
             <li><a href="./configs/upernet">UperNet</a></li>
+            <li><a href="./configs/rtformer">RTFormer</a></li>
+            <li><a href="./configs/uhrnet">UHRNet</a></li>
+            <li><a href="./configs/topformer">TopFormer</a></li>
+            <li><a href="./configs/mscale_ocrnet">MscaleOCRNet-PSA</a></li>
           </ul>
         </details>
         <details><summary><b>交互式分割模型</b></summary>
@@ -145,7 +149,8 @@
         </details>
         <details><summary><b>图像抠图模型</b></summary>
           <ul>
-              <li><a href="./Matting/configs/ppmatting">PP-Matting</a></li>
+              <li><a href="./Matting/configs/ppmattingv2">PP-MattingV2</a></li>
+              <li><a href="./Matting/configs/ppmatting">PP-MattingV1</a></li>
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
@@ -266,6 +271,10 @@
           <ul>
             <li><a href="./contrib/MedicalSeg/configs/lung_coronavirus">VNet</a></li>
             <li><a href="./contrib/MedicalSeg/configs/msd_brain_seg">UNETR</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/acdc">nnFormer</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/nnunet/msd_lung">nnUNet-D</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/synapse">TransUNet</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/synapse">SwinUNet</a></li>
           </ul>
         </details>
         <details><summary><b>Cityscapes打榜模型</b></summary>
