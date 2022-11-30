@@ -4,7 +4,7 @@
 
 ## 语义分割模型库
 
-目前，PaddleSeg提供了40+语义分割模型、150+预训练模型、10+骨干网络。
+目前，PaddleSeg提供了45+语义分割模型、150+预训练模型、10+骨干网络。
 
 在[`PaddleSeg/configs`](../configs)目录下，我们给出了所有模型在公开数据集上的配置文件和README文件，比如[PP-LiteSeg模型](../configs/pp_liteseg/)。
 
