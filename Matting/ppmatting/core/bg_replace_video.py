@@ -15,6 +15,7 @@
 import os
 import math
 import time
+from collections.abc import Iterable
 
 import cv2
 import numpy as np
@@ -24,6 +25,7 @@ from paddleseg import utils
 from paddleseg.core import infer
 from paddleseg.utils import logger, progbar, TimeAverager
 
+import ppmatting.transforms as T
 from ppmatting.utils import mkdir, estimate_foreground_ml, VideoReader, VideoWriter
 
 
@@ -32,22 +34,15 @@ def build_loader_writter(video_path, transforms, save_dir):
     loader = paddle.io.DataLoader(reader)
     base_name = os.path.basename(video_path)
     name = os.path.splitext(base_name)[0]
-    alpha_save_path = os.path.join(save_dir, name + '_alpha.avi')
-    fg_save_path = os.path.join(save_dir, name + '_fg.avi')
+    save_path = os.path.join(save_dir, name + '.avi')
 
-    writer_alpha = VideoWriter(
-        alpha_save_path,
-        reader.fps,
-        frame_size=(reader.width, reader.height),
-        is_color=False)
-    writer_fg = VideoWriter(
-        fg_save_path,
+    writer = VideoWriter(
+        save_path,
         reader.fps,
         frame_size=(reader.width, reader.height),
         is_color=True)
-    writers = {'alpha': writer_alpha, 'fg': writer_fg}
 
-    return loader, writers
+    return loader, writer
 
 
 def reverse_transform(img, trans_info):
@@ -64,7 +59,7 @@ def reverse_transform(img, trans_info):
     return img
 
 
-def postprocess(fg, alpha, img, trans_info, writers, fg_estimate):
+def postprocess(fg, alpha, img, bg, trans_info, writer, fg_estimate):
     """
     Postprocess for prediction results.
 
@@ -77,25 +72,60 @@ def postprocess(fg, alpha, img, trans_info, writers, fg_estimate):
         fg_estimate (bool): Whether to estimate foreground. It is invalid when fg is not None.
 
     """
-    alpha = reverse_transform(alpha, trans_info)
     if fg is None:
         if fg_estimate:
             fg = estimate_foreground_ml(img, alpha)
         else:
             fg = img
+    bg = F.interpolate(bg, size=alpha.shape[-2:], mode='bilinear')
+    new_img = alpha * fg + (1 - alpha) * bg
+    new_img = reverse_transform(new_img, trans_info)
+    writer.write(new_img)
+
+
+def get_bg(bg_path, shape):
+    bg = paddle.zeros((1, 3, shape[0], shape[1]))
+    # special color
+    if bg_path == 'r':
+        bg[:, 2, :, :] = 1
+    elif bg_path == 'g':
+        bg[:, 1, :, :] = 1
+    elif bg_path == 'b':
+        bg[:, 0, :, :] = 1
+    elif bg_path == 'w':
+        bg = bg + 1
+
+    elif not os.path.exists(bg_path):
+        raise Exception('The background path is not found: {}'.format(bg_path))
+    # image
+    elif bg_path.endswith(
+        ('.JPEG', '.jpeg', '.JPG', '.jpg', '.BMP', '.bmp', '.PNG', '.png')):
+        bg = cv2.imread(bg_path)
+        bg = bg[np.newaxis, :, :, :]
+        bg = paddle.to_tensor(bg) / 255.
+        bg = bg.transpose((0, 3, 1, 2))
+
+    elif bg_path.lower().endswith(
+        ('.mp4', '.avi', '.mov', '.m4v', '.dat', '.rm', '.rmvb', '.wmv', '.asf',
+         '.asx', '.3gp', '.mkv', '.flv', '.vob')):
+        transforms = T.Compose([T.Normalize(mean=(0, 0, 0), std=(1, 1, 1))])
+        bg = VideoReader(bg_path, transforms=transforms)
+        bg = paddle.io.DataLoader(bg)
+        bg = iter(bg)
+
     else:
-        g = reverse_transform(fg, trans_info)
-    fg = alpha * fg
-    writers['alpha'].write(alpha)
-    writers['fg'].write(fg)
+        raise IOError('The background path is invalid, please check it')
+
+    return bg
 
 
-def predict_video(model,
-                  model_path,
-                  transforms,
-                  video_path,
-                  save_dir='output',
-                  fg_estimate=True):
+def bg_replace_video(model,
+                     model_path,
+                     transforms,
+                     video_path,
+                     bg_path='g',
+                     save_dir='output',
+                     fg_estimate=True):
     """
     predict and visualize the video.
 
@@ -103,7 +133,8 @@ def predict_video(model,
         model (nn.Layer): Used to predict for input video.
         model_path (str): The path of pretrained model.
         transforms (transforms.Compose): Preprocess for frames of video.
-        video_path (str): the video path to be predicted.
+        video_path (str): The video path to be predicted.
+        bg_path (str): The background. It can be image path or video path or a string of (r,g,b,w). Default: 'g'.
         save_dir (str, optional): The directory to save the visualized results. Default: 'output'.
         fg_estimate (bool, optional): Whether to estimate foreground when predicting. It is invalid if the foreground is predicted by model. Default: True
     """
@@ -111,8 +142,11 @@ def predict_video(model,
     model.eval()
 
     # Build loader and writer for video
-    loader, writers = build_loader_writter(
+    loader, writer = build_loader_writter(
         video_path, transforms, save_dir=save_dir)
+    # Get bg
+    bg_reader = get_bg(
+        bg_path, shape=(loader.dataset.height, loader.dataset.width))
 
     logger.info("Start to predict...")
     progbar_pred = progbar.Progbar(target=len(loader), verbose=1)
@@ -131,16 +165,29 @@ def predict_video(model,
             else:
                 alpha = result['alpha']
                 fg = result.get('fg', None)
-            # print(alpha.shape, fg.shape)
             infer_cost_averager.record(time.time() - infer_start)
 
+            # postprocess
             postprocess_start = time.time()
+            if isinstance(bg_reader, Iterable):
+                try:
+                    bg = next(bg_reader)
+                except StopIteration:
+                    bg_reader = get_bg(
+                        bg_path,
+                        shape=(loader.dataset.height, loader.dataset.width))
+                    bg = next(bg_reader)
+                finally:
+                    bg = bg['img']
+            else:
+                bg = bg_reader
             postprocess(
                 fg,
                 alpha,
-                data['ori_img'],
+                data['img'],
+                bg=bg,
                 trans_info=data['trans_info'],
-                writers=writers,
+                writer=writer,
                 fg_estimate=fg_estimate)
             postprocess_cost_averager.record(time.time() - postprocess_start)
 
@@ -158,5 +205,5 @@ def predict_video(model,
     if hasattr(model, 'reset'):
         model.reset()
     loader.dataset.release()
-    for k, v in writers.items():
-        v.release()
+    if isinstance(bg, VideoReader):
+        bg_reader.release()
