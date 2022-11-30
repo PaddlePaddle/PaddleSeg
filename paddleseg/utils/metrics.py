@@ -47,28 +47,12 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
     mask = label != ignore_index
 
     for i in range(num_classes):
-        pred_i = paddle.logical_and(pred == i,
-                                    mask)  # pred sum/mean is problematic
-        label_i = label == i  # label sum/mean is problematic
+        pred_i = paddle.logical_and(pred == i, mask)
+        label_i = label == i
         intersect_i = paddle.logical_and(pred_i, label_i)
         pred_area.append(paddle.sum(paddle.cast(pred_i, "int64")))
         label_area.append(paddle.sum(paddle.cast(label_i, "int64")))
         intersect_area.append(paddle.sum(paddle.cast(intersect_i, "int64")))
-        if paddle.sum(paddle.cast(pred_i, "int64")) < 0 or paddle.sum(
-                paddle.cast(label_i, "int64")) < 0 or paddle.sum(
-                    paddle.cast(intersect_i, "int64")) < 0:
-            print('somthing is off here')
-            # import pdb
-            # pdb.set_trace()
-            # save_dict = {
-            #     'pred': pred.detach().numpy(),
-            #     "pred_i": pred_i.detach().numpy().astype('float32').sum(),
-            #     'label_i': label_i.detach().numpy(),
-            #     'intersect_i': intersect_i.detach().numpy()
-            # }
-            # import pickle
-            # with open('save_dict.pkl', 'wb') as f:
-            #     pickle.dump(save_dict, f)
 
     pred_area = paddle.concat(pred_area)
     label_area = paddle.concat(label_area)

@@ -259,6 +259,7 @@ class Config(object):
         optimizer_type = args.pop('type')
 
         params = self.model.parameters()
+        backbone_lr_mult = None
         if 'backbone_lr_mult' in args:
             if not hasattr(self.model, 'backbone'):
                 logger.warning('The backbone_lr_mult is not effective because'
@@ -283,34 +284,47 @@ class Config(object):
 
             for name, param in self.model.named_parameters():
                 hyperparams_dict = {'params': param}
-                if 'backbone' in name:  # assume backbone_lr_mult exists
+                assert backbone_lr_mult is not None, "The backbone_lr_mult need to be set for Maskformer."
+
+                if 'backbone' in name and 'backbone_lr_mult' in args:
                     hyperparams_dict['learning_rate'] = backbone_lr_mult
                 if 'relative_position_bias_table' in name or 'norm' in name:
                     hyperparams_dict['weight_decay'] = 0.0
                 params.append(hyperparams_dict)
 
-        if 'gradient_clipper' in self.dic:  # currently only support clip per params
-            clipper_args = self.dic.get('gradient_clipper', {}).copy()
-            enable_clipper = clipper_args.pop('enabled')
-            if not enable_clipper:
-                gradient_clipper = None
-            gradient_clipper = paddle.nn.ClipGradByNorm(
-                clip_norm=clipper_args['clip_value'])
-
         if optimizer_type == 'sgd':
             opt = paddle.optimizer.Momentum(
-                lr, parameters=params, grad_clip=gradient_clipper, **args)
+                lr, parameters=params, grad_clip=self.gradient_clipper, **args)
         elif optimizer_type == 'adam':
             opt = paddle.optimizer.Adam(
-                lr, parameters=params, grad_clip=gradient_clipper, **args)
+                lr, parameters=params, grad_clip=self.gradient_clipper, **args)
         elif optimizer_type in paddle.optimizer.__all__:
             opt = getattr(paddle.optimizer, optimizer_type)(
-                lr, parameters=params, grad_clip=gradient_clipper, **args)
+                lr, parameters=params, grad_clip=self.gradient_clipper, **args)
         else:
             raise RuntimeError('Unknown optimizer type {}.'.format(
                 optimizer_type))
 
         return opt
+
+    @property
+    def gradient_clipper(self):
+        if self.clipper_args:
+            assert 'enabled' in self.clipper_args and 'clip_value' in self.clipper_args, "The enabled and clip_value need to be set in clipper."
+            enable_clipper = self.clipper_args.pop('enabled')
+            if not enable_clipper:
+                return None
+            else:
+                return paddle.nn.ClipGradByNorm(
+                    clip_norm=self.clipper_args['clip_value'])
+        else:
+            return None
+
+    @property
+    def clipper_args(self) -> dict:
+        args = self.dic.get('gradient_clipper', {}).copy()
+
+        return args
 
     @property
     def optimizer_args(self) -> dict:

@@ -191,7 +191,6 @@ class HungarianMatcher(nn.Layer):
             cost_class = -paddle.gather(out_prob, index=tgt_ids, axis=1)
 
             # Downsample gt masks to save memory
-            # ValueError: (InvalidArgument) The shape of input(x) should be larged than 0, bug received shape[0] is 0 
             tgt_mask = F.interpolate(
                 tgt_mask[:, None], size=out_mask.shape[-2:], mode="nearest")
 
@@ -210,9 +209,6 @@ class HungarianMatcher(nn.Layer):
                  self.cost_dice * cost_dice)
             C = C.reshape([num_queries, -1])
 
-            #ValueError: matrix contains invalid numeric entries 
-            # ValueError: matrix contains invalid numeric entries 
-            # OSError: (External) CUDA error(719), unspecified launch failure.
             try:
                 indices.append(linear_sum_assignment(C))
             except:
@@ -226,22 +222,19 @@ class HungarianMatcher(nn.Layer):
 
 def nested_tensor_from_tensor_list(tensor_list):
     def _max_by_axis(the_list):
-        # type: (List[List[int]]) -> List[int]
         maxes = the_list[0]
         for sublist in the_list[1:]:
             for index, item in enumerate(sublist):
                 maxes[index] = max(maxes[index], item)
         return maxes
 
-    # TODO make this more general
     if tensor_list[0].ndim == 3:
         max_size = _max_by_axis([list(img.shape) for img in tensor_list])
-        # min_size = tuple(min(s) for s in zip(*[img.shape for img in tensor_list]))
         batch_shape = [len(tensor_list)] + max_size
         b, c, h, w = batch_shape
         tensor = paddle.zeros(batch_shape, dtype=tensor_list[0].dtype)
         mask = paddle.ones((b, h, w), dtype="bool")
-        # here
+
         for i in range(tensor.shape[0]):
             img = tensor_list[i]
             tensor[i, :img.shape[0], :img.shape[1], :img.shape[
@@ -254,6 +247,17 @@ def nested_tensor_from_tensor_list(tensor_list):
 
 @manager.LOSSES.add_component
 class MaskFormerLoss(nn.Layer):
+    """
+    The Maskformer loss implemeted with PaddlePaddle.
+
+    Args:
+        num_classes(int): The number of classes that you want this network to classify. Default:150.
+        eos_coef(float): The weight coefficient of the last class. Default: 0.1.
+        losses(Tuple): The category of losses that you want to compute. Default: ("labels", 'masks').
+        ignore_index(int): The ignored label when we calculate the loss. Default:255.
+
+    """
+
     def __init__(self,
                  num_classes=150,
                  eos_coef=0.1,
@@ -306,7 +310,7 @@ class MaskFormerLoss(nn.Layer):
         target_classes = paddle.full(
             src_logits.shape[:2], self.num_classes, dtype='int64')
         target_classes[idx] = target_classes_o
-        # TODO: usesoftmax=false is correct? no 
+
         loss_ce = F.cross_entropy(
             src_logits.transpose((0, 2, 1)).cast('float32'),
             target_classes,
@@ -339,13 +343,11 @@ class MaskFormerLoss(nn.Layer):
         src_masks = outputs["pred_masks"]
         src_masks = src_masks[src_idx]
         masks = [t["masks"] for t in targets_cpt]
-        # TODO use valid to mask invalid areas due to padding in loss
 
         target_masks, valid = nested_tensor_from_tensor_list(masks)
         target_masks = paddle.cast(target_masks, src_masks.dtype)
         target_masks = target_masks[tgt_idx]
 
-        # upsample predictions to the target size
         src_masks = F.interpolate(
             src_masks[:, None],
             size=target_masks.shape[-2:],
@@ -381,7 +383,7 @@ class MaskFormerLoss(nn.Layer):
         return loss_map[loss](outputs, targets, indices, num_masks)
 
     def forward(self, logits, targets_cpt, test=False):
-        targets = []  # each data have a mask.
+        targets = []
         for item in targets_cpt:
             paddle.cast(item['masks'], 'bool')
             start_idx = paddle.nonzero(
@@ -394,42 +396,6 @@ class MaskFormerLoss(nn.Layer):
                 item["masks"], index, axis=0)  # [n,512,512]
             targets.append(item)
 
-        if test:
-            # import numpy as np
-            # np.random.seed(0)
-            # a = np.random.random([2, 100, 151]) * -5.64
-            # b = np.random.random([2, 100, 128, 128]) * -70.625
-            # l = []
-            # for i in range(5):
-            #     l.append({
-            #         "a": np.random.random([2, 100, 151]) * (-5.5726 - 0.4 * i),
-            #         "b": np.random.random([2, 100, 128, 128]) * (-64.65 - 2 * i)
-            #     })
-
-            # logits['pred_logits'] = paddle.to_tensor(a)
-            # logits['pred_masks'] = paddle.to_tensor(b)
-            # logits['aux_outputs'] = [{
-            #     "pred_logits": paddle.to_tensor(l[i]["a"]),
-            #     "pred_masks": paddle.to_tensor(l[i]["b"])
-            # } for i in range(5)]
-            import pickle
-            # with open("target.pkl", "wb") as f:
-            #     pickle.dump(targets, f)
-            with open('target.pkl', 'rb') as f:
-                t = pickle.load(f)
-
-            for i in range(2):
-                for key in ("labels", "masks"):
-                    if "label" in key:
-                        targets[i][key] = paddle.to_tensor(t[i][key])
-                    else:
-                        targets[i][key] = paddle.to_tensor(t[i][key]).cast(
-                            'bool')
-            targets[0]['labels'] = paddle.to_tensor([])
-            # targets[0]['masks']=paddle.to_tensor([]).reshape([0, 512, 512])
-
-        # targets[0]['labels'];targets[1]['labels'];targets[0]['masks'].cast('float32').mean();targets[1]['masks'].cast('float32').mean()
-        # targets[0]['labels'];targets[1]['labels'];targets[0]['masks'].float().mean();targets[1]['masks'].float().mean()
         logits_without_aux = {
             k: v
             for k, v in logits.items() if k != "aux_outputs"
@@ -442,12 +408,11 @@ class MaskFormerLoss(nn.Layer):
         num_masks = paddle.to_tensor([num_masks], dtype='float32')
 
         if dist.get_world_size() > 1:
-            dist.all_reduce(num_masks)  # ignored assure dist is availabel
+            dist.all_reduce(num_masks)
         num_masks = paddle.clip(
-            num_masks / dist.get_world_size(),
-            min=1).detach().numpy()[0]  # 多卡不一定相等？TODO
+            num_masks / dist.get_world_size(), min=1).detach().numpy()[0]
 
-        losses = {}  # 'labels', 'masks'
+        losses = {}
         for loss in self.losses:
             losses.update(
                 self.get_loss(loss, logits_without_aux, targets, indices,
@@ -466,7 +431,6 @@ class MaskFormerLoss(nn.Layer):
             if k in self.weight_dict:
                 losses[k] *= self.weight_dict[k]
             else:
-                # remove this loss if not specified in `weight_dict`
                 losses.pop(k)
 
         return sum(losses.values())

@@ -100,7 +100,7 @@ def evaluate(model,
         for iter, data in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
             label = data['label'].astype('int64')
-            # import pdb; pdb.set_trace()
+
             if aug_eval:
                 if precision == 'fp16':
                     with paddle.amp.auto_cast(

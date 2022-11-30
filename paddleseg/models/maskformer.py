@@ -1,4 +1,4 @@
-# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,8 +28,7 @@ class BasePixelDecoder(nn.Layer):
     def __init__(self, input_shape, conv_dim=256, norm="GN", mask_dim=256):
         super().__init__()
         input_shape = sorted(input_shape.items(), key=lambda x: x[1]['stride'])
-        self.in_features = [k for k, v in input_shape
-                            ]  # starting from "res2" to "res5"
+        self.in_features = [k for k, v in input_shape]  # "res2" to "res5"
         feature_channels = [v['channels'] for k, v in input_shape]
 
         self.lateral_convs, self.output_convs = nn.LayerList(), nn.LayerList()
@@ -46,7 +45,6 @@ class BasePixelDecoder(nn.Layer):
                     act_type='relu')
                 self.output_convs.append(output_conv)
                 self.lateral_convs.append(None)
-                # self.add_sublayer("layer_{}".format(idx + 1), output_conv)
             else:
                 lateral_norm = nn.GroupNorm(
                     num_groups=32, num_channels=conv_dim)
@@ -67,8 +65,6 @@ class BasePixelDecoder(nn.Layer):
                     bias_attr=use_bias,
                     norm=output_norm,
                     act_type='relu')
-                # self.add_sublayer('adapter_{}'.format(idx + 1), lateral_conv)
-                # self.add_sublayer('layer_{}'.format(idx + 1), output_conv)
                 self.lateral_convs.append(lateral_conv)
                 self.output_convs.append(output_conv)
 
@@ -78,7 +74,7 @@ class BasePixelDecoder(nn.Layer):
         self.mask_features = layers.ConvNormAct(
             conv_dim, mask_dim, kernel_size=3, stride=1, padding=1)
 
-    def __init_weight__(self, ):
+    def __init_weight__(self):
         for layer in self.sublayers():
             param_init.xavier_uniform(layer.weight)
             if layer.bias is not None:
@@ -94,7 +90,6 @@ class BasePixelDecoder(nn.Layer):
         for idx, f in enumerate(self.in_features[::-1]):
             x = features[f]
             lateral_conv = self.lateral_convs[idx]
-            # import pdb; pdb.set_trace()
 
             if lateral_conv is None:
                 y = self.output_convs[idx](x)
@@ -260,16 +255,15 @@ class TransformerDecoderLayer(nn.Layer):
     def with_pos_embed(self, tensor, pos=None):
         return tensor if pos is None else tensor + pos
 
-    def forward(
-            self,
-            tgt,
-            memory,
-            tgt_mask=None,
-            memory_mask=None,  # forward post
-            tgt_key_padding_mask=None,
-            memory_key_padding_mask=None,
-            pos=None,
-            query_pos=None):
+    def forward(self,
+                tgt,
+                memory,
+                tgt_mask=None,
+                memory_mask=None,
+                tgt_key_padding_mask=None,
+                memory_key_padding_mask=None,
+                pos=None,
+                query_pos=None):
         if tgt_key_padding_mask or memory_key_padding_mask:
             raise ValueError(
                 "The multihead attention does not support key_padding_mask")
@@ -396,14 +390,10 @@ class Transformer(nn.Layer):
             paddle.flatten(
                 pos_embed, start_axis=2), (2, 0, 1))
         query_embed = paddle.stack([query_embed for i in range(bs)], axis=1)
-        # print('query_embed', query_embed.shape)
-        # query_embed = paddle.repeat_interleave(
-        #     paddle.unsqueeze(
-        #         query_embed, axis=1), repeats=bs, axis=1)  # Noquerry, N, hdim
         if mask is not None:
             mask = paddle.flatten(mask, start_axis=1)
 
-        tgt = paddle.zeros_like(query_embed)  # Noquerry, N, hdim [100, 2, 256]
+        tgt = paddle.zeros_like(query_embed)  # No.querry, N, hdim [100, 2, 256]
         memory = self.encoder(
             src, src_key_padding_mask=mask,
             pos=pos_embed)  # HWxNxC 中间输出memory = src
@@ -434,22 +424,21 @@ class MLP(nn.Layer):
 
 
 class TransformerPredictor(nn.Layer):
-    def __init__(
-            self,
-            in_channels,
-            mask_classification,
-            num_classes=150,
-            hidden_dim=256,
-            num_queries=100,
-            nheads=8,
-            dropout=0.1,  # TODO change to 0.1
-            dim_feedforward=2048,
-            enc_layers=0,
-            dec_layers=6,
-            pre_norm=False,
-            deep_supervision=True,
-            mask_dim=256,
-            enforce_input_project=False):
+    def __init__(self,
+                 in_channels,
+                 mask_classification,
+                 num_classes=150,
+                 hidden_dim=256,
+                 num_queries=100,
+                 nheads=8,
+                 dropout=0.1,
+                 dim_feedforward=2048,
+                 enc_layers=0,
+                 dec_layers=6,
+                 pre_norm=False,
+                 deep_supervision=True,
+                 mask_dim=256,
+                 enforce_input_project=False):
         super().__init__()
         self.mask_classification = mask_classification
         self.pe_layer = PositionEmbeddingSine(hidden_dim // 2, normalize=True)
@@ -489,21 +478,19 @@ class TransformerPredictor(nn.Layer):
         out = {}
         if self.mask_classification:
             outputs_class = self.class_embed(hs)
-            out["pred_logits"] = outputs_class[-1]  # done align
+            out["pred_logits"] = outputs_class[-1]
 
         if self.aux_loss:
             mask_embed = self.mask_embed(hs)
 
             output_seg_masks = paddle.einsum("lbqc,bchw->lbqhw", mask_embed,
                                              mask_features)
-            out["pred_masks"] = output_seg_masks[-1]  # done align
+            out["pred_masks"] = output_seg_masks[-1]
             if self.mask_classification:
-                out['aux_outputs'] = [
-                    {  # done align
-                        "pred_logits": a,
-                        "pred_masks": b
-                    } for a, b in zip(outputs_class[:-1], output_seg_masks[:-1])
-                ]
+                out['aux_outputs'] = [{
+                    "pred_logits": a,
+                    "pred_masks": b
+                } for a, b in zip(outputs_class[:-1], output_seg_masks[:-1])]
             else:
                 out['aux_outputs'] = [{
                     "pred_masks": b
@@ -528,9 +515,7 @@ class MaskFormerHead(nn.Layer):
             mask_classification=True,
             num_classes=num_classes)
 
-    def forward(self, x):  # {"res2": xx, "res3": xx, "res4": xx, "res5": xx}
-        # import pdb; pdb.set_trace()
-
+    def forward(self, x):
         mask_features, transformer_encoder_features = self.pixel_decoder(x)
         predictions = self.predictor(x[self.transformer_in_feature],
                                      mask_features)
@@ -568,21 +553,28 @@ def sem_seg_postprocess(result, img_size, output_height, output_width):
 
 @manager.MODELS.add_component
 class MaskFormer(nn.Layer):
+    """
+    The MaskFormer model implement on PaddlePaddle.
+    
+    The original article please refer to :
+    Cheng, Bowen, Alex Schwing, and Alexander Kirillov. "Per-pixel classification is not all you need for semantic segmentation." Advances in Neural Information Processing Systems 34 (2021): 17864-17875.
+    (https://github.com/facebookresearch/MaskFormer)
+
+    Args:
+        num_classes(int): The number of classes that you want the model to classify.
+        backbone(nn.Layer): The backbone module defined in the paddleseg backbones.
+        sem_seg_postprocess_before_inference(bool): If True, do result postprocess before inference. 
+        pretrained(str): The path to the pretrained model of MaskFormer.
+
+    """
+
     def __init__(self,
                  num_classes,
                  backbone,
-                 size_divisibility=32,
                  sem_seg_postprocess_before_inference=False,
                  pretrained=None):
-        """
-        Args:
-            backbone: a backbone module, must follow detectron2's backbone interface
-            size_divisibility: Some backbones require the input height and width to be divisible by a
-                specific integer. We can use this to override such requirement.
-        """
         super(MaskFormer, self).__init__()
         self.num_classes = num_classes
-        self.size_divisibility = size_divisibility
         self.backbone = backbone
         self.sem_seg_postprocess_before_inference = sem_seg_postprocess_before_inference
         self.seghead = MaskFormerHead(backbone.output_shape(), num_classes)
@@ -599,30 +591,22 @@ class MaskFormer(nn.Layer):
         semseg = paddle.einsum("qc,qhw->chw", mask_cls, mask_pred)
         return semseg
 
-    def forward(self, x, test=False):
-        if test:
-            import numpy as np
-            np.random.seed(0)
-            a = np.random.random([2, 3, 512, 512]) * 0.7620
-            x = paddle.to_tensor(a, dtype='float32')
-            # x = paddle.ones([2, 3, 512, 512]) * 0.7620
-
+    def forward(self, x):
         features = self.backbone(x)
-        # import pdb; pdb.set_trace()
         outputs = self.seghead(features)
 
         if self.training:
             return [outputs]
-        else:  # done 
+        else:
             mask_cls_results = outputs["pred_logits"]  # [2, 100, 151]
-            mask_pred_results = outputs["pred_masks"]  # # [2, 100, 512, 512]
+            mask_pred_results = outputs["pred_masks"]  # [2, 100, 512, 512]
 
             mask_pred_results = F.interpolate(
                 mask_pred_results,
                 size=(x.shape[-2], x.shape[-1]),
                 mode="bilinear",
                 align_corners=False, )
-            processed_results = []  #TODO can we change slice to pack here?
+            processed_results = []
 
             for mask_cls_result, mask_pred_result in zip(mask_cls_results,
                                                          mask_pred_results):
@@ -634,9 +618,8 @@ class MaskFormer(nn.Layer):
                         mask_pred_result, image_size, image_size[0],
                         image_size[1])
 
-                # semantic segmentation inference
-                r = self.semantic_inference(mask_cls_result,
-                                            mask_pred_result)  # done
+                # Semantic segmentation inference
+                r = self.semantic_inference(mask_cls_result, mask_pred_result)
 
                 if not self.sem_seg_postprocess_before_inference:
                     r = sem_seg_postprocess(r, image_size, image_size[0],
@@ -645,18 +628,3 @@ class MaskFormer(nn.Layer):
 
             r = r[None, ...]
             return [r]
-
-
-if __name__ == "__main__":
-    from paddleseg.models.backbones import SwinTransformer_tiny_patch4_window7_384
-    backbone = SwinTransformer_tiny_patch4_window7_384()
-    model = MaskFormer(
-        backbone=backbone,
-        num_classes=150,
-        pretrained="saved_model/maskformer_tiny.pdparams")
-
-    # with open('maskformer_tiny_paddle_model.txt', 'w') as f:
-    #     for keys, values in model.named_parameters():
-    #         f.write(keys +'\t'+str(values.shape)+'\t'+str(values.mean())+"\n")
-    x = paddle.ones([2, 3, 512, 512]) * 0.7620
-    out = model(x)

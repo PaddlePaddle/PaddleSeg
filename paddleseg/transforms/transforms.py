@@ -1163,14 +1163,6 @@ class ResizeShortestEdge:
     def __call__(self, data):
         image = data['img']
         label = data['label']
-        # import random   # 测试前3个数据增强对其，以对其
-        # np.random.seed(10001)
-        # random.seed(10001)
-        # image = np.random.randint(0, 256, size=[512, 512, 3]).astype('uint8')
-        # label = np.random.randint(0, 150, size=[512, 512]).astype('uint8')
-        # data['img'] = image
-        # data['label'] = label
-        # print(np.mean(image.astype('float')), np.mean(label.astype('float')))
 
         h, w = image.shape[:2]
         if self.is_range:
@@ -1210,7 +1202,12 @@ class ResizeShortestEdge:
 
 @manager.TRANSFORMS.add_component
 class RandomCrop_CategoryAreaConstraint:
-    # 只对其了single_category_max_area 》=1.0
+    """
+    Random crop the image such that no single category occupies a ratio of more than `single_category_max_area`
+    But we only support `single_category_max_area` >= 1.0 here.
+
+    """
+
     def __init__(
             self,
             crop_type: str,

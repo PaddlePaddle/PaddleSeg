@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import os
-
 import numpy as np
 from PIL import Image
+
 import paddle
 import paddle.nn as nn
 
@@ -27,16 +27,6 @@ from paddleseg.transforms import Compose
 import paddleseg.transforms.functional as F
 
 URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
-
-# class Instances(object):
-#     """
-#     Construct the Instances in detectron2/strutures/instances.py in a very simple way.
-#     """
-
-#     def __init__(self, image_shape):
-#         self.image_shape = image_shape
-#         self.gt_classes = None
-#         self.gt_masks = None
 
 
 @manager.DATASETS.add_component
@@ -57,9 +47,9 @@ class ADE20K(Dataset):
                  dataset_root=None,
                  mode='train',
                  edge=False,
-                 to_mask=True,
-                 size_divisibility=512,
-                 normalize=True):
+                 to_mask=False,
+                 size_divisibility=0,
+                 normalize=False):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
@@ -110,34 +100,29 @@ class ADE20K(Dataset):
             label_path = os.path.join(label_dir, label_files[i])
             self.file_list.append([img_path, label_path])
 
-    def __getitem__(self, idx, test=False):
+    def __getitem__(self, idx):
         data = {}
         data['trans_info'] = []
         image_path, label_path = self.file_list[idx]
-        if test:
-            image_path, label_path = '/ssd2/tangshiyu/PaddleSeg/data/ADEChallengeData2016/images/training/ADE_train_00019747.jpg', \
-                            '/ssd2/tangshiyu/PaddleSeg/data/ADEChallengeData2016/annotations/training/ADE_train_00019747.png'
-            self.mode = 'val'
 
         data['img'] = image_path
         data['gt_fields'] = [
         ]  # If key in gt_fields, the data[key] have transforms synchronous.
 
-        # import pdb; pdb.set_trace()
         if self.mode == 'val':
             data = self.transforms(data)
             label = np.asarray(Image.open(label_path))
             # The class 0 is ignored. And it will equal to 255 after
             # subtracted 1, because the dtype of label is uint8.
-            # label = label - 1
             label = label[np.newaxis, :, :]
             data['label'] = label - 1
-            data['img'] = paddle.to_tensor(data['img'])
+            # data['img'] = paddle.to_tensor(data['img'])
         else:
             data['label'] = label_path
             data['gt_fields'].append('label')
             data = self.transforms(data)
             data['label'] = data['label'] - 1
+            # Recover the ignore pixels adding by transform
             data['label'][data['label'] == 254] = 255
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(
@@ -176,22 +161,19 @@ class ADE20K(Dataset):
             data['img'] = data['img'].numpy()
 
         if self.to_mask:
-            # ignore the pad image with size_divisibility here
             sem_seg_gt = data['label']
             instances = {"image_shape": data['img'].shape[1:]}
-            # instances = Instances(data['img'].shape)
-            classes = np.unique(sem_seg_gt)  # 255
+            classes = np.unique(sem_seg_gt)
             classes = classes[classes != self.ignore_index]
 
-            # compat with dataloader
+            # To make data compat with dataloader
             classes_cpt = np.array([
                 self.ignore_index
                 for i in range(self.num_classes - len(classes))
             ])
             classes_cpt = np.append(classes, classes_cpt)
             instances["gt_classes"] = paddle.to_tensor(
-                classes_cpt, dtype="int64")  # all 255
-            # instances["gt_classes"] = paddle.to_tensor([255 for i in range(self.num_classes)], dtype='int64')
+                classes_cpt, dtype="int64")
 
             masks = []
             for cid in classes:
@@ -200,16 +182,11 @@ class ADE20K(Dataset):
             shape = [self.num_classes - len(masks)] + list(data['label'].shape)
             masks_cpt = paddle.zeros(shape=shape)
 
-            # ignore bitmask in masks, let's see what we are missing here?
-            # stack does not have kernel for {data_type[bool];
-            # stack empyty masks
-
             if len(masks) == 0:
                 # Some image does not have annotation (all ignored)
                 instances['gt_masks'] = paddle.zeros(
                     (150, sem_seg_gt.shape[-2],
                      sem_seg_gt.shape[-1]))  #150, 512, 512
-                # print("image_path", image_path, classes)
 
             else:
                 instances['gt_masks'] = paddle.concat(
@@ -219,16 +196,12 @@ class ADE20K(Dataset):
                                 paddle.to_tensor(
                                     np.ascontiguousarray(x.copy())), "float32")
                             for x in masks
-                        ]),  # dfg.cast('float32').mean() [0.05092621]
-                        masks_cpt
+                        ]), masks_cpt
                     ],
                     axis=0)
 
             data['instances'] = instances
-        # print('data[\'instances\'][\'gt_masks\'].shape',  data['instances']['gt_masks'].shape, sem_seg_gt.shape, sem_seg_gt.mean(), len(masks), data['img'].shape)
 
-        # batch data con only contains: tensor, numpy.ndarray, dict, list, number
-        # ValueError: (InvalidArgument) Dims of all Inputs(X) must be the same
         return data
 
 
