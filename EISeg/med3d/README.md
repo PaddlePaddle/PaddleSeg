@@ -107,45 +107,48 @@ sys.executable # "D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe"
 
 <summary><b> 常见问题 </b></summary>
 1. 安装PaddlePaddle之后出现FileNotFoundError：
-<details>
-<p align="center">
-<img src="https://user-images.githubusercontent.com/34859558/189288387-4773c35a-ac8e-421d-bfed-2264ac57cda5.png" width="70.6%" height="20%">
-</p>
 
-解决方式：进入到报错位置所在的 subprocess.py， 修改Popen类的属性 shell=True 即可。
-</details>
+  <details>
+  <p align="center">
+  <img src="https://user-images.githubusercontent.com/34859558/189288387-4773c35a-ac8e-421d-bfed-2264ac57cda5.png" width="70.6%" height="20%">
+  </p>
+
+  解决方式：进入到报错位置所在的 subprocess.py， 修改Popen类的属性 shell=True 即可。
+  </details>
 
 2. ERROR: No .egg-info directory found in xxx:
-<details>
-解决方式：参考 [#2718](https://github.com/PaddlePaddle/PaddleSeg/issues/2718)，执行以下指令能成功进行安装。
 
-```python
-"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe" -m pip uninstall setuptools
-"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe"  -m pip install paddleseg simpleitk
-"D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe" -m pip install setuptools
-```
+  <details>
+  解决方式：参考 https://github.com/PaddlePaddle/PaddleSeg/issues/2718，执行以下指令能成功进行安装。
 
-</details>
+  ```python
+  "D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe" -m pip uninstall setuptools
+  "D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe"  -m pip install paddleseg simpleitk
+  "D:/xxxx/Slicer 5.0.3/bin/PythonSlicer.exe" -m pip install setuptools
+  ```
+  </details>
 
 3. 点击确认load module后，提示 One or more requested modules and/or depandencoes may not have been loaded。
-<details>
-<p align="center">
-<img src="https://user-images.githubusercontent.com/34859558/204699311-8a12e976-904f-46e0-8bbf-9d9f0290393d.png" width="30.6%" height="20%">
-</p>
-<p align="center">
-<img src="https://user-images.githubusercontent.com/34859558/204699334-a31e6827-b907-456a-a686-1c1f3ac6014d.png" width="50.6%" height="20%">
-</p>
-解决方式：有部分需要import的库没有安装，例如paddle/paddleseg/simpleitk等，使用第二步的步骤进行安装后重启slicer并重新导入。
-</details>
+
+  <details>
+  <p align="center">
+  <img src="https://user-images.githubusercontent.com/34859558/204699311-8a12e976-904f-46e0-8bbf-9d9f0290393d.png" width="30.6%" height="20%">
+  </p>
+  <p align="center">
+  <img src="https://user-images.githubusercontent.com/34859558/204699334-a31e6827-b907-456a-a686-1c1f3ac6014d.png" width="50.6%" height="20%">
+  </p>
+  解决方式：有部分需要import的库没有安装，例如paddle/paddleseg/simpleitk等，使用第二步的步骤进行安装后重启slicer并重新导入。
+  </details>
 
 4. Fail to open extention: xxx/PaddleSeg/EISeg/med3d/EISefMed3D
-<details>
-<p align="center">
-<img src="https://user-images.githubusercontent.com/34859558/204699489-6b75d9f2-5cf6-42d2-9d74-17894fc3e00b.png" width="50.6%" height="20%">
-</p>
-解决方式：需要选择的加载路径为xxx/PaddleSeg/EISeg/med3d/ 而不是xxx/PaddleSeg/EISeg/med3d/EISefMed3D
 
-</details>
+  <details>
+  <p align="center">
+  <img src="https://user-images.githubusercontent.com/34859558/204699489-6b75d9f2-5cf6-42d2-9d74-17894fc3e00b.png" width="50.6%" height="20%">
+  </p>
+  解决方式：需要选择的加载路径为xxx/PaddleSeg/EISeg/med3d/ 而不是xxx/PaddleSeg/EISeg/med3d/EISefMed3D
+
+  </details>
 
 ### 2. 模型、数据下载
 目前我们提供在下列模型和数据上的试用体验，可以下载表格中模型和数据到指定目录，并将模型和数据进行解压缩操作用于后续加载：
