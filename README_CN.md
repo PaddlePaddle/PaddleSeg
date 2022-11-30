@@ -57,7 +57,7 @@
 ## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
 * 如果大家有PaddleSeg的使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
-* **欢迎加入PaddleSeg的微信用户群👫**（扫码填写简单问卷即可入群），大家可以和值班同学、各界大佬直接进行交流，还可以**领取30G重磅学习大礼包🎁**
+* **欢迎加入PaddleSeg的微信用户群👫**（扫码填写简单问卷即可入群），大家可以**领取30G重磅学习大礼包🎁**，也可以和值班同学、各界大佬直接进行交流。
   * 🔥 获取深度学习视频教程、图像分割论文合集
   * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
   * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
