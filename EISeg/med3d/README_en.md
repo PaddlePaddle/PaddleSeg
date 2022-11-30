@@ -107,6 +107,7 @@ In CMD, If you install on Windows with CUDA 11.1 GPU, follow the command here：
 ```
 
 <summary><b> Common FAQ </b></summary>
+
 1. FileNotFoundError when install PaddlePaddle：
 
 <details>
