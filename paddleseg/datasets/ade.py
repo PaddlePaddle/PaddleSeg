@@ -203,10 +203,3 @@ class ADE20K(Dataset):
             data['instances'] = instances
 
         return data
-
-
-if __name__ == "__main__":
-    d = ADE20K([], '/ssd2/tangshiyu/PaddleSeg/data/ADEChallengeData2016/')
-    for i in range(len(d)):
-        # print(data)
-        data = d[i]

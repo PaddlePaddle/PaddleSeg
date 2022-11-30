@@ -749,7 +749,6 @@ class SwinTransformer_tiny_patch4_window7_224_maskformer(SwinTransformer):
         return outputs
 
     def output_shape(self):
-        # ignore shapespec here      
         return {
             name: {
                 "channels": self._out_feature_channels[name],

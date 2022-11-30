@@ -1145,7 +1145,6 @@ class ResizeShortestEdge:
             assert len(short_edge_length) == 2, (
                 "short_edge_length must be two values using 'range' sample style."
                 f" Got {short_edge_length}!")
-        # self._init(locals())
         self.short_edge_length = short_edge_length
         self.max_size = max_size
         self.sample_style = sample_style
@@ -1162,7 +1161,6 @@ class ResizeShortestEdge:
 
     def __call__(self, data):
         image = data['img']
-        label = data['label']
 
         h, w = image.shape[:2]
         if self.is_range:
@@ -1208,17 +1206,11 @@ class RandomCrop_CategoryAreaConstraint:
 
     """
 
-    def __init__(
-            self,
-            crop_type: str,
-            crop_size,
-            single_category_max_area: float=1.0,
-            ignored_category: int=None, ):
+    def __init__(self, crop_type, crop_size, single_category_max_area=1.0):
 
         self.single_category_max_area = single_category_max_area
         self.crop_type = crop_type
         self.crop_size = crop_size
-        self.ignored_category = ignored_category  # 这部分用不到
 
     def get_crop_size(self, image):
         h, w = image.shape[0:2]
@@ -1274,7 +1266,6 @@ class ColorAugSSDTransform:
         super().__init__()
         assert img_format in ["BGR", "RGB"]
         self.is_rgb = img_format == "RGB"
-        del img_format
 
         self._set_attributes(locals())
 
