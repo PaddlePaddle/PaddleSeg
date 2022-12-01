@@ -1,4 +1,4 @@
-简体中文|[English](serving.md)
+简体中文 | [English](serving.md)
 # Paddle Serving部署
 
 ## 概述
