@@ -209,11 +209,7 @@ class HungarianMatcher(nn.Layer):
                  self.cost_dice * cost_dice)
             C = C.reshape([num_queries, -1])
 
-            try:
-                indices.append(linear_sum_assignment(C))
-            except:
-                import pdb
-                pdb.set_trace()
+            indices.append(linear_sum_assignment(C))
 
         return [(paddle.to_tensor(
             i, dtype='int64'), paddle.to_tensor(
