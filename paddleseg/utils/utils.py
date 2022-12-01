@@ -64,6 +64,7 @@ def download_pretrained_model(pretrained_model):
             pretrained_model = download_file_and_uncompress(
                 pretrained_model,
                 savepath=_dir,
+                cover=True,
                 extrapath=seg_env.PRETRAINED_MODEL_HOME,
                 extraname=savename)
             pretrained_model = os.path.join(pretrained_model, 'model.pdparams')

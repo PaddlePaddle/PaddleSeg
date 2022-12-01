@@ -15,6 +15,28 @@
 import paddle.nn as nn
 
 
+def uniform_init(param, **kwargs):
+    """
+    Initialize the `param` with uniform distribution.
+
+    Args:
+        param (Tensor): Tensor that needs to be initialized.
+
+    Examples:
+
+        from paddleseg.cvlibs import param_init
+        import paddle.nn as nn
+
+        linear = nn.Linear(2, 2)
+        param_init.uniform_init(linear.bias,  low=-0.5, high=0。5)
+        print(linear.bias.numpy())
+        # result is [-0.2734719   0.23939109]
+
+    """
+    initializer = nn.initializer.Uniform(**kwargs)
+    initializer(param, param.block)
+
+
 def constant_init(param, **kwargs):
     """
     Initialize the `param` with constants.
@@ -167,9 +189,16 @@ def xavier_uniform(param, **kwargs):
 
 
 def c2_xavier_fill(layer):
-    kaiming_uniform(layer.weight, negative_slope=1, nonlinearity='leaky_relu')
-    if layer.bias is not None:
-        constant_init(layer.bias, value=0)
+    try:
+        kaiming_uniform(
+            layer.weight, negative_slope=1, nonlinearity='leaky_relu')
+    except AttributeError:
+        pass
+    try:
+        if layer.bias is not None:
+            constant_init(layer.bias, value=0)
+    except AttributeError:
+        pass
 
 
 def _calculate_fan_in_and_fan_out(tensor):
@@ -198,4 +227,4 @@ def c2_linear_fill(layer):
     if layer.bias is not None:
         fan_in, _ = _calculate_fan_in_and_fan_out(layer.weight)
         bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
-        uniform_(layer.bias, -bound, bound)
+        uniform_init(layer.bias, low=-bound, high=bound)

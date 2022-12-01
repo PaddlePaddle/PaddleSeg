@@ -245,11 +245,18 @@ class ResizeByShort:
         short_size (int): The target size of short side.
     """
 
-    def __init__(self, short_size):
+    def __init__(self, short_size, max_size=2048):
+        if isinstance(short_size, list):
+            short_size = random.choice(short_size)
         self.short_size = short_size
+        self.max_size = max_size
 
     def __call__(self, data):
+        h, w = data['img'].shape[0:2]
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
+        if self.short_size / min(h, w) * max(h, w) > self.max_size:
+            self.short_size = int((self.max_size / max(h, w)) * min(h, w))
+
         data['img'] = functional.resize_short(data['img'], self.short_size)
         for key in data.get('gt_fields', []):
             data[key] = functional.resize_short(data[key], self.short_size,

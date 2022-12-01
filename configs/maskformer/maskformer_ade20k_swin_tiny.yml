@@ -5,32 +5,32 @@ train_dataset:
   type: ADE20K
   dataset_root: data/ADEChallengeData2016/
   transforms: 
-    - type: ResizeShortestEdge
-      short_edge_length: [256, 307, 358, 409, 460, 512, 563, 614, 665, 716, 768, 819, 870, 921, 972, 1024]
+    # - type: ResizeShortestEdge
+    #   short_edge_length: [256, 307, 358, 409, 460, 512, 563, 614, 665, 716, 768, 819, 870, 921, 972, 1024]
+    #   max_size: 2048
+    #   sample_style: 'choice'
+    # - type: RandomCrop_CategoryAreaConstraint 
+    #   crop_type: 'absolute'
+    #   crop_size: [512, 512]
+    #   single_category_max_area: 1.0
+    # - type: ColorAugSSDTransform
+    #   img_format: 'RGB'
+    # - type: RandomFlip
+    - type: ResizeByShort
+      short_size: [256, 307, 358, 409, 460, 512, 563, 614, 665, 716, 768, 819, 870, 921, 972, 1024]
       max_size: 2048
-      sample_style: 'choice'
-    - type: RandomCrop_CategoryAreaConstraint 
-      crop_type: 'absolute'
-      crop_size: [512, 512]
-      single_category_max_area: 1.0
-      ignored_category: 255
-    - type: ColorAugSSDTransform
-      img_format: 'RGB'
-    - type: RandomFlip
-    # - type: ResizeByShort
-    #   short_size: 640 # sample from [320, 384, 448,512,576,640,704,768,832,896,960,1024,1088,1152,1216,1280] samlpe by choice, maxsize=2560
-    # - type: RandomPaddingCrop
-    #   crop_size: [512, 512] 
-    # - type: RandomDistort
-    #   brightness_range: 0.125
-    #   brightness_prob: 1.0
-    #   contrast_range: 0.5
-    #   contrast_prob: 1.0
-    #   saturation_range: 0.5
-    #   saturation_prob: 1.0
-    #   hue_range: 18
-    #   hue_prob: 1.0
-    # - type: RandomHorizontalFlip
+    - type: RandomPaddingCrop
+      crop_size: [512, 512] 
+    - type: RandomDistort
+      brightness_range: 0.125
+      brightness_prob: 1.0
+      contrast_range: 0.5
+      contrast_prob: 1.0
+      saturation_range: 0.5
+      saturation_prob: 1.0
+      hue_range: 18
+      hue_prob: 1.0
+    - type: RandomHorizontalFlip
   to_mask: True
   size_divisibility: 512
   normalize: True

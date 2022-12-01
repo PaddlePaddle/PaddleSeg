@@ -116,7 +116,7 @@ class ADE20K(Dataset):
             # subtracted 1, because the dtype of label is uint8.
             label = label[np.newaxis, :, :]
             data['label'] = label - 1
-            # data['img'] = paddle.to_tensor(data['img'])
+            data['img'] = paddle.to_tensor(data['img'])
         else:
             data['label'] = label_path
             data['gt_fields'].append('label')

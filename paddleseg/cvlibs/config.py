@@ -285,7 +285,6 @@ class Config(object):
             for name, param in self.model.named_parameters():
                 hyperparams_dict = {'params': param}
                 assert backbone_lr_mult is not None, "The backbone_lr_mult need to be set for Maskformer."
-
                 if 'backbone' in name and 'backbone_lr_mult' in args:
                     hyperparams_dict['learning_rate'] = backbone_lr_mult
                 if 'relative_position_bias_table' in name or 'norm' in name:

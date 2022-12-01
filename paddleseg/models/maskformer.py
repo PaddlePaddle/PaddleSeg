@@ -45,6 +45,8 @@ class BasePixelDecoder(nn.Layer):
                     act_type='relu')
                 self.output_convs.append(output_conv)
                 self.lateral_convs.append(None)
+                for layer in output_conv.sublayers():
+                    param_init.c2_xavier_fill(layer)
             else:
                 lateral_norm = nn.GroupNorm(
                     num_groups=32, num_channels=conv_dim)
@@ -67,15 +69,17 @@ class BasePixelDecoder(nn.Layer):
                     act_type='relu')
                 self.lateral_convs.append(lateral_conv)
                 self.output_convs.append(output_conv)
+                for layer in lateral_conv.sublayers():
+                    param_init.c2_xavier_fill(layer)
+                for layer in output_conv.sublayers():
+                    param_init.c2_xavier_fill(layer)
 
         self.lateral_convs = self.lateral_convs[::-1]
         self.output_convs = self.output_convs[::-1]
 
         self.mask_features = layers.ConvNormAct(
             conv_dim, mask_dim, kernel_size=3, stride=1, padding=1)
-
-    def __init_weight__(self):
-        for layer in self.sublayers():
+        for layer in self.mask_features.sublayers():
             param_init.c2_xavier_fill(layer)
 
     def forward(self, features):
@@ -459,7 +463,8 @@ class TransformerPredictor(nn.Layer):
             self.class_embed = nn.Linear(hidden_dim, num_classes + 1)
             param_init.c2_linear_fill(self.class_embed)  # todo: rm it
         self.mask_embed = MLP(hidden_dim, hidden_dim, mask_dim, 3)
-        param_init.c2_linear_fill(self.mask_embed)  # todo: rm it
+        for layer in self.mask_embed.sublayers()[0]:
+            param_init.c2_linear_fill(layer)  # todo: rm it
 
     def forward(self, x, mask_features):
         pos = self.pe_layer(x)
