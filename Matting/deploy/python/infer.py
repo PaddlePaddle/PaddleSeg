@@ -344,8 +344,8 @@ class Predictor:
                         trimap_inputs = []
                     trans_info = []
                     for j in range(i, i + args.batch_size):
-                        img = imgs[i]
-                        trimap = trimaps[i] if trimaps is not None else None
+                        img = imgs[j]
+                        trimap = trimaps[j] if trimaps is not None else None
                         data = self._preprocess(img=img, trimap=trimap)
                         img_inputs.append(data['img'])
                         if trimaps is not None:
@@ -379,8 +379,8 @@ class Predictor:
                 trimap_inputs = []
             trans_info = []
             for j in range(i, i + args.batch_size):
-                img = imgs[i]
-                trimap = trimaps[i] if trimaps is not None else None
+                img = imgs[j]
+                trimap = trimaps[j] if trimaps is not None else None
                 data = self._preprocess(img=img, trimap=trimap)
                 img_inputs.append(data['img'])
                 if trimaps is not None:
@@ -437,7 +437,7 @@ class Predictor:
                     alpha, (w, h), interpolation=cv2.INTER_LINEAR)
             elif item[0] == 'padding':
                 h, w = item[1][0], item[1][1]
-                alpha = alpha[:, :, 0:h, 0:w]
+                alpha = alpha[0:h, 0:w]
             else:
                 raise Exception("Unexpected info '{}' in im_info".format(item[
                     0]))
