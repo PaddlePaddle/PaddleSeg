@@ -164,3 +164,38 @@ def xavier_uniform(param, **kwargs):
     """
     initializer = nn.initializer.XavierUniform(**kwargs)
     initializer(param, param.block)
+
+
+def c2_xavier_fill(layer):
+    kaiming_uniform(layer.weight, negative_slope=1, nonlinearity='leaky_relu')
+    if layer.bias is not None:
+        constant_init(layer.bias, value=0)
+
+
+def _calculate_fan_in_and_fan_out(tensor):
+    dimensions = len(tensor.shape)
+    if dimensions < 2:
+        raise ValueError(
+            "Fan in and fan out can not be computed for tensor with fewer than 2 dimensions"
+        )
+
+    num_input_fmaps = tensor.shape[1]
+    num_output_fmaps = tensor.shape[0]
+    receptive_field_size = 1
+    if len(tensor.shape) > 2:
+        for s in tensor.shape[2:]:
+            receptive_field_size *= s
+    fan_in = num_input_fmaps * receptive_field_size
+    fan_out = num_output_fmaps * receptive_field_size
+
+    return fan_in, fan_out
+
+
+def c2_linear_fill(layer):
+    import math
+    kaiming_uniform(
+        layer.weight, negative_slope=math.sqrt(5), nonlinearity='leaky_relu')
+    if layer.bias is not None:
+        fan_in, _ = _calculate_fan_in_and_fan_out(layer.weight)
+        bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
+        uniform_(layer.bias, -bound, bound)

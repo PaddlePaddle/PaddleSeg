@@ -76,15 +76,7 @@ class BasePixelDecoder(nn.Layer):
 
     def __init_weight__(self):
         for layer in self.sublayers():
-            param_init.xavier_uniform(layer.weight)
-            if layer.bias is not None:
-                param_init.xavier_uniform(layer.bias)
-
-            if isinstance(layer, nn.Conv2D):
-                param_init.normal_init(layer.weight, std=0.001)
-            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                param_init.constant_init(layer.weight, value=1.0)
-                param_init.constant_init(layer.bias, value=0.0)
+            param_init.c2_xavier_fill(layer)
 
     def forward(self, features):
         for idx, f in enumerate(self.in_features[::-1]):
@@ -457,8 +449,7 @@ class TransformerPredictor(nn.Layer):
 
         if in_channels != hidden_dim or enforce_input_project:
             self.input_proj = nn.Conv2D(in_channels, hidden_dim, kernel_size=1)
-            param_init.xavier_uniform(self.input_proj.weight)
-            param_init.xavier_uniform(self.input_proj.bias)
+            param_init.c2_xavier_fill(self.input_proj)
         else:
             self.input_proj = nn.Sequential()
 
@@ -466,7 +457,9 @@ class TransformerPredictor(nn.Layer):
 
         if self.mask_classification:
             self.class_embed = nn.Linear(hidden_dim, num_classes + 1)
+            param_init.c2_linear_fill(self.class_embed)  # todo: rm it
         self.mask_embed = MLP(hidden_dim, hidden_dim, mask_dim, 3)
+        param_init.c2_linear_fill(self.mask_embed)  # todo: rm it
 
     def forward(self, x, mask_features):
         pos = self.pe_layer(x)
