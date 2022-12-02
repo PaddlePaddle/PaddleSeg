@@ -147,7 +147,11 @@ git push origin new_branch
 1. 请您查看PR中的Check部分，找到license/cla，并点击右侧detail，进入CLA网站
 2. 点击CLA网站中的“Sign in with GitHub to agree”,点击完成后将会跳转回您的Pull Request页面
 
-#### 10 删除分支
+#### 10 PR Review
+
+请 @juncaipeng 来review PR。当PR被通过后，就可以合入了。
+
+#### 11 删除分支
 
 * 删除远程分支
 
