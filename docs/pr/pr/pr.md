@@ -144,7 +144,11 @@ When submitting a Pull Request to PaddlePaddle for the first time, you need to s
 1. Please check the Check section in PR, find license/cla, and click on the detail on the right to enter the CLA website.
 2. Click "Sign in with GitHub to agree" on the CLA website, and you will be redirected back to your Pull Request page after clicking Finish.
 
-## 10. Delete branch
+## 10. PR Review
+
+Please @juncaipeng to review and merge the PR.
+
+## 11. Delete branch
 
 * Delete remote branch
 
@@ -167,7 +171,7 @@ git checkout develop
 git branch -D new_branch
 ```
 
-## 11. Some conventions for submitting code
+## 12. Some conventions for submitting code
 
 In order to make official maintainers focus on the code itself when reviewing the code, please abide by the following conventions every time you submit the code:
 
