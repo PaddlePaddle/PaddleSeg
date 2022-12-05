@@ -10,4 +10,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|Maskformer|SwinTransformer|512x512|160000|-|-|-|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_tiny/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_tiny/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=894b6404bb93abf5d755b2a22aba0ade)|
+|Maskformer|SwinTransformer|512x512|160000|47.6|-|-|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_tiny/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_tiny/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=e59773eaad87f677837add5ff110441e)|

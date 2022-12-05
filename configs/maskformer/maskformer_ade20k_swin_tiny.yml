@@ -5,17 +5,6 @@ train_dataset:
   type: ADE20K
   dataset_root: data/ADEChallengeData2016/
   transforms: 
-    # - type: ResizeShortestEdge
-    #   short_edge_length: [256, 307, 358, 409, 460, 512, 563, 614, 665, 716, 768, 819, 870, 921, 972, 1024]
-    #   max_size: 2048
-    #   sample_style: 'choice'
-    # - type: RandomCrop_CategoryAreaConstraint 
-    #   crop_type: 'absolute'
-    #   crop_size: [512, 512]
-    #   single_category_max_area: 1.0
-    # - type: ColorAugSSDTransform
-    #   img_format: 'RGB'
-    # - type: RandomFlip
     - type: ResizeByShort
       short_size: [256, 307, 358, 409, 460, 512, 563, 614, 665, 716, 768, 819, 870, 921, 972, 1024]
       max_size: 2048
