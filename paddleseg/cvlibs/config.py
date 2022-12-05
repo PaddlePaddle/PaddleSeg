@@ -78,10 +78,10 @@ class Config(object):
             raise FileNotFoundError('Config path ({}) does not exist'.format(
                 path))
 
-        if path.endswith('yml') or path.endswith('yaml'):
-            self.dic = parse_from_yaml(path)
-        else:
+        if not (path.endswith('yml') or path.endswith('yaml')):
             raise RuntimeError('Config file should be yaml format!')
+
+        self.dic = parse_from_yaml(path)
         self.dic = update_dic(
             self.dic,
             learning_rate=learning_rate,
@@ -95,6 +95,7 @@ class Config(object):
         self._losses = None
 
     def __str__(self) -> str:
+        # Use NoAliasDumper to avoid yml anchor 
         return yaml.dump(self.dic, Dumper=NoAliasDumper)
 
     #################### hyper parameters
@@ -284,8 +285,8 @@ class Config(object):
     #################### check and synchronize
     def check_sync_config(self) -> None:
         """
-        Check and sync the config information, such as num_classes and img_channels, 
-        between the config of model, train_dataset and val_dataset.
+        Check and sync the config information, such as num_classes, img_channels
+        and ignore_index between the config of model, train_dataset and val_dataset.
         """
         if self.dic.get('model', None) is None:
             raise RuntimeError('No model specified in the configuration file.')
@@ -306,12 +307,12 @@ class Config(object):
         if self.train_dataset_config:
             if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
                 num_classes_set.add(self.train_dataset_class.NUM_CLASSES)
-            elif 'num_classes' in self.train_dataset_config:
+            if 'num_classes' in self.train_dataset_config:
                 num_classes_set.add(self.train_dataset_config['num_classes'])
         if self.val_dataset_config:
             if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
                 num_classes_set.add(self.val_dataset_class.NUM_CLASSES)
-            elif 'num_classes' in self.val_dataset_config:
+            if 'num_classes' in self.val_dataset_config:
                 num_classes_set.add(self.val_dataset_config['num_classes'])
 
         if len(num_classes_set) == 0:
