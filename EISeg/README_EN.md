@@ -7,7 +7,7 @@
 </p>
 
 **An Efficient Interactive Segmentation Tool based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
-  
+
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
 
 </div>
@@ -64,10 +64,11 @@ EISeg (Efficient Interactive Segmentation) is an efficient and intelligent inter
 
 ## <img src="../docs/images/teach.png" width="20"/> Tutorials
 * [Installation](docs/install_en.md)
-* [Image Annotation](docs/image_en.md)
-* [Video Annotation](docs/video_en.md)
-* [Remote Sensing](docs/remote_sensing_en.md)
+* [Image Segmentation Annotation](docs/image_en.md)
+* [Video Segmentation Annotation](docs/video_en.md)
+* [Remote Sensing Segmentation](docs/remote_sensing_en.md)
 * [Medical Treatment](docs/medical_en.md)
+* [Detection](docs/det_en.md)
 
 ## <img src="../docs/images/anli.png" width="20"/> Version Updates
 

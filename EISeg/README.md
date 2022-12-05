@@ -72,10 +72,11 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
 
 ## <img src="../docs/images/teach.png" width="20"/> 使用教程
 * [安装说明](docs/install.md)
-* [图像标注](docs/image.md)
-* [视频及3D医疗标注](docs/video.md)
-* [遥感特色功能](docs/remote_sensing.md)
-* [医疗特色功能](docs/medical.md)
+* [图像分割标注](docs/image.md)
+* [视频及3D医疗分割标注](docs/video.md)
+* [遥感分割特色功能](docs/remote_sensing.md)
+* [医疗分割特色功能](docs/medical.md)
+* [图像检测标注](docs/det.md)
 * [数据处理脚本文档](docs/tools.md)
 
 

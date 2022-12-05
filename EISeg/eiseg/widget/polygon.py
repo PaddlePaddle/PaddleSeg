@@ -28,7 +28,9 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             borderColor=[0, 255, 0],
             opacity=0.5,
             cocoIndex=None,
-            parent=None, ):
+            parent=None,
+            is_rect=False,
+            hand_rect=False, ):
         super(PolygonAnnotation, self).__init__(parent)
         self.points = []
         self.m_items = []
@@ -40,11 +42,13 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
 
         self.labelIndex = labelIndex
         self.item_hovering = False
+        self.line_hovering = False
         self.polygon_hovering = False
         self.anning = False  # 是否标注模式
-        self.line_hovering = False
         self.noMove = False
         self.last_focse = False  # 之前是不是焦点在
+        self.is_rect = is_rect
+        self.hand_rect = hand_rect
 
         self.setZValue(10)
         self.opacity = opacity
@@ -68,9 +72,11 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 
         # persistent this bbox instance and update when needed
-        self.bbox = BBoxAnnotation(labelIndex, self, cocoIndex, self)
-        self.bbox.setParentItem(self)
-        # self.bbox.setVisible(False)
+        self.bbox = None
+        if not self.is_rect:
+            self.bbox = BBoxAnnotation(labelIndex, self, cocoIndex, self)
+            self.bbox.setParentItem(self)
+            # self.bbox.setVisible(False)
 
     @property
     def scnenePoints(self):
@@ -81,6 +87,8 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         return points
 
     def setAnning(self, isAnning=True):
+        if self.is_rect:
+            return
         if isAnning:
             self.setAcceptHoverEvents(False)
             self.last_focse = self.polygon_hovering
@@ -116,6 +124,8 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
                 grip.setAnning(True)
 
     def addPointMiddle(self, lineIdx, point):
+        if self.is_rect:
+            return
         gripItem = GripItem(self, lineIdx + 1, self.borderColor,
                             (self.height, self.width))
         gripItem.setEnabled(False)
@@ -128,7 +138,8 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         self.m_items.insert(lineIdx + 1, gripItem)
         self.points.insert(lineIdx + 1, self.mapFromScene(point))
         self.setPolygon(QtGui.QPolygonF(self.points))
-        self.bbox.update()
+        if self.bbox:
+            self.bbox.update()
         for line in self.m_lines[lineIdx + 1:]:
             line.idx += 1
         line = QtCore.QLineF(self.mapToScene(self.points[lineIdx]), point)
@@ -142,13 +153,15 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         self.scene().addItem(lineItem)
         lineItem.updateWidth()
 
-    def addPointLast(self, p):
-        grip = GripItem(self,
-                        len(self), self.borderColor, (self.height, self.width))
-        self.scene().addItem(grip)
-        self.m_items.append(grip)
-        grip.updateSize()
-        grip.setPos(p)
+    def addPointLast(self, p, add_point=True):
+        if add_point:
+            grip = GripItem(self,
+                            len(self), self.borderColor,
+                            (self.height, self.width))
+            self.scene().addItem(grip)
+            self.m_items.append(grip)
+            grip.updateSize()
+            grip.setPos(p)
         if len(self) == 0:
             line = LineItem(self, len(self), self.borderColor)
             self.scene().addItem(line)
@@ -160,10 +173,18 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             self.scene().addItem(line)
             self.m_lines.append(line)
             line.setLine(QtCore.QLineF(p, self.points[0]))
-
         self.points.append(p)
         self.setPolygon(QtGui.QPolygonF(self.points))
-        self.bbox.update()
+        if self.bbox:
+            self.bbox.update()
+
+    def addRect(self, p, size, hand_rect=False):
+        p1 = QtCore.QPointF(p.x() + size.width(), p.y())
+        p2 = QtCore.QPointF(p.x() + size.width(), p.y() + size.height())
+        p3 = QtCore.QPointF(p.x(), p.y() + size.height())
+        for idx, pi in enumerate([p, p1, p2, p3]):
+            self.addPointLast(pi, idx % 2 == 0)
+        self.hand_rect = hand_rect
 
     def remove(self):
         for grip in self.m_items:
@@ -176,11 +197,14 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             self.m_lines.pop()
         self.scene().polygon_items.remove(self)
         self.scene().removeItem(self)
-        self.bbox.remove_from_scene()
-        del self.bbox
+        if self.bbox:
+            self.bbox.remove_from_scene()
+            del self.bbox
         del self
 
     def removeFocusPoint(self):
+        if self.is_rect:
+            return
         focusIdx = None
         for idx, item in enumerate(self.m_items):
             if item.hasFocus():
@@ -192,7 +216,8 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
                 return
             del self.points[focusIdx]
             self.setPolygon(QtGui.QPolygonF(self.points))
-            self.bbox.update()
+            if self.bbox:
+                self.bbox.update()
             self.scene().removeItem(self.m_items[focusIdx])
             del self.m_items[focusIdx]
             for grip in self.m_items[focusIdx:]:
@@ -213,19 +238,41 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         if len(self.points) == 0:
             self.points.pop()
             self.setPolygon(QtGui.QPolygonF(self.points))
-            self.bbox.update()
+            if self.bbox:
+                self.bbox.update()
             it = self.m_items.pop()
             self.scene().removeItem(it)
             del it
 
     def movePoint(self, i, p):
         # print("Move point", i, p)
+        self.hand_rect = True  # 移动修改过
         if 0 <= i < len(self.points):
-            p = self.mapFromScene(p)
-            self.points[i] = p
-            self.setPolygon(QtGui.QPolygonF(self.points))
-            self.bbox.update()
-            self.moveLine(i)
+            if self.is_rect:
+                p = self.mapFromScene(p)
+                self.points[i] = p
+                next_i = (i + 1) % 4
+                if i % 2 == 0:
+                    self.points[i - 1] = QtCore.QPointF(p.x(),
+                                                        self.points[i - 1].y())
+                    self.points[next_i] = QtCore.QPointF(
+                        self.points[next_i].x(), p.y())
+                else:
+                    self.points[i - 1] = QtCore.QPointF(self.points[i - 1].x(),
+                                                        p.y())
+                    self.points[next_i] = QtCore.QPointF(
+                        p.x(), self.points[next_i].y())
+                self.setPolygon(QtGui.QPolygonF(self.points))
+                if self.bbox:
+                    self.bbox.update()
+                self.moveRect()
+            else:
+                p = self.mapFromScene(p)
+                self.points[i] = p
+                self.setPolygon(QtGui.QPolygonF(self.points))
+                if self.bbox:
+                    self.bbox.update()
+                self.moveLine(i)
 
     def moveLine(self, i):
         # print("Moving line: ", i, self.noMove)
@@ -244,12 +291,25 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         # print((i - 1) % len(self), len(self.m_lines), len(self))
         self.m_lines[(i - 1) % len(self)].setLine(line)
 
+    def moveRect(self):
+        if self.noMove:
+            return
+        points = self.points
+        for i in range(4):
+            line = QtCore.QLineF(
+                self.mapToScene(points[i]),
+                self.mapToScene(points[(i + 1) % 4]))
+            self.m_lines[i].setLine(line)
+
     def move_item(self, i, pos):
         if 0 <= i < len(self.m_items):
             item = self.m_items[i]
             item.setEnabled(False)
             item.setPos(pos)
             item.setEnabled(True)
+        if self.is_rect:
+            self.moveRect()
+        else:
             self.moveLine(i)
 
     def itemChange(self, change, value):

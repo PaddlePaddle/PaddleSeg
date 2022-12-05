@@ -19,7 +19,6 @@ from urllib import parse
 import http.client
 from tqdm import tqdm
 from collections import defaultdict
-
 from bs4 import BeautifulSoup as bs
 
 
@@ -58,48 +57,49 @@ def read_ts(ts_path):
     return xml
 
 
-pre_ts_path = "tool/ts/English.ts"  # Russia
-ts_path = "tool/ts/out.ts"
-pre_xml = read_ts(pre_ts_path)
-xml = read_ts(ts_path)
-pre_messages = pre_xml.find_all("message")
-messages = xml.find_all("message")
-bd_trans = BaiduTranslate("auto", "en")  # ru
-trans = bd_trans.trans
+if __name__ == "__main__":
+    pre_ts_path = "tool/ts/English.ts"
+    ts_path = "tool/ts/out.ts"
+    pre_xml = read_ts(pre_ts_path)
+    xml = read_ts(ts_path)
+    pre_messages = pre_xml.find_all("message")
+    messages = xml.find_all("message")
+    bd_trans = BaiduTranslate("auto", "en")
+    trans = bd_trans.trans
 
-translated = 0
-failed = 0
-for msg in messages:
-    type = msg.translation.get("type", None)
-    source = msg.source.string
-    trans = msg.translation.string
-    if type == "unfinished" and trans is None and source is not None:
-        in_pre = False
-        for pmsg in pre_messages:
-            if pmsg.source.string == source:
-                try:
-                    msg.translation.string = pmsg.translation.string
+    translated = 0
+    failed = 0
+    for msg in messages:
+        type = msg.translation.get("type", None)
+        source = msg.source.string
+        trans = msg.translation.string
+        if type == "unfinished" and trans is None and source is not None:
+            in_pre = False
+            for pmsg in pre_messages:
+                if pmsg.source.string == source:
+                    try:
+                        msg.translation.string = pmsg.translation.string
+                        translated += 1
+                        print(
+                            f"{translated + failed} / {len(messages)}:{source} \t {msg.translation.string}"
+                        )
+                        in_pre = True
+                    except:
+                        pass
+                    break
+            if in_pre is False:
+                res = bd_trans.trans(source)
+                if res[0]:
+                    msg.translation.string = res[1]
                     translated += 1
-                    print(
-                        f"{translated + failed} / {len(messages)}:{source} \t {msg.translation.string}"
-                    )
-                    in_pre = True
-                except:
-                    pass
-                break
-        if in_pre is False:
-            res = bd_trans.trans(source)
-            if res[0]:
-                msg.translation.string = res[1]
-                translated += 1
-            else:
-                failed += 1
-            print(
-                f"{translated + failed} / {len(messages)}:{source} \t {msg.translation.string}"
-            )
+                else:
+                    failed += 1
+                print(
+                    f"{translated + failed} / {len(messages)}:{source} \t {msg.translation.string}"
+                )
 
-for name in xml.find_all("name"):
-    name.string = "APP_EISeg"
+    for name in xml.find_all("name"):
+        name.string = "APP_EISeg"
 
-print(f"Totally {len(messages)} , translated {translated}, failed {failed}")
-open(ts_path, "w", encoding="utf-8").write(str(xml))
+    print(f"Totally {len(messages)} , translated {translated}, failed {failed}")
+    open(ts_path, "w", encoding="utf-8").write(str(xml))
