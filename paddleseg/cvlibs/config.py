@@ -101,7 +101,7 @@ class Config(object):
     #################### hyper parameters
     @property
     def batch_size(self) -> int:
-        return self.dic.get('batch_size', None)
+        return self.dic.get('batch_size', 1)
 
     @property
     def iters(self) -> int:
