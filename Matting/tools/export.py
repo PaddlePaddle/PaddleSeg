@@ -85,7 +85,7 @@ def main(args):
         shape = args.input_shape
 
     input_spec = get_input_spec(
-        net.__class__.__name__, shape=arg.shape, trimap=args.trimap)
+        net.__class__.__name__, shape=shape, trimap=args.trimap)
 
     net = paddle.jit.to_static(net, input_spec=input_spec)
     save_path = os.path.join(args.save_dir, 'model')
@@ -102,7 +102,8 @@ def main(args):
                 'model': 'model.pdmodel',
                 'params': 'model.pdiparams',
                 'input_shape': shape
-            }
+            },
+            'ModelName': net.__class__.__name__
         }
         yaml.dump(data, file)
 

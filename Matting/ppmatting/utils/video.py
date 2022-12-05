@@ -1,4 +1,5 @@
 import os
+import warnings
 
 import cv2
 import paddle
@@ -47,7 +48,9 @@ class VideoReader(paddle.io.Dataset):
         self.cap_video.set(cv2.CAP_PROP_POS_FRAMES, idx)
         ret, frame = self.cap_video.retrieve()
         if not ret:
-            raise IOError('The frame {} is read failed.'.format(idx))
+            warnings.warn(
+                "the frame {} is read failed. Video reading exit.".format(idx))
+            raise IndexError('The frame {} is read failed.'.format(idx))
 
         data = {'img': frame}
         if self.transforms is not None:
@@ -84,23 +87,34 @@ class VideoWriter:
             isColor=is_color)
 
     def write(self, frames):
-        """ frames: [N, C, H, W]"""
-        if frames.ndim != 4:
-            raise ValueError(
-                'The frames should have the shape like [N, C, H, W], but it is {}'.
-                format(frames.shape))
-        n, c, h, w = frames.shape
-        if not (c == 1 or c == 3):
-            raise ValueError(
-                'the channels of frames should be 1 or 3, but it is {}'.format(
-                    c))
-        if c == 1 and self.is_color:
-            frames = paddle.repeat_interleave(frames, repeats=3, axis=1)
+        """ 
+        Save frames.
 
-        frames = (frames.transpose((0, 2, 3, 1)).numpy() * 255).astype('uint8')
-        for i in range(n):
-            frame = frames[i]
-            self.cap_out.write(frame)
+        Args:
+            frames(Tensor|numpy.ndarray): If `frames` is a tensor, it's shape should be like [N, C, H, W].
+                If it is a ndarray, it's shape should be like [H, W, 3] or [H, W]. The value is in [0, 1].
+        """
+        if isinstance(frames, paddle.Tensor):
+            if frames.ndim != 4:
+                raise ValueError(
+                    'The frames should have the shape like [N, C, H, W], but it is {}'.
+                    format(frames.shape))
+            n, c, h, w = frames.shape
+            if not (c == 1 or c == 3):
+                raise ValueError(
+                    'the channels of frames should be 1 or 3, but it is {}'.
+                    format(c))
+            if c == 1 and self.is_color:
+                frames = paddle.repeat_interleave(frames, repeats=3, axis=1)
+
+            frames = (frames.transpose(
+                (0, 2, 3, 1)).numpy() * 255).astype('uint8')
+            for i in range(n):
+                frame = frames[i]
+                self.cap_out.write(frame)
+        else:
+            frames = (frames * 255).astype('uint8')
+            self.cap_out.write(frames)
 
     def release(self):
         self.cap_out.release()
