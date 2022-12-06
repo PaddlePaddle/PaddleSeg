@@ -315,18 +315,18 @@ class Block(nn.Layer):
         self.num_heads = num_heads
         self.mlp_ratios = mlp_ratios
 
-        from paddleseg.models.rtformer import ExternalAttention 
-        self.attn = ExternalAttention(dim, dim, 256, num_heads=8, use_cross_kv=False) 
-        #self.attn = Attention(
-        #    dim,
-        #    key_dim=key_dim,
-        #    num_heads=num_heads,
-        #    attn_ratio=attn_ratio,
-        #    activation=act_layer,
-        #    lr_mult=lr_mult)
+        # from paddleseg.models.rtformer import ExternalAttention 
+        # self.attn = ExternalAttention(dim, dim, 256, num_heads=8, use_cross_kv=False) 
+        self.attn = Attention(
+            dim,
+            key_dim=key_dim,
+            num_heads=num_heads,
+            attn_ratio=attn_ratio,
+            activation=act_layer,
+            lr_mult=lr_mult)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
-        
+
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
         mlp_hidden_dim = int(dim * mlp_ratios)
         self.mlp = MLP(in_features=dim,
@@ -740,21 +740,29 @@ class TopTransformer(nn.Layer):
                  injection=True,
                  lr_mult=1.0,
                  in_channels=3,
+                 backbone='esnet',
                  pretrained=None):
         super().__init__()
-        self.feat_channels = [
-            c[2] for i, c in enumerate(cfgs) if i in encoder_out_indices
-        ]
+        if backbone == 'top_transformer':
+            self.feat_channels = [
+                c[2] for i, c in enumerate(cfgs) if i in encoder_out_indices
+            ]
+            self.tpm = TokenPyramidModule(
+                cfgs=cfgs,
+                out_indices=encoder_out_indices,
+                in_channels=in_channels,
+                lr_mult=lr_mult)
+            pretrained = 'https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip'
+        else:
+            self.feat_channels = [24, 56, 120, 232]
+            from .esnet import ESNet_x0_5
+            self.tpm = ESNet_x0_5()
+            pretrained = None  # TODO add pretrain model
         self.injection_out_channels = injection_out_channels
         self.injection = injection
         self.embed_dim = sum(self.feat_channels)
         self.trans_out_indices = trans_out_indices
 
-        self.tpm = TokenPyramidModule(
-            cfgs=cfgs,
-            out_indices=encoder_out_indices,
-            in_channels=in_channels,
-            lr_mult=lr_mult)
         self.ppa = PyramidPoolAgg(stride=c2t_stride)
 
         dpr = [x.item() for x in \
@@ -780,7 +788,8 @@ class TopTransformer(nn.Layer):
             self.inj_module = InjectionMultiSumallmultiallsum(
                 in_channels=self.feat_channels[1:] + [self.embed_dim],
                 activations=act_layer,
-                lr_mult=1.0)
+                lr_mult=lr_mult
+            )  # TODO whether injection module is also backbone? set to 0.1?
             # self.SIM = nn.LayerList()
             # # inj_module = SIM_BLOCK[injection_type]
             # inj_module = InjectionMultiSumSimple
@@ -803,8 +812,12 @@ class TopTransformer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def forward(self, x):
-        ouputs = self.tpm(x)
+    def forward(self,
+                x):  # [4, 3, 512, 512] [512,3,224,224] channels [32,64,128,160]
+        ouputs = self.tpm(
+            x
+        )  # 4 个输出 [4, 32, 128, 128] [4, 64, 64, 64] [4, 128, 32, 32][4, 160, 16, 16]
+
         out = self.ppa(ouputs)
         out = self.trans(out)
 
