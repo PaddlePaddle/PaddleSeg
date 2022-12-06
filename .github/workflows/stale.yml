@@ -25,7 +25,8 @@ jobs:
         stale-issue-label: 'stale'
         close-issue-reason: 'completed'
         exempt-issue-labels: 'bug, enhancement, Feature Request, WIP, TobeReviewed'
-        operations-per-run: 100
+        operations-per-run: 900
         days-before-pr-stale: -1
         days-before-pr-close: -1
+        ascending: true
 
