@@ -1,4 +1,19 @@
-# TODO add gpl license
+# This program is about RVM implementation based on Paddle according to 
+# https://github.com/PeterL1n/RobustVideoMatting.
+# Copyright (C) 2022 PaddlePaddle Authors.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import paddle
 import paddle.nn as nn
@@ -16,7 +31,21 @@ from ppmatting.models import FastGuidedFilter
 @manager.MODELS.add_component
 class RVM(nn.Layer):
     """
-    TODO add annotation
+    The RVM implementation based on PaddlePaddle.
+
+    The original article refers to
+    Shanchuan Lin1, et, al. "Robust High-Resolution Video Matting with Temporal Guidance"
+    (https://arxiv.org/pdf/2108.11515.pdf).
+
+    Args:
+        backbone: backbone model.
+        lraspp_in_channels (int, optional):
+        lraspp_out_channels (int, optional):
+        decoder_channels (int, optional):
+        refiner (str, optional):
+        downsample_ratio (float, optional):
+        pretrained(str, optional): The path of pretrianed model. Defautl: None.
+
     """
 
     def __init__(
