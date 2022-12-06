@@ -1,4 +1,4 @@
-简体中文|[English](infer_benchmark.md)
+简体中文 | [English](infer_benchmark.md)
 # 推理 Benchmark
 
 测试环境：

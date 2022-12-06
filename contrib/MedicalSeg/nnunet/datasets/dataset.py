@@ -111,6 +111,11 @@ class MSDDataset(MedicalDataset):
                 num_processes=self.num_threads)
             verify_dataset_integrity(
                 self.decathlon_dir, default_num_threads=self.num_threads)
+        else:
+            print(
+                "Found existed {}, please ensure your dataset is preprocessed correctly!!!".
+                format(self.decathlon_dir))
+
         if not os.path.exists(self.cropped_data_dir):
             print("{} not found, crop data, it may be time consuming.".format(
                 self.cropped_data_dir))
@@ -119,6 +124,10 @@ class MSDDataset(MedicalDataset):
                 self.cropped_data_dir,
                 override=False,
                 num_threads=self.num_threads)
+        else:
+            print(
+                "Found existed {}, please ensure your dataset is preprocessed correctly!!!".
+                format(self.cropped_data_dir))
 
         if not os.path.exists(
                 os.path.join(self.cropped_data_dir, 'dataset_properties.pkl')):
@@ -137,6 +146,10 @@ class MSDDataset(MedicalDataset):
                 overwrite=True,
                 num_processes=self.num_threads)
             dataset_analyzer.analyze_dataset(collect_intensityproperties)
+        else:
+            print(
+                "Found existed dataset_properties.pkl, please ensure your dataset_properties is preprocessed correctly!!!"
+            )
 
         if self.plan2d:
             exp_planner_2d = ExperimentPlanner2D_v21(self.cropped_data_dir,
@@ -146,6 +159,11 @@ class MSDDataset(MedicalDataset):
                       format(exp_planner_2d.plans_fname))
                 exp_planner_2d.plan_experiment()
                 exp_planner_2d.run_preprocessing(self.num_threads)
+            else:
+                print(
+                    "Found existed plan file, please ensure your plan file is preprocessed correctly!!!"
+                )
+
         if self.plan3d:
             exp_planner_3d = ExperimentPlanner3D_v21(self.cropped_data_dir,
                                                      self.preprocessed_dir)
@@ -155,6 +173,10 @@ class MSDDataset(MedicalDataset):
                     format(exp_planner_3d.plans_fname))
                 exp_planner_3d.plan_experiment()
                 exp_planner_3d.run_preprocessing(self.num_threads)
+            else:
+                print(
+                    "Found existed plan file, please ensure your plan file is preprocessed correctly!!!"
+                )
 
     def get_basic_generators(self):
         self.load_dataset()
@@ -500,8 +522,8 @@ def subfiles(folder: str,
     res = [
         l(folder, i) for i in os.listdir(folder)
         if os.path.isfile(os.path.join(folder, i)) and
-        (prefix is None or i.startswith(prefix)
-         ) and (suffix is None or i.endswith(suffix))
+        (prefix is None or
+         i.startswith(prefix)) and (suffix is None or i.endswith(suffix))
     ]
     if sort:
         res.sort()

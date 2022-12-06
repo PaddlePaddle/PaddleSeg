@@ -5,7 +5,7 @@ To preprocess the ACDC data, you first need to download `training.zip` from http
 ```
 unzip training.zip
 mkdir data/ACDCDataset
-python tools/prepare_abdomen.py training/
+python tools/prepare_acdc.py training/
 ```
 The dataset will be automatically automatically preprocessed. The file structure is as follows:
 ```

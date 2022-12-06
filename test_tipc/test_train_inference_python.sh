@@ -95,6 +95,10 @@ mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_python.log"
 echo "------------------------ ${MODE} ------------------------" >> $status_log
 
+line_num=`grep -n -w "to_static_train_benchmark_params" $FILENAME  | cut -d ":" -f 1`
+to_static_key=$(func_parser_key "${lines[line_num]}")
+to_static_trainer=$(func_parser_value "${lines[line_num]}")
+
 # Parse extra args
 parse_extra_args "${lines[@]}"
 for params in ${extra_args[*]}; do
@@ -293,6 +297,9 @@ else
                 elif [[ ${trainer} = ${trainer_key2} ]]; then
                     run_train=${trainer_value2}
                     run_export=${export_value2}
+                elif [ ${trainer} = "${to_static_key}" ]; then
+                    run_train="${norm_trainer} ${to_static_trainer}"
+                    run_export=${norm_export}
                 else
                     run_train=${norm_trainer}
                     run_export=${norm_export}

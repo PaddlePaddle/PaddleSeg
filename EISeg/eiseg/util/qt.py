@@ -1,5 +1,5 @@
-from math import sqrt
 import os.path as osp
+from functools import partial
 
 import numpy as np
 
@@ -7,6 +7,7 @@ from eiseg import pjpath
 from qtpy import QtCore
 from qtpy import QtGui
 from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 from .config import parse_configs
 
 shortcuts = parse_configs(osp.join(pjpath, "config/config.yaml"))["shortcut"]
@@ -73,6 +74,23 @@ def addActions(widget, actions):
             widget.addSeparator()
         elif isinstance(action, QtWidgets.QMenu):
             widget.addMenu(action)
+        elif action == "spacer":
+            spacer = QtWidgets.QWidget(widget)
+            sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                               QtWidgets.QSizePolicy.Expanding)
+            spacer.setSizePolicy(sizePolicy)
+            widget.addWidget(spacer)
+        elif isinstance(action, tuple):
+            typeMenu = QtWidgets.QMenu("", widget)
+            for act in action:
+                typeMenu.addAction(act)
+            typeButton = QtWidgets.QToolButton(widget)
+            typeButton.setObjectName("typeButton")
+            typeButton.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+            typeButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            typeButton.setDefaultAction(action[0])
+            typeButton.setMenu(typeMenu)
+            widget.addWidget(typeButton)
         else:
             widget.addAction(action)
 

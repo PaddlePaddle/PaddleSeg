@@ -1,4 +1,4 @@
-简体中文|[English](style.md)
+简体中文 | [English](style.md)
 # PaddleSeg模型开发规范
 
 模型规范主要分为：新增文件的开发规范，可拓展模块的开发规范，导出和测试预测模型，新增模型的PR checklist。
