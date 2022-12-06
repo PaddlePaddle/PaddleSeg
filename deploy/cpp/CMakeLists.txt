@@ -250,7 +250,7 @@ if(WIN32 AND NOT WITH_MKL)
   )
 endif()
 
-if (WIN32 AND USE_TENSORRT)
+if (WIN32 AND NOT USE_TENSORRT)
     add_custom_command(TARGET ${DEMO_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/onnxruntime/lib/onnxruntime.dll ./onnxruntime.dll
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/paddle2onnx/lib/paddle2onnx.dll ./paddle2onnx.dll
