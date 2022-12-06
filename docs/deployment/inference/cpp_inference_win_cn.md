@@ -125,12 +125,12 @@ cmake .. -G "Visual Studio 16 2019" -A x64 -T host=x64 -DUSE_TENSORRT=ON -DWITH_
 
 GPU不使用TensorRT推理，命令如下：
 ```
-cmake .. -G "Visual Studio 16 2019" -A x64 -T host=x64 -DWITH_GPU=ON -DWITH_MKL=ON -DCMAKE_BUILD_TYPE=Release --DPADDLE_LIB_NAME=paddle_inference DCUDA_LIB=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\lib\x64 -DOPENCV_DIR=D:\projects\opencv -DPADDLE_LIB=D:\projects\paddle_inference -DDEMO_NAME=test_seg
+cmake .. -G "Visual Studio 16 2019" -A x64 -T host=x64 -DWITH_GPU=ON -DWITH_MKL=ON -DCMAKE_BUILD_TYPE=Release -DPADDLE_LIB_NAME=paddle_inference -DCUDA_LIB=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\lib\x64 -DOPENCV_DIR=D:\projects\opencv -DPADDLE_LIB=D:\projects\paddle_inference -DDEMO_NAME=test_seg
 ```
 
 GPU使用TensorRT推理，命令如下：
 ```
-cmake .. -G "Visual Studio 16 2019" -A x64 -T host=x64 -DUSE_TENSORRT=ON -DWITH_GPU=ON -DWITH_MKL=ON -DCMAKE_BUILD_TYPE=Release --DPADDLE_LIB_NAME=paddle_inference DCUDA_LIB=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\lib\x64 -DOPENCV_DIR=D:\projects\opencv -DPADDLE_LIB=D:\projects\paddle_inference -DDEMO_NAME=test_seg
+cmake .. -G "Visual Studio 16 2019" -A x64 -T host=x64 -DUSE_TENSORRT=ON -DWITH_GPU=ON -DWITH_MKL=ON -DCMAKE_BUILD_TYPE=Release -DPADDLE_LIB_NAME=paddle_inference -DCUDA_LIB=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\lib\x64 -DOPENCV_DIR=D:\projects\opencv -DPADDLE_LIB=D:\projects\paddle_inference -DDEMO_NAME=test_seg
 ```
 
 CPU使用MKL推理，命令如下：
