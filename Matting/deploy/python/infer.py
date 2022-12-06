@@ -723,10 +723,6 @@ class PredictorRVM(Predictor):
 
             alpha = output_handle['alpha'].copy_to_cpu()
             fg = output_handle['fg'].copy_to_cpu()
-            r1 = output_handle['r1'].copy_to_cpu()
-            r2 = output_handle['r2'].copy_to_cpu()
-            r3 = output_handle['r3'].copy_to_cpu()
-            r4 = output_handle['r4'].copy_to_cpu()
 
             alpha = alpha.squeeze()
             alpha = self._postprocess(alpha, trans_info)
