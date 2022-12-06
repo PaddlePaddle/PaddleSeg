@@ -88,6 +88,14 @@ std::vector<int32_t> out_data(out_num);
 下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png) 用于后续测试。
 
 ## 4. 编译
+编译时如果命令的路径中包含空格可能出现错误，将C:\Program Files\NVIDIA GPU Computing Toolkit目录下的CUDA文件夹复制到D:\projects，整体目录结构如下：
+```shell
+projects
+  ├── CUDA
+  ├── opencv
+  ├── paddle_inference
+  └── PaddleSeg
+```
 
 1. 进入到`cpp`文件夹
 ```
@@ -110,7 +118,7 @@ cd D:\projects\\PaddleSeg\deploy\cpp
 
 1. 如果编译环境为CPU，需要下载`CPU`版预测库，请把`WITH_GPU`的勾去掉
 2. 如果使用的是`openblas`版本，请把`WITH_MKL`勾去掉
-4. `PADDLE_LIB_NAME`需要设置为下载的Paddle Inference包名，一般为paddle_inference
+3. `PADDLE_LIB_NAME`需要设置为下载的Paddle Inference包名，一般为paddle_inference
 
 创建build文件夹，并进入其目录
 ```commandline
@@ -125,12 +133,12 @@ cmake .. -G "Visual Studio 16 2019" -A x64 -T host=x64 -DUSE_TENSORRT=ON -DWITH_
 
 GPU不使用TensorRT推理，命令如下：
 ```
-cmake .. -G "Visual Studio 16 2019" -A x64 -T host=x64 -DWITH_GPU=ON -DWITH_MKL=ON -DCMAKE_BUILD_TYPE=Release -DPADDLE_LIB_NAME=paddle_inference -DCUDA_LIB=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\lib\x64 -DOPENCV_DIR=D:\projects\opencv -DPADDLE_LIB=D:\projects\paddle_inference -DDEMO_NAME=test_seg
+cmake .. -G "Visual Studio 16 2019" -A x64 -T host=x64 -DWITH_GPU=ON -DWITH_MKL=ON -DCMAKE_BUILD_TYPE=Release -DPADDLE_LIB_NAME=paddle_inference -DCUDA_LIB=D:\projects\CUDA\v10.1\lib\x64 -DOPENCV_DIR=D:\projects\opencv -DPADDLE_LIB=D:\projects\paddle_inference -DDEMO_NAME=test_seg
 ```
 
 GPU使用TensorRT推理，命令如下：
 ```
-cmake .. -G "Visual Studio 16 2019" -A x64 -T host=x64 -DUSE_TENSORRT=ON -DWITH_GPU=ON -DWITH_MKL=ON -DCMAKE_BUILD_TYPE=Release -DPADDLE_LIB_NAME=paddle_inference -DCUDA_LIB=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\lib\x64 -DOPENCV_DIR=D:\projects\opencv -DPADDLE_LIB=D:\projects\paddle_inference -DDEMO_NAME=test_seg
+cmake .. -G "Visual Studio 16 2019" -A x64 -T host=x64 -DUSE_TENSORRT=ON -DWITH_GPU=ON -DWITH_MKL=ON -DCMAKE_BUILD_TYPE=Release -DPADDLE_LIB_NAME=paddle_inference -DCUDA_LIB=D:\projects\CUDA\v10.1\lib\x64 -DOPENCV_DIR=D:\projects\opencv -DPADDLE_LIB=D:\projects\paddle_inference -DDEMO_NAME=test_seg
 ```
 
 CPU使用MKL推理，命令如下：
