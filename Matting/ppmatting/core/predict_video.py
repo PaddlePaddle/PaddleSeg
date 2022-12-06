@@ -131,7 +131,6 @@ def predict_video(model,
             else:
                 alpha = result['alpha']
                 fg = result.get('fg', None)
-            # print(alpha.shape, fg.shape)
             infer_cost_averager.record(time.time() - infer_start)
 
             postprocess_start = time.time()

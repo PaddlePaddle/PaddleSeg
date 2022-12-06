@@ -45,18 +45,19 @@ class RVM(nn.Layer):
         refiner (str, optional):
         downsample_ratio (float, optional):
         pretrained(str, optional): The path of pretrianed model. Defautl: None.
+        to_rgb(bool, optional): The fgr results change to rgb format. Default: True.
 
     """
 
-    def __init__(
-            self,
-            backbone,
-            lraspp_in_channels=960,
-            lraspp_out_channels=128,
-            decoder_channels=(80, 40, 32, 16),
-            refiner='deep_guided_filter',
-            downsample_ratio=1.,
-            pretrained=None, ):
+    def __init__(self,
+                 backbone,
+                 lraspp_in_channels=960,
+                 lraspp_out_channels=128,
+                 decoder_channels=(80, 40, 32, 16),
+                 refiner='deep_guided_filter',
+                 downsample_ratio=1.,
+                 pretrained=None,
+                 to_rgb=True):
         super().__init__()
 
         self.backbone = backbone
@@ -76,6 +77,7 @@ class RVM(nn.Layer):
 
         self.downsample_ratio = downsample_ratio
         self.pretrained = pretrained
+        self.to_rgb = to_rgb
         self.r1 = None
         self.r2 = None
         self.r3 = None
@@ -110,6 +112,8 @@ class RVM(nn.Layer):
                 return {'alpha': seg}
             else:
                 fgr, pha, self.r1, self.r2, self.r3, self.r4 = result
+                if self.to_rgb:
+                    fgr = paddle.flip(fgr, axis=-3)
                 return {
                     'alpha': pha,
                     "fg": fgr,
