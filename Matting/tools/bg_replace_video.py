@@ -49,10 +49,10 @@ def parse_args():
     parser.add_argument(
         '--background',
         dest='background',
-        help='Background for replacing. It is a string which specifies the background color (r,g,b,w) or a path to background image or video. '
+        help='Background for replacing. It is a string which specifies the background color (r,g,b,w) or a path to background image or video.'
         'If not specified, a green background is used.',
         type=str,
-        default=None)
+        default='g')
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
