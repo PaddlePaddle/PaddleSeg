@@ -1144,7 +1144,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.labelListClicked(self.labelListTable.rowCount() - 1, 0)
 
     def adjustTableSize(self):
-        self.labelListTable.horizontalHeader().setDefaultSectionSize(25)
+        self.labelListTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.labelListTable.horizontalHeader().setSectionResizeMode(
             0, QtWidgets.QHeaderView.Fixed)
         self.labelListTable.horizontalHeader().setSectionResizeMode(
