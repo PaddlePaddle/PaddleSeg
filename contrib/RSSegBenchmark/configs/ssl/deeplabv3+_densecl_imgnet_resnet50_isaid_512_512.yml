@@ -1,0 +1,14 @@
+_base_: '../deeplabv3+/deeplabv3+_resnet50_isaid_512_512.yml'
+
+model:
+  type: DeepLabV3P
+  backbone:
+    type: ResNet50
+    ssl_pretrained: True
+    pretrained: https://drive.google.com/file/d/1RWPO_g-fNJv8FsmCZ3LUbPTgPwtx-ybZ/view?usp=sharing
+  num_classes: 16
+  backbone_indices: [0, 3]
+  aspp_ratios: [1, 12, 24, 36]
+  aspp_out_channels: 256
+  align_corners: False
+  pretrained: null
