@@ -33,9 +33,17 @@ def partition_list(arr, m):
     return [arr[i:i + n] for i in range(0, len(arr), n)]
 
 
-def save_result(alpha, path, im_path, trimap=None, fg_estimate=True):
+def save_result(alpha, path, im_path, trimap=None, fg_estimate=True, fg=None):
     """
-    The value of alpha is range [0, 1], shape should be [h,w]
+    Save alpha and rgba.
+
+    Args:
+        alpha (numpy.ndarray): The value of alpha should in [0, 255], shape should be [h,w].
+        path (str): The save path
+        im_path (str): The original image path.
+        trimap (str, optional): The trimap if provided. Default: None.
+        fg_estimate (bool, optional): Whether to estimate the foreground, Default: True.
+        fg (numpy.ndarray, optional): The foreground, if provided, fg_estimate is invalid. Default: None.
     """
     dirname = os.path.dirname(path)
     if not os.path.exists(dirname):
@@ -55,10 +63,11 @@ def save_result(alpha, path, im_path, trimap=None, fg_estimate=True):
 
     # save rgba
     im = cv2.imread(im_path)
-    if fg_estimate:
-        fg = estimate_foreground_ml(im / 255.0, alpha / 255.0) * 255
-    else:
-        fg = im
+    if fg is None:
+        if fg_estimate:
+            fg = estimate_foreground_ml(im / 255.0, alpha / 255.0) * 255
+        else:
+            fg = im
     fg = fg.astype('uint8')
     alpha = alpha[:, :, np.newaxis]
     rgba = np.concatenate((fg, alpha), axis=-1)
@@ -67,18 +76,18 @@ def save_result(alpha, path, im_path, trimap=None, fg_estimate=True):
     return fg
 
 
-def reverse_transform(alpha, trans_info):
+def reverse_transform(img, trans_info):
     """recover pred to origin shape"""
     for item in trans_info[::-1]:
         if item[0] == 'resize':
             h, w = item[1][0], item[1][1]
-            alpha = F.interpolate(alpha, [h, w], mode='bilinear')
+            img = F.interpolate(img, [h, w], mode='bilinear')
         elif item[0] == 'padding':
             h, w = item[1][0], item[1][1]
-            alpha = alpha[:, :, 0:h, 0:w]
+            img = img[:, :, 0:h, 0:w]
         else:
             raise Exception("Unexpected info '{}' in im_info".format(item[0]))
-    return alpha
+    return img
 
 
 def preprocess(img, transforms, trimap=None):
@@ -145,13 +154,22 @@ def predict(model,
             preprocess_cost_averager.record(time.time() - preprocess_start)
 
             infer_start = time.time()
-            alpha_pred = model(data)
+            result = model(data)
             infer_cost_averager.record(time.time() - infer_start)
 
             postprocess_start = time.time()
-            alpha_pred = reverse_transform(alpha_pred, data['trans_info'])
-            alpha_pred = (alpha_pred.numpy()).squeeze()
-            alpha_pred = (alpha_pred * 255).astype('uint8')
+            if isinstance(result, paddle.Tensor):
+                alpha = result
+            else:
+                alpha = result['alpha']
+                fg = result.get('fg', None)
+
+            alpha = reverse_transform(alpha, data['trans_info'])
+            alpha = (alpha.numpy()).squeeze()
+            alpha = (alpha * 255).astype('uint8')
+            fg = reverse_transform(fg, data['trans_info'])
+            fg = (fg.numpy()).squeeze().transpose((1, 2, 0))
+            fg = (fg * 255).astype('uint8')
 
             # get the saved name
             if image_dir is not None:
@@ -164,11 +182,16 @@ def predict(model,
             save_path = os.path.join(save_dir, im_file)
             mkdir(save_path)
             fg = save_result(
-                alpha_pred,
+                alpha,
                 save_path,
                 im_path=im_path,
                 trimap=trimap,
-                fg_estimate=fg_estimate)
+                fg_estimate=fg_estimate,
+                fg=fg)
+
+            # rvm have member which need to reset.
+            if hasattr(model, 'reset'):
+                model.reset()
 
             postprocess_cost_averager.record(time.time() - postprocess_start)
 
@@ -184,4 +207,4 @@ def predict(model,
             preprocess_cost_averager.reset()
             infer_cost_averager.reset()
             postprocess_cost_averager.reset()
-    return alpha_pred, fg
+    return alpha, fg
