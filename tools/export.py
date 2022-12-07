@@ -39,33 +39,24 @@ def parse_args():
         default="argmax",
         help="Select which op to be appended to output result, default: argmax")
     parser.add_argument(
-        '--without_argmax',
-        help='Do not add the argmax operation at the end of the network. [Deprecated]',
-        action='store_true')
-    parser.add_argument(
-        '--with_softmax',
-        help='Add the softmax operation at the end of the network. [Deprecated]',
-        action='store_true')
-    parser.add_argument(
         "--input_shape",
         nargs='+',
-        help="Export the model with fixed input shape, such as 1 3 1024 1024.",
-        type=int,
-        default=None)
+        help="Export the model with fixed input shape, e.g., `--input_shape 1 3 1024 1024`.",
+        type=int)
 
     return parser.parse_args()
 
 
 class SavedSegmentationNet(paddle.nn.Layer):
-    def __init__(self, net, output_op):
+    def __init__(self, model, output_op):
         super().__init__()
-        self.net = net
+        self.model = model
         self.output_op = output_op
         assert output_op in ['argmax', 'softmax'], \
             "output_op should in ['argmax', 'softmax']"
 
     def forward(self, x):
-        outs = self.net(x)
+        outs = self.model(x)
 
         new_outs = []
         for out in outs:
@@ -80,56 +71,57 @@ class SavedSegmentationNet(paddle.nn.Layer):
 def main(args):
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     cfg = Config(args.config)
-    net = cfg.model
+    model = cfg.model
 
     if args.model_path is not None:
         para_state_dict = paddle.load(args.model_path)
-        net.set_dict(para_state_dict)
+        model.set_dict(para_state_dict)
         logger.info('Loaded trained params of model successfully.')
+
+    if args.output_op != 'none':
+        model = SavedSegmentationNet(model, args.output_op)
 
     if args.input_shape is None:
         shape = [None, 3, None, None]
     else:
         shape = args.input_shape
+    input_spec = [paddle.static.InputSpec(shape=shape, dtype='float32')]
 
-    output_op = args.output_op
-    if args.without_argmax:
-        logger.warning(
-            '--without_argmax will be deprecated, please use --output_op')
-        output_op = 'none'
-    if args.with_softmax:
-        logger.warning(
-            '--with_softmax will be deprecated, please use --output_op')
-        output_op = 'softmax'
+    model.eval()
+    model = paddle.jit.to_static(model, input_spec=input_spec)
+    paddle.jit.save(model, os.path.join(args.save_dir, 'model'))
 
-    new_net = net if output_op == 'none' else SavedSegmentationNet(net,
-                                                                   output_op)
-    new_net.eval()
-    new_net = paddle.jit.to_static(
-        new_net,
-        input_spec=[paddle.static.InputSpec(
-            shape=shape, dtype='float32')])
+    val_dataset_config = cfg.val_dataset_config
+    assert val_dataset_config != {}, 'No val_dataset specified in the configuration file.'
+    transforms = val_dataset_config.get('transforms', None)
+    assert transforms is not None, 'No transforms specified in val_dataset.'
+    output_dtype = 'int32' if args.output_op == 'argmax' else 'float32'
+    test = {
+        'is_aug': cfg.test_config('is_aug'),
+        'scales': cfg.test_config('scales'),
+        'flip_horizontal': cfg.test_config('flip_horizontal'),
+        'flip_vertical': cfg.test_config('flip_vertical'),
+        'is_slide': cfg.test_config('is_slide'),
+        'crop_size': cfg.test_config('crop_size'),
+        'stride': cfg.test_config('stride'),
+    }
 
-    save_path = os.path.join(args.save_dir, 'model')
-    paddle.jit.save(new_net, save_path)
+    deploy_info = {
+        'Deploy': {
+            'model': 'model.pdmodel',
+            'params': 'model.pdiparams',
+            'transforms': transforms,
+            'test': test,
+            'input_shape': shape,
+            'output_op': args.output_op,
+            'output_dtype': output_dtype
+        }
+    }
+    logger.info('deploy_info: ' + str(deploy_info))
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
-        transforms = cfg.export_config.get('transforms', [{
-            'type': 'Normalize'
-        }])
-        output_dtype = 'int32' if output_op == 'argmax' else 'float32'
-        data = {
-            'Deploy': {
-                'model': 'model.pdmodel',
-                'params': 'model.pdiparams',
-                'transforms': transforms,
-                'input_shape': shape,
-                'output_op': output_op,
-                'output_dtype': output_dtype
-            }
-        }
-        yaml.dump(data, file)
+        yaml.dump(deploy_info, file)
 
     logger.info(f'The inference model is saved in {args.save_dir}')
 
