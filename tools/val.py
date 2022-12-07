@@ -23,12 +23,42 @@ from paddleseg.utils import get_sys_env, logger, utils
 
 
 def parse_args():
-    '''
-    Some input params of previous val.py are moved to config file.
-    Please use `-o` or `--opts` to set these params, such as
-    aug_eval, scales and so on.
-    '''
-    parser = argparse.ArgumentParser(description='Model evaluation')
+    hstr = "Model Evaluation. \n\n"\
+           "Single-GPU example: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0 \n"\
+           "    python tools/val.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \n\n"\
+           "Multi-GPU example: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0,1 \n"\
+           "    python -m paddle.distributed.launch tools/val.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \\\n"\
+           "        -o global.num_workers=2 \n\n"\
+           "Evaluation with data augmentation: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0 \n"\
+           "    python tools/val.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \\\n"\
+           "        -o test.is_aug=True test.scales=0.75,1.0,1.25 test.flip_horizontal=True global.num_workers=2 \n\n"\
+           "Evaluation with slide windows method: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0 \n"\
+           "    python tools/val.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \\\n"\
+           "        -o test.is_slide=True test.crop_size=256,256 test.stride=256,256 \n\n"\
+           "Use `-o` or `--opts` to update key-value params in config file. Some common params are explained as follows:\n" \
+           "    global.device       Set the running device. It should be cpu, gpu, xpu, npu or mlu.\n" \
+           "    global.num_workers  Set the num workers to read and process images.\n" \
+           "    test.is_aug         Whether to enable data augmentation. It should be True or False.\n" \
+           "    test.scales         Set the resize scales in data augmentation. When test.is_aug=False, test.scales is invalid.\n" \
+           "    test.flip_horizontal    Whether to flip horizontal in data augmentation. When test.is_aug=False, test.flip_horizontal is invalid.\n" \
+           "    test.flip_vertical      Whether to flip vertical in data augmentation. When test.is_aug=False, test.flip_vertical is invalid.\n" \
+           "    test.is_slide       Whether to test image with slide windows method. It should be True or False.\n" \
+           "    test.crop_size      Set the crop size in data slide windows testing. When test.is_slide=False, test.crop_size is invalid.\n" \
+           "    test.stride         Set the stride in slide windows testing. When test.is_slide=False, test.stride is invalid.\n"
+    parser = argparse.ArgumentParser(
+        description=hstr, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
@@ -37,9 +67,7 @@ def parse_args():
     parser.add_argument(
         '-o',
         '--opts',
-        help='Update the key-value pairs in config file. For example, '
-        '`--o global.num_workers=3 test.aug_eval=True test.scales=0.75,1.0,1.25 '
-        'test.flip_horizontal=True`',
+        help='Update the key-value pairs in config file.',
         nargs='+')
     return parser.parse_args()
 
@@ -54,8 +82,8 @@ def main(args):
     utils.show_env_info()
     utils.show_cfg_info(cfg)
 
-    utils.set_seed(cfg.global_params('seed'))
-    utils.set_device(cfg.global_params('device'))
+    utils.set_seed(cfg.global_config('seed'))
+    utils.set_device(cfg.global_config('device'))
     '''
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
@@ -77,16 +105,16 @@ def main(args):
     evaluate(
         model=model,
         eval_dataset=cfg.val_dataset,
-        aug_eval=cfg.test_params('aug_eval'),
-        scales=cfg.test_params('scales'),
-        flip_horizontal=cfg.test_params('flip_horizontal'),
-        flip_vertical=cfg.test_params('flip_vertical'),
-        is_slide=cfg.test_params('is_slide'),
-        stride=cfg.test_params('stride'),
-        crop_size=cfg.test_params('crop_size'),
-        precision=cfg.global_params('precision'),
-        amp_level=cfg.global_params('amp_level'),
-        num_workers=cfg.global_params('num_workers'))
+        aug_eval=cfg.test_config('is_aug'),
+        scales=cfg.test_config('scales'),
+        flip_horizontal=cfg.test_config('flip_horizontal'),
+        flip_vertical=cfg.test_config('flip_vertical'),
+        is_slide=cfg.test_config('is_slide'),
+        stride=cfg.test_config('stride'),
+        crop_size=cfg.test_config('crop_size'),
+        precision=cfg.global_config('precision'),
+        amp_level=cfg.global_config('amp_level'),
+        num_workers=cfg.global_config('num_workers'))
 
 
 if __name__ == '__main__':

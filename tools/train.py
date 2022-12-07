@@ -25,18 +25,39 @@ from paddleseg.core import train
 
 
 def parse_args():
-    '''
-    Some input params of previous train.py are moved to config file.
-    Please use `-o` or `--opts` to set these params, such as
-    batch_size, use_vdl and so on.
-    '''
-    parser = argparse.ArgumentParser(description='Model training')
+    hstr = "Model Training. \n\n"\
+           "Single-GPU example: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0 \n"\
+           "    python tools/train.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        -o train.do_eval=True train.use_vdl=True train.save_interval=500 \\\n"\
+           "            global.num_workers=2 global.save_dir=./output \n\n"\
+           "Multi-GPU example: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0,1 \n"\
+           "    python -m paddle.distributed.launch tools/train.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        -o train.do_eval=True train.use_vdl=True train.save_interval=500 \\\n"\
+           "            global.num_workers=2 global.save_dir=./output \n\n" \
+           "Resume training example: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0 \n"\
+           "    python tools/train.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        -o train.do_eval=True train.use_vdl=True train.save_interval=500 train.resume_model=output/iter_500 \\\n"\
+           "            global.num_workers=2 global.save_dir=./output/resume_training \n\n" \
+           "Use `-o` or `--opts` to update key-value params in config file. Some common params are explained as follows:\n" \
+           "    global.device       Set the running device. It should be cpu, gpu, xpu, npu or mlu.\n" \
+           "    global.save_dir     Set the directory to save weights and log.\n" \
+           "    global.num_workers  Set the num workers to read and process images.\n" \
+           "    train.do_eval       Whether enable evaluation in training model. It should be True or False.\n" \
+           "    train.use_vdl       Whether enable visualdl in training model. It should be True or False.\n" \
+           "    train.resume_model  Resume training loads the files saved in this directory.\n"
+    parser = argparse.ArgumentParser(
+        description=hstr, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
         '-o',
         '--opts',
-        help='Update the key-value pairs in config file. For example, '
-        '`--o train.use_vdl=True train.save_interval=500 global.save_dir=./output`.',
+        help='Update the key-value pairs in config file.',
         nargs='+')
     return parser.parse_args()
 
@@ -51,8 +72,8 @@ def main(args):
     utils.show_env_info()
     utils.show_cfg_info(cfg)
 
-    utils.set_seed(cfg.global_params('seed'))
-    utils.set_device(cfg.global_params('device'))
+    utils.set_seed(cfg.global_config('seed'))
+    utils.set_device(cfg.global_config('device'))
     ''' TODO
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
@@ -67,31 +88,40 @@ def main(args):
     '''
 
     model = cfg.model
-    if cfg.global_params('device') == 'gpu' and paddle.distributed.ParallelEnv(
-    ).nranks > 1:
+    if cfg.global_config('device') == 'gpu' \
+        and paddle.distributed.ParallelEnv().nranks > 1:
         model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-    val_dataset = cfg.val_dataset if cfg.train_params("do_eval") else None
+    val_dataset = cfg.val_dataset if cfg.train_config("do_eval") else None
+    test_config = {
+        'aug_eval': cfg.test_config('is_aug'),
+        'scales': cfg.test_config('scales'),
+        'flip_horizontal': cfg.test_config('flip_horizontal'),
+        'flip_vertical': cfg.test_config('flip_vertical'),
+        'is_slide': cfg.test_config('is_slide'),
+        'crop_size': cfg.test_config('crop_size'),
+        'stride': cfg.test_config('stride'),
+    }
 
     train(
         model=model,
         train_dataset=cfg.train_dataset,
         val_dataset=val_dataset,
         optimizer=cfg.optimizer,
-        save_dir=cfg.global_params('save_dir'),
-        iters=cfg.train_params('iters'),
-        batch_size=cfg.train_params('batch_size'),
-        resume_model=cfg.train_params('resume_model'),
-        save_interval=cfg.train_params('save_interval'),
-        log_iters=cfg.train_params('log_iters'),
-        num_workers=cfg.global_params('num_workers'),
-        use_vdl=cfg.train_params('use_vdl'),
+        save_dir=cfg.global_config('save_dir'),
+        iters=cfg.train_config('iters'),
+        batch_size=cfg.train_config('batch_size'),
+        resume_model=cfg.train_config('resume_model'),
+        save_interval=cfg.train_config('save_interval'),
+        log_iters=cfg.train_config('log_iters'),
+        num_workers=cfg.global_config('num_workers'),
+        use_vdl=cfg.train_config('use_vdl'),
         losses=cfg.loss,
-        keep_checkpoint_max=cfg.train_params('keep_checkpoint_max'),
-        test_config=cfg.test_config,
-        precision=cfg.global_params('precision'),
-        amp_level=cfg.global_params('amp_level'),
-        profiler_options=cfg.train_params('profiler_options'),
-        to_static_training=cfg.train_params("to_static_training"))
+        keep_checkpoint_max=cfg.train_config('keep_checkpoint_max'),
+        test_config=test_config,
+        precision=cfg.global_config('precision'),
+        amp_level=cfg.global_config('amp_level'),
+        profiler_options=cfg.train_config('profiler_options'),
+        to_static_training=cfg.train_config("to_static_training"))
 
 
 if __name__ == '__main__':

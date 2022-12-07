@@ -93,16 +93,16 @@ class Config(object):
         return yaml.dump(self.dic, Dumper=utils.NoAliasDumper)
 
     #################### parameters
-    def global_params(self, key):
-        return self._get_params('global', key)
+    def global_config(self, key):
+        return self._get_config('global', key)
 
-    def train_params(self, key):
-        return self._get_params('train', key)
+    def train_config(self, key):
+        return self._get_config('train', key)
 
-    def test_params(self, key):
-        return self._get_params('test', key)
+    def test_config(self, key):
+        return self._get_config('test', key)
 
-    def _get_params(self, params_name, key):
+    def _get_config(self, params_name, key):
         assert params_name in self.dic, "{} is not in config file".format(
             params_name)
         assert key in self.dic[params_name], "{} is not in {}".format(
@@ -127,7 +127,7 @@ class Config(object):
 
         lr_type = params.pop('type')
         if lr_type == 'PolynomialDecay':
-            iters = self.train_params('iters')
+            iters = self.train_config('iters')
             iters = iters - warmup_iters if use_warmup else iters
             iters = max(iters, 1)
             params.setdefault('decay_steps', iters)
@@ -249,7 +249,7 @@ class Config(object):
         if not self.train_dataset_config:
             return None
         _train_dataset = create_object(self.train_dataset_config)
-        _repeats = self.train_params("repeats")
+        _repeats = self.train_config("repeats")
         if _repeats > 1:
             _train_dataset.file_list *= _repeats
             logger.info("The images of train dataset is repeated by {} times".
@@ -274,15 +274,6 @@ class Config(object):
         for i in _transforms:
             transforms.append(create_object(i))
         return transforms
-
-    #################### test and export
-    @property
-    def test_config(self) -> Dict:
-        return self.dic.get('test_config', {})
-
-    @property
-    def export_config(self) -> Dict:
-        return self.dic.get('export', {})
 
     #################### check and synchronize
     def _check_config(self):
@@ -458,8 +449,8 @@ def update_dic(dic: dict, opts: list=None):
     dic = dic.copy()
     for item in opts:
         assert ('=' in item) and (len(item.split('=')) == 2), "--opts params should be key=value," \
-            " such as `--opts train.batch_size=1 val.scales=0.75,1.0,1.25`, " \
-            "but got ({})".format(item)
+            " such as `--opts train.batch_size=1 test.scales=0.75,1.0,1.25`, " \
+            "but got ({})".format(opts)
 
         key, value = item.split('=')
         if isinstance(value, six.string_types):
@@ -471,7 +462,7 @@ def update_dic(dic: dict, opts: list=None):
 
         tmp_dic = dic
         for subkey in key_list[:-1]:
-            tmp_dic.setdefault(subkey, dict())
+            assert subkey in tmp_dic, "{} is not in config file.".format(key)
             tmp_dic = tmp_dic[subkey]
         tmp_dic[key_list[-1]] = value
 
