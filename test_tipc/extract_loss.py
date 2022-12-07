@@ -21,29 +21,34 @@ def parameter_parser():
     parser = argparse.ArgumentParser(description="Support Args:")
     parser.add_argument(
         "-v",
-        "--valid-expr",
+        "--valid_expr",
         type=str,
         default="*",
         help="when not match, the line will discard.")
     parser.add_argument(
         "-e",
-        "--extract-expr",
+        "--extract_expr",
         type=str,
-        default="^{%s}$,",
+        default=r"^{%s}$,",
         help="the extract expr for the loss: loss {%f}")
     parser.add_argument(
         "-r",
-        "--reduction-expr",
+        "--reduction_expr",
         type=str,
         default="print",
-        help="print | sum | mean")
+        help="choices=['print', 'sum', 'mean']")
     parser.add_argument(
         "-n",
         "--discard",
         type=int,
         default=0,
         help="while reduction, discard [0:n] and [-n:]")
-    parser.add_argument("-d", "--debug", type=bool, default=False, help="debug")
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action='store_true',
+        default=False,
+        help="debug options")
     return parser.parse_args()
 
 
@@ -63,7 +68,7 @@ def is_valid(line, valid_expr):
 
 def extract(line, extract_expr):
     """
-    return tuple, the output will be 
+    return the extracted information list, such as losses.
     """
     log("Extract_expression is : ", extract_expr)
     x = re.findall("\{%(.)\}", extract_expr)
@@ -84,7 +89,9 @@ def extract(line, extract_expr):
     log("Created Pattern is: ", pattern)
     x = re.findall(pattern, line)
     if len(x) == 0: return None
-    assert len(x) == 1, f"Multi Match for `{extract_expr}` in line: \n{line}"
+    assert len(
+        x
+    ) == 1, f"Multiply matches are found for `{extract_expr}` in line: \n{line}"
     log("Find in line: ", x[0].strip())
     return type_converter[t](x[0].strip())
 
@@ -97,12 +104,14 @@ def action(tuple_list, action):
     # do action for each item
     if action == "sum":
         print(sum(tuple_list))
-    if action == "mean":
+    elif action == "mean":
         if len(tuple_list) == 0: print("null")
         else: print(sum(tuple_list) / len(tuple_list))
-    if action == "print":
+    elif action == "print":
         for item in tuple_list:
             print(item)
+    else:
+        raise RuntimeError("Invalid reduction_expr : `{}`".format(action))
 
 
 def main():
@@ -112,7 +121,8 @@ def main():
         line = line.strip()
         if is_valid(line, args.valid_expr):
             ret = extract(line, args.extract_expr)
-            if ret: tuple_list.append(ret)
+            if ret:
+                tuple_list.append(ret)
     action(tuple_list, args.reduction_expr)
 
 

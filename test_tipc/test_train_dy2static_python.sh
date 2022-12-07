@@ -31,7 +31,6 @@ do
     echo "[Start dy2static]" "${config_name} : ${FILENAME}"
     echo ${config_lines} > $FILENAME
     sed -i 's/gpu_list.*$/gpu_list:0/g' $FILENAME
-    #sed -i '16s/$/ -o Global.print_batch_step=1/' ${FILENAME}
     IFS=$'\n'
 
     # start dygraph train
