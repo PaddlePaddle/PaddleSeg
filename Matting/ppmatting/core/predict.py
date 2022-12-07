@@ -160,6 +160,7 @@ def predict(model,
             postprocess_start = time.time()
             if isinstance(result, paddle.Tensor):
                 alpha = result
+                fg = None
             else:
                 alpha = result['alpha']
                 fg = result.get('fg', None)
@@ -167,9 +168,10 @@ def predict(model,
             alpha = reverse_transform(alpha, data['trans_info'])
             alpha = (alpha.numpy()).squeeze()
             alpha = (alpha * 255).astype('uint8')
-            fg = reverse_transform(fg, data['trans_info'])
-            fg = (fg.numpy()).squeeze().transpose((1, 2, 0))
-            fg = (fg * 255).astype('uint8')
+            if fg is not None:
+                fg = reverse_transform(fg, data['trans_info'])
+                fg = (fg.numpy()).squeeze().transpose((1, 2, 0))
+                fg = (fg * 255).astype('uint8')
 
             # get the saved name
             if image_dir is not None:

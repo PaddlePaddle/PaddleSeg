@@ -55,7 +55,7 @@ class VideoReader(paddle.io.Dataset):
         data = {'img': frame}
         if self.transforms is not None:
             data = self.transforms(data)
-        data['ori_img'] = frame / 255.
+        data['ori_img'] = frame.transpose((2, 0, 1)) / 255.
 
         return data
 

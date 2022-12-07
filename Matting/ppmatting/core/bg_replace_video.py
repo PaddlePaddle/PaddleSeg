@@ -72,14 +72,21 @@ def postprocess(fg, alpha, img, bg, trans_info, writer, fg_estimate):
         fg_estimate (bool): Whether to estimate foreground. It is invalid when fg is not None.
 
     """
+    alpha = reverse_transform(alpha, trans_info)
+    bg = F.interpolate(bg, size=alpha.shape[-2:], mode='bilinear')
     if fg is None:
         if fg_estimate:
+            img = img.transpose((0, 2, 3, 1)).squeeze().numpy()
+            alpha = alpha.squeeze().numpy()
             fg = estimate_foreground_ml(img, alpha)
+            bg = bg.transpose((0, 2, 3, 1)).squeeze().numpy()
         else:
             fg = img
-    bg = F.interpolate(bg, size=alpha.shape[-2:], mode='bilinear')
+    else:
+        fg = reverse_transform(fg, trans_info)
+    if len(alpha.shape) == 2:
+        alpha = alpha[:, :, None]
     new_img = alpha * fg + (1 - alpha) * bg
-    new_img = reverse_transform(new_img, trans_info)
     writer.write(new_img)
 
 
@@ -162,6 +169,7 @@ def bg_replace_video(model,
             result = model(data)  # result maybe a Tensor or a dict
             if isinstance(result, paddle.Tensor):
                 alpha = result
+                fg = None
             else:
                 alpha = result['alpha']
                 fg = result.get('fg', None)
@@ -178,13 +186,13 @@ def bg_replace_video(model,
                         shape=(loader.dataset.height, loader.dataset.width))
                     bg = next(bg_reader)
                 finally:
-                    bg = bg['img']
+                    bg = bg['ori_img']
             else:
                 bg = bg_reader
             postprocess(
                 fg,
                 alpha,
-                data['img'],
+                data['ori_img'],
                 bg=bg,
                 trans_info=data['trans_info'],
                 writer=writer,

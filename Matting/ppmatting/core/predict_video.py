@@ -80,12 +80,18 @@ def postprocess(fg, alpha, img, trans_info, writers, fg_estimate):
     alpha = reverse_transform(alpha, trans_info)
     if fg is None:
         if fg_estimate:
+            img = img.transpose((0, 2, 3, 1)).squeeze().numpy()
+            alpha = alpha.squeeze().numpy()
             fg = estimate_foreground_ml(img, alpha)
         else:
             fg = img
     else:
-        g = reverse_transform(fg, trans_info)
-    fg = alpha * fg
+        fg = reverse_transform(fg, trans_info)
+
+    if len(alpha.shape) == 2:
+        fg = alpha[:, :, None] * fg
+    else:
+        fg = alpha * fg
     writers['alpha'].write(alpha)
     writers['fg'].write(fg)
 
@@ -128,6 +134,7 @@ def predict_video(model,
             result = model(data)  # result maybe a Tensor or a dict
             if isinstance(result, paddle.Tensor):
                 alpha = result
+                fg = None
             else:
                 alpha = result['alpha']
                 fg = result.get('fg', None)
