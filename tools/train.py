@@ -138,7 +138,7 @@ def parse_args():
         dest='device',
         help='Device place to be set, which can be gpu, xpu, npu, mlu or cpu.',
         default='gpu',
-        choices=['cpu', 'gpu', 'xpu', 'npu'],
+        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
         type=str)
     parser.add_argument(
         '--repeats',
@@ -146,11 +146,6 @@ def parse_args():
         default=1,
         help="Repeat the samples in the dataset for `repeats` times in each epoch."
     )
-    parser.add_argument(
-        "--to_static",
-        action='store_true',
-        default=False,
-        help="Enable dy2st to train.")
 
     return parser.parse_args()
 
@@ -198,7 +193,6 @@ def main(args):
         iters=args.iters,
         batch_size=args.batch_size,
         opts=args.opts)
-    cfg.check_sync_info()
 
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
@@ -256,8 +250,7 @@ def main(args):
         precision=args.precision,
         amp_level=args.amp_level,
         profiler_options=args.profiler_options,
-        to_static_training=args.to_static
-        if args.to_static else cfg.to_static_training)
+        to_static_training=cfg.to_static_training)
 
 
 if __name__ == '__main__':
