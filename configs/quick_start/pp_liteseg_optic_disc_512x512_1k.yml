@@ -1,5 +1,33 @@
-batch_size: 4
-iters: 1000
+global:
+  device: gpu         # ['cpu', 'gpu', 'xpu', 'npu', 'mlu']
+  save_dir: ./output
+  seed: null
+  num_workers: 0
+  precision: fp32     # [fp32, fp16]
+  amp_level: O1       # [O1, O2]
+  data_format: NCHW   # [NCHW, NHWC]
+
+train:
+  batch_size: 2
+  iters: 1000
+  save_interval: 1000
+  keep_checkpoint_max: 5
+  resume_model: null
+  do_eval: false
+  use_vdl: false
+  log_iters: 10
+  repeats: 1
+  profiler_options: null
+  to_static_training: false
+
+test:
+  is_aug: false
+  scales: [1.0]
+  flip_horizontal: false
+  flip_vertical: false
+  is_slide: false
+  crop_size: [512, 512]
+  stride: [512, 512]
 
 train_dataset:
   type: Dataset
