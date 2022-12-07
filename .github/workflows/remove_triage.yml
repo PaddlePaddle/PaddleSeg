@@ -1,0 +1,20 @@
+name: Remove triage label
+on:
+  issues:
+    types:
+      - assigned
+jobs:
+  remove_label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: ["triage"]
+            })
