@@ -14,16 +14,16 @@
 
 import codecs
 import os
-from typing import Any, Dict, Generic
 import warnings
+import six
 from ast import literal_eval
+from typing import Any, Dict, Generic
 
 import paddle
 import yaml
-import six
 
 from paddleseg.cvlibs import manager
-from paddleseg.utils import logger
+from paddleseg.utils import logger, utils
 
 
 class Config(object):
@@ -31,16 +31,16 @@ class Config(object):
     Training configuration parsing. The only yaml/yml file is supported.
 
     The following hyper-parameters are available in the config file:
-        batch_size: The number of samples per gpu.
-        iters: The total training steps.
+        global: The global params in yml file, such as device, seed, etc.
+        train: The params for training models in yml file, such as batch_size, iters, etc.
+        test: The params for test models in yml file, such as scales, flip_horizontal, etc.
         train_dataset: A training data config including type/data_root/transforms/mode.
             For data type, please refer to paddleseg.datasets.
             For specific transforms, please refer to paddleseg.transforms.transforms.
         val_dataset: A validation data config including type/data_root/transforms/mode.
         optimizer: A optimizer config, but currently PaddleSeg only supports sgd with momentum in config file.
             In addition, weight_decay could be set as a regularization.
-        learning_rate: A learning rate config. If decay is configured, learning _rate value is the starting learning rate,
-             where only poly decay is supported using the config file. In addition, decay power and end_lr are tuned experimentally.
+        lr_scheduler: A learning rate scheduler. 
         loss: A loss config. Multi-loss config is available. The loss type order is consistent with the seg model outputs,
             where the coef term indicates the weight of corresponding loss. Note that the number of coef must be the same as the number of
             model outputs, and there could be only one loss type if using the same loss type among the outputs, otherwise the number of
@@ -51,6 +51,7 @@ class Config(object):
 
     Args:
         path (str) : The path of config file, supports yaml format only.
+        opts (list, optional) : Use -o or --opts to update the key-value pairs in config file. Default: None 
 
     Examples:
 
@@ -68,52 +69,45 @@ class Config(object):
         ...
     '''
 
-    def __init__(self,
-                 path: str,
-                 learning_rate: float=None,
-                 batch_size: int=None,
-                 iters: int=None,
-                 opts: list=None):
-        if not os.path.exists(path):
-            raise FileNotFoundError('Config path ({}) does not exist'.format(
-                path))
-
-        if not (path.endswith('yml') or path.endswith('yaml')):
-            raise RuntimeError('Config file should be yaml format!')
+    def __init__(self, path: str, opts: list=None):
+        assert os.path.exists(path), \
+            'Config path ({}) does not exist'.format(path)
+        assert path.endswith('yml') or path.endswith('yaml'), \
+            'Config file ({}) should be yaml format'.format(path)
 
         self.dic = parse_from_yaml(path)
-        self.dic = update_dic(
-            self.dic,
-            learning_rate=learning_rate,
-            batch_size=batch_size,
-            iters=iters,
-            opts=opts)
+        self.dic = update_dic(self.dic, opts=opts)
+        # TODO if it is old config, remind users to update config file
 
-        self.check_sync_config()
+        self._check_config()
+        self._check_sync_num_classes()
+        self._check_sync_img_channels()
+        self._check_sync_ignore_index('loss')
+        self._check_sync_ignore_index('distill_loss')
 
         self._model = None
         self._losses = None
 
     def __str__(self) -> str:
         # Use NoAliasDumper to avoid yml anchor 
-        return yaml.dump(self.dic, Dumper=NoAliasDumper)
+        return yaml.dump(self.dic, Dumper=utils.NoAliasDumper)
 
-    #################### hyper parameters
-    @property
-    def batch_size(self) -> int:
-        return self.dic.get('batch_size', 1)
+    #################### parameters
+    def global_params(self, key):
+        return self._get_params('global', key)
 
-    @property
-    def iters(self) -> int:
-        iters = self.dic.get('iters', None)
-        if iters is None:
-            raise RuntimeError('No iters specified in the configuration file.')
-        return iters
+    def train_params(self, key):
+        return self._get_params('train', key)
 
-    @property
-    def to_static_training(self) -> bool:
-        '''Whether to use @to_static for training'''
-        return self.dic.get('to_static_training', False)
+    def test_params(self, key):
+        return self._get_params('test', key)
+
+    def _get_params(self, params_name, key):
+        assert params_name in self.dic, "{} is not in config file".format(
+            params_name)
+        assert key in self.dic[params_name], "{} is not in {}".format(
+            key, params_name)
+        return self.dic[params_name].get(key)
 
     #################### lr_scheduler and optimizer
     @property
@@ -121,6 +115,7 @@ class Config(object):
         assert 'lr_scheduler' in self.dic, 'No `lr_scheduler` specified in the configuration file.'
         params = self.dic.get('lr_scheduler')
 
+        # TODO refactor
         use_warmup = False
         if 'warmup_iters' in params:
             use_warmup = True
@@ -132,7 +127,8 @@ class Config(object):
 
         lr_type = params.pop('type')
         if lr_type == 'PolynomialDecay':
-            iters = self.iters - warmup_iters if use_warmup else self.iters
+            iters = self.train_params('iters')
+            iters = iters - warmup_iters if use_warmup else iters
             iters = max(iters, 1)
             params.setdefault('decay_steps', iters)
             params.setdefault('end_lr', 0)
@@ -162,6 +158,7 @@ class Config(object):
         args = self.optimizer_config
         optimizer_type = args.pop('type')
 
+        # TODO refactor optimizer to support customized setting 
         params = self.model.parameters()
         if 'backbone_lr_mult' in args:
             if not hasattr(self.model, 'backbone'):
@@ -249,10 +246,15 @@ class Config(object):
 
     @property
     def train_dataset(self) -> paddle.io.Dataset:
-        _train_dataset = self.train_dataset_config
-        if not _train_dataset:
+        if not self.train_dataset_config:
             return None
-        return create_object(_train_dataset)
+        _train_dataset = create_object(self.train_dataset_config)
+        _repeats = self.train_params("repeats")
+        if _repeats > 1:
+            _train_dataset.file_list *= _repeats
+            logger.info("The images of train dataset is repeated by {} times".
+                        format(_repeats))
+        return _train_dataset
 
     @property
     def val_dataset(self) -> paddle.io.Dataset:
@@ -283,23 +285,38 @@ class Config(object):
         return self.dic.get('export', {})
 
     #################### check and synchronize
-    def check_sync_config(self) -> None:
-        """
-        Check and sync the config information, such as num_classes, img_channels
-        and ignore_index between the config of model, train_dataset and val_dataset.
-        """
-        if self.dic.get('model', None) is None:
-            raise RuntimeError('No model specified in the configuration file.')
-        if (not self.train_dataset_config) and (not self.val_dataset_config):
-            raise ValueError('One of `train_dataset` or `val_dataset '
-                             'should be given, but there are none.')
+    def _check_config(self):
+        assert self.dic.get('model', None) is not None, \
+            'No model specified in the configuration file.'
+        assert self.train_dataset_config or self.val_dataset_config, \
+            'One of `train_dataset` or `val_dataset should be given, but there are none.'
 
-        self._check_sync_num_classes()
-        self._check_sync_img_channels()
-        self._check_sync_ignore_index('loss')
-        self._check_sync_ignore_index('distill_loss')
+        def _check_loss_config(dic, loss_name):
+            loss_cfg = dic.get(loss_name, None)
+            if loss_cfg is None:
+                return
+
+            assert 'types' in loss_cfg and 'coef' in loss_cfg, \
+                    'Loss config should contain keys of "types" and "coef"'
+
+            len_types = len(loss_cfg['types'])
+            len_coef = len(loss_cfg['coef'])
+            if len_types != len_coef:
+                if len_types == 1:
+                    loss_cfg['types'] = loss_cfg['types'] * len_coef
+                else:
+                    raise ValueError(
+                        "The length of types should equal to coef or equal "
+                        "to 1 in loss config, but they are {} and {}.".format(
+                            len_types, len_coef))
+
+        _check_loss_config(self.dic, 'loss')
+        _check_loss_config(self.dic, 'distill_loss')
 
     def _check_sync_num_classes(self):
+        """
+        Check and sync num_classes between the model, train_dataset and val_dataset.
+        """
         num_classes_set = set()
 
         if self.dic['model'].get('num_classes', None) is not None:
@@ -334,6 +351,9 @@ class Config(object):
             self.dic['val_dataset']['num_classes'] = num_classes
 
     def _check_sync_img_channels(self):
+        """
+        Check and sync img_channels between the model, train_dataset and val_dataset.
+        """
         img_channels_set = set()
         model_cfg = self.dic['model']
 
@@ -371,24 +391,12 @@ class Config(object):
             self.dic['val_dataset']['img_channels'] = img_channels
 
     def _check_sync_ignore_index(self, loss_name):
+        """
+        Check and sync ignore_index between the model, train_dataset and val_dataset.
+        """
         loss_cfg = self.dic.get(loss_name, None)
         if loss_cfg is None:
             return
-
-        if ('types' not in loss_cfg) and ('coef' not in loss_cfg):
-            raise ValueError(
-                'Loss config should contain keys of "types" and "coef"')
-
-        len_types = len(loss_cfg['types'])
-        len_coef = len(loss_cfg['coef'])
-        if len_types != len_coef:
-            if len_types == 1:
-                loss_cfg['types'] = loss_cfg['types'] * len_coef
-            else:
-                raise ValueError(
-                    "The length of types should equal to coef or equal "
-                    "to 1 in loss config, but they are {} and {}.".format(
-                        len_types, len_coef))
 
         def _check_ignore_index(loss_cfg, dataset_ignore_index):
             if 'ignore_index' in loss_cfg:
@@ -407,17 +415,12 @@ class Config(object):
                 loss_cfg_i['ignore_index'] = dataset_ignore_index
 
 
-class NoAliasDumper(yaml.SafeDumper):
-    def ignore_aliases(self, data):
-        return True
-
-
 def merge_config_dict(dic, base_dic):
     '''Merge dic to base_dic and return base_dic.'''
     base_dic = base_dic.copy()
     dic = dic.copy()
 
-    if dic.get('_inherited_', True) == False:
+    if not dic.get('_inherited_', True):
         dic.pop('_inherited_')
         return dic
 
@@ -436,45 +439,41 @@ def parse_from_yaml(path: str):
         dic = yaml.load(file, Loader=yaml.FullLoader)
 
     if '_base_' in dic:
-        base_dir = os.path.dirname(path)
-        base_path = os.path.join(base_dir, dic.pop('_base_'))
-        base_dic = parse_from_yaml(base_path)
-        dic = merge_config_dict(dic, base_dic)
+        base_files = dic.pop('_base_')
+        if isinstance(base_files, str):
+            base_files = [base_files]
+        for bf in base_files:
+            base_path = os.path.join(os.path.dirname(path), bf)
+            base_dic = parse_from_yaml(base_path)
+            dic = merge_config_dict(dic, base_dic)
 
     return dic
 
 
-def update_dic(dic: dict,
-               learning_rate: float=None,
-               batch_size: int=None,
-               iters: int=None,
-               opts: list=None):
+def update_dic(dic: dict, opts: list=None):
     '''Update config'''
+    if opts is None:
+        return dic
+
     dic = dic.copy()
+    for item in opts:
+        assert ('=' in item) and (len(item.split('=')) == 2), "--opts params should be key=value," \
+            " such as `--opts train.batch_size=1 val.scales=0.75,1.0,1.25`, " \
+            "but got ({})".format(item)
 
-    if learning_rate:
-        dic['lr_scheduler']['learning_rate'] = learning_rate
-    if batch_size:
-        dic['batch_size'] = batch_size
-    if iters:
-        dic['iters'] = iters
-
-    # fix parameters by --opts of command
-    if opts is not None:
-        if len(opts) % 2 != 0 or len(opts) == 0:
-            raise ValueError(
-                "Command params `--opts` error."
-                "It should be even length like: k1 v1 k2 v2 ... Please check again: {}".
-                format(opts))
-        for key, value in zip(opts[0::2], opts[1::2]):
-            if isinstance(value, six.string_types):
+        key, value = item.split('=')
+        if isinstance(value, six.string_types):
+            try:
                 value = literal_eval(value)
-            key_list = key.split('.')
-            tmp_dic = dic
-            for subkey in key_list[:-1]:
-                tmp_dic.setdefault(subkey, dict())
-                tmp_dic = tmp_dic[subkey]
-            tmp_dic[key_list[-1]] = value
+            except:
+                pass
+        key_list = key.split('.')
+
+        tmp_dic = dic
+        for subkey in key_list[:-1]:
+            tmp_dic.setdefault(subkey, dict())
+            tmp_dic = tmp_dic[subkey]
+        tmp_dic[key_list[-1]] = value
 
     return dic
 

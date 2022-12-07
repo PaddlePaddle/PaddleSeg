@@ -22,138 +22,41 @@ from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, utils
 
 
-def get_test_config(cfg, args):
-
-    test_config = cfg.test_config
-    if args.aug_eval:
-        test_config['aug_eval'] = args.aug_eval
-        test_config['scales'] = args.scales
-        test_config['flip_horizontal'] = args.flip_horizontal
-        test_config['flip_vertical'] = args.flip_vertical
-
-    if args.is_slide:
-        test_config['is_slide'] = args.is_slide
-        test_config['crop_size'] = args.crop_size
-        test_config['stride'] = args.stride
-
-    return test_config
-
-
 def parse_args():
+    '''
+    Some input params of previous val.py are moved to config file.
+    Please use `-o` or `--opts` to set these params, such as
+    aug_eval, scales and so on.
+    '''
     parser = argparse.ArgumentParser(description='Model evaluation')
-
-    # params of evaluate
-    parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
-    parser.add_argument(
-        '--opts',
-        help='Update the key-value pairs of all options.',
-        default=None,
-        nargs='+')
+    parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
-        dest='model_path',
-        help='The path of model for evaluation.',
-        type=str,
-        default=None)
-    parser.add_argument(
-        '--num_workers',
-        dest='num_workers',
-        help='Number of workers for data loader.',
-        type=int,
-        default=0)
-
-    # augment for evaluation
-    parser.add_argument(
-        '--aug_eval',
-        dest='aug_eval',
-        help='Whether to use mulit-scales and flip augment for evaluation.',
-        action='store_true')
-    parser.add_argument(
-        '--scales',
-        dest='scales',
-        nargs='+',
-        help='Scales for augment.',
-        type=float,
-        default=1.0)
-    parser.add_argument(
-        '--flip_horizontal',
-        dest='flip_horizontal',
-        help='Whether to use flip horizontally augment.',
-        action='store_true')
-    parser.add_argument(
-        '--flip_vertical',
-        dest='flip_vertical',
-        help='Whether to use flip vertically augment.',
-        action='store_true')
-
-    # sliding window evaluation
-    parser.add_argument(
-        '--is_slide',
-        dest='is_slide',
-        help='Whether to evaluate by sliding window.',
-        action='store_true')
-    parser.add_argument(
-        '--crop_size',
-        dest='crop_size',
-        nargs=2,
-        help='The crop size of sliding window, the first is width and the second is height.',
-        type=int,
-        default=None)
-    parser.add_argument(
-        '--stride',
-        dest='stride',
-        nargs=2,
-        help='The stride of sliding window, the first is width and the second is height.',
-        type=int,
-        default=None)
-
-    parser.add_argument(
-        '--data_format',
-        dest='data_format',
-        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
-        type=str,
-        default='NCHW')
-
-    parser.add_argument(
-        '--auc_roc',
-        dest='add auc_roc metric',
-        help='Whether to use auc_roc metric.',
-        type=bool,
-        default=False)
-
-    parser.add_argument(
-        '--device',
-        dest='device',
-        help='Device place to be set, which can be gpu, xpu, npu, mlu or cpu.',
-        default='gpu',
-        choices=['cpu', 'gpu', 'xpu', 'npu'],
+        help='The path of model weight for evaluation',
         type=str)
-
+    parser.add_argument(
+        '-o',
+        '--opts',
+        help='Update the key-value pairs in config file. For example, '
+        '`--o global.num_workers=3 test.aug_eval=True test.scales=0.75,1.0,1.25 '
+        'test.flip_horizontal=True`',
+        nargs='+')
     return parser.parse_args()
+
+    #TODO parse unknown params
 
 
 def main(args):
-    env_info = get_sys_env()
+    assert args.config is not None, \
+        'No configuration file specified, please set --config.'
+    cfg = Config(args.config, opts=args.opts)
 
-    if args.device == 'gpu' and env_info[
-            'Paddle compiled with cuda'] and env_info['GPUs used']:
-        place = 'gpu'
-    elif args.device == 'xpu' and paddle.is_compiled_with_xpu():
-        place = 'xpu'
-    elif args.device == 'npu' and paddle.is_compiled_with_npu():
-        place = 'npu'
-    elif args.device == 'mlu' and paddle.is_compiled_with_mlu():
-        place = 'mlu'
-    else:
-        place = 'cpu'
+    utils.show_env_info()
+    utils.show_cfg_info(cfg)
 
-    paddle.set_device(place)
-    if not args.cfg:
-        raise RuntimeError('No configuration file specified.')
-
-    cfg = Config(args.cfg, opts=args.opts)
-
+    utils.set_seed(cfg.global_params('seed'))
+    utils.set_device(cfg.global_params('device'))
+    '''
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
         if cfg.dic['model']['type'] != 'DeepLabV3P':
@@ -164,30 +67,26 @@ def main(args):
         loss_len = len(cfg.dic['loss']['types'])
         for i in range(loss_len):
             cfg.dic['loss']['types'][i]['data_format'] = args.data_format
-
-    val_dataset = cfg.val_dataset
-    if val_dataset is None:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
-    elif len(val_dataset) == 0:
-        raise ValueError(
-            'The length of val_dataset is 0. Please check if your dataset is valid'
-        )
-
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
+    '''
 
     model = cfg.model
     if args.model_path:
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
-    test_config = get_test_config(cfg, args)
-
-    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
+    evaluate(
+        model=model,
+        eval_dataset=cfg.val_dataset,
+        aug_eval=cfg.test_params('aug_eval'),
+        scales=cfg.test_params('scales'),
+        flip_horizontal=cfg.test_params('flip_horizontal'),
+        flip_vertical=cfg.test_params('flip_vertical'),
+        is_slide=cfg.test_params('is_slide'),
+        stride=cfg.test_params('stride'),
+        crop_size=cfg.test_params('crop_size'),
+        precision=cfg.global_params('precision'),
+        amp_level=cfg.global_params('amp_level'),
+        num_workers=cfg.global_params('num_workers'))
 
 
 if __name__ == '__main__':

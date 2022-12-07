@@ -20,10 +20,59 @@ import numpy as np
 import random
 from urllib.parse import urlparse, unquote
 
+import yaml
 import paddle
 
-from paddleseg.utils import logger, seg_env
+from paddleseg.utils import logger, seg_env, get_sys_env
 from paddleseg.utils.download import download_file_and_uncompress
+
+
+def set_seed(seed=None):
+    if seed is not None:
+        paddle.seed(seed)
+        np.random.seed(seed)
+        random.seed(seed)
+
+
+def show_env_info():
+    env_info = get_sys_env()
+    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
+    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
+                     ['-' * 48])
+    logger.info(info)
+
+
+def show_cfg_info(config):
+    msg = '\n---------------Config Information---------------\n'
+    ordered_module = ('global', 'train', 'test', 'train_dataset', 'val_dataset',
+                      'optimizer', 'lr_scheduler', 'loss', 'model')
+    all_module = set(config.dic.keys())
+    for module in ordered_module:
+        if module in config.dic:
+            module_dic = {module: config.dic[module]}
+            msg += str(yaml.dump(module_dic, Dumper=NoAliasDumper))
+            all_module.remove(module)
+    for module in all_module:
+        module_dic = {module: config.dic[module]}
+        msg += str(yaml.dump(module_dic, Dumper=NoAliasDumper))
+    msg += '------------------------------------------------\n'
+    logger.info(msg)
+
+
+def set_device(device):
+    env_info = get_sys_env()
+    if device == 'gpu' and env_info['Paddle compiled with cuda'] \
+        and env_info['GPUs used']:
+        place = 'gpu'
+    elif device == 'xpu' and paddle.is_compiled_with_xpu():
+        place = 'xpu'
+    elif device == 'npu' and paddle.is_compiled_with_npu():
+        place = 'npu'
+    elif device == 'mlu' and paddle.is_compiled_with_mlu():
+        place = 'mlu'
+    else:
+        place = 'cpu'
+    paddle.set_device(place)
 
 
 @contextlib.contextmanager
@@ -177,3 +226,9 @@ def get_image_list(image_path):
             'There are not image file in `--image_path`={}'.format(image_path))
 
     return image_list, image_dir
+
+
+# Use NoAliasDumper to avoid yml anchor 
+class NoAliasDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data):
+        return True
