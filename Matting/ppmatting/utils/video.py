@@ -118,23 +118,3 @@ class VideoWriter:
 
     def release(self):
         self.cap_out.release()
-
-
-if __name__ == "__main__":
-    import time, tqdm
-    transforms = [
-        T.Resize(target_size=(270, 480)), T.Normalize(
-            mean=[0, 0, 0], std=[1, 1, 1])
-    ]
-    vr = VideoReader(
-        path='/ssd1/home/chenguowei01/github/PaddleSeg/Matting/test/test_real_video/img_9652.mov',
-        transforms=transforms)
-    print(vr.fps, vr.frames, vr.width, vr.height)
-    vw = VideoWriter(
-        'output/output.avi', vr.fps, frame_size=(270, 480), is_color=True)
-    for i, data in tqdm.tqdm(enumerate(vr)):
-        # print(data.keys())
-        # print(data['img'].max(), data['img'].min())
-        frames = paddle.to_tensor(data['img'][np.newaxis, :, :, :])
-        vw.write(frames)
-    # vw.cap_out.release()

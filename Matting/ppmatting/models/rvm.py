@@ -1,4 +1,4 @@
-# This program is about RVM implementation based on Paddle according to 
+# This program is about RVM implementation based on PaddlePaddle according to 
 # https://github.com/PeterL1n/RobustVideoMatting.
 # Copyright (C) 2022 PaddlePaddle Authors.
 
@@ -568,34 +568,3 @@ class DeepGuidedFilterRefiner(nn.Layer):
         else:
             return self.forward_single_frame(fine_src, base_src, base_fgr,
                                              base_pha, base_hid)
-
-
-if __name__ == '__main__':
-    import ppmatting
-    backbone = ppmatting.models.MobileNetV3_large_x1_0_os16(
-        pretrained='mobilenetv3_large_x1_0_ssld/model.pdparams',
-        out_index=[0, 2, 5],
-        return_last_conv=True)
-    model = RVM(backbone=backbone, refiner='deep_guider_filter')
-    print(model)
-
-    img = paddle.rand(shape=(1, 3, 512, 512))
-    result = model(img, downsample_ratio=0.25)
-
-    print('result')
-    for i in result:
-        print(i.shape)
-
-    #fine_src, base_src, base_fgr, base_pha
-
-    # fine_src = paddle.rand(shape=(1, 3, 512, 512))
-    # base_src = paddle.rand(shape=(1, 3, 128, 128))
-    # base_fgr = paddle.rand(shape=(1, 3, 128, 128))
-    # base_pha = paddle.rand(shape=(1, 1, 128, 128))
-    # base_hid = paddle.rand(shape=(1, 16, 128, 128))
-
-    # model = DeepGuidedFilterRefiner()
-    # print(model)
-    # results = model(fine_src, base_src, base_fgr, base_pha, base_hid)
-    # for result in results:
-    #     print(result.shape)
