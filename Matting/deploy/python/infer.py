@@ -537,6 +537,7 @@ class Predictor:
 
     def _save_frame(self, alpha, fg, img, writer_alpha, writer_fg):
         if fg is None:
+            img = img.transpose((1, 2, 0))
             if self.args.fg_estimate:
                 fg = estimate_foreground_ml(img, alpha)
             else:
