@@ -587,20 +587,21 @@ class PredictorRVM(Predictor):
                         trans_info.append(data['trans_info'])
                     img_inputs = np.array(img_inputs)
                     n, _, h, w = img_inputs.shape
-                    r1 = np.zeros(
-                        (n, 16, int(np.ceil(h / 2)), int(np.ceil(w / 2))))
-                    r2 = np.zeros(
-                        (n, 20, int(np.ceil(h / 4)), int(np.ceil(w / 4))))
-                    r3 = np.zeros(
-                        (n, 40, int(np.ceil(h / 8)), int(np.ceil(w / 8))))
-                    r4 = np.zeros(
-                        (n, 64, int(np.ceil(h / 16)), int(np.ceil(w / 16))))
+                    downsample_ratio = min(512 / max(h, w), 1)
+                    downsample_ratio = np.array(
+                        [downsample_ratio], dtype='float32')
 
                     input_handle['img'].copy_from_cpu(img_inputs)
-                    input_handle['r1'].copy_from_cpu(r1.astype('float32'))
-                    input_handle['r2'].copy_from_cpu(r2.astype('float32'))
-                    input_handle['r3'].copy_from_cpu(r3.astype('float32'))
-                    input_handle['r4'].copy_from_cpu(r4.astype('float32'))
+                    input_handle['downsample_ratio'].copy_from_cpu(
+                        downsample_ratio.astype('float32'))
+                    r_channels = [16, 20, 40, 64]
+                    for k in range(4):
+                        j = k + 1
+                        hj = int(np.ceil(int(h * downsample_ratio[0]) / 2**j))
+                        wj = int(np.ceil(int(w * downsample_ratio[0]) / 2**j))
+                        rj = np.zeros(
+                            (n, r_channels[k], hj, wj), dtype='float32')
+                        input_handle['r' + str(j)].copy_from_cpu(rj)
 
                     self.predictor.run()
                     alphas = output_handle['alpha'].copy_to_cpu()
@@ -627,16 +628,19 @@ class PredictorRVM(Predictor):
                 trans_info.append(data['trans_info'])
             img_inputs = np.array(img_inputs)
             n, _, h, w = img_inputs.shape
-            r1 = np.zeros((n, 16, int(np.ceil(h / 2)), int(np.ceil(w / 2))))
-            r2 = np.zeros((n, 20, int(np.ceil(h / 4)), int(np.ceil(w / 4))))
-            r3 = np.zeros((n, 40, int(np.ceil(h / 8)), int(np.ceil(w / 8))))
-            r4 = np.zeros((n, 64, int(np.ceil(h / 16)), int(np.ceil(w / 16))))
+            downsample_ratio = min(512 / max(h, w), 1)
+            downsample_ratio = np.array([downsample_ratio], dtype='float32')
 
             input_handle['img'].copy_from_cpu(img_inputs)
-            input_handle['r1'].copy_from_cpu(r1.astype('float32'))
-            input_handle['r2'].copy_from_cpu(r2.astype('float32'))
-            input_handle['r3'].copy_from_cpu(r3.astype('float32'))
-            input_handle['r4'].copy_from_cpu(r4.astype('float32'))
+            input_handle['downsample_ratio'].copy_from_cpu(
+                downsample_ratio.astype('float32'))
+            r_channels = [16, 20, 40, 64]
+            for k in range(4):
+                j = k + 1
+                hj = int(np.ceil(int(h * downsample_ratio[0]) / 2**j))
+                wj = int(np.ceil(int(w * downsample_ratio[0]) / 2**j))
+                rj = np.zeros((n, r_channels[k], hj, wj), dtype='float32')
+                input_handle['r' + str(j)].copy_from_cpu(rj)
 
             if args.benchmark:
                 self.autolog.times.stamp()
@@ -694,23 +698,20 @@ class PredictorRVM(Predictor):
             frame_size=(reader.width, reader.height),
             is_color=True)
 
-        r1 = r2 = r3 = r4 = None
-        for data in tqdm.tqdm(reader):
+        r_channels = [16, 20, 40, 64]
+        for i, data in tqdm.tqdm(enumerate(reader)):
             trans_info = data['trans_info']
             _, h, w = data['img'].shape
-            if r1 is None:
-                r1 = np.zeros((1, 16, int(np.ceil(h / 2)),
-                               int(np.ceil(w / 2)))).astype('float32')
-                r2 = np.zeros((1, 20, int(np.ceil(h / 4)),
-                               int(np.ceil(w / 4)))).astype('float32')
-                r3 = np.zeros((1, 40, int(np.ceil(h / 8)),
-                               int(np.ceil(w / 8)))).astype('float32')
-                r4 = np.zeros((1, 64, int(np.ceil(h / 16)),
-                               int(np.ceil(w / 16)))).astype('float32')
-                input_handle['r1'].copy_from_cpu(r1)
-                input_handle['r2'].copy_from_cpu(r2)
-                input_handle['r3'].copy_from_cpu(r3)
-                input_handle['r4'].copy_from_cpu(r4)
+            if i == 0:
+                downsample_ratio = min(512 / max(h, w), 1)
+                downsample_ratio = np.array([downsample_ratio], dtype='float32')
+                r_channels = [16, 20, 40, 64]
+                for k in range(4):
+                    j = k + 1
+                    hj = int(np.ceil(int(h * downsample_ratio[0]) / 2**j))
+                    wj = int(np.ceil(int(w * downsample_ratio[0]) / 2**j))
+                    rj = np.zeros((1, r_channels[k], hj, wj), dtype='float32')
+                    input_handle['r' + str(j)].copy_from_cpu(rj)
             else:
                 input_handle['r1'] = output_handle['r1']
                 input_handle['r2'] = output_handle['r2']
@@ -718,6 +719,8 @@ class PredictorRVM(Predictor):
                 input_handle['r4'] = output_handle['r4']
 
             input_handle['img'].copy_from_cpu(data['img'][np.newaxis, ...])
+            input_handle['downsample_ratio'].copy_from_cpu(
+                downsample_ratio.astype('float32'))
 
             self.predictor.run()
 

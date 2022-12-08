@@ -44,4 +44,7 @@ def get_input_spec(model_name, shape, trimap):
         input_spec.append(
             paddle.static.InputSpec(
                 shape=[None, 64, None, None], name='r4'))
+        input_spec.append(
+            paddle.static.InputSpec(
+                shape=[1], name='downsample_ratio'))
     return input_spec

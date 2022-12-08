@@ -131,7 +131,10 @@ class RVM(nn.Layer):
                  r4=None,
                  downsample_ratio=1.,
                  segmentation_pass=False):
-        if downsample_ratio != 1:
+        if isinstance(downsample_ratio, paddle.fluid.framework.Variable):
+            # for export
+            src_sm = self._interpolate(src, scale_factor=downsample_ratio)
+        elif downsample_ratio != 1:
             src_sm = self._interpolate(src, scale_factor=downsample_ratio)
         else:
             src_sm = src
