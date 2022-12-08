@@ -414,38 +414,6 @@ class PyramidPoolAgg(nn.Layer):
         return out
 
 
-class InjectionMultiSumSimple(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 activations=None,
-                 global_in_channels=None,
-                 lr_mult=1.0):
-        super(InjectionMultiSumSimple, self).__init__()
-
-        self.local_embedding = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
-        self.global_embedding = ConvBNAct(
-            global_in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
-        # self.global_act = ConvBNAct(
-        #     global_in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
-        self.act = HSigmoid()
-
-    def forward(self, x_low, x_global):
-        xl_hw = paddle.shape(x_low)[2:]
-        local_feat = self.local_embedding(x_low)
-
-        global_feat = self.global_embedding(x_global)
-        sig_act = F.interpolate(
-            self.act(global_feat), xl_hw, mode='bilinear', align_corners=False)
-
-        global_feat = F.interpolate(
-            global_feat, xl_hw, mode='bilinear', align_corners=False)
-
-        out = local_feat * sig_act + global_feat
-        return out
-
-
 class InjectionMultiSum(nn.Layer):
     def __init__(self,
                  in_channels,
@@ -477,107 +445,6 @@ class InjectionMultiSum(nn.Layer):
 
         out = local_feat * sig_act + global_feat
         return out
-
-
-class InjectionMultiSumReverse(nn.Layer):
-    def __init__(self,
-                 in_channels=(64, 128, 256, 384),
-                 out_channels=256,
-                 activations=nn.ReLU6,
-                 lr_mult=1.0):
-        super(InjectionMultiSumReverse, self).__init__()
-        self.embedding_list = nn.LayerList()
-        self.act_embedding_list = nn.LayerList()
-        self.act_list = nn.LayerList()
-        for i in range(len(in_channels)):
-            self.embedding_list.append(
-                ConvBNAct(
-                    in_channels[i],
-                    out_channels,
-                    kernel_size=1,
-                    lr_mult=lr_mult))
-            self.act_embedding_list.append(
-                ConvBNAct(
-                    in_channels[i],
-                    out_channels,
-                    kernel_size=1,
-                    lr_mult=lr_mult))
-            if i < len(in_channels) - 1:
-                self.act_list.append(HSigmoid())
-
-    def forward(self, inputs):  # x_x8, x_x16, x_x32, x_x64
-        out = []
-        high_feat = self.embedding_list[0](inputs[0])
-        for i in range(len(inputs) - 1):
-            add_low_feat = high_feat  # x8 *256
-            act = self.act_list[i](self.act_embedding_list[i](inputs[i]))
-            high_feat = self.embedding_list[i + 1](inputs[i + 1])
-            high_feat_up = F.interpolate(
-                high_feat,
-                size=add_low_feat.shape[2:],
-                mode="bilinear",
-                align_corners=True)
-
-            out.append(act * high_feat_up + add_low_feat)
-
-        return out
-
-
-class InjectionLayerFusionSimple(nn.Layer):
-    def __init__(self,
-                 in_channels=(384, 256, 128, 64),
-                 out_channels=256,
-                 activations=None,
-                 global_in_channels=None,
-                 lr_mult=1.0):
-        super(InjectionLayerFusionSimple, self).__init__()
-
-        self.embedding_list = nn.LayerList()
-        self.act_embedding_list = nn.LayerList()
-        for i in range(len(in_channels)):
-            self.embedding_list.append(
-                ConvBNAct(
-                    in_channels[i],
-                    out_channels,
-                    kernel_size=1,
-                    lr_mult=lr_mult))
-            if i < len(in_channels) - 1:
-                self.act_embedding_list.append(HSigmoid())
-        self.embedding_act = ConvBNAct(
-            out_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
-        self.embedding_act1 = ConvBNAct(
-            out_channels,
-            out_channels,
-            kernel_size=1,
-            lr_mult=lr_mult,
-            use_conv=False)
-        self.embedding_act2 = ConvBNAct(
-            out_channels,
-            out_channels,
-            kernel_size=1,
-            lr_mult=lr_mult,
-            use_conv=False)
-
-    def forward(self, inputs):  # x_x64, x_x32, x_x16, x_x8
-        high_feat_act = self.act_embedding_list[0](self.embedding_act(inputs[
-            0]))
-        low_feat = self.embedding_list[1](inputs[1])
-        high_feat = self.embedding_list[0](inputs[0])
-
-        res1 = high_feat_act * low_feat + high_feat
-
-        high_feat = res1
-        high_feat_act = self.embedding_act1(high_feat)
-        low_feat = self.embedding_list[2](inputs[2])
-
-        res2 = high_feat_act * low_feat + high_feat
-
-        high_feat = res2
-        high_feat_act = self.embedding_act2(high_feat)
-        low_feat = self.embedding_list[3](inputs[3])
-        res3 = high_feat_act * low_feat + high_feat
-
-        return [res1, res2, res3]
 
 
 class InjectionMultiSumallmultiallsum(nn.Layer):
@@ -736,13 +603,14 @@ class TopTransformer(nn.Layer):
                  c2t_stride=2,
                  drop_path_rate=0.,
                  act_layer=nn.ReLU6,
-                 injection_type="muli_sum",
+                 injection_type="multi_sum",
                  injection=True,
                  lr_mult=1.0,
                  in_channels=3,
-                 backbone='esnet',
+                 backbone='top_transformer',
                  pretrained=None):
         super().__init__()
+        print('The backbone is ', backbone)
         if backbone == 'top_transformer':
             self.feat_channels = [
                 c[2] for i, c in enumerate(cfgs) if i in encoder_out_indices
@@ -753,15 +621,30 @@ class TopTransformer(nn.Layer):
                 in_channels=in_channels,
                 lr_mult=lr_mult)
             pretrained = 'https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip'
-        else:
+        elif backbone == 'esnet':
             self.feat_channels = [24, 56, 120, 232]
             from .esnet import ESNet_x0_5
             self.tpm = ESNet_x0_5()
             pretrained = None  # TODO add pretrain model
+        elif backbone == 'mobilenetv3':
+            self.feat_channels = [24, 40, 112, 160]
+            from .mobilenetv3 import MobileNetV3_large_x1_0
+            self.tpm = MobileNetV3_large_x1_0()
+            pretrained = None
+        elif backbone == 'mobilenetv3_edit':
+            self.feat_channels = [32, 64, 128, 160]
+            from .mobilenetv3 import MobileNetV3_large_x1_0_edit
+            self.tpm = MobileNetV3_large_x1_0_edit()
+            pretrained = None
+        else:
+            raise NotImplementedError('Backbone {} is not supported.'.format(
+                backbone))
+
         self.injection_out_channels = injection_out_channels
         self.injection = injection
         self.embed_dim = sum(self.feat_channels)
         self.trans_out_indices = trans_out_indices
+        self.injection_type = injection_type
 
         self.ppa = PyramidPoolAgg(stride=c2t_stride)
 
@@ -781,29 +664,28 @@ class TopTransformer(nn.Layer):
             lr_mult=lr_mult)
 
         if self.injection:
-            # self.inj_module = InjectionMultiSumReverse(
-            #     in_channels=self.feat_channels[1:] + [self.embed_dim],
-            #     activations=act_layer,
-            #     lr_mult=lr_mult)
-            self.inj_module = InjectionMultiSumallmultiallsum(
-                in_channels=self.feat_channels[1:] + [self.embed_dim],
-                activations=act_layer,
-                lr_mult=lr_mult
-            )  # TODO whether injection module is also backbone? set to 0.1?
-            # self.SIM = nn.LayerList()
-            # # inj_module = SIM_BLOCK[injection_type]
-            # inj_module = InjectionMultiSumSimple
-            # for i in range(len(self.feat_channels)):
-            #     if i in trans_out_indices:
-            #         self.SIM.append(
-            #             inj_module(
-            #                 self.feat_channels[i],
-            #                 injection_out_channels[i],
-            #                 activations=act_layer,
-            #                 global_in_channels=self.embed_dim,
-            #                 lr_mult=lr_mult))
-            #     else:
-            #         self.SIM.append(Identity())
+            if injection_type == 'InjectionMultiSumallmultiallsum':
+                self.inj_module = InjectionMultiSumallmultiallsum(
+                    in_channels=self.feat_channels[1:] + [self.embed_dim],
+                    activations=act_layer,
+                    lr_mult=lr_mult
+                )  # TODO whether injection module is also backbone? set to 0.1?
+                print('Using AAM')
+            else:
+                self.SIM = nn.LayerList()
+                inj_module = SIM_BLOCK[injection_type]
+                # inj_module = InjectionMultiSumSimple
+                for i in range(len(self.feat_channels)):
+                    if i in trans_out_indices:
+                        self.SIM.append(
+                            inj_module(
+                                self.feat_channels[i],
+                                injection_out_channels[i],
+                                activations=act_layer,
+                                global_in_channels=self.embed_dim,
+                                lr_mult=lr_mult))
+                    else:
+                        self.SIM.append(Identity())
 
         self.pretrained = pretrained
         self.init_weight()
@@ -812,30 +694,33 @@ class TopTransformer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def forward(self,
-                x):  # [4, 3, 512, 512] [512,3,224,224] channels [32,64,128,160]
-        ouputs = self.tpm(
+    def forward(self, x):
+        # [4, 3, 512, 512] [512,3,224,224] channels [32,64,128,160]
+        outputs = self.tpm(
             x
-        )  # 4 个输出 [4, 32, 128, 128] [4, 64, 64, 64] [4, 128, 32, 32][4, 160, 16, 16]
+        )  # 4 个输出 [4, 32, 128, 128] [4, 64, 64, 64] [4, 128, 32, 32][4, 160, 16, 16]        
 
-        out = self.ppa(ouputs)
+        out = self.ppa(outputs)
+
         out = self.trans(out)
 
         if self.injection:
-            return self.inj_module([ouputs[i]
-                                    for i in self.trans_out_indices] + [out])
-            # xx = out.split(self.feat_channels, axis=1)
-            # results = []
-            # for i in range(len(self.feat_channels)):
-            #     if i in self.trans_out_indices:
-            #         local_tokens = ouputs[i]
-            #         global_semantics = out  #xx[i]
-            #         out_ = self.SIM[i](local_tokens, global_semantics)
-            #         results.append(out_)  # 64, 128, 256
-            # return results
+            if self.injection_type == 'InjectionMultiSumallmultiallsum':
+                return self.inj_module(
+                    [outputs[i] for i in self.trans_out_indices] + [out])
+            else:
+                # xx = out.split(self.feat_channels, axis=1)
+                results = []
+                for i in range(len(self.feat_channels)):
+                    if i in self.trans_out_indices:
+                        local_tokens = outputs[i]
+                        global_semantics = out  #xx[i]
+                        out_ = self.SIM[i](local_tokens, global_semantics)
+                        results.append(out_)  # 64, 128, 256
+                return results
         else:
-            ouputs.append(out)
-            return ouputs
+            outputs.append(out)
+            return outputs
 
 
 @manager.BACKBONES.add_component
@@ -853,6 +738,25 @@ def TopTransformer_Base(**kwargs):
         [5, 6, 160, 1],  #            
         [3, 6, 160, 1],  #            
     ]
+    prev_cfgs = [
+        [3, 1, 16, 1],  # 1/2        
+        [3, 6, 24, 2],  # 1/4 1    ->32  
+        [3, 6, 24, 1],  # 1/4 1    !  
+        [3, 6, 32, 2],  #            
+        [3, 6, 32, 1],  #            
+        [3, 6, 32, 1],  #          !  
+        [3, 6, 64, 2],  # 1/8 3      
+        [3, 6, 64, 1],  #            
+        [3, 6, 64, 1],  #           ! 
+        [3, 6, 64, 1],  #           ! 
+        [3, 6, 96, 1],  # 1/16 5     
+        [3, 6, 96, 1],  # 1/16 5     
+        [3, 6, 96, 1],  # 1/16 5    ! ->128 
+        [3, 6, 160, 2],  #            
+        [3, 6, 160, 1],  #            
+        [3, 6, 160, 1],  #            
+        [3, 6, 320, 1],  # 1/32 7 !    
+    ]
 
     model = TopTransformer(
         cfgs=cfgs,
@@ -867,7 +771,7 @@ def TopTransformer_Base(**kwargs):
         c2t_stride=2,
         drop_path_rate=0.,
         act_layer=nn.ReLU6,
-        injection_type="multi_sum",
+        injection_type="InjectionMultiSumallmultiallsum",
         injection=True,
         **kwargs)
     return model

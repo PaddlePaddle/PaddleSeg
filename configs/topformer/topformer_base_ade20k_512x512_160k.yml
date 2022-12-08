@@ -60,6 +60,7 @@ loss:
 
 model:
   type: TopFormer
+  num_classes: 150
   backbone:
     type: TopTransformer_Base
     lr_mult: 0.1
