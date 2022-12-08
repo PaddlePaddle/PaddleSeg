@@ -76,7 +76,7 @@ class Config(object):
             'Config file ({}) should be yaml format'.format(path)
 
         self.dic = parse_from_yaml(path)
-        self.dic = update_dic(self.dic, opts=opts)
+        self.dic = merge_dict_opts(self.dic, opts=opts)
         # TODO if it is old config, remind users to update config file
 
         self._check_config()
@@ -94,20 +94,20 @@ class Config(object):
 
     #################### parameters
     def global_config(self, key):
-        return self._get_config('global', key)
+        assert 'global' in self.dic, "{} is not in config file".format('global')
+        assert key in self.dic['global'], "{} is not in {}".format(key,
+                                                                   'global')
+        return self.dic['global'].get(key)
 
     def train_config(self, key):
-        return self._get_config('train', key)
+        assert 'train' in self.dic, "{} is not in config file".format('train')
+        assert key in self.dic['train'], "{} is not in {}".format(key, 'train')
+        return self.dic['train'].get(key)
 
     def test_config(self, key):
-        return self._get_config('test', key)
-
-    def _get_config(self, params_name, key):
-        assert params_name in self.dic, "{} is not in config file".format(
-            params_name)
-        assert key in self.dic[params_name], "{} is not in {}".format(
-            key, params_name)
-        return self.dic[params_name].get(key)
+        assert 'test' in self.dic, "{} is not in config file".format('test')
+        assert key in self.dic['test'], "{} is not in {}".format(key, 'test')
+        return self.dic['test'].get(key)
 
     #################### lr_scheduler and optimizer
     @property
@@ -406,7 +406,7 @@ class Config(object):
                 loss_cfg_i['ignore_index'] = dataset_ignore_index
 
 
-def merge_config_dict(dic, base_dic):
+def merge_two_dict(dic, base_dic):
     '''Merge dic to base_dic and return base_dic.'''
     base_dic = base_dic.copy()
     dic = dic.copy()
@@ -417,7 +417,7 @@ def merge_config_dict(dic, base_dic):
 
     for key, val in dic.items():
         if isinstance(val, dict) and key in base_dic:
-            base_dic[key] = merge_config_dict(val, base_dic[key])
+            base_dic[key] = merge_two_dict(val, base_dic[key])
         else:
             base_dic[key] = val
 
@@ -436,13 +436,13 @@ def parse_from_yaml(path: str):
         for bf in base_files:
             base_path = os.path.join(os.path.dirname(path), bf)
             base_dic = parse_from_yaml(base_path)
-            dic = merge_config_dict(dic, base_dic)
+            dic = merge_two_dict(dic, base_dic)
 
     return dic
 
 
-def update_dic(dic: dict, opts: list=None):
-    '''Update config'''
+def merge_dict_opts(dic: dict, opts: list=None):
+    '''Merge opts params into config dict'''
     if opts is None:
         return dic
 
@@ -462,8 +462,12 @@ def update_dic(dic: dict, opts: list=None):
 
         tmp_dic = dic
         for subkey in key_list[:-1]:
-            assert subkey in tmp_dic, "{} is not in config file.".format(key)
+            assert subkey in tmp_dic, "Can not update {}, because it is not in config.".format(
+                key)
             tmp_dic = tmp_dic[subkey]
+        assert key_list[
+            -1] in tmp_dic, "Can not update {}, because it is not in config.".format(
+                key)
         tmp_dic[key_list[-1]] = value
 
     return dic

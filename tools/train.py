@@ -26,19 +26,19 @@ from paddleseg.core import train
 
 def parse_args():
     hstr = "Model Training. \n\n"\
-           "Single-GPU example: \n"\
+           "Example 1, train model on single GPU: \n"\
            "    export CUDA_VISIBLE_DEVICES=0 \n"\
            "    python tools/train.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
            "        -o train.do_eval=True train.use_vdl=True train.save_interval=500 \\\n"\
            "            global.num_workers=2 global.save_dir=./output \n\n"\
-           "Multi-GPU example: \n"\
+           "Example 2, train model on multi GPUs: \n"\
            "    export CUDA_VISIBLE_DEVICES=0,1 \n"\
            "    python -m paddle.distributed.launch tools/train.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
            "        -o train.do_eval=True train.use_vdl=True train.save_interval=500 \\\n"\
            "            global.num_workers=2 global.save_dir=./output \n\n" \
-           "Resume training example: \n"\
+           "Example 3, resume training: \n"\
            "    export CUDA_VISIBLE_DEVICES=0 \n"\
            "    python tools/train.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\

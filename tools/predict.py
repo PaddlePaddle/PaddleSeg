@@ -25,28 +25,28 @@ from paddleseg.transforms import Compose
 
 def parse_args():
     hstr = "Model Prediction. \n\n"\
-           "Single-GPU example: \n"\
+           "Example 1, model prediction on single GPU: \n"\
            "    export CUDA_VISIBLE_DEVICES=0 \n"\
            "    python tools/predict.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
            "        --model_path output/best_model/model.pdparams \\\n"\
            "        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \\\n"\
            "        -o global.save_dir=output \n\n"\
-           "Multi-GPU example: \n"\
+           "Example 2, model prediction on multi GPUs: \n"\
            "    export CUDA_VISIBLE_DEVICES=0,1 \n"\
            "    python -m paddle.distributed.launch tools/predict.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
            "        --model_path output/best_model/model.pdparams \\\n"\
            "        --image_path data/optic_disc_seg/JPEGImages/ \\\n"\
            "        -o global.save_dir=output/optic_disc_seg \n\n"\
-           "Evaluation with data augmentation: \n"\
+           "Example 3, model prediction with data augmentation: \n"\
            "    export CUDA_VISIBLE_DEVICES=0 \n"\
            "    python tools/predict.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
            "        --model_path output/best_model/model.pdparams \\\n"\
            "        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \\\n"\
            "        -o global.save_dir=output test.is_aug=True test.scales=0.75,1.0,1.25 test.flip_horizontal=True \n\n"\
-           "Evaluation with slide windows method: \n"\
+           "Example 4, model prediction with slide windows: \n"\
            "    export CUDA_VISIBLE_DEVICES=0 \n"\
            "    python tools/predict.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\

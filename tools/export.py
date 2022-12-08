@@ -23,21 +23,38 @@ from paddleseg.utils import logger
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model export.')
+    hstr = "Model Export. \n\n"\
+           "Example 1, export inference model with dynamic shape: \n"\
+           "    python tools/export.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \\\n"\
+           "        --save_dir output/inference_model \n\n"\
+           "Example 2, export inference model with fix shape: \n"\
+           "    python tools/export.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \\\n"\
+           "        --save_dir output/inference_model \\\n"\
+           "        --input_shape 1 3 512 512 \n\n"
+    parser = argparse.ArgumentParser(
+        description=hstr, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
-        "--config", help="The config file.", type=str, required=True)
+        "--config", help="The path of config file.", type=str, required=True)
     parser.add_argument(
-        '--model_path', help='The path of model for export', type=str)
+        '--model_path',
+        help='The path of model weights, e.g., `--model_path output/best_model/model.pdparams`',
+        type=str)
     parser.add_argument(
         '--save_dir',
-        help='The directory for saving the exported model',
+        help='Set the directory to save inference model',
         type=str,
         default='./output/inference_model')
     parser.add_argument(
         '--output_op',
         choices=['argmax', 'softmax', 'none'],
         default="argmax",
-        help="Select which op to be appended to output result, default: argmax")
+        help="Select the op to be appended to the last of inference model, default: argmax."
+        "In PaddleSeg, the output of trained model is logit (H*C*H*W). We can apply argmax and"
+        "softmax op to the logit according the actual situation.")
     parser.add_argument(
         "--input_shape",
         nargs='+',
@@ -47,7 +64,7 @@ def parse_args():
     return parser.parse_args()
 
 
-class SavedSegmentationNet(paddle.nn.Layer):
+class WrappedModel(paddle.nn.Layer):
     def __init__(self, model, output_op):
         super().__init__()
         self.model = model
@@ -79,7 +96,7 @@ def main(args):
         logger.info('Loaded trained params of model successfully.')
 
     if args.output_op != 'none':
-        model = SavedSegmentationNet(model, args.output_op)
+        model = WrappedModel(model, args.output_op)
 
     if args.input_shape is None:
         shape = [None, 3, None, None]
@@ -117,7 +134,9 @@ def main(args):
             'output_dtype': output_dtype
         }
     }
-    logger.info('deploy_info: ' + str(deploy_info))
+    msg = '\n---------------Deploy Information---------------\n'
+    msg += str(yaml.dump(deploy_info))
+    logger.info(msg)
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:

@@ -24,24 +24,24 @@ from paddleseg.utils import get_sys_env, logger, utils
 
 def parse_args():
     hstr = "Model Evaluation. \n\n"\
-           "Single-GPU example: \n"\
+           "Example 1, evaluate model on single GPU: \n"\
            "    export CUDA_VISIBLE_DEVICES=0 \n"\
            "    python tools/val.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
            "        --model_path output/best_model/model.pdparams \n\n"\
-           "Multi-GPU example: \n"\
+           "Example 2, evaluate model on multi GPUs: \n"\
            "    export CUDA_VISIBLE_DEVICES=0,1 \n"\
            "    python -m paddle.distributed.launch tools/val.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
            "        --model_path output/best_model/model.pdparams \\\n"\
            "        -o global.num_workers=2 \n\n"\
-           "Evaluation with data augmentation: \n"\
+           "Example 3, evaluate model with data augmentation: \n"\
            "    export CUDA_VISIBLE_DEVICES=0 \n"\
            "    python tools/val.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
            "        --model_path output/best_model/model.pdparams \\\n"\
            "        -o test.is_aug=True test.scales=0.75,1.0,1.25 test.flip_horizontal=True global.num_workers=2 \n\n"\
-           "Evaluation with slide windows method: \n"\
+           "Example 4, evaluate model with slide windows: \n"\
            "    export CUDA_VISIBLE_DEVICES=0 \n"\
            "    python tools/val.py \\\n"\
            "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
