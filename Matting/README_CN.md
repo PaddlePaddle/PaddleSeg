@@ -74,7 +74,7 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 
 **注意**：
 * 指标计算数据集为PPM-100和AIM-500中的人像部分共同组成，共195张，[PPM-AIM-195](https://paddleseg.bj.bcebos.com/matting/datasets/PPM-AIM-195.zip)。
-* FLOPs和FPS计算默认模型输入大小为(512, 512), GPU为Tesla V100 32G。FPS基于Paddle Inference预测裤进行计算。
+* FLOPs和FPS计算默认模型输入大小为(512, 512), GPU为Tesla V100 32G。FPS基于Paddle Inference预测库进行计算。
 * DIM为trimap-based的抠图方法，指标只计算过度区域部分，对于没有提供trimap的情况下，默认将0<alpha<255的区域以25像素为半径进行膨胀腐蚀后作为过度区域。
 
 ## 使用教程
