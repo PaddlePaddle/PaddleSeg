@@ -46,6 +46,8 @@ def evaluate(model,
 
     Args:
         model（nn.Layer): A semantic segmentation model.
+        coase_model (nn.Layer): A train-well segmentation model for remote sensing images.
+        coase_model_path (str): The coase model's path.
         eval_dataset (paddle.io.Dataset): Used to read and process validation datasets.
         aug_eval (bool, optional): Whether to use mulit-scales and flip augment for evaluation. Default: False.
         scales (list|float, optional): Scales for augment. It is valid when `aug_eval` is True. Default: 1.0.

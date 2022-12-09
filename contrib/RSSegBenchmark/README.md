@@ -1,16 +1,21 @@
-# Remote Sensing Benchmark
+# A Benchmark for Segmentation on Remote Sensing Images
 
 ## 1 Introduction
 
-To understand more topographic information of objects, semantic segmentation is widely applied to remote sensing images and contributes to land cover mapping, disaster prediction, urban planning and so on. PaddleSeg releases **A Benchmark for Semantic Segmentation on Remote Sensing Images** to provide standard configuration and several comparable baseline models. Moreover, we design **A Coarse-to-Fine Model (C2FNet)**, which optimizes the baseline methods to achieve accurate segmentation of small objects.
+To understand more topographic information of objects, semantic segmentation is widely applied to remote sensing images and contributes to land cover mapping, disaster prediction, urban planning and so on.
+This project uses PaddleSeg for semantic segmentation on remote sensing images. The main contributions are summarized as follows:
+
+* **A Benchmark for Semantic Segmentation on Remote Sensing Images** is provided with standard configuration and several comparable baseline models.
+* **Self-supervised learning** based pre-trained models for semantic segmentation on remote sensing images are provided to facilitate further research.
+* **A Coarse-to-Fine Model (C2FNet)** is proposed on the above benchmark to optimizes these baseline methods to achieve accurate segmentation of small objects. Check [here](./c2fnet/README.md) for details.
 
 ## 2 Model Performance
 
 ### 2.1 Baseline Models
 
-The Benchmark implements some baseline models on iSAID, ISPRS Potsdam and ISPRS Vaihingen datasets. The results are as follows.
+The Benchmark implements some baseline models on [iSAID](https://captain-whu.github.io/iSAID), [ISPRS Potsdam](https://www.isprs.org/education/benchmarks/UrbanSemLab/2d-sem-label-potsdam.aspx) and [ISPRS Vaihingen](https://www.isprs.org/education/benchmarks/UrbanSemLab/2d-sem-label-vaihingen.aspx) datasets. The results are as follows.
 
-### iSAID
+#### 2.1.1 iSAID
 | Model | Resolution | Backbone | Iters | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
 | DANet | 512x512 | ResNet50 | 80000 | 37.30 | [cfg](./configs/danet/danet_resnet50_isaid_512_512.yml) \| [model](danet_resnet) |
@@ -23,7 +28,7 @@ The Benchmark implements some baseline models on iSAID, ISPRS Potsdam and ISPRS 
 | PSPNet | 512x512 | ResNet50_vd | 80000 | 63.36 | [cfg](./configs/pspnet/pspnet_resnet50_vd_isaid_512_512.yml) \| [model](pspnet_resnet50vd) |
 | UperNet | 512x512 | ResNet50 | 80000 | 64.10 | [cfg](./configs/upernet/upernet_resnet50_isaid_512_512.yml) \| [model](upernet_resnet50) |
 
-### ISPRS Potsdam
+#### 2.1.2 ISPRS Potsdam
 
 | Model | Resolution | Backbone | Iters | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
@@ -35,7 +40,7 @@ The Benchmark implements some baseline models on iSAID, ISPRS Potsdam and ISPRS 
 
 
 
-### ISPRS Vaihingen
+#### 2.1.3 ISPRS Vaihingen
 
 | Model | Resolution | Backbone | Iters | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
@@ -44,11 +49,11 @@ The Benchmark implements some baseline models on iSAID, ISPRS Potsdam and ISPRS 
 | HRNet | 512x512 | HRNet_W48 | 80000 | 74.98 | [cfg](./configs/hrnet/hrnet_w48_vaihingen.yml) \| [model](hrnetw48_vaihingen) |
 | UperNet | 512x512 | ResNet50_vd | 80000 | 74.31 | [cfg](./configs/upernet/upernet_resnet50_vd_vaihingen.yml) \| [model](upernet_resnet50vd_vaihingen)|}
 
-## 2.2 Self-supervised Pretrained Models
+### 2.2 Self-supervised Pretrained Models
 
 We investigate the generalization ability of the self-supervised learning in remote sensing images based on [PASSL](https://github.com/PaddlePaddle/PASSL). Some valuable experimental results and self-supervised pre-training models are provided in our benchmark to facilitate further research on self-supervised learning in the remote sensing images.
 
-### ImageNet Pretrianed Models by Self-supervised Learning.
+#### 2.2.1 ImageNet Pretrianed Models by Self-supervised Learning
 
 | Dataset | Segmentor | SSL | Backbone | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
@@ -65,9 +70,9 @@ We investigate the generalization ability of the self-supervised learning in rem
 | iSAID | UperNet | SwAV | ResNet50 | 63.42 | [cfg](./configs/ssl/upernet_swav_imgnet_resnet50_isaid_512_512.yml) \| [model](upernet_swav_imgnet) |
 | Potsdam | UperNet | PixelPro | ResNet50 | 77.40 | [cfg](./configs/ssl/upernet_pixpro_imgnet_resnet50_potsdam.yml) \| [model](upernet_pixpro_imgnet_potsdam) |
 
-*Note: All the pretrained backbone networks are download from [PASSL](https://github.com/PaddlePaddle/PASSL)*
+*Note: All the pretrained backbone networks are download from [PASSL](https://github.com/PaddlePaddle/PASSL).*
 
-### Remote Sensing Images Pretrianed Models by Self-supervised Learning.
+#### 2.2.2 Remote Sensing Images Pretrianed Models by Self-supervised Learning
 
 We perform self-supervised learning  on two remote sensing datasets, [Million-AID](https://paperswithcode.com/dataset/million-aid) and [DOTA2.0](https://captain-whu.github.io/DOTA/dataset.html). We cropped the images of different resolutions in both datasets uniformly to 512x512. The Million-AID dataset is cropped to contain **2.5 million** image patches and the DOTA dataset contained **1.7 million** image patches.
 
@@ -82,14 +87,14 @@ We perform self-supervised learning  on two remote sensing datasets, [Million-AI
 
 ## 3 Installation
 
-### Requirements
+### 3.1 Requirements
 
 * Python: 3.7+  
 * PaddlePaddle: 2.3.2
 * PaddleSeg: 2.6
 
 
-### Install
+### 3.2 Install
 a. Create a conda environment and activate it.
 ```
 conda create -n rsseg python=3.7
@@ -103,20 +108,20 @@ c. Download the repository.
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-d. Install dependencies
+d. Install dependencies.
 ```shell
 cd PaddleSeg
 pip install -r requirements.txt
 ```
 
-e. Build
+e. Build.
 
 ```shell
 cd PaddleSeg
 python setup.py install
 ```
 
-f. Go to the benchmark directory
+f. Go to the benchmark directory.
 
 ```shell
 cd PaddleSeg/contrib/RSSegBenchmark
@@ -125,85 +130,86 @@ cd PaddleSeg/contrib/RSSegBenchmark
 
 ## 4 Dataset Preparation
 
-a. Download the dataset
+a. Download the dataset.
 
 + [iSAID](https://captain-whu.github.io/iSAID)
 + [ISPR Potsdam](https://www.isprs.org/education/benchmarks/UrbanSemLab/2d-sem-label-potsdam.aspx)
 + [ISPRS Vaihingen](https://www.isprs.org/education/benchmarks/UrbanSemLab/2d-sem-label-vaihingen.aspx)
 
-b. Process the dataset
+b. Process the dataset.
 
-For iSAID
+For iSAID.
 
 ```python
 python data/prepare_isaid.py {PATH OF ISAID}
 ```
 
-For ISPRS Potsdam
+For ISPRS Potsdam.
 
 ```python
 python data/prepare_potsdam.py {PATH OF POTSDAM}
 ```
 
-For ISPRS Vaihingen
+For ISPRS Vaihingen.
 
 ```python
 python data/prepare_vaihingen.py {PATH OF VAIHINGEN}
 ```
 
-*Note: `train.txt`、`val.txt`、`label.txt` are generated using reference [PaddleSeg](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.6/docs/data/marker/marker_cn.md)*
+*Note: `train.txt`、`val.txt`、`label.txt` are generated using reference [PaddleSeg](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.6/docs/data/marker/marker_cn.md).*
 
 
 ## 5 Model Training/Evaluating
 
-### Training
-Training with one GPU
+### 5.1 Training
+Training with one GPU.
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python ../../train.py \
+python ../../tools/train.py \
        --config configs/{YOUR CONFIG FILE} \
        --do_eval \
        --save_interval 8000 \
        --save_dir {OUTPUT PATH}
 ```
-Training with multi-gpus
+Training with multiple GPUs.
 
 ```
 export CUDA_VISIBLE_DEVICES= 0,1,2,3
-python -m paddle.distributed.launch ../../train.py \
+python -m paddle.distributed.launch ../../tools/train.py \
       --config configs/{YOUR CONFIG FILE} \
       --do_eval \
       --save_interval 8000 \
       --save_dir {OUTPUT PATH}
 ```
 
-*Note: other training details can be seen in [here](../../docs/train/train.md)*
+*Note: For more details about training settings, please check the [PaddleSeg document](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.6/docs/train/train.md).*
 
 
-### Evaluating
+### 5.2 Evaluating
 
-Evaluation on the best model
+Get evaluation metrics of the best model.
+
 ```
-python ../../val.py \
+python ../../tools/val.py \
       --config configs/{YOUR CONFIG FILE} \
       --model_path {YOUR BEST MODEL PATH}
 ```
 
-*Note: more evaluation details in [here](../../docs/evaluation/evaluate/evaluate.md)*
+*Note: For more details about evaluating settings, please check the [PaddleSeg document](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.6/docs/evaluation/evaluate.md).*
 
-Prediction
+### 5.3 Predicting
 
-
+Predict and save the segmentation result of an input image with the best model.
 ```bash
-python ../../predict.py \
+python ../../tools/predict.py \
        --config configs/{YOUR CONFIG FILE} \
        --model_path {YOUR BEST MODEL PATH}
        --image_path {IMAGE PATH}\
        --save_dir {OUTPUT DIR}}
 ```
 
-*Note: more details in [here](../../docs/evaluation/evaluate/evaluate.md)*
+*Note: For more details about predicting settings, please check the [PaddleSeg document](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.6/docs/predict/predict.md).*
 
 
 ## Contact

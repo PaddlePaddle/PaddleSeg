@@ -92,8 +92,8 @@ def train(model,
 
     Args:
         model（nn.Layer): A semantic segmentation model.
-        coase_model: A train-well segmentation model for remote sensing images
-        coase_model_path: the coase model's path
+        coase_model (nn.Layer): A train-well segmentation model for remote sensing images.
+        coase_model_path (str): The coase model's path.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
         optimizer (paddle.optimizer.Optimizer): The optimizer.

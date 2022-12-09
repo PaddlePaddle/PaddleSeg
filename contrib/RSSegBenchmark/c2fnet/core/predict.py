@@ -66,6 +66,8 @@ def predict(model,
 
     Args:
         model (nn.Layer): Used to predict for input image.
+        coase_model (nn.Layer): A train-well segmentation model for remote sensing images.
+        coase_model_path (str): The coase model's path.
         model_path (str): The path of pretrained model.
         transforms (transform.Compose): Preprocess for input image.
         image_list (list): A list of image path to be predicted.
