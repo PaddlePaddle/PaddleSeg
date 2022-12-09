@@ -3,8 +3,8 @@ iters: 80000
 
 train_dataset:
   type: Dataset
-  dataset_root: /home/chensilin/data/iSAID
-  train_path: /home/chensilin/data/iSAID/train.txt
+  dataset_root: data/iSAID
+  train_path: data/iSAID/train.txt
   num_classes: 16
   transforms:
     - type: ResizeStepScaling
@@ -23,8 +23,8 @@ train_dataset:
 
 val_dataset:  
   type: Dataset 
-  dataset_root: /home/chensilin/data/iSAID
-  val_path: /home/chensilin/data/iSAID/val.txt  
+  dataset_root: data/iSAID
+  val_path: data/iSAID/val.txt  
   num_classes: 16  
   mode: val 
   transforms: 

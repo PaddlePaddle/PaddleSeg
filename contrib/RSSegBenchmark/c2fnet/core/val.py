@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -150,8 +150,9 @@ def evaluate(model,
                                 "sync_batch_norm"
                             },
                             custom_black_list={'bilinear_interp_v2'}):
-                        pred, logits = infer.inference(
+                        pred, logits = infer.fined_inference(
                             model,
+                            coase_model,
                             data['img'],
                             trans_info=data['trans_info'],
                             is_slide=is_slide,

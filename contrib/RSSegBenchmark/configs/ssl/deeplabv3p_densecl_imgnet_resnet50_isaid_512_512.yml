@@ -1,4 +1,4 @@
-_base_: '../deeplabv3+/deeplabv3+_resnet50_isaid_512_512.yml'
+_base_: '../deeplabv3p/deeplabv3p_resnet50_isaid_512_512.yml'
 
 model:
   type: DeepLabV3P

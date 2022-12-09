@@ -20,8 +20,8 @@ The Benchmark implements some baseline models on [iSAID](https://captain-whu.git
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
 | DANet | 512x512 | ResNet50 | 80000 | 37.30 | [cfg](./configs/danet/danet_resnet50_isaid_512_512.yml) \| [model](danet_resnet) |
 | DANet | 512x512 | ResNet50_vd | 80000 | 64.56 | [cfg](./configs/danet/danet_resnet50_vd_isaid_512_512.yml) \| [model](danet_resnetvd) |
-| DeeplabV3+ | 512x512 | ResNet50 | 80000 | 62.59 | [cfg](./configs/deeplabv3%2B/deeplabv3%2B_resnet50_isaid_512_512.yml) \| [model](deeplab_resnet) |
-| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 65.46 | [cfg](./configs/deeplabv3%2B/deeplabv3%2B_resnet50_vd_isaid_512_512.yml) \| [model](deeplab_resnetvd) |
+| DeeplabV3+ | 512x512 | ResNet50 | 80000 | 62.59 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_isaid_512_512.yml) \| [model](deeplab_resnet) |
+| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 65.46 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_vd_isaid_512_512.yml) \| [model](deeplab_resnetvd) |
 | FCN | 512x512 | ResNet50 | 80000 | 52.12 | [cfg](./configs/fcn/fcn_resnet50_isaid_512_512.yml) \| [model](fcn_resnet) |
 | FCN | 512x512 | HRNet_W18 | 80000 | 64.73 | [cfg](./configs/fcn/fcn_hrnet_w18_isaid_512_512.yml) \| [model](fcn_hrnet_w18) |
 | HRNet | 512x512 | HRNet_W48 | 80000 | 67.31 | [cfg](./configs/hrnet/hrnet_w48_isaid_512_512.yml) \| [model](hrnetw48) |
@@ -32,7 +32,7 @@ The Benchmark implements some baseline models on [iSAID](https://captain-whu.git
 
 | Model | Resolution | Backbone | Iters | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
-| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 77.93 | [cfg](./configs/deeplabv3%2B/deeplabv3%2B_resnet50_vd_potsdam.yml) \| [model](deeplabv3_potsdam) |
+| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 77.93 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_vd_potsdam.yml) \| [model](deeplabv3_potsdam) |
 | PSPNet | 512x512 | ResNet50_vd | 80000 | 77.69 | [cfg](./configs/pspnet/pspnet_resnet50_vd_potsdam.yml) \| [model](pspnet_potsdam) |
 | FCN | 512x512 | HRNet_W18 | 80000 | 78.13 | [cfg](./configs/fcn/fcn_hrnet_w18_potsdam.yml) \| [model](fcn_hrnet_potsdam) |
 | HRNet | 512x512 | HRNet_W48 | 80000 | 78.84 | [cfg](./configs/hrnet/hrnet_w48_potsdam.yml) \| [model](hrnet_w48_potsdam) |
@@ -44,7 +44,7 @@ The Benchmark implements some baseline models on [iSAID](https://captain-whu.git
 
 | Model | Resolution | Backbone | Iters | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
-| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 74.08 | [cfg](./configs/deeplabv3%2B/deeplabv3%2B_resnet50_vd_vaihingen.yml) \| [model](deeplab_vaihingen) |
+| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 74.08 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_vd_vaihingen.yml) \| [model](deeplab_vaihingen) |
 | FCN | 512x512 | HRNet_W18 | 80000 | 73.25 | [cfg](./configs/fcn/fcn_hrnet_w18_vaihingen.yml) \| [model](fcn_hrnet_vaihingen)|
 | HRNet | 512x512 | HRNet_W48 | 80000 | 74.98 | [cfg](./configs/hrnet/hrnet_w48_vaihingen.yml) \| [model](hrnetw48_vaihingen) |
 | UperNet | 512x512 | ResNet50_vd | 80000 | 74.31 | [cfg](./configs/upernet/upernet_resnet50_vd_vaihingen.yml) \| [model](upernet_resnet50vd_vaihingen)|}
@@ -57,9 +57,9 @@ We investigate the generalization ability of the self-supervised learning in rem
 
 | Dataset | Segmentor | SSL | Backbone | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
-| iSAID | DeeplabV3+ | PixelPro | ResNet50 | 62.22 | [cfg](./configs/ssl/deeplabv3%2B_pixpro_imgnet_resnet50_isaid_512_512.yml) \| [model](deeplabv3+_pixpro_imgnet) |
-| iSAID | DeeplabV3+ | DenseCL | ResNet50 | 56.94 | [cfg](./configs/ssl/deeplabv3%2B_densecl_imgnet_resnet50_isaid_512_512.yml) \| [model](deeplabv3+_densecl_imgnet) |
-| iSAID | DeeplabV3+ | MoCoBYOL | ResNet50 | 57.96 | [cfg](./configs/ssl/deeplabv3%2B_mocobyol_imgnet_resnet50_isaid_512_512.yml) \| [model](deeplabv3+_mocobyol_imgnet) |
+| iSAID | DeeplabV3+ | PixelPro | ResNet50 | 62.22 | [cfg](./configs/ssl/deeplabv3p_pixpro_imgnet_resnet50_isaid_512_512.yml) \| [model](deeplabv3+_pixpro_imgnet) |
+| iSAID | DeeplabV3+ | DenseCL | ResNet50 | 56.94 | [cfg](./configs/ssl/deeplabv3p_densecl_imgnet_resnet50_isaid_512_512.yml) \| [model](deeplabv3+_densecl_imgnet) |
+| iSAID | DeeplabV3+ | MoCoBYOL | ResNet50 | 57.96 | [cfg](./configs/ssl/deeplabv3p_mocobyol_imgnet_resnet50_isaid_512_512.yml) \| [model](deeplabv3+_mocobyol_imgnet) |
 | iSAID | FCN | PixelPro | ResNet50 | 51.30 | [cfg](./configs/ssl/fcn_pixpro_imgnet_resnet50_isaid_512_512.yml) \| [model](fcn_pixpro_imgnet) |
 | iSAID | OCRNet | PixelPro | ResNet50 | 41.95 | [cfg](./configs/ssl/ocrnet_pixpro_imgnet_resnet50_isaid_512_512.yml) \| [model](ocrnet_pixpro_imgnet) |
 | iSAID | PSPNet | PixelPro | ResNet50 | 50.23 | [cfg](./configs/ssl/pspnet_pixpro_imgnet_resnet50_isaid_512_512.yml) \| [model](pspnet_pixpro_imgnet) |

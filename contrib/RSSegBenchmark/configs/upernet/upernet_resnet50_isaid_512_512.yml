@@ -2,8 +2,8 @@ _base_: '../_base_/isaid.yml'
 
 train_dataset:
   type: Dataset
-  dataset_root: /home/chensilin/data/iSAID
-  train_path: /home/chensilin/data/iSAID/train.txt
+  dataset_root: data/iSAID
+  train_path: data/iSAID/train.txt
   num_classes: 16
   transforms:
     - type: ResizeStepScaling
