@@ -96,7 +96,7 @@ We perform self-supervised learning  on two remote sensing datasets, [Million-AI
 
 ### 3.2 Install
 a. Create a conda environment and activate it.
-```
+```shell
 conda create -n rsseg python=3.7
 conda activate rsseg
 ```
@@ -174,7 +174,7 @@ python ../../tools/train.py \
 ```
 Training with multiple GPUs.
 
-```
+```shell
 export CUDA_VISIBLE_DEVICES= 0,1,2,3
 python -m paddle.distributed.launch ../../tools/train.py \
       --config configs/{YOUR CONFIG FILE} \
@@ -190,7 +190,7 @@ python -m paddle.distributed.launch ../../tools/train.py \
 
 Get evaluation metrics of the best model.
 
-```
+```shell
 python ../../tools/val.py \
       --config configs/{YOUR CONFIG FILE} \
       --model_path {YOUR BEST MODEL PATH}
@@ -201,7 +201,7 @@ python ../../tools/val.py \
 ### 5.3 Predicting
 
 Predict and save the segmentation result of an input image with the best model.
-```bash
+```shell
 python ../../tools/predict.py \
        --config configs/{YOUR CONFIG FILE} \
        --model_path {YOUR BEST MODEL PATH}
