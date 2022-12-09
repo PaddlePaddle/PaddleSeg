@@ -22,12 +22,7 @@ from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils
 
-__all__ = [
-    'LPSNet',
-    'lps_net_small',
-    'lps_net_medium',
-    'lps_net_large',
-]
+__all__ = ['LPSNet', ]
 
 _interpolate = partial(F.interpolate, mode="bilinear", align_corners=True)
 
@@ -59,6 +54,7 @@ class LPSNet(nn.Layer):
             channels,
             scale_ratios,
             num_classes,
+            in_channels=3,
             deploy=False,
             pretrained=None, ):
         super().__init__()
@@ -68,6 +64,7 @@ class LPSNet(nn.Layer):
         self.channels = channels
         self.scale_ratios = list(filter(lambda x: x > 0, scale_ratios))
         self.num_classes = num_classes
+        self.in_channels = in_channels
 
         self.num_paths = len(self.scale_ratios)
         self.num_blocks = len(depths)
@@ -136,11 +133,14 @@ class LPSNet(nn.Layer):
                 )
             attrs[e] = [a + b for a, b in zip(attrs[e], d)]
 
-        model = cls(*attrs, num_classes=module.num_classes, deploy=deploy)
+        model = cls(*attrs,
+                    num_classes=module.num_classes,
+                    in_channels=module.in_channels,
+                    deploy=deploy)
         return model
 
     def _preprocess_input(self, x):
-        h, w = x.shape[-2:]
+        h, w = paddle.shape(x)[-2:]
         return [
             _interpolate(x, (int(r * h), int(r * w))) for r in self.scale_ratios
         ]
@@ -159,7 +159,7 @@ class LPSNet(nn.Layer):
             feats = _multipath_interaction(feats)
             feats = [path[idx](x) for path, x in zip(self.nets, feats)]
 
-        size = feats[0].shape[-2:]
+        size = paddle.shape(feats[0])[-2:]
         feats = [_interpolate(x, size=size) for x in feats]
 
         out = self.head(paddle.concat(feats, 1))
@@ -171,7 +171,7 @@ def _multipath_interaction(feats):
     length = len(feats)
     if length == 1:
         return feats[0]
-    sizes = [x.shape[-2:] for x in feats]
+    sizes = [paddle.shape(x)[-2:] for x in feats]
     outs = []
     looper = list(range(length))
     for i, s in enumerate(sizes):
@@ -213,7 +213,6 @@ class ConvBNReLU(nn.Layer):
         return self.conv(x)
 
     def switch_to_deploy(self):
-        # NOTE: works when use one gpu
         module = self.conv
         kernel = module._conv.weight
         conv_bias = module._conv.bias if module._conv.bias is not None else 0
@@ -241,30 +240,3 @@ class ConvBNReLU(nn.Layer):
         self.conv = nn.Sequential(
             conv,
             nn.ReLU(), )
-
-
-@manager.MODELS.add_component
-def lps_net_small(deploy=False, num_classes=19, pretrained=None):
-    depths = [1, 3, 3, 10, 10]
-    channels = [8, 24, 48, 96, 96]
-    scale_ratios = [3 / 4, 1 / 4]
-    return LPSNet(depths, channels, scale_ratios, num_classes, deploy,
-                  pretrained)
-
-
-@manager.MODELS.add_component
-def lps_net_medium(deploy=False, num_classes=19, pretrained=None):
-    depths = [1, 3, 3, 10, 10]
-    channels = [8, 24, 48, 96, 96]
-    scale_ratios = [1, 1 / 4]
-    return LPSNet(depths, channels, scale_ratios, num_classes, deploy,
-                  pretrained)
-
-
-@manager.MODELS.add_component
-def lps_net_large(deploy=False, num_classes=19, pretrained=None):
-    depths = [1, 3, 3, 10, 10]
-    channels = [8, 24, 64, 128, 128]
-    scale_ratios = [1, 1 / 4, 0]
-    return LPSNet(depths, channels, scale_ratios, num_classes, deploy,
-                  pretrained)
