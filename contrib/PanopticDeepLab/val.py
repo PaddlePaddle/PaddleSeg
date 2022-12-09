@@ -75,7 +75,6 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    cfg.check_sync_info()
     val_dataset = cfg.val_dataset
     if val_dataset is None:
         raise RuntimeError(

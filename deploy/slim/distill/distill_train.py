@@ -155,8 +155,6 @@ def prepare_config(args):
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
-    t_cfg.check_sync_info()
-    s_cfg.check_sync_info()
 
     train_dataset = s_cfg.train_dataset
     val_dataset = s_cfg.val_dataset if args.do_eval else None
