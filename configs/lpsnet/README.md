@@ -32,7 +32,7 @@ With the pretrained model, LPSNet is able to obtain **74.28%** mIoU on CityScape
 
 Furthermore, in order to obtain the best performance of semantic segmentation and accelerate convergence speed, more complicated data augments are applied, for instance, **random erasing** and batch transform **mixup**.
 
-The performance of classification improved a little, whose top-1 accuracy increased to **0.564** and top-5 accuracy increased to **0.805**. However, the model are unable to converge to higher than before.
+The performance of classification improved a little, whose top-1 accuracy increased to **0.564** and top-5 accuracy increased to **0.805**. However, the model is unable to converge to higher than before.
 
 So the following performance are all trained with the first ImageNet pretrained weights.
 

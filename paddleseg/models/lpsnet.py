@@ -88,7 +88,7 @@ class LPSNet(nn.Layer):
 
     def _build_path(self):
         path = []
-        c_in = 3
+        c_in = self.in_channels
         for b, (d, c) in enumerate(zip(self.depths, self.channels)):
             blocks = []
             for i in range(d):
