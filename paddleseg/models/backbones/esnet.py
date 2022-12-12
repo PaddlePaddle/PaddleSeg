@@ -240,7 +240,7 @@ class ESNet(TheseusLayer):
             stride=2)
         self.max_pool = MaxPool2D(kernel_size=3, stride=2, padding=1)
 
-        self.blocks = nn.LayerList()
+        self.block_list = nn.LayerList()
         for stage_id, num_repeat in enumerate(stage_repeats):
             for i in range(num_repeat):
                 if i == 0:
@@ -251,7 +251,7 @@ class ESNet(TheseusLayer):
                     block = ESBlock1(
                         in_channels=stage_out_channels[stage_id + 2],
                         out_channels=stage_out_channels[stage_id + 2])
-                self.blocks.append(block)
+                self.block_list.append(block)
 
         # self.conv2 = ConvBNLayer(
         #     in_channels=stage_out_channels[-2],
@@ -282,7 +282,7 @@ class ESNet(TheseusLayer):
         x = self.conv1(x)  #[4, 24, 256, 256]
         x = self.max_pool(x)  # x4
         outputs = [x]
-        for i, block in enumerate(self.blocks):
+        for i, block in enumerate(self.block_list):
             x = block(x)
             if i in output_indices:
                 outputs.append(x)

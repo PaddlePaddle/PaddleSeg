@@ -625,16 +625,41 @@ class TopTransformer(nn.Layer):
             self.feat_channels = [24, 56, 120, 232]
             from .esnet import ESNet_x0_5
             self.tpm = ESNet_x0_5()
+            pretrained = "saved_model/best_model_esnet.pdparams"
+        elif backbone == 'esnet0_75':
+            self.feat_channels = [24, 88, 176, 352]
+            from .esnet import ESNet_x0_75
+            self.tpm = ESNet_x0_75()
+            pretrained = None  # TODO add pretrain model
+        elif backbone == 'esnet1_0':
+            self.feat_channels = [24, 120, 232, 464]
+            from .esnet import ESNet_x1_0
+            self.tpm = ESNet_x1_0()
             pretrained = None  # TODO add pretrain model
         elif backbone == 'mobilenetv3':
             self.feat_channels = [24, 40, 112, 160]
             from .mobilenetv3 import MobileNetV3_large_x1_0
             self.tpm = MobileNetV3_large_x1_0()
+            pretrained = 'saved_model/best_model_mbv3.pdparams'
+        elif backbone == 'mobilenetv3_large_075':
+            self.feat_channels = [24, 32, 88, 120]
+            from .mobilenetv3 import MobileNetV3_large_x0_75
+            self.tpm = MobileNetV3_large_x0_75()
+            pretrained = None
+        elif backbone == 'mobilenetv3_small_125':
+            self.feat_channels = [24, 32, 64, 120]
+            from .mobilenetv3 import MobileNetV3_small_x1_25
+            self.tpm = MobileNetV3_small_x1_25()
             pretrained = None
         elif backbone == 'mobilenetv3_edit':
             self.feat_channels = [32, 64, 128, 160]
             from .mobilenetv3 import MobileNetV3_large_x1_0_edit
             self.tpm = MobileNetV3_large_x1_0_edit()
+            pretrained = 'saved_model/best_model_mbv3e.pdparams'
+        elif backbone == 'MobileNetV3_large_x1_0_edit_x0_75':
+            self.feat_channels = [24, 48, 96, 120]
+            from .mobilenetv3 import MobileNetV3_large_x1_0_edit_x0_75
+            self.tpm = MobileNetV3_large_x1_0_edit_x0_75()
             pretrained = None
         else:
             raise NotImplementedError('Backbone {} is not supported.'.format(

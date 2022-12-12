@@ -93,6 +93,19 @@ NET_CONFIG = {
         [5, 576, 96, True, "hardswish", 1],
         [5, 576, 96, True, "hardswish", 1],
     ],
+    "small_edit": [
+        # k, exp, c, se, act, s
+        [3, 16, 16, True, "relu", 2],
+        [3, 72, 32, False, "relu", 2],
+        [3, 88, 32, False, "relu", 1],
+        [5, 96, 40, True, "hardswish", 2],
+        [5, 240, 40, True, "hardswish", 1],
+        [5, 120, 48, True, "hardswish", 1],
+        [5, 144, 48, True, "hardswish", 1],
+        [5, 288, 96, True, "hardswish", 2],
+        [5, 576, 96, True, "hardswish", 1],
+        [5, 576, 96, True, "hardswish", 1],
+    ],
     "large_os8": [
         # k, exp, c, se, act, s, {d}
         [3, 16, 16, False, "relu", 1],
@@ -485,6 +498,17 @@ def MobileNetV3_large_x1_0_edit(**kwargs):
     model = MobileNetV3(
         config=NET_CONFIG["large_edit"],
         scale=1.0,
+        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
+        out_index=[2, 4, 6, 9],
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV3_large_x1_0_edit_x0_75(**kwargs):
+    model = MobileNetV3(
+        config=NET_CONFIG["large_edit"],
+        scale=0.75,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
         out_index=[2, 4, 6, 9],
         **kwargs)
