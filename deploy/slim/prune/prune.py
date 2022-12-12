@@ -89,7 +89,7 @@ def eval_fn(net, eval_dataset, num_workers):
 
 def export_model(net, cfg, save_dir):
     net.forward = paddle.jit.to_static(net.forward)
-    input_shape = [1] + list(cfg.val_dataset[0][0].shape)
+    input_shape = [1] + list(cfg.val_dataset[0]['img'].shape)
     input_var = paddle.ones(input_shape)
     out = net(input_var)
 
@@ -149,7 +149,7 @@ def main(args):
 
     logger.info(
         'Step 1/3: Start calculating the sensitivity of model parameters...')
-    sample_shape = [1] + list(train_dataset[0][0].shape)
+    sample_shape = [1] + list(train_dataset[0]['img'].shape)
     sen_file = os.path.join(args.save_dir, 'sen.pickle')
     pruner = L1NormFilterPruner(net, sample_shape)
     pruner.sensitive(
