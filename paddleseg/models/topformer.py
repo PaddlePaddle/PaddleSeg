@@ -72,12 +72,35 @@ class TopFormer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def forward(self, x):
+    def forward(self, x, upsample='intepolate'):
         x_hw = paddle.shape(x)[2:]
+        x_shape = paddle.shape(x)
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
-        x = F.interpolate(
-            x, x_hw, mode='bilinear', align_corners=self.align_corners)
+        upsample_rate = x.shape[-1] / x_hw[-1]
+        print('The upsample rate is ', upsample_rate)
+        if upsample == 'intepolate':
+            x = F.interpolate(
+                x, x_hw, mode='bilinear', align_corners=self.align_corners)
+        elif upsample == 'conv11':
+            c = nn.Conv2D(
+                in_channels=x.shape[1],
+                out_channels=x.shape[1] * upsample_rate * upsample_rate,
+                kernel_size=1,
+                stride=1,
+                padding=0)
+            x = c(x)
+            x = x.reshape(x_shape)
+        elif upsample == 'deconv':
+            pass
+        elif upsample == 'hybrid':
+            pass
+        elif upsample == 'step':
+            pass
+        elif upsample == 'valid':
+            pass
+        else:
+            raise NotImplementedError(upsample, "is not implemented")
 
         return [x]
 

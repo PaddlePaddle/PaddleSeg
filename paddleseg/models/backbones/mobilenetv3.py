@@ -33,7 +33,9 @@ __all__ = [
 MODEL_STAGES_PATTERN = {
     "MobileNetV3_small": ["blocks[0]", "blocks[2]", "blocks[7]", "blocks[10]"],
     "MobileNetV3_large":
-    ["blocks[0]", "blocks[2]", "blocks[5]", "blocks[11]", "blocks[14]"]
+    ["blocks[0]", "blocks[2]", "blocks[5]", "blocks[11]", "blocks[14]"],
+    "MobileNetV3_large_edit":
+    ["blocks[0]", "blocks[2]", "blocks[4]", "blocks[6]", "blocks[9]"]
 }
 
 # "large", "small" is just for MobinetV3_large, MobileNetV3_small respectively.
@@ -64,6 +66,19 @@ NET_CONFIG = {
         [5, 960, 160, True, "hardswish", 1],
         [5, 960, 160, True, "hardswish", 1],  # x32
     ],
+    "large_edit": [
+        # k, exp, c, se, act, s
+        [3, 16, 16, False, "relu", 1],
+        [3, 64, 32, False, "relu", 2],
+        [3, 72, 32, False, "relu", 1],  # 2
+        [5, 72, 64, True, "relu", 2],
+        [5, 128, 64, True, "relu", 1],  # 4
+        [3, 384, 128, False, "hardswish", 2],
+        [3, 480, 128, False, "hardswish", 1],  # 6
+        [5, 480, 160, True, "hardswish", 2],
+        [5, 960, 160, True, "hardswish", 1],
+        [5, 960, 160, True, "hardswish", 1],  # 9
+    ],
     "small": [
         # k, exp, c, se, act, s
         [3, 16, 16, True, "relu", 2],
@@ -71,6 +86,19 @@ NET_CONFIG = {
         [3, 88, 24, False, "relu", 1],
         [5, 96, 40, True, "hardswish", 2],
         [5, 240, 40, True, "hardswish", 1],
+        [5, 240, 40, True, "hardswish", 1],
+        [5, 120, 48, True, "hardswish", 1],
+        [5, 144, 48, True, "hardswish", 1],
+        [5, 288, 96, True, "hardswish", 2],
+        [5, 576, 96, True, "hardswish", 1],
+        [5, 576, 96, True, "hardswish", 1],
+    ],
+    "small_edit": [
+        # k, exp, c, se, act, s
+        [3, 16, 16, True, "relu", 2],
+        [3, 72, 32, False, "relu", 2],
+        [3, 88, 32, False, "relu", 1],
+        [5, 96, 40, True, "hardswish", 2],
         [5, 240, 40, True, "hardswish", 1],
         [5, 120, 48, True, "hardswish", 1],
         [5, 144, 48, True, "hardswish", 1],
@@ -171,7 +199,7 @@ class MobileNetV3(nn.Layer):
             num_groups=1,
             if_act=True,
             act="hardswish")
-        self.blocks = nn.Sequential(*[
+        self.blocks = nn.Sequential(* [
             ResidualUnit(
                 in_c=_make_divisible(inplanes * self.scale if i == 0 else
                                      self.cfg[i - 1][2] * self.scale),
@@ -461,6 +489,28 @@ def MobileNetV3_large_x1_0(**kwargs):
         scale=1.0,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
         out_index=OUT_INDEX["large"],
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV3_large_x1_0_edit(**kwargs):
+    model = MobileNetV3(
+        config=NET_CONFIG["large_edit"],
+        scale=1.0,
+        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
+        out_index=[2, 4, 6, 9],
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV3_large_x1_0_edit_x0_75(**kwargs):
+    model = MobileNetV3(
+        config=NET_CONFIG["large_edit"],
+        scale=0.75,
+        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
+        out_index=[2, 4, 6, 9],
         **kwargs)
     return model
 
