@@ -34,7 +34,7 @@ class Collect(object):
 
     def __call__(self, data):
         if not isinstance(data, InfoDict):
-            raise TypeError("data must be an InfoDict object.")
+            raise TypeError("data must be an `InfoDict` object.")
         return data.collect(self.keys, return_dict=True)
 
 
@@ -76,7 +76,7 @@ class DecodeLabels(object):
                     # Do not include crowded instances in `ins_label`
                     ins_id += 1
                     ins_label[mask] = ins_id
-                # Re-encode pan_id using cat_id and tracked class instance id
+                # Re-encode `pan_id` using `cat_id` and tracked class instance id
                 class_id_tracker[cat_id] += 1
                 pan_id = (cat_id + 1
                           ) * self.label_divisor + class_id_tracker[cat_id]
@@ -84,7 +84,7 @@ class DecodeLabels(object):
             else:
                 pan_id = (cat_id + 1) * self.label_divisor
                 pan_label[mask] = pan_id
-            # Update ann
+            # Update annotation
             seg['id'] = pan_id
 
         data['ins_label'] = ins_label

@@ -73,7 +73,7 @@ class InsSegEvaluator(Evaluator):
                         if overlap > oth:
                             confidence = pred_instance['confidence']
 
-                            # If we already has a prediction for this groundtruth
+                            # If we already have a prediction for this groundtruth
                             # the prediction with the lower score is automatically a false positive
                             if cur_match[gti]:
                                 max_score = max(cur_score[gti], confidence)
