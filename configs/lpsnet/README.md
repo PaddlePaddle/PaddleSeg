@@ -36,7 +36,7 @@ The performance of classification improved a little, whose top-1 accuracy increa
 
 So the following performance are all trained with the first ImageNet pretrained weights.
 
-###     Cityscapes
+### Cityscapes
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |-|-|-|-|-|-|-|-|

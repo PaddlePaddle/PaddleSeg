@@ -22,7 +22,7 @@ from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils
 
-__all__ = ['LPSNet', ]
+__all__ = ["LPSNet", ]
 
 _interpolate = partial(F.interpolate, mode="bilinear", align_corners=True)
 
@@ -93,27 +93,17 @@ class LPSNet(nn.Layer):
             blocks = []
             for i in range(d):
                 blocks.append(
-                    ConvBNReLU(
+                    layers.ConvBNReLU(
                         in_channels=c_in if i == 0 else c,
                         out_channels=c,
                         kernel_size=3,
                         padding=1,
-                        deploy=self.deploy,
                         stride=2
-                        if (i == 0 and b != self.num_blocks - 1) else 1, ))
+                        if (i == 0 and b != self.num_blocks - 1) else 1,
+                        bias_attr=False, ))
                 c_in = c
             path.append(nn.Sequential(*blocks))
         return nn.LayerList(path)
-
-    def switch_to_deploy(self):
-        if self.deploy:
-            return
-
-        for _, layer in self.named_sublayers():
-            if isinstance(layer, ConvBNReLU):
-                layer.switch_to_deploy()
-
-        self.eval()
 
     @classmethod
     def expand(cls, module, delta, expand_type, deploy=False):
@@ -133,10 +123,11 @@ class LPSNet(nn.Layer):
                 )
             attrs[e] = [a + b for a, b in zip(attrs[e], d)]
 
-        model = cls(*attrs,
-                    num_classes=module.num_classes,
-                    in_channels=module.in_channels,
-                    deploy=deploy)
+        model = cls(
+            *attrs,
+            num_classes=module.num_classes,
+            in_channels=module.in_channels,
+            deploy=deploy, )
         return model
 
     def _preprocess_input(self, x):
@@ -180,63 +171,3 @@ def _multipath_interaction(feats):
             out += _interpolate(feats[j], size=s)
         outs.append(out)
     return outs
-
-
-class ConvBNReLU(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 padding=1,
-                 deploy=False,
-                 **kwargs):
-        super().__init__()
-        if deploy:
-            self.conv = nn.Sequential(
-                nn.Conv2D(
-                    in_channels,
-                    out_channels,
-                    kernel_size=kernel_size,
-                    padding=padding,
-                    **kwargs),
-                nn.ReLU(), )
-        else:
-            kwargs['bias_attr'] = False
-            self.conv = layers.ConvBNReLU(
-                in_channels,
-                out_channels,
-                kernel_size,
-                padding,
-                **kwargs, )
-
-    def forward(self, x):
-        return self.conv(x)
-
-    def switch_to_deploy(self):
-        module = self.conv
-        kernel = module._conv.weight
-        conv_bias = module._conv.bias if module._conv.bias is not None else 0
-        running_mean = module._batch_norm._mean
-        running_var = module._batch_norm._variance
-        gamma = module._batch_norm.weight
-        beta = module._batch_norm.bias
-        eps = module._batch_norm._epsilon
-
-        std = paddle.sqrt(running_var + eps)
-        t = (gamma / std).reshape((-1, 1, 1, 1))
-
-        weight = kernel * t
-        bias = beta + (conv_bias - running_mean) * gamma / std
-
-        conv = nn.Conv2D(
-            in_channels=module._conv._in_channels,
-            out_channels=module._conv._out_channels,
-            kernel_size=3,
-            stride=module._conv._stride,
-            padding=module._conv._padding)
-        conv.weight.set_value(weight)
-        conv.bias.set_value(bias)
-        delattr(self, 'conv')
-        self.conv = nn.Sequential(
-            conv,
-            nn.ReLU(), )
