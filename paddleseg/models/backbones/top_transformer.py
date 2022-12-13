@@ -603,7 +603,7 @@ class TopTransformer(nn.Layer):
                  c2t_stride=2,
                  drop_path_rate=0.,
                  act_layer=nn.ReLU6,
-                 injection_type="multi_sum",
+                 injection_type="InjectionMultiSumallmultiallsum",
                  injection=True,
                  lr_mult=1.0,
                  in_channels=3,
