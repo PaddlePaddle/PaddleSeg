@@ -29,9 +29,6 @@ _interpolate = partial(F.interpolate, mode="bilinear", align_corners=True)
 
 @manager.MODELS.add_component
 class LPSNet(nn.Layer):
-    DEPTHS = 0
-    WIDTHS = 1
-    RESOLUTIONS = 2
     """
     The LPSNet implementation based on PaddlePaddle.
 
@@ -44,7 +41,6 @@ class LPSNet(nn.Layer):
         channels (lsit): Channels of each block.
         scale_ratios (list): Scale ratio for each branch. The number of branchs depends on length of scale_ratios.
         num_classes (int): The unique number of target classes.
-        deploy (bool): Whether use reparameterization. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -55,11 +51,9 @@ class LPSNet(nn.Layer):
             scale_ratios,
             num_classes,
             in_channels=3,
-            deploy=False,
             pretrained=None, ):
         super().__init__()
 
-        self.deploy = deploy
         self.depths = depths
         self.channels = channels
         self.scale_ratios = list(filter(lambda x: x > 0, scale_ratios))
@@ -104,31 +98,6 @@ class LPSNet(nn.Layer):
                 c_in = c
             path.append(nn.Sequential(*blocks))
         return nn.LayerList(path)
-
-    @classmethod
-    def expand(cls, module, delta, expand_type, deploy=False):
-        if isinstance(expand_type, int):
-            expand_type = [expand_type]
-            delta = [delta]
-
-        depths = module.depths
-        channels = module.channels
-        scale_ratios = module.scale_ratios
-
-        attrs = [depths, channels, scale_ratios]
-        for d, e in zip(delta, expand_type):
-            if len(d) != len(attrs[e]):
-                raise ValueError(
-                    f"Expect elements of delta and original attribution have save length, but got {len(d)} and {len(attrs[e])}"
-                )
-            attrs[e] = [a + b for a, b in zip(attrs[e], d)]
-
-        model = cls(
-            *attrs,
-            num_classes=module.num_classes,
-            in_channels=module.in_channels,
-            deploy=deploy, )
-        return model
 
     def _preprocess_input(self, x):
         h, w = paddle.shape(x)[-2:]
