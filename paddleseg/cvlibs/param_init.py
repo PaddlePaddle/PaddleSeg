@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import paddle.nn as nn
+import math
 
 
 def uniform_init(param, **kwargs):
@@ -228,3 +229,35 @@ def c2_linear_fill(layer):
         fan_in, _ = _calculate_fan_in_and_fan_out(layer.weight)
         bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
         uniform_init(layer.bias, low=-bound, high=bound)
+
+
+def th_multihead_fill(layer, qkv_same_embed_dim=True):
+    def _init_param_as_combined_linear_weight(p):
+        bound = math.sqrt(6 / (3 * p.shape[0] + p.shape[1]))
+        nn.initializer.Uniform(low=-bound, high=bound)(p)
+
+    if qkv_same_embed_dim:
+        _init_param_as_combined_linear_weight(layer.q_proj.weight)
+        _init_param_as_combined_linear_weight(layer.k_proj.weight)
+        _init_param_as_combined_linear_weight(layer.v_proj.weight)
+        xavier_uniform(layer.out_proj.weight)
+    else:
+        for p in layer.parameters():
+            if p.dim() > 1:
+                xavier_uniform(p)
+
+
+def th_linear_fill(layer):
+    nn.initializer.KaimingUniform(
+        negative_slope=math.sqrt(5), nonlinearity='leaky_relu')(layer.weight)
+    if getattr(layer, 'bias', None) is not None:
+        fan_in = layer.weight.shape[0]
+        bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
+        nn.initializer.Uniform(low=-bound, high=bound)(layer.bias)
+
+
+class THLinearInitMixin(object):
+    def init_weight(self):
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Linear):
+                th_linear_fill(layer)

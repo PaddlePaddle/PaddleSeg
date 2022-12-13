@@ -174,9 +174,15 @@ class TransformerEncoderLayer(nn.Layer):
         self.dropout2 = nn.Dropout(dropout)
 
         self.activation = nn.ReLU()
+        self.init_weight()
 
     def with_pos_embed(self, tensor, pos=None):
         return tensor if pos is None else tensor + pos
+
+    def init_weight(self):
+        param_init.th_multihead_fill(self.self_attn, True)
+        param_init.th_linear_fill(self.linear1)
+        param_init.th_linear_fill(self.linear2)
 
     def forward(self, src, src_mask, src_key_padding_mask, pos):
         q = k = self.with_pos_embed(src, pos)
@@ -247,6 +253,12 @@ class TransformerDecoderLayer(nn.Layer):
         self.dropout3 = nn.Dropout(dropout)
 
         self.activation = nn.ReLU()
+
+    def init_weight(self):
+        param_init.th_multihead_fill(self.self_attn, True)
+        param_init.th_multihead_fill(self.multihead_attn, True)
+        param_init.th_linear_fill(self.linear1)
+        param_init.th_linear_fill(self.linear2)
 
     def with_pos_embed(self, tensor, pos=None):
         return tensor if pos is None else tensor + pos
@@ -411,6 +423,11 @@ class MLP(nn.Layer):
         h = [hidden_dim] * (num_layers - 1)
         self.layers = nn.LayerList(
             nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
+        self.init_weight
+
+    def init_weight(self):
+        for layer in self.layers:
+            param_init.th_linear_fill(layer)  # todo: rm it
 
     def forward(self, x):
         for i, layer in enumerate(self.layers):
@@ -461,10 +478,12 @@ class TransformerPredictor(nn.Layer):
 
         if self.mask_classification:
             self.class_embed = nn.Linear(hidden_dim, num_classes + 1)
-            param_init.c2_linear_fill(self.class_embed)  # todo: rm it
         self.mask_embed = MLP(hidden_dim, hidden_dim, mask_dim, 3)
-        for layer in self.mask_embed.sublayers()[0]:
-            param_init.c2_linear_fill(layer)  # todo: rm it
+        self.init_weight()
+
+    def init_weight(self, ):
+        param_init.th_linear_fill(self.class_embed)  # todo: rm it
+        param_init.normal_init(self.query_embed.weight)
 
     def forward(self, x, mask_features):
         pos = self.pe_layer(x)
