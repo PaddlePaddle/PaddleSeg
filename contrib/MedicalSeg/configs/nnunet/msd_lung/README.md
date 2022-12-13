@@ -159,11 +159,11 @@ python train.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lu
 
 第四步： 验证fullres
 ```commandline
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold0.yml --model_path output/cascade_fullres/fold0/iter_30000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold1.yml --model_path output/cascade_fullres/fold1/iter_30000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold2.yml --model_path output/cascade_fullres/fold2/iter_30000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold3.yml --model_path output/cascade_fullres/fold3/iter_30000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold4.yml --model_path output/cascade_fullres/fold4/iter_30000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold0.yml --model_path output/cascade_fullres/fold0/iter_40000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold1.yml --model_path output/cascade_fullres/fold1/iter_40000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold2.yml --model_path output/cascade_fullres/fold2/iter_40000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold3.yml --model_path output/cascade_fullres/fold3/iter_40000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold4.yml --model_path output/cascade_fullres/fold4/iter_40000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
 ```
 
 # Ensemble
