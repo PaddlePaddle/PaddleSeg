@@ -25,5 +25,20 @@ python semantic2instance.py -o label_path -d save_path
 
 3D医疗标注是基于视频标注算法来实现的，因此在医疗图像标注前，需要将医疗图像转换成`mp4`格式后再进行标注，脚本位置为`EISeg/tool/medical2video.py`
 
+## json格式标签转换成coco格式标签
+EISeg在标签保存后的```label```文件夹下会生成一个```labelme```的文件夹，里面是与labelme具有相同格式的json文件和```labels.txt```文件，此时如果想把json文件转换成和labelme相同格式的coco文件，可以执行如下命令：
 
+``` shell
+python labelme-json2labelme-coco.py label_path save_path --labels txt_path.
 
+# 例如
+# python labelme-json2labelme-coco.py mydata/label/labelme/ mydata/label/labelme/output --labels mydata/label/labelme/labels.txt
+```
+
+其中:
+
+- `label_path`: labelme格式的json标签保存的路径，必填
+- `save_path`: 转换后的coco格式标签保存的路径，必填
+- `txt_path`: labels.txt文件路径，必填
+
+转换完成后会在```save_path```中生成三个文件，分别是```annotations.json```, ```JPEGImages```, ```Visualization```，格式同labelme。
