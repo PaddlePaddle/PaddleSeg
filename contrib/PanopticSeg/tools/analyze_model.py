@@ -18,6 +18,7 @@ import argparse
 import io
 import sys
 import contextlib
+from collections import OrderedDict
 
 import paddle
 from paddle.hapi.static_flops import Table
@@ -40,9 +41,10 @@ def parse_args():
         help="Shape of the input shape, e.g. `--input_shape 1 3 1024 1024`",
         default=[1, 3, 1024, 1024])
     parser.add_argument(
-        '--print_detail',
-        help="To print detail information of each layer.",
-        action='store_true')
+        '--num_levels',
+        type=int,
+        help="Maximum levels of layers to show.",
+        default=None)
     return parser.parse_args()
 
 
@@ -57,13 +59,67 @@ def _redirect_stdout_to_str(*args, **kwargs):
             sys.stdout = old_stdout
 
 
-def _dynamic_flops(model, inputs, custom_ops=None, print_detail=False):
-    handler_collection = []
-    types_collection = set()
-    if custom_ops is None:
-        custom_ops = {}
+def _count_layer_stats(layer, counters, level, res):
+    info = OrderedDict()
+    info['Layer Name'] = layer.full_name()
+    info['Level'] = level
+    children = list(layer.children())
+    if len(children) > 0:
+        children_names = set(m.full_name() for m in children)
+        res_of_layer = []
+        for child in children:
+            res_of_layer = _count_layer_stats(child, counters, level+1, res_of_layer)
+        for name in counters.keys():
+            info[name] = sum(item[name] for item in res_of_layer if item['Layer Name'] in children_names)
+        res.append(info)
+        res.extend(res_of_layer)
+    else:
+        # XXX: Hard-code default items
+        if hasattr(layer, 'input_shape'):
+            info['Input Shape'] = layer.input_shape.numpy().tolist()
+        if hasattr(layer, 'output_shape'):
+            info['Output Shape'] = layer.output_shape.numpy().tolist()
+        for name, cnter in counters.items():
+            info[name] = cnter(layer)
+        res.append(info)
+    return res
 
-    def add_hooks(m):
+
+def _stats_to_table(stats, cols):
+    levels = set(info['Level'] for info in stats)
+    min_level = min(levels)
+    num_pad_cols = max(levels) - min_level
+    # Assume that the first column is Layer Name
+    cols = cols[:1] + [''] * num_pad_cols + cols[1:]
+    table = Table(cols)
+    for info in stats:
+        level = info['Level']
+        row = [info.get(key, '') for key in cols if key != '']
+        # Round float numbers
+        for i, ele in enumerate(row):
+            if isinstance(ele, float):
+                row[i] = _round(ele)
+        rel_level = (level - min_level)
+        row = ['']*rel_level+[row[0]]+['']*(num_pad_cols-rel_level)+row[1:]
+        table.add_row(row)
+    return table
+
+
+def _round(x, digits=3):
+    return round(x, digits)
+
+
+def _to_mega(x):
+    return float(x / 1e6)
+
+
+def _to_giga(x):
+    return float(x / 1e9)
+
+
+def dynamic_flops(model, inputs, custom_ops=None, num_levels=None):
+
+    def _add_hooks(m):
         if len(list(m.children())) > 0:
             return
         m.register_buffer('total_ops', paddle.zeros([1], dtype='int64'))
@@ -95,56 +151,39 @@ def _dynamic_flops(model, inputs, custom_ops=None, print_detail=False):
         handler_collection.append(io_handler)
         types_collection.add(m_type)
 
+    if num_levels is not None and num_levels < 1:
+        raise ValueError("`num_levels` must be a positive integer.")
+
+    handler_collection = []
+    types_collection = set()
+    if custom_ops is None:
+        custom_ops = {}
+    
     training = model.training
 
     model.eval()
-    model.apply(add_hooks)
+    model.apply(_add_hooks)
 
-    with paddle.framework.no_grad():
+    with paddle.no_grad():
         model(inputs)
-
-    total_ops = 0
-    total_params = 0
-    for m in model.sublayers():
-        if len(list(m.children())) > 0:
-            continue
-        if set(['total_ops', 'total_params', 'input_shape',
-                'output_shape']).issubset(set(list(m._buffers.keys()))):
-            total_ops += m.total_ops
-            total_params += m.total_params
 
     if training:
         model.train()
     for handler in handler_collection:
         handler.remove()
 
-    table = Table([
-        "Layer Name", "Input Shape", "Output Shape", "Params (M)", "Flops (G)"
-    ])
+    counters = {
+        'Params (M)': lambda m: _to_mega(m.total_params), 
+        'FLOPs (G)': lambda m: _to_giga(m.total_ops)}
+    stats = _count_layer_stats(model, counters, 1, [])
+    if num_levels is not None:
+        stats = list(filter(lambda info: info['Level'] <= num_levels, stats))
+    table = _stats_to_table(stats, ['Layer Name', 'Input Shape', 'Output Shape', *counters.keys()])
 
-    for n, m in model.named_sublayers():
-        if len(list(m.children())) > 0:
-            continue
-        if set(['total_ops', 'total_params', 'input_shape',
-                'output_shape']).issubset(set(list(m._buffers.keys()))):
-            table.add_row([
-                m.full_name(), list(m.input_shape.numpy()),
-                list(m.output_shape.numpy()),
-                round(float(m.total_params / 1e6), 3),
-                round(float(m.total_ops / 1e9), 3)
-            ])
-            m._buffers.pop('total_ops')
-            m._buffers.pop('total_params')
-            m._buffers.pop('input_shape')
-            m._buffers.pop('output_shape')
-    if print_detail:
-        with _redirect_stdout_to_str() as sio:
-            table.print_table()
-            tab_info = sio.getvalue()
-        logger.info('\n' + tab_info)
-    logger.info("Total FLOPs: {:.4f} G     Total Params: {:.4f} M".format(
-        round(float(total_ops / 1e9), 3), round(float(total_params / 1e6), 3)))
-    return int(total_ops)
+    with _redirect_stdout_to_str() as sio:
+        table.print_table()
+        tab_info = sio.getvalue()
+    logger.info('\n' + tab_info)
 
 
 def analyze(args):
@@ -163,17 +202,17 @@ def analyze(args):
 
     if args.proj is not None:
         with work_on_project(args.proj):
-            _dynamic_flops(
+            dynamic_flops(
                 cfg.model,
                 inputs,
                 custom_ops=custom_ops,
-                print_detail=args.print_detail)
+                num_levels=args.num_levels)
     else:
-        _dynamic_flops(
+        dynamic_flops(
             cfg.model,
             inputs,
             custom_ops=custom_ops,
-            print_detail=args.print_detail)
+            num_levels=args.num_levels)
 
 
 if __name__ == '__main__':
