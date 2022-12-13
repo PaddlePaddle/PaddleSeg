@@ -18,25 +18,25 @@ The Benchmark implements some baseline models on [iSAID](https://captain-whu.git
 #### 2.1.1 iSAID
 | Model | Resolution | Backbone | Iters | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
-| DANet | 512x512 | ResNet50 | 80000 | 37.30 | [cfg](./configs/danet/danet_resnet50_isaid_512_512.yml) \| [model](danet_resnet) |
-| DANet | 512x512 | ResNet50_vd | 80000 | 64.56 | [cfg](./configs/danet/danet_resnet50_vd_isaid_512_512.yml) \| [model](danet_resnetvd) |
-| DeeplabV3+ | 512x512 | ResNet50 | 80000 | 62.59 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_isaid_512_512.yml) \| [model](deeplab_resnet) |
-| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 65.46 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_vd_isaid_512_512.yml) \| [model](deeplab_resnetvd) |
-| FCN | 512x512 | ResNet50 | 80000 | 52.12 | [cfg](./configs/fcn/fcn_resnet50_isaid_512_512.yml) \| [model](fcn_resnet) |
-| FCN | 512x512 | HRNet_W18 | 80000 | 64.73 | [cfg](./configs/fcn/fcn_hrnet_w18_isaid_512_512.yml) \| [model](fcn_hrnet_w18) |
-| HRNet | 512x512 | HRNet_W48 | 80000 | 67.31 | [cfg](./configs/hrnet/hrnet_w48_isaid_512_512.yml) \| [model](hrnetw48) |
-| PSPNet | 512x512 | ResNet50_vd | 80000 | 63.36 | [cfg](./configs/pspnet/pspnet_resnet50_vd_isaid_512_512.yml) \| [model](pspnet_resnet50vd) |
-| UperNet | 512x512 | ResNet50 | 80000 | 64.10 | [cfg](./configs/upernet/upernet_resnet50_isaid_512_512.yml) \| [model](upernet_resnet50) |
+| DANet | 512x512 | ResNet50 | 80000 | 37.30 | [cfg](./configs/danet/danet_resnet50_isaid_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/danet_resnet50_isaid_512x512_80k/model.pdparams) |
+| DANet | 512x512 | ResNet50_vd | 80000 | 64.56 | [cfg](./configs/danet/danet_resnet50_vd_isaid_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/danet_resnet50_vd_isaid_512x512_80k/model.pdparams) |
+| DeeplabV3+ | 512x512 | ResNet50 | 80000 | 62.59 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_isaid_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/deeplabv3p_resnet50_isaid_512x512_80k/model.pdparams) |
+| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 65.46 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_vd_isaid_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/deeplabv3p_resnet50_vd_isaid_512x512_80k/model.pdparams) |
+| FCN | 512x512 | HRNet_W18 | 80000 | 64.73 | [cfg](./configs/fcn/fcn_hrnet_w18_isaid_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/fcn_hrnet_w18_isaid_512x512_80k/model.pdparams) |
+| FCN | 512x512 | ResNet50 | 80000 | 52.12 | [cfg](./configs/fcn/fcn_resnet50_isaid_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/fcn_resnet50_isaid_512x512_80k/model.pdparams) |
+| HRNet | 512x512 | HRNet_W48 | 80000 | 67.31 | [cfg](./configs/hrnet/hrnet_w48_isaid_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/hrnet_w48_isaid_512x512_80k/model.pdparams) |
+| PSPNet | 512x512 | ResNet50_vd | 80000 | 63.36 | [cfg](./configs/pspnet/pspnet_resnet50_vd_isaid_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/pspnet_resnet50_vd_isaid_512x512_80k/model.pdparams) |
+| UperNet | 512x512 | ResNet50 | 80000 | 64.10 | [cfg](./configs/upernet/upernet_resnet50_isaid_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/upernet_resnet50_isaid_512x512_80k/model.pdparams) |
 
 #### 2.1.2 ISPRS Potsdam
 
 | Model | Resolution | Backbone | Iters | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
-| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 77.93 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_vd_potsdam.yml) \| [model](deeplabv3_potsdam) |
-| PSPNet | 512x512 | ResNet50_vd | 80000 | 77.69 | [cfg](./configs/pspnet/pspnet_resnet50_vd_potsdam.yml) \| [model](pspnet_potsdam) |
-| FCN | 512x512 | HRNet_W18 | 80000 | 78.13 | [cfg](./configs/fcn/fcn_hrnet_w18_potsdam.yml) \| [model](fcn_hrnet_potsdam) |
-| HRNet | 512x512 | HRNet_W48 | 80000 | 78.84 | [cfg](./configs/hrnet/hrnet_w48_potsdam.yml) \| [model](hrnet_w48_potsdam) |
-| UperNet | 512x512 | ResNet50 | 80000 | 77.59 | [cfg](./configs/upernet/upernet_resnet50_potsdam.yml) \| [model](upernet_potsdam) |
+| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 77.93 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_vd_potsdam_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/potsdam/deeplabv3p_resnet50_vd_potsdam_512x512_80k/model.pdparams) |
+| FCN | 512x512 | HRNet_W18 | 80000 | 78.13 | [cfg](./configs/fcn/fcn_hrnet_w18_potsdam_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/potsdam/fcn_hrnet_w18_potsdam_512x512_80k/model.pdparams) |
+| HRNet | 512x512 | HRNet_W48 | 80000 | 78.84 | [cfg](./configs/hrnet/hrnet_w48_potsdam_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/potsdam/hrnet_w48_potsdam_512x512_80k/model.pdparams) |
+| PSPNet | 512x512 | ResNet50_vd | 80000 | 77.69 | [cfg](./configs/pspnet/pspnet_resnet50_vd_potsdam_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/potsdam/pspnet_resnet50_vd_potsdam_512x512_80k/model.pdparams) |
+| UperNet | 512x512 | ResNet50 | 80000 | 77.59 | [cfg](./configs/upernet/upernet_resnet50_potsdam_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/potsdam/upernet_resnet50_potsdam_512x512_80k/model.pdparams) |
 
 
 
@@ -44,10 +44,10 @@ The Benchmark implements some baseline models on [iSAID](https://captain-whu.git
 
 | Model | Resolution | Backbone | Iters | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
-| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 74.08 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_vd_vaihingen.yml) \| [model](deeplab_vaihingen) |
-| FCN | 512x512 | HRNet_W18 | 80000 | 73.25 | [cfg](./configs/fcn/fcn_hrnet_w18_vaihingen.yml) \| [model](fcn_hrnet_vaihingen)|
-| HRNet | 512x512 | HRNet_W48 | 80000 | 74.98 | [cfg](./configs/hrnet/hrnet_w48_vaihingen.yml) \| [model](hrnetw48_vaihingen) |
-| UperNet | 512x512 | ResNet50_vd | 80000 | 74.31 | [cfg](./configs/upernet/upernet_resnet50_vd_vaihingen.yml) \| [model](upernet_resnet50vd_vaihingen)|}
+| DeeplabV3+ | 512x512 | ResNet50_vd | 80000 | 74.08 | [cfg](./configs/deeplabv3p/deeplabv3p_resnet50_vd_vaihingen_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/vaihingen/deeplabv3p_resnet50_vd_vaihingen_512x512_80k/model.pdparams) |
+| FCN | 512x512 | HRNet_W18 | 80000 | 73.25 | [cfg](./configs/fcn/fcn_hrnet_w18_vaihingen_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/vaihingen/fcn_hrnet_w18_vaihingen_512x512_80k/model.pdparams)|
+| HRNet | 512x512 | HRNet_W48 | 80000 | 74.98 | [cfg](./configs/hrnet/hrnet_w48_vaihingen_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/vaihingen/hrnet_w48_vaihingen_512x512_80k/model.pdparams) |
+| UperNet | 512x512 | ResNet50_vd | 80000 | 74.31 | [cfg](./configs/upernet/upernet_resnet50_vd_vaihingen_512x512_80k.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/vaihingen/upernet_resnet50_vd_vaihingen_512x512_80k/model.pdparams)|}
 
 ### 2.2 Self-supervised Pretrained Models
 
@@ -57,20 +57,20 @@ We investigate the generalization ability of the self-supervised learning in rem
 
 | Dataset | Segmentor | SSL | Backbone | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
-| iSAID | DeeplabV3+ | PixelPro | ResNet50 | 62.22 | [cfg](./configs/ssl/deeplabv3p_pixpro_imgnet_resnet50_isaid_512_512.yml) \| [model](deeplabv3+_pixpro_imgnet) |
-| iSAID | DeeplabV3+ | DenseCL | ResNet50 | 56.94 | [cfg](./configs/ssl/deeplabv3p_densecl_imgnet_resnet50_isaid_512_512.yml) \| [model](deeplabv3+_densecl_imgnet) |
-| iSAID | DeeplabV3+ | MoCoBYOL | ResNet50 | 57.96 | [cfg](./configs/ssl/deeplabv3p_mocobyol_imgnet_resnet50_isaid_512_512.yml) \| [model](deeplabv3+_mocobyol_imgnet) |
-| iSAID | FCN | PixelPro | ResNet50 | 51.30 | [cfg](./configs/ssl/fcn_pixpro_imgnet_resnet50_isaid_512_512.yml) \| [model](fcn_pixpro_imgnet) |
-| iSAID | OCRNet | PixelPro | ResNet50 | 41.95 | [cfg](./configs/ssl/ocrnet_pixpro_imgnet_resnet50_isaid_512_512.yml) \| [model](ocrnet_pixpro_imgnet) |
-| iSAID | PSPNet | PixelPro | ResNet50 | 50.23 | [cfg](./configs/ssl/pspnet_pixpro_imgnet_resnet50_isaid_512_512.yml) \| [model](pspnet_pixpro_imgnet) |
-| iSAID | UperNet | PixelPro | ResNet50 | 64.36 | [cfg](./configs/ssl/upernet_pixpro_imgnet_resnet50_isaid_512_512.yml) \| [model](upernet_pixpro_imgnet) |
-| iSAID | UperNet | DenseCL | ResNet50 | 54.22 | [cfg](./configs/ssl/upernet_densecl_imgnet_resnet50_isaid_512_512.yml) \| [model](upernet_densecl_imgnet) |
-| iSAID | UperNet | MoCoBYOL | ResNet50 | 64.36 | [cfg](./configs/ssl/upernet_mocobyol_imgnet_resnet50_isaid_512_512.yml) \| [model](upernet_byol_imgnet) |
-| iSAID | UperNet | SimSiam | ResNet50 | 50.70 | [cfg](./configs/ssl/upernet_simsiam_imgnet_resnet50_isaid_512_512.yml) \| [model](upernet_simsiam_imgnet) |
-| iSAID | UperNet | SwAV | ResNet50 | 63.42 | [cfg](./configs/ssl/upernet_swav_imgnet_resnet50_isaid_512_512.yml) \| [model](upernet_swav_imgnet) |
-| Potsdam | UperNet | PixelPro | ResNet50 | 77.40 | [cfg](./configs/ssl/upernet_pixpro_imgnet_resnet50_potsdam.yml) \| [model](upernet_pixpro_imgnet_potsdam) |
+| iSAID | DeeplabV3+ | DenseCL | ResNet50 | 56.94 | [cfg](./configs/ssl/deeplabv3p_densecl_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/deeplabv3p_densecl_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | DeeplabV3+ | MoCoBYOL | ResNet50 | 57.96 | [cfg](./configs/ssl/deeplabv3p_mocobyol_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/deeplabv3p_mocobyol_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | DeeplabV3+ | PixelPro | ResNet50 | 62.22 | [cfg](./configs/ssl/deeplabv3p_pixpro_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/deeplabv3p_pixpro_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | FCN | PixelPro | ResNet50 | 51.30 | [cfg](./configs/ssl/fcn_pixpro_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/fcn_pixpro_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | OCRNet | PixelPro | ResNet50 | 41.95 | [cfg](./configs/ssl/ocrnet_pixpro_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/ocrnet_pixpro_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | PSPNet | PixelPro | ResNet50 | 50.23 | [cfg](./configs/ssl/pspnet_pixpro_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/pspnet_pixpro_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | UperNet | DenseCL | ResNet50 | 54.22 | [cfg](./configs/ssl/upernet_densecl_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_densecl_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | UperNet | MoCoBYOL | ResNet50 | 64.36 | [cfg](./configs/ssl/upernet_mocobyol_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_mocobyol_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | UperNet | PixelPro | ResNet50 | 64.36 | [cfg](./configs/ssl/upernet_pixpro_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_pixpro_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | UperNet | SimSiam | ResNet50 | 50.70 | [cfg](./configs/ssl/upernet_simsiam_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_simsiam_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | UperNet | SwAV | ResNet50 | 63.42 | [cfg](./configs/ssl/upernet_swav_imgnet_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_swav_imgnet_resnet50_isaid_512x512/model.pdparams) |
+| Potsdam | UperNet | PixelPro | ResNet50 | 77.40 | [cfg](./configs/ssl/upernet_pixpro_imgnet_resnet50_potsdam_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_pixpro_imgnet_resnet50_potsdam_512x512/model.pdparams) |
 
-*Note: All the pretrained backbone networks are download from [PASSL](https://github.com/PaddlePaddle/PASSL).*
+*Note: All the pretrained backbone networks were downloaded from [PASSL](https://github.com/PaddlePaddle/PASSL).*
 
 #### 2.2.2 Remote Sensing Images Pretrianed Models by Self-supervised Learning
 
@@ -78,12 +78,12 @@ We perform self-supervised learning  on two remote sensing datasets, [Million-AI
 
 | Dataset | Segmentor | SSL | Backbone | mIoU(%) | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- |
-| iSAID | UperNet | PixelPro Million-AID | ResNet50 | 58.24 | [cfg](./configs/ssl/upernet_pixpro_millionaid_resnet50_potsdam.yml) \| [model](upernet_pixpro_aid) |
-| iSAID | UperNet | DenseCL Million-AID | ResNet50 | 61.67 | [cfg](./configs/ssl/upernet_densecl_millionaid_resnet50_isaid_512_512.yml) \| [model](upernet_densecl_aid) |
-| iSAID | UperNet | MoCoV2 Million-AID | ResNet50 | 55.62 | [cfg](./configs/ssl/upernet_mocov2_millionaid_resnet50_isaid_512_512.yml) \| [model](upernet_mocov2_aid) |
-| Potsdam | UperNet | PixelPro Million-AID | ResNet50 | 75.68 | [cfg](./configs/ssl/upernet_pixpro_millionaid_resnet50_potsdam.yml) \| [model](upernet_pixpro_aid_potsdam) |
-| iSAID | UperNet | PixelPro DOTA | ResNet50 | 59.50 |[cfg](./configs/ssl/upernet_pixpro_dota_resnet50_isaid_512_512.yml) \| [model](upernet_pixpro_dota) |
-| iSAID | FCN | PixelPro DOTA | ResNet50 | 41.26 | [cfg](./configs/ssl/fcn_pixpro_dota_resnet50_isaid_512_512.yml) \| [model](fcn_pixpro_dota)|
+| iSAID | FCN | PixelPro DOTA | ResNet50 | 41.26 | [cfg](./configs/ssl/fcn_pixpro_dota_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/fcn_pixpro_dota_resnet50_isaid_512x512/model.pdparams)|
+| iSAID | UperNet | DenseCL Million-AID | ResNet50 | 61.67 | [cfg](./configs/ssl/upernet_densecl_millionaid_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_densecl_millionaid_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | UperNet | MoCoV2 Million-AID | ResNet50 | 55.62 | [cfg](./configs/ssl/upernet_mocov2_millionaid_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_mocov2_millionaid_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | UperNet | PixelPro DOTA | ResNet50 | 59.50 |[cfg](./configs/ssl/upernet_pixpro_dota_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_pixpro_dota_resnet50_isaid_512x512/model.pdparams) |
+| iSAID | UperNet | PixelPro Million-AID | ResNet50 | 58.24 | [cfg](./configs/ssl/upernet_pixpro_millionaid_resnet50_isaid_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_pixpro_millionaid_resnet50_isaid_512x512/model.pdparams) |
+| Potsdam | UperNet | PixelPro Million-AID | ResNet50 | 75.68 | [cfg](./configs/ssl/upernet_pixpro_millionaid_resnet50_potsdam_512x512.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/isaid/ssl/upernet_pixpro_millionaid_resnet50_potsdam_512x512/model.pdparams) |
 
 ## 3 Installation
 

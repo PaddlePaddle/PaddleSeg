@@ -39,7 +39,7 @@ model:
   backbone:
     type: ResNet50
     ssl_pretrained: True
-    pretrained: https://passl.bj.bcebos.com/models/pixpro_r50_ep100_no_instance_with_linear.pdparams
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/pssl/pixpro_r50_ep100_no_instance_with_linear.zip
   num_classes: 16
   pretrained: Null
   backbone_indices: [0]
