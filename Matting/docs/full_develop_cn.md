@@ -119,6 +119,8 @@ python tools/val.py --help
 ```
 
 ## 预测
+
+### 图像预测
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python tools/predict.py \
@@ -139,8 +141,20 @@ python tools/predict.py \
 python tools/predict.py --help
 ```
 
+### 视频预测
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python tools/predict_video.py \
+    --config configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml \
+    --model_path pretrained_models/ppmattingv2-stdc1-human_512.pdparams \
+    --video_path path/to/video \
+    --save_dir ./output/results \
+    --fg_estimate True
+```
+
 
 ## 背景替换
+### 图像背景替换
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python tools/bg_replace.py \
@@ -165,6 +179,18 @@ python tools/bg_replace.py \
 ```shell
 python tools/bg_replace.py --help
 ```
+### 视频背景替换
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python tools/bg_replace_video.py \
+    --config configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml \
+    --model_path pretrained_models/ppmattingv2-stdc1-human_512.pdparams \
+    --video_path path/to/video \
+    --background 'g' \
+    --save_dir ./output/results \
+    --fg_estimate True
+```
+
 
 ## 导出部署
 ### 模型导出
@@ -193,6 +219,7 @@ python deploy/python/infer.py \
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
 
 `--fg_estimate False` 可关闭前景估计功能，可提升预测速度，但图像质量会有所降低
+`--video_path` 传入视频路径，可进行视频抠图
 
 更多参数信息请运行如下命令进行查看:
 ```shell
