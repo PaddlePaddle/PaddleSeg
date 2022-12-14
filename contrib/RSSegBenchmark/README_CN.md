@@ -176,9 +176,9 @@ python -m paddle.distributed.launch train.py \
 
 *注意：更多训练的设置和细节请到[PaddleSeg文档](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.6/docs/train/train.md)内查看。*
 
-### 5.2 Evaluating
+### 5.2 验证
 
-Get evaluation metrics of the best model.
+得到最优秀模型的评价指标。
 
 ```shell
 python val.py \
@@ -187,9 +187,10 @@ python val.py \
 ```
 *注意：更多细节参考[PaddleSeg文档](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.6/docs/evaluation/evaluate.md)。*
 
-### 5.3 Predicting
+### 5.3 预测
 
-Predict and save the segmentation result of an input image with the best model.
+预测以及保存最优模型的分割结果。
+
 ```shell
 python predict.py \
        --config configs/{YOUR CONFIG FILE} \
