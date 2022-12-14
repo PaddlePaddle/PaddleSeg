@@ -49,7 +49,7 @@ python tools/predict.py \
 Prediction results are as follows:
 <div align="center">
 <img src="https://user-images.githubusercontent.com/30919197/201861635-0d139592-7da5-44b1-9bfa-7502d9643320.png"  width = "90%"  />
-* </div>
+</div>
 
 **Note**: `--config` needs to match `--model_path`.
 
@@ -64,12 +64,56 @@ python tools/bg_replace.py \
     --save_dir ./output/results \
     --fg_estimate True
 ```
-The background replacement effect is as follows：
+The background replacement effect is as follows:
 <div align="center">
 <img src="https://user-images.githubusercontent.com/30919197/201861644-15dd5ccf-fb6e-4440-a731-8e7c1d464699.png"  width = "90%"  />
-* </div>
+</div>
 
 **Notes:**
 * `--image_path` must be the specific path of an image.
 * `--config` needs to match `--model_path`.
 * `--background` can be passed into the background image path, or one of ('r','g','b','w'), representing a red, green, blue, or white background, default green if not passed.
+
+
+## Video Prediction
+
+Run the following commad to predict the video, and remember to pass the video path by `--video_path`.
+
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python tools/predict_video.py \
+    --config configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml \
+    --model_path pretrained_models/ppmattingv2-stdc1-human_512.pdparams \
+    --video_path path/to/video \
+    --save_dir ./output/results \
+    --fg_estimate True
+```
+Prediction results are as follows:
+
+<p align="center">
+<img src="https://paddleseg.bj.bcebos.com/matting/demo/v1.gif"  height="200">  
+<img src="https://paddleseg.bj.bcebos.com/matting/demo/v1_alpha.gif"  height="200">
+<img src="https://paddleseg.bj.bcebos.com/matting/demo/v1_fg.gif"  height="200">
+</p>
+
+
+## Video Background Replacement
+Run the following commad to replace video background, and remember to pass the video path by `--video_path`.
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python tools/bg_replace_video.py \
+    --config configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml \
+    --model_path pretrained_models/ppmattingv2-stdc1-human_512.pdparams \
+    --video_path path/to/video \
+    --background 'g' \
+    --save_dir ./output/results \
+    --fg_estimate True
+```
+The background replacement effect is as follows:
+<p align="center">
+<img src="https://paddleseg.bj.bcebos.com/matting/demo/v1.gif"  height="200">  
+<img src="https://paddleseg.bj.bcebos.com/matting/demo/v1_bgv1.gif"  height="200">
+</p>
+
+**Notes:**
+* `--background` can be passed into the background image path, or background video path, or one of ('r','g','b','w'), representing a red, green, blue, or white background, default green if not passed.
