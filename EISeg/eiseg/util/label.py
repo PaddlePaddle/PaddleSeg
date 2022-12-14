@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import os.path as osp
 
 from . import colorMap
@@ -91,6 +90,28 @@ class LabelList(object):
         for lab in self.labelList:
             if lab.idx == labelIdx:
                 return lab
+        return None
+
+    def getLabelByName(self, labelName):
+        for lab in self.labelList:
+            if lab.name == labelName:
+                return lab
+        return None
+
+    def getLabelByNameFuzzy(self, labelName):
+        result = []
+        for lab in self.labelList:
+            #  从左边开始时匹配且大小写不敏感
+            if str.find(lab.name.lower(), labelName.lower()) == 0:
+                result.append(lab)
+        return result
+
+    def changeLabelName(self, labelName_old, labelName_new):
+        for idx, lab in enumerate(self.labelList):
+            if lab.name == labelName_old:
+                self.labelList[idx].name = labelName_new
+                return lab
+        return None
 
     def __repr__(self):
         return str(self.labelList)

@@ -74,120 +74,51 @@ class Config(object):
                  batch_size: int=None,
                  iters: int=None,
                  opts: list=None):
-        if not path:
-            raise ValueError('Please specify the configuration file path.')
-
         if not os.path.exists(path):
-            raise FileNotFoundError('File {} does not exist'.format(path))
+            raise FileNotFoundError('Config path ({}) does not exist'.format(
+                path))
 
-        self._model = None
-        self._losses = None
-        if path.endswith('yml') or path.endswith('yaml'):
-            self.dic = self._parse_from_yaml(path)
-        else:
-            raise RuntimeError('Config file should in yaml format!')
+        if not (path.endswith('yml') or path.endswith('yaml')):
+            raise RuntimeError('Config file should be yaml format!')
 
-        self.update(
+        self.dic = parse_from_yaml(path)
+        self.dic = update_dic(
+            self.dic,
             learning_rate=learning_rate,
             batch_size=batch_size,
             iters=iters,
             opts=opts)
 
-        model_cfg = self.dic.get('model', None)
-        if model_cfg is None:
-            raise RuntimeError('No model specified in the configuration file.')
-        if (not self.train_dataset_config) and (not self.val_dataset_config):
-            raise ValueError(
-                'One of `train_dataset` or `val_dataset should be given, but there are none.'
-            )
+        self.check_sync_config()
 
-    def _update_dic(self, dic, base_dic):
-        """
-        Update config from dic based base_dic
-        """
-        base_dic = base_dic.copy()
-        dic = dic.copy()
+        self._model = None
+        self._losses = None
 
-        if dic.get('_inherited_', True) == False:
-            dic.pop('_inherited_')
-            return dic
+    def __str__(self) -> str:
+        # Use NoAliasDumper to avoid yml anchor 
+        return yaml.dump(self.dic, Dumper=NoAliasDumper)
 
-        for key, val in dic.items():
-            if isinstance(val, dict) and key in base_dic:
-                base_dic[key] = self._update_dic(val, base_dic[key])
-            else:
-                base_dic[key] = val
-        dic = base_dic
-        return dic
-
-    def _parse_from_yaml(self, path: str):
-        '''Parse a yaml file and build config'''
-        with codecs.open(path, 'r', 'utf-8') as file:
-            dic = yaml.load(file, Loader=yaml.FullLoader)
-
-        if '_base_' in dic:
-            cfg_dir = os.path.dirname(path)
-            base_path = dic.pop('_base_')
-            base_path = os.path.join(cfg_dir, base_path)
-            base_dic = self._parse_from_yaml(base_path)
-            dic = self._update_dic(dic, base_dic)
-        return dic
-
-    def update(self,
-               learning_rate: float=None,
-               batch_size: int=None,
-               iters: int=None,
-               opts: list=None):
-        '''Update config'''
-        if learning_rate:
-            if 'lr_scheduler' in self.dic:
-                self.dic['lr_scheduler']['learning_rate'] = learning_rate
-            else:
-                self.dic['learning_rate']['value'] = learning_rate
-
-        if batch_size:
-            self.dic['batch_size'] = batch_size
-
-        if iters:
-            self.dic['iters'] = iters
-
-        # fix parameters by --opts of command
-        if opts is not None:
-            if len(opts) % 2 != 0 or len(opts) == 0:
-                raise ValueError(
-                    "Command line options config `--opts` format error! It should be even length like: k1 v1 k2 v2 ... Please check it: {}".
-                    format(opts))
-            for key, value in zip(opts[0::2], opts[1::2]):
-                if isinstance(value, six.string_types):
-                    try:
-                        value = literal_eval(value)
-                    except ValueError:
-                        pass
-                    except SyntaxError:
-                        pass
-                key_list = key.split('.')
-                dic = self.dic
-                for subkey in key_list[:-1]:
-                    dic.setdefault(subkey, dict())
-                    dic = dic[subkey]
-                dic[key_list[-1]] = value
-
+    #################### hyper parameters
     @property
     def batch_size(self) -> int:
         return self.dic.get('batch_size', 1)
 
     @property
     def iters(self) -> int:
-        iters = self.dic.get('iters')
-        if not iters:
+        iters = self.dic.get('iters', None)
+        if iters is None:
             raise RuntimeError('No iters specified in the configuration file.')
         return iters
 
     @property
+    def to_static_training(self) -> bool:
+        '''Whether to use @to_static for training'''
+        return self.dic.get('to_static_training', False)
+
+    #################### lr_scheduler and optimizer
+    @property
     def lr_scheduler(self) -> paddle.optimizer.lr.LRScheduler:
-        if 'lr_scheduler' not in self.dic:
-            raise RuntimeError(
-                'No `lr_scheduler` specified in the configuration file.')
+        assert 'lr_scheduler' in self.dic, 'No `lr_scheduler` specified in the configuration file.'
         params = self.dic.get('lr_scheduler')
 
         use_warmup = False
@@ -218,44 +149,17 @@ class Config(object):
         return lr_sche
 
     @property
-    def learning_rate(self) -> paddle.optimizer.lr.LRScheduler:
-        logger.warning(
-            '''`learning_rate` in configuration file will be deprecated, please use `lr_scheduler` instead. E.g
-            lr_scheduler:
-                type: PolynomialDecay
-                learning_rate: 0.01''')
-
-        _learning_rate = self.dic.get('learning_rate', {})
-        if isinstance(_learning_rate, float):
-            return _learning_rate
-
-        _learning_rate = self.dic.get('learning_rate', {}).get('value')
-        if not _learning_rate:
-            raise RuntimeError(
-                'No learning rate specified in the configuration file.')
-
-        args = self.decay_args
-        decay_type = args.pop('type')
-
-        if decay_type == 'poly':
-            lr = _learning_rate
-            return paddle.optimizer.lr.PolynomialDecay(lr, **args)
-        elif decay_type == 'piecewise':
-            values = _learning_rate
-            return paddle.optimizer.lr.PiecewiseDecay(values=values, **args)
-        elif decay_type == 'stepdecay':
-            lr = _learning_rate
-            return paddle.optimizer.lr.StepDecay(lr, **args)
-        else:
-            raise RuntimeError('Only poly and piecewise decay support.')
+    def optimizer_config(self) -> dict:
+        args = self.dic.get('optimizer', {}).copy()
+        # TODO remove the default params
+        if args['type'] == 'sgd':
+            args.setdefault('momentum', 0.9)
+        return args
 
     @property
     def optimizer(self) -> paddle.optimizer.Optimizer:
-        if 'lr_scheduler' in self.dic:
-            lr = self.lr_scheduler
-        else:
-            lr = self.learning_rate
-        args = self.optimizer_args
+        lr = self.lr_scheduler
+        args = self.optimizer_config
         optimizer_type = args.pop('type')
 
         params = self.model.parameters()
@@ -288,26 +192,7 @@ class Config(object):
 
         raise RuntimeError('Unknown optimizer type {}.'.format(optimizer_type))
 
-    @property
-    def optimizer_args(self) -> dict:
-        args = self.dic.get('optimizer', {}).copy()
-        if args['type'] == 'sgd':
-            args.setdefault('momentum', 0.9)
-
-        return args
-
-    @property
-    def decay_args(self) -> dict:
-        args = self.dic.get('learning_rate', {}).get(
-            'decay', {'type': 'poly',
-                      'power': 0.9}).copy()
-
-        if args['type'] == 'poly':
-            args.setdefault('decay_steps', self.iters)
-            args.setdefault('end_lr', 0)
-
-        return args
-
+    #################### loss
     @property
     def loss(self) -> dict:
         if self._losses is None:
@@ -330,49 +215,20 @@ class Config(object):
             dict: A dict including the loss parameters and layers.
         """
         args = self.dic.get(loss_name, {}).copy()
-        if 'types' in args and 'coef' in args:
-            len_types = len(args['types'])
-            len_coef = len(args['coef'])
-            if len_types != len_coef:
-                if len_types == 1:
-                    args['types'] = args['types'] * len_coef
-                else:
-                    raise ValueError(
-                        'The length of types should equal to coef or equal to 1 in loss config, but they are {} and {}.'
-                        .format(len_types, len_coef))
-        else:
-            raise ValueError(
-                'Loss config should contain keys of "types" and "coef"')
-
-        losses = dict()
-        for key, val in args.items():
-            if key == 'types':
-                losses['types'] = []
-                for item in args['types']:
-                    if item['type'] != 'MixedLoss':
-                        if 'ignore_index' in item:
-                            assert item['ignore_index'] == self.train_dataset.ignore_index, 'If ignore_index of loss is set, '\
-                            'the ignore_index of loss and train_dataset must be the same. \nCurrently, loss ignore_index = {}, '\
-                            'train_dataset ignore_index = {}. \nIt is recommended not to set loss ignore_index, so it is consistent with '\
-                            'train_dataset by default.'.format(item['ignore_index'], self.train_dataset.ignore_index)
-                        item['ignore_index'] = \
-                            self.train_dataset.ignore_index
-                    losses['types'].append(self._load_object(item))
-            else:
-                losses[key] = val
-        if len(losses['coef']) != len(losses['types']):
-            raise RuntimeError(
-                'The length of coef should equal to types in loss config: {} != {}.'
-                .format(len(losses['coef']), len(losses['types'])))
+        losses = {'coef': args['coef'], "types": []}
+        for loss_cfg in args['types']:
+            losses['types'].append(create_object(loss_cfg))
         return losses
 
+    #################### model
     @property
     def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
         if not self._model:
-            self._model = self._load_object(model_cfg)
+            self._model = create_object(model_cfg)
         return self._model
 
+    #################### dataset
     @property
     def train_dataset_config(self) -> Dict:
         return self.dic.get('train_dataset', {}).copy()
@@ -384,79 +240,26 @@ class Config(object):
     @property
     def train_dataset_class(self) -> Generic:
         dataset_type = self.train_dataset_config['type']
-        return self._load_component(dataset_type)
+        return load_component_class(dataset_type)
 
     @property
     def val_dataset_class(self) -> Generic:
         dataset_type = self.val_dataset_config['type']
-        return self._load_component(dataset_type)
+        return load_component_class(dataset_type)
 
     @property
     def train_dataset(self) -> paddle.io.Dataset:
         _train_dataset = self.train_dataset_config
         if not _train_dataset:
             return None
-        return self._load_object(_train_dataset)
+        return create_object(_train_dataset)
 
     @property
     def val_dataset(self) -> paddle.io.Dataset:
         _val_dataset = self.val_dataset_config
         if not _val_dataset:
             return None
-        return self._load_object(_val_dataset)
-
-    def _load_component(self, com_name: str) -> Any:
-        com_list = [
-            manager.MODELS, manager.BACKBONES, manager.DATASETS,
-            manager.TRANSFORMS, manager.LOSSES
-        ]
-
-        for com in com_list:
-            if com_name in com.components_dict:
-                return com[com_name]
-        else:
-            raise RuntimeError(
-                'The specified component was not found {}.'.format(com_name))
-
-    def _load_object(self, cfg: dict) -> Any:
-        cfg = cfg.copy()
-        if 'type' not in cfg:
-            raise RuntimeError('No object information in {}.'.format(cfg))
-
-        component = self._load_component(cfg.pop('type'))
-
-        params = {}
-        for key, val in cfg.items():
-            if self._is_meta_type(val):
-                params[key] = self._load_object(val)
-            elif isinstance(val, list):
-                params[key] = [
-                    self._load_object(item)
-                    if self._is_meta_type(item) else item for item in val
-                ]
-            else:
-                params[key] = val
-
-        return component(**params)
-
-    @property
-    def test_config(self) -> Dict:
-        return self.dic.get('test_config', {})
-
-    @property
-    def export_config(self) -> Dict:
-        return self.dic.get('export', {})
-
-    @property
-    def to_static_training(self) -> bool:
-        '''Whether to use @to_static for training'''
-        return self.dic.get('to_static_training', False)
-
-    def _is_meta_type(self, item: Any) -> bool:
-        return isinstance(item, dict) and 'type' in item
-
-    def __str__(self) -> str:
-        return yaml.dump(self.dic)
+        return create_object(_val_dataset)
 
     @property
     def val_transforms(self) -> list:
@@ -467,16 +270,34 @@ class Config(object):
         _transforms = _val_dataset.get('transforms', [])
         transforms = []
         for i in _transforms:
-            transforms.append(self._load_object(i))
+            transforms.append(create_object(i))
         return transforms
 
-    def check_sync_info(self) -> None:
+    #################### test and export
+    @property
+    def test_config(self) -> Dict:
+        return self.dic.get('test_config', {})
+
+    @property
+    def export_config(self) -> Dict:
+        return self.dic.get('export', {})
+
+    #################### check and synchronize
+    def check_sync_config(self) -> None:
         """
-        Check and sync the info, such as num_classes and img_channels, 
-        between the config of model, train_dataset and val_dataset.
+        Check and sync the config information, such as num_classes, img_channels
+        and ignore_index between the config of model, train_dataset and val_dataset.
         """
+        if self.dic.get('model', None) is None:
+            raise RuntimeError('No model specified in the configuration file.')
+        if (not self.train_dataset_config) and (not self.val_dataset_config):
+            raise ValueError('One of `train_dataset` or `val_dataset '
+                             'should be given, but there are none.')
+
         self._check_sync_num_classes()
         self._check_sync_img_channels()
+        self._check_sync_ignore_index('loss')
+        self._check_sync_ignore_index('distill_loss')
 
     def _check_sync_num_classes(self):
         num_classes_set = set()
@@ -486,12 +307,12 @@ class Config(object):
         if self.train_dataset_config:
             if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
                 num_classes_set.add(self.train_dataset_class.NUM_CLASSES)
-            elif 'num_classes' in self.train_dataset_config:
+            if 'num_classes' in self.train_dataset_config:
                 num_classes_set.add(self.train_dataset_config['num_classes'])
         if self.val_dataset_config:
             if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
                 num_classes_set.add(self.val_dataset_class.NUM_CLASSES)
-            elif 'num_classes' in self.val_dataset_config:
+            if 'num_classes' in self.val_dataset_config:
                 num_classes_set.add(self.val_dataset_config['num_classes'])
 
         if len(num_classes_set) == 0:
@@ -548,3 +369,150 @@ class Config(object):
         if self.val_dataset_config and \
             self.val_dataset_config['type'] == "Dataset":
             self.dic['val_dataset']['img_channels'] = img_channels
+
+    def _check_sync_ignore_index(self, loss_name):
+        loss_cfg = self.dic.get(loss_name, None)
+        if loss_cfg is None:
+            return
+
+        if ('types' not in loss_cfg) and ('coef' not in loss_cfg):
+            raise ValueError(
+                'Loss config should contain keys of "types" and "coef"')
+
+        len_types = len(loss_cfg['types'])
+        len_coef = len(loss_cfg['coef'])
+        if len_types != len_coef:
+            if len_types == 1:
+                loss_cfg['types'] = loss_cfg['types'] * len_coef
+            else:
+                raise ValueError(
+                    "The length of types should equal to coef or equal "
+                    "to 1 in loss config, but they are {} and {}.".format(
+                        len_types, len_coef))
+
+        def _check_ignore_index(loss_cfg, dataset_ignore_index):
+            if 'ignore_index' in loss_cfg:
+                assert loss_cfg['ignore_index'] == dataset_ignore_index, \
+                    'the ignore_index in loss and train_dataset must be the same. Currently, loss ignore_index = {}, '\
+                    'train_dataset ignore_index = {}'.format(loss_cfg['ignore_index'], dataset_ignore_index)
+
+        dataset_ignore_index = self.train_dataset.ignore_index
+        for loss_cfg_i in loss_cfg['types']:
+            if loss_cfg_i['type'] == 'MixedLoss':
+                for loss_cfg_j in loss_cfg_i['losses']:
+                    _check_ignore_index(loss_cfg_j, dataset_ignore_index)
+                    loss_cfg_j['ignore_index'] = dataset_ignore_index
+            else:
+                _check_ignore_index(loss_cfg_i, dataset_ignore_index)
+                loss_cfg_i['ignore_index'] = dataset_ignore_index
+
+
+class NoAliasDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data):
+        return True
+
+
+def merge_config_dict(dic, base_dic):
+    '''Merge dic to base_dic and return base_dic.'''
+    base_dic = base_dic.copy()
+    dic = dic.copy()
+
+    if dic.get('_inherited_', True) == False:
+        dic.pop('_inherited_')
+        return dic
+
+    for key, val in dic.items():
+        if isinstance(val, dict) and key in base_dic:
+            base_dic[key] = merge_config_dict(val, base_dic[key])
+        else:
+            base_dic[key] = val
+
+    return base_dic
+
+
+def parse_from_yaml(path: str):
+    '''Parse a yaml file and build config'''
+    with codecs.open(path, 'r', 'utf-8') as file:
+        dic = yaml.load(file, Loader=yaml.FullLoader)
+
+    if '_base_' in dic:
+        base_dir = os.path.dirname(path)
+        base_path = os.path.join(base_dir, dic.pop('_base_'))
+        base_dic = parse_from_yaml(base_path)
+        dic = merge_config_dict(dic, base_dic)
+
+    return dic
+
+
+def update_dic(dic: dict,
+               learning_rate: float=None,
+               batch_size: int=None,
+               iters: int=None,
+               opts: list=None):
+    '''Update config'''
+    dic = dic.copy()
+
+    if learning_rate:
+        dic['lr_scheduler']['learning_rate'] = learning_rate
+    if batch_size:
+        dic['batch_size'] = batch_size
+    if iters:
+        dic['iters'] = iters
+
+    # fix parameters by --opts of command
+    if opts is not None:
+        if len(opts) % 2 != 0 or len(opts) == 0:
+            raise ValueError(
+                "Command params `--opts` error."
+                "It should be even length like: k1 v1 k2 v2 ... Please check again: {}".
+                format(opts))
+        for key, value in zip(opts[0::2], opts[1::2]):
+            if isinstance(value, six.string_types):
+                value = literal_eval(value)
+            key_list = key.split('.')
+            tmp_dic = dic
+            for subkey in key_list[:-1]:
+                tmp_dic.setdefault(subkey, dict())
+                tmp_dic = tmp_dic[subkey]
+            tmp_dic[key_list[-1]] = value
+
+    return dic
+
+
+def load_component_class(com_name: str) -> Any:
+    '''Load component class, such as model, loss, dataset, etc.'''
+    com_list = [
+        manager.MODELS, manager.BACKBONES, manager.DATASETS, manager.TRANSFORMS,
+        manager.LOSSES
+    ]
+
+    for com in com_list:
+        if com_name in com.components_dict:
+            return com[com_name]
+
+    raise RuntimeError('The specified component ({}) was not found.'.format(
+        com_name))
+
+
+def create_object(cfg: dict) -> Any:
+    '''Create Python object, such as model, loss, dataset, etc.'''
+    cfg = cfg.copy()
+    if 'type' not in cfg:
+        raise RuntimeError('No object information in {}.'.format(cfg))
+
+    is_meta_type = lambda item: isinstance(item, dict) and 'type' in item
+    component = load_component_class(cfg.pop('type'))
+
+    params = {}
+    for key, val in cfg.items():
+        if is_meta_type(val):
+            params[key] = create_object(val)
+        elif isinstance(val, list):
+            params[key] = [
+                create_object(item) if is_meta_type(item) else item
+                for item in val
+            ]
+        else:
+            params[key] = val
+
+    return component(**params)

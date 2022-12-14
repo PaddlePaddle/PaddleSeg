@@ -58,7 +58,6 @@ def parse_args():
 def main(args):
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     cfg = Config(args.cfg)
-    cfg.check_sync_info()
     net = cfg.model
 
     if args.model_path:

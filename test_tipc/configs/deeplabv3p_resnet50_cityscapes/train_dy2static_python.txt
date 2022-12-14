@@ -1,0 +1,22 @@
+=========================== base_train ===========================
+model_name:deeplabv3p_resnet50_cityscapes
+python:python3.7
+gpu_list:0|0,1
+Global.use_gpu:null|null
+--precision:null
+--iters:lite_train_lite_infer=2|lite_train_whole_infer=2|whole_train_whole_infer=1000
+--save_dir:
+--batch_size:lite_train_lite_infer=2|lite_train_whole_infer=2|whole_train_whole_infer=8
+--model_path:null
+train_model_name:best_model/model.pdparams
+train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
+null:null
+##
+trainer:norm_train
+norm_train:tools/train.py --config test_tipc/configs/deeplabv3p_resnet50_cityscapes/deeplabv3p_resnet50_1024x512_cityscapes.yml --device gpu --save_interval 500 --seed 100 --num_workers 8 --log_iters 5 --log_iters=1
+pact_train:null
+fpgm_train:null
+distill_train:null
+null:null
+null:null
+echo "No Custom Command"

@@ -81,7 +81,6 @@ def check_and_run_onnx(onnx_model_path, input_data):
 
 def export_onnx(args):
     cfg = Config(args.config)
-    cfg.check_sync_info()
     model = cfg.model
     if args.model_path is not None:
         utils.load_entire_model(model, args.model_path)

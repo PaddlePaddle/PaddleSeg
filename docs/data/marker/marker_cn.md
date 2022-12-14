@@ -104,7 +104,7 @@ FLAGS说明：
 
 使用示例：
 ```
-python tools/data/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
+python tools/data/split_dataset_list.py <dataset_root> images labels --split 0.6 0.2 0.2 --format jpg png
 ```
 
 运行后将在数据集根目录下生成`train.txt`、`val.txt`和`test.txt`，如下。
@@ -131,8 +131,8 @@ custom_dataset
 
 三个txt文件的内容如下，每行是一张原始图片和标注图片的相对路径（相对于txt文件），两个相对路径中间是空格分隔符。
 ```
-images/image1.jpg  annotations/image1.png
-images/image2.jpg  annotations/image2.png
+images/image1.jpg  labels/image1.png
+images/image2.jpg  labels/image2.png
 ...
 ```
 

@@ -140,7 +140,6 @@ def analyze(args):
     paddle.set_device('cpu')
 
     cfg = Config(args.config)
-    cfg.check_sync_info()
 
     custom_ops = {paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn}
     inputs = paddle.randn(args.input_shape)
