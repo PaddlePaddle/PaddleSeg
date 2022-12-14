@@ -2,7 +2,7 @@
 name: "\U0001F680 Feature request / 新功能需求"
 about: Suggest an idea for this project / 提出一个新的功能需求或改进建议
 title: "[Feature Request]"
-labels: enhancement
+labels: Feature Request
 assignees: ''
 
 ---

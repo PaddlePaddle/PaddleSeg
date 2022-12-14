@@ -14,3 +14,4 @@
 
 from .gca_module import GuidedCxtAtten
 from .tensor_fusion import MLFF
+from .guided_filter import FastGuidedFilter

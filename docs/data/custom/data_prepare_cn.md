@@ -1,4 +1,4 @@
-简体中文|[English](data_prepare.md)
+简体中文 | [English](data_prepare.md)
 # 准备自定义数据集
 如果您需要使用自定义数据集进行训练，请按照以下步骤准备数据。
 

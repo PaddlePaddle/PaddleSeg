@@ -33,7 +33,7 @@ manager.BACKBONES._components_dict.clear()
 manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting.transforms as T
-from ppmatting.utils import get_image_list, mkdir, estimate_foreground_ml
+from ppmatting.utils import get_image_list, mkdir, estimate_foreground_ml, VideoReader, VideoWriter
 
 
 def parse_args():
@@ -50,8 +50,7 @@ def parse_args():
         dest='image_path',
         help='The directory or path or file list of the images to be predicted.',
         type=str,
-        default=None,
-        required=True)
+        default=None)
     parser.add_argument(
         '--trimap_path',
         dest='trimap_path',
@@ -61,9 +60,15 @@ def parse_args():
     parser.add_argument(
         '--batch_size',
         dest='batch_size',
-        help='Mini batch size of one gpu or cpu.',
+        help='Mini batch size of one gpu or cpu. When video inference, it is invalid.',
         type=int,
         default=1)
+    parser.add_argument(
+        '--video_path',
+        dest='video_path',
+        help='The path of the video to be predicted.',
+        type=str,
+        default=None)
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
@@ -141,12 +146,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def use_auto_tune(args):
-    return hasattr(PredictConfig, "collect_shape_range_info") \
-        and hasattr(PredictConfig, "enable_tuned_tensorrt_dynamic_shape") \
-        and args.device == "gpu" and args.use_trt and args.enable_auto_tune
-
-
 class DeployConfig:
     def __init__(self, path):
         with codecs.open(path, 'r', 'utf-8') as file:
@@ -175,6 +174,12 @@ class DeployConfig:
             ctype = t.pop('type')
             transforms.append(com[ctype](**t))
         return T.Compose(transforms)
+
+
+def use_auto_tune(args):
+    return hasattr(PredictConfig, "collect_shape_range_info") \
+        and hasattr(PredictConfig, "enable_tuned_tensorrt_dynamic_shape") \
+        and args.device == "gpu" and args.use_trt and args.enable_auto_tune
 
 
 def auto_tune(args, imgs, img_nums):
@@ -209,9 +214,10 @@ def auto_tune(args, imgs, img_nums):
     input_handle = predictor.get_input_handle(input_names[0])
 
     for i in range(0, num):
-        data = np.array([cfg.transforms(imgs[i])[0]])
-        input_handle.reshape(data.shape)
-        input_handle.copy_from_cpu(data)
+        data = {'img': imgs[i]}
+        data = cfg.transforms(data)
+        input_handle.reshape(data['img'].shape)
+        input_handle.copy_from_cpu(data['img'])
         try:
             predictor.run()
         except:
@@ -237,7 +243,6 @@ class Predictor:
         self.cfg = DeployConfig(args.cfg)
 
         self._init_base_config()
-
         if args.device == 'cpu':
             self._init_cpu_config()
         else:
@@ -316,9 +321,9 @@ class Predictor:
                     self.args.auto_tuned_shape_file, allow_build_at_runtime)
             else:
                 logger.info("Use manual set dynamic shape")
-                min_input_shape = {"x": [1, 3, 100, 100]}
-                max_input_shape = {"x": [1, 3, 2000, 3000]}
-                opt_input_shape = {"x": [1, 3, 512, 1024]}
+                min_input_shape = {"img": [1, 3, 100, 100]}
+                max_input_shape = {"img": [1, 3, 2000, 3000]}
+                opt_input_shape = {"img": [1, 3, 512, 1024]}
                 self.pred_cfg.set_trt_dynamic_shape_info(
                     min_input_shape, max_input_shape, opt_input_shape)
 
@@ -344,8 +349,8 @@ class Predictor:
                         trimap_inputs = []
                     trans_info = []
                     for j in range(i, i + args.batch_size):
-                        img = imgs[i]
-                        trimap = trimaps[i] if trimaps is not None else None
+                        img = imgs[j]
+                        trimap = trimaps[j] if trimaps is not None else None
                         data = self._preprocess(img=img, trimap=trimap)
                         img_inputs.append(data['img'])
                         if trimaps is not None:
@@ -379,8 +384,8 @@ class Predictor:
                 trimap_inputs = []
             trans_info = []
             for j in range(i, i + args.batch_size):
-                img = imgs[i]
-                trimap = trimaps[i] if trimaps is not None else None
+                img = imgs[j]
+                trimap = trimaps[j] if trimaps is not None else None
                 data = self._preprocess(img=img, trimap=trimap)
                 img_inputs.append(data['img'])
                 if trimaps is not None:
@@ -437,13 +442,13 @@ class Predictor:
                     alpha, (w, h), interpolation=cv2.INTER_LINEAR)
             elif item[0] == 'padding':
                 h, w = item[1][0], item[1][1]
-                alpha = alpha[:, :, 0:h, 0:w]
+                alpha = alpha[0:h, 0:w]
             else:
                 raise Exception("Unexpected info '{}' in im_info".format(item[
                     0]))
         return alpha
 
-    def _save_imgs(self, alpha, img_path):
+    def _save_imgs(self, alpha, img_path, fg=None):
         ori_img = cv2.imread(img_path)
         alpha = (alpha * 255).astype('uint8')
 
@@ -464,36 +469,312 @@ class Predictor:
 
         # save rgba image
         mkdir(rgba_save_path)
-        if args.fg_estimate:
-            fg = estimate_foreground_ml(ori_img / 255.0, alpha / 255.0) * 255
+        if fg is None:
+            if args.fg_estimate:
+                fg = estimate_foreground_ml(ori_img / 255.0,
+                                            alpha / 255.0) * 255
+            else:
+                fg = ori_img
         else:
-            fg = ori_img
+            fg = fg * 255
         fg = fg.astype('uint8')
         alpha = alpha[:, :, np.newaxis]
         rgba = np.concatenate([fg, alpha], axis=-1)
         cv2.imwrite(rgba_save_path, rgba)
 
+    def run_video(self, video_path):
+        """Video matting only support the trimap-free method"""
+        input_names = self.predictor.get_input_names()
+        input_handle = {}
+
+        for i in range(len(input_names)):
+            input_handle[input_names[i]] = self.predictor.get_input_handle(
+                input_names[i])
+        output_names = self.predictor.get_output_names()
+        output_handle = {}
+        output_handle['alpha'] = self.predictor.get_output_handle(output_names[
+            0])
+
+        # Build reader and writer
+        reader = VideoReader(video_path, self.cfg.transforms)
+        base_name = os.path.basename(video_path)
+        name = os.path.splitext(base_name)[0]
+        alpha_save_path = os.path.join(args.save_dir, name + '_alpha.avi')
+        fg_save_path = os.path.join(args.save_dir, name + '_fg.avi')
+        writer_alpha = VideoWriter(
+            alpha_save_path,
+            reader.fps,
+            frame_size=(reader.width, reader.height),
+            is_color=False)
+        writer_fg = VideoWriter(
+            fg_save_path,
+            reader.fps,
+            frame_size=(reader.width, reader.height),
+            is_color=True)
+
+        for data in tqdm.tqdm(reader):
+            trans_info = data['trans_info']
+            _, h, w = data['img'].shape
+
+            input_handle['img'].copy_from_cpu(data['img'][np.newaxis, ...])
+
+            self.predictor.run()
+
+            alpha = output_handle['alpha'].copy_to_cpu()
+
+            alpha = alpha.squeeze()
+            alpha = self._postprocess(alpha, trans_info)
+            self._save_frame(
+                alpha,
+                fg=None,
+                img=data['ori_img'],
+                writer_alpha=writer_alpha,
+                writer_fg=writer_fg)
+
+        writer_alpha.release()
+        writer_fg.release()
+        reader.release()
+
+    def _save_frame(self, alpha, fg, img, writer_alpha, writer_fg):
+        if fg is None:
+            img = img.transpose((1, 2, 0))
+            if self.args.fg_estimate:
+                fg = estimate_foreground_ml(img, alpha)
+            else:
+                fg = img
+        fg = fg * alpha[:, :, np.newaxis]
+
+        writer_alpha.write(alpha)
+        writer_fg.write(fg)
+
+
+class PredictorRVM(Predictor):
+    def __init__(self, args):
+        super().__init__(args=args)
+
+    def run(self, imgs, trimaps=None, imgs_dir=None):
+        self.imgs_dir = imgs_dir
+        num = len(imgs)
+        input_names = self.predictor.get_input_names()
+        input_handle = {}
+
+        for i in range(len(input_names)):
+            input_handle[input_names[i]] = self.predictor.get_input_handle(
+                input_names[i])
+        output_names = self.predictor.get_output_names()
+        output_handle = {}
+        output_handle['alpha'] = self.predictor.get_output_handle(output_names[
+            0])
+        output_handle['fg'] = self.predictor.get_output_handle(output_names[1])
+        output_handle['r1'] = self.predictor.get_output_handle(output_names[2])
+        output_handle['r2'] = self.predictor.get_output_handle(output_names[3])
+        output_handle['r3'] = self.predictor.get_output_handle(output_names[4])
+        output_handle['r4'] = self.predictor.get_output_handle(output_names[5])
+
+        args = self.args
+
+        for i in tqdm.tqdm(range(0, num, args.batch_size)):
+            # warm up
+            if i == 0 and args.benchmark:
+                for _ in range(5):
+                    img_inputs = []
+                    if trimaps is not None:
+                        trimap_inputs = []
+                    trans_info = []
+                    for j in range(i, i + args.batch_size):
+                        img = imgs[j]
+                        data = self._preprocess(img=img)
+                        img_inputs.append(data['img'])
+                        trans_info.append(data['trans_info'])
+                    img_inputs = np.array(img_inputs)
+                    n, _, h, w = img_inputs.shape
+                    downsample_ratio = min(512 / max(h, w), 1)
+                    downsample_ratio = np.array(
+                        [downsample_ratio], dtype='float32')
+
+                    input_handle['img'].copy_from_cpu(img_inputs)
+                    input_handle['downsample_ratio'].copy_from_cpu(
+                        downsample_ratio.astype('float32'))
+                    r_channels = [16, 20, 40, 64]
+                    for k in range(4):
+                        j = k + 1
+                        hj = int(np.ceil(int(h * downsample_ratio[0]) / 2**j))
+                        wj = int(np.ceil(int(w * downsample_ratio[0]) / 2**j))
+                        rj = np.zeros(
+                            (n, r_channels[k], hj, wj), dtype='float32')
+                        input_handle['r' + str(j)].copy_from_cpu(rj)
+
+                    self.predictor.run()
+                    alphas = output_handle['alpha'].copy_to_cpu()
+                    fgs = output_handle['fg'].copy_to_cpu()
+                    alphas = alphas.squeeze(1)
+                    for j in range(args.batch_size):
+                        alpha = self._postprocess(alphas[j], trans_info[j])
+                        fg = fgs[j]
+                        fg = np.transpose(fg, (1, 2, 0))
+                        fg = self._postprocess(fg, trans_info[j])
+
+            # inference
+            if args.benchmark:
+                self.autolog.times.start()
+
+            img_inputs = []
+            if trimaps is not None:
+                trimap_inputs = []
+            trans_info = []
+            for j in range(i, i + args.batch_size):
+                img = imgs[j]
+                data = self._preprocess(img=img)
+                img_inputs.append(data['img'])
+                trans_info.append(data['trans_info'])
+            img_inputs = np.array(img_inputs)
+            n, _, h, w = img_inputs.shape
+            downsample_ratio = min(512 / max(h, w), 1)
+            downsample_ratio = np.array([downsample_ratio], dtype='float32')
+
+            input_handle['img'].copy_from_cpu(img_inputs)
+            input_handle['downsample_ratio'].copy_from_cpu(
+                downsample_ratio.astype('float32'))
+            r_channels = [16, 20, 40, 64]
+            for k in range(4):
+                j = k + 1
+                hj = int(np.ceil(int(h * downsample_ratio[0]) / 2**j))
+                wj = int(np.ceil(int(w * downsample_ratio[0]) / 2**j))
+                rj = np.zeros((n, r_channels[k], hj, wj), dtype='float32')
+                input_handle['r' + str(j)].copy_from_cpu(rj)
+
+            if args.benchmark:
+                self.autolog.times.stamp()
+
+            self.predictor.run()
+            alphas = output_handle['alpha'].copy_to_cpu()
+            fgs = output_handle['fg'].copy_to_cpu()
+
+            if args.benchmark:
+                self.autolog.times.stamp()
+
+            alphas = alphas.squeeze(1)
+            for j in range(args.batch_size):
+                alpha = self._postprocess(alphas[j], trans_info[j])
+                fg = fgs[j]
+                fg = np.transpose(fg, (1, 2, 0))
+                fg = self._postprocess(fg, trans_info[j])
+                self._save_imgs(alpha, fg=fg, img_path=imgs[i + j])
+
+            if args.benchmark:
+                self.autolog.times.end(stamp=True)
+        logger.info("Finish")
+
+    def run_video(self, video_path):
+        input_names = self.predictor.get_input_names()
+        input_handle = {}
+
+        for i in range(len(input_names)):
+            input_handle[input_names[i]] = self.predictor.get_input_handle(
+                input_names[i])
+        output_names = self.predictor.get_output_names()
+        output_handle = {}
+        output_handle['alpha'] = self.predictor.get_output_handle(output_names[
+            0])
+        output_handle['fg'] = self.predictor.get_output_handle(output_names[1])
+        output_handle['r1'] = self.predictor.get_output_handle(output_names[2])
+        output_handle['r2'] = self.predictor.get_output_handle(output_names[3])
+        output_handle['r3'] = self.predictor.get_output_handle(output_names[4])
+        output_handle['r4'] = self.predictor.get_output_handle(output_names[5])
+
+        # Build reader and writer
+        reader = VideoReader(video_path, self.cfg.transforms)
+        base_name = os.path.basename(video_path)
+        name = os.path.splitext(base_name)[0]
+        alpha_save_path = os.path.join(args.save_dir, name + '_alpha.avi')
+        fg_save_path = os.path.join(args.save_dir, name + '_fg.avi')
+        writer_alpha = VideoWriter(
+            alpha_save_path,
+            reader.fps,
+            frame_size=(reader.width, reader.height),
+            is_color=False)
+        writer_fg = VideoWriter(
+            fg_save_path,
+            reader.fps,
+            frame_size=(reader.width, reader.height),
+            is_color=True)
+
+        r_channels = [16, 20, 40, 64]
+        for i, data in tqdm.tqdm(enumerate(reader)):
+            trans_info = data['trans_info']
+            _, h, w = data['img'].shape
+            if i == 0:
+                downsample_ratio = min(512 / max(h, w), 1)
+                downsample_ratio = np.array([downsample_ratio], dtype='float32')
+                r_channels = [16, 20, 40, 64]
+                for k in range(4):
+                    j = k + 1
+                    hj = int(np.ceil(int(h * downsample_ratio[0]) / 2**j))
+                    wj = int(np.ceil(int(w * downsample_ratio[0]) / 2**j))
+                    rj = np.zeros((1, r_channels[k], hj, wj), dtype='float32')
+                    input_handle['r' + str(j)].copy_from_cpu(rj)
+            else:
+                input_handle['r1'] = output_handle['r1']
+                input_handle['r2'] = output_handle['r2']
+                input_handle['r3'] = output_handle['r3']
+                input_handle['r4'] = output_handle['r4']
+
+            input_handle['img'].copy_from_cpu(data['img'][np.newaxis, ...])
+            input_handle['downsample_ratio'].copy_from_cpu(
+                downsample_ratio.astype('float32'))
+
+            self.predictor.run()
+
+            alpha = output_handle['alpha'].copy_to_cpu()
+            fg = output_handle['fg'].copy_to_cpu()
+
+            alpha = alpha.squeeze()
+            alpha = self._postprocess(alpha, trans_info)
+            fg = fg.squeeze().transpose((1, 2, 0))
+            fg = self._postprocess(fg, trans_info)
+            self._save_frame(alpha, fg, data['ori_img'], writer_alpha,
+                             writer_fg)
+        writer_alpha.release()
+        writer_fg.release()
+        reader.release()
+
 
 def main(args):
-    imgs_list, imgs_dir = get_image_list(args.image_path)
-    if args.trimap_path is None:
-        trimaps_list = None
+    with open(args.cfg, 'r') as f:
+        yaml_conf = yaml.load(f, Loader=yaml.FullLoader)
+    model_name = yaml_conf.get('ModelName', None)
+    if model_name == 'RVM':
+        predector_ = PredictorRVM
     else:
-        trimaps_list, _ = get_image_list(args.trimap_path)
+        predector_ = Predictor
 
-    if use_auto_tune(args):
-        tune_img_nums = 10
-        auto_tune(args, imgs_list, tune_img_nums)
+    if args.image_path is not None:
+        imgs_list, imgs_dir = get_image_list(args.image_path)
+        if args.trimap_path is None:
+            trimaps_list = None
+        else:
+            trimaps_list, _ = get_image_list(args.trimap_path)
 
-    predictor = Predictor(args)
-    predictor.run(imgs=imgs_list, trimaps=trimaps_list, imgs_dir=imgs_dir)
+        if use_auto_tune(args):
+            tune_img_nums = 10
+            auto_tune(args, imgs_list, tune_img_nums)
 
-    if use_auto_tune(args) and \
-        os.path.exists(args.auto_tuned_shape_file):
-        os.remove(args.auto_tuned_shape_file)
+        predictor = predector_(args)
+        predictor.run(imgs=imgs_list, trimaps=trimaps_list, imgs_dir=imgs_dir)
 
-    if args.benchmark:
-        predictor.autolog.report()
+        if use_auto_tune(args) and \
+            os.path.exists(args.auto_tuned_shape_file):
+            os.remove(args.auto_tuned_shape_file)
+
+        if args.benchmark:
+            predictor.autolog.report()
+
+    elif args.video_path is not None:
+        predictor = predector_(args)
+        predictor.run_video(video_path=args.video_path)
+
+    else:
+        raise IOError("Please provide --image_path or --video_path.")
 
 
 if __name__ == '__main__':

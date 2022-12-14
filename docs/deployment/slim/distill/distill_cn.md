@@ -1,3 +1,5 @@
+简体中文 | [English](distill.md)
+
 # 模型蒸馏教程
 
 ## 1 简介

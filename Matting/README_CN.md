@@ -41,7 +41,8 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 ## 技术交流
 
 * 如果大家有使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
-* **欢迎大家加入PaddleSeg的微信用户群👫**（扫码填写问卷即可入群），和各界大佬交流学习，还可以**领取重磅大礼包🎁**
+* **欢迎加入PaddleSeg的微信用户群👫**（扫码填写简单问卷即可入群），大家可以和值班同学、各界大佬直接进行交流，还可以**领取30G重磅学习大礼包🎁**
+  * 🔥 获取深度学习视频教程、图像分割论文合集
   * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
   * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
   * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
@@ -73,7 +74,7 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 
 **注意**：
 * 指标计算数据集为PPM-100和AIM-500中的人像部分共同组成，共195张，[PPM-AIM-195](https://paddleseg.bj.bcebos.com/matting/datasets/PPM-AIM-195.zip)。
-* FLOPs和FPS计算默认模型输入大小为(512, 512), GPU为Tesla V100 32G。FPS基于Paddle Inference预测裤进行计算。
+* FLOPs和FPS计算默认模型输入大小为(512, 512), GPU为Tesla V100 32G。FPS基于Paddle Inference预测库进行计算。
 * DIM为trimap-based的抠图方法，指标只计算过度区域部分，对于没有提供trimap的情况下，默认将0<alpha<255的区域以25像素为半径进行膨胀腐蚀后作为过度区域。
 
 ## 使用教程
