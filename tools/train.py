@@ -153,7 +153,6 @@ def main(args):
             cfg.dic['loss']['types'][i]['data_format'] = args.data_format
 
     model = utils.convert_sync_batchnorm(cfg.model, args.device)
-    logger.info(model)
 
     train_dataset = cfg.train_dataset
     assert train_dataset is not None, \

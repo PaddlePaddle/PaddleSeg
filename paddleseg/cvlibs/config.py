@@ -74,22 +74,26 @@ class Config(object):
                  batch_size: int=None,
                  iters: int=None,
                  opts: list=None):
-        if not os.path.exists(path):
-            raise FileNotFoundError('Config path ({}) does not exist'.format(
-                path))
-
-        if not (path.endswith('yml') or path.endswith('yaml')):
-            raise RuntimeError('Config file should be yaml format!')
+        assert os.path.exists(path), \
+            'Config path ({}) does not exist'.format(path)
+        assert path.endswith('yml') or path.endswith('yaml'), \
+            'Config file ({}) should be yaml format'.format(path)
 
         self.dic = parse_from_yaml(path)
-        self.dic = update_dic(
+        self.dic = update_config_dict(
             self.dic,
             learning_rate=learning_rate,
             batch_size=batch_size,
             iters=iters,
             opts=opts)
 
-        self.check_sync_config()
+        self._check_config()
+        self._check_loss_config('loss')
+        self._check_loss_config('distill_loss')
+        self._check_sync_num_classes()
+        self._check_sync_img_channels()
+        self._check_sync_ignore_index('loss')
+        self._check_sync_ignore_index('distill_loss')
 
         self._model = None
         self._losses = None
@@ -162,6 +166,7 @@ class Config(object):
         args = self.optimizer_config
         optimizer_type = args.pop('type')
 
+        # TODO refactor optimizer to support customized setting
         params = self.model.parameters()
         if 'backbone_lr_mult' in args:
             if not hasattr(self.model, 'backbone'):
@@ -273,33 +278,40 @@ class Config(object):
             transforms.append(create_object(i))
         return transforms
 
-    #################### test and export
+    #################### test
     @property
     def test_config(self) -> Dict:
         return self.dic.get('test_config', {})
 
-    @property
-    def export_config(self) -> Dict:
-        return self.dic.get('export', {})
-
     #################### check and synchronize
-    def check_sync_config(self) -> None:
-        """
-        Check and sync the config information, such as num_classes, img_channels
-        and ignore_index between the config of model, train_dataset and val_dataset.
-        """
-        if self.dic.get('model', None) is None:
-            raise RuntimeError('No model specified in the configuration file.')
-        if (not self.train_dataset_config) and (not self.val_dataset_config):
-            raise ValueError('One of `train_dataset` or `val_dataset '
-                             'should be given, but there are none.')
+    def _check_config(self):
+        assert self.dic.get('model', None) is not None, \
+            'No model specified in the configuration file.'
+        assert self.train_dataset_config or self.val_dataset_config, \
+            'One of `train_dataset` or `val_dataset should be given, but there are none.'
 
-        self._check_sync_num_classes()
-        self._check_sync_img_channels()
-        self._check_sync_ignore_index('loss')
-        self._check_sync_ignore_index('distill_loss')
+    def _check_loss_config(self, loss_name):
+        loss_cfg = self.dic.get(loss_name, None)
+        if loss_cfg is None:
+            return
+
+        assert 'types' in loss_cfg and 'coef' in loss_cfg, \
+                'Loss config should contain keys of "types" and "coef"'
+        len_types = len(loss_cfg['types'])
+        len_coef = len(loss_cfg['coef'])
+        if len_types != len_coef:
+            if len_types == 1:
+                loss_cfg['types'] = loss_cfg['types'] * len_coef
+            else:
+                raise ValueError(
+                    "For loss config, the length of types should be 1 "
+                    "or be equal to coef , but they are {} and {}.".format(
+                        len_types, len_coef))
 
     def _check_sync_num_classes(self):
+        """
+        Check and sync num_classes between the model, train_dataset and val_dataset.
+        """
         num_classes_set = set()
 
         if self.dic['model'].get('num_classes', None) is not None:
@@ -334,6 +346,9 @@ class Config(object):
             self.dic['val_dataset']['num_classes'] = num_classes
 
     def _check_sync_img_channels(self):
+        """
+        Check and sync img_channels between the model, train_dataset and val_dataset.
+        """
         img_channels_set = set()
         model_cfg = self.dic['model']
 
@@ -371,24 +386,12 @@ class Config(object):
             self.dic['val_dataset']['img_channels'] = img_channels
 
     def _check_sync_ignore_index(self, loss_name):
+        """
+        Check and sync ignore_index between the model, train_dataset and val_dataset.
+        """
         loss_cfg = self.dic.get(loss_name, None)
         if loss_cfg is None:
             return
-
-        if ('types' not in loss_cfg) and ('coef' not in loss_cfg):
-            raise ValueError(
-                'Loss config should contain keys of "types" and "coef"')
-
-        len_types = len(loss_cfg['types'])
-        len_coef = len(loss_cfg['coef'])
-        if len_types != len_coef:
-            if len_types == 1:
-                loss_cfg['types'] = loss_cfg['types'] * len_coef
-            else:
-                raise ValueError(
-                    "The length of types should equal to coef or equal "
-                    "to 1 in loss config, but they are {} and {}.".format(
-                        len_types, len_coef))
 
         def _check_ignore_index(loss_cfg, dataset_ignore_index):
             if 'ignore_index' in loss_cfg:
@@ -412,7 +415,7 @@ def merge_config_dict(dic, base_dic):
     base_dic = base_dic.copy()
     dic = dic.copy()
 
-    if dic.get('_inherited_', True) == False:
+    if not dic.get('_inherited_', True):
         dic.pop('_inherited_')
         return dic
 
@@ -431,19 +434,22 @@ def parse_from_yaml(path: str):
         dic = yaml.load(file, Loader=yaml.FullLoader)
 
     if '_base_' in dic:
-        base_dir = os.path.dirname(path)
-        base_path = os.path.join(base_dir, dic.pop('_base_'))
-        base_dic = parse_from_yaml(base_path)
-        dic = merge_config_dict(dic, base_dic)
+        base_files = dic.pop('_base_')
+        if isinstance(base_files, str):
+            base_files = [base_files]
+        for bf in base_files:
+            base_path = os.path.join(os.path.dirname(path), bf)
+            base_dic = parse_from_yaml(base_path)
+            dic = merge_config_dict(dic, base_dic)
 
     return dic
 
 
-def update_dic(dic: dict,
-               learning_rate: float=None,
-               batch_size: int=None,
-               iters: int=None,
-               opts: list=None):
+def update_config_dict(dic: dict,
+                       learning_rate: float=None,
+                       batch_size: int=None,
+                       iters: int=None,
+                       opts: list=None):
     '''Update config'''
     dic = dic.copy()
 
@@ -454,21 +460,28 @@ def update_dic(dic: dict,
     if iters:
         dic['iters'] = iters
 
-    # fix parameters by --opts of command
     if opts is not None:
-        if len(opts) % 2 != 0 or len(opts) == 0:
-            raise ValueError(
-                "Command params `--opts` error."
-                "It should be even length like: k1 v1 k2 v2 ... Please check again: {}".
-                format(opts))
-        for key, value in zip(opts[0::2], opts[1::2]):
+        for item in opts:
+            assert ('=' in item) and (len(item.split('=')) == 2), "--opts params should be key=value," \
+                " such as `--opts train.batch_size=1 test_config.scales=0.75,1.0,1.25`, " \
+                "but got ({})".format(opts)
+
+            key, value = item.split('=')
             if isinstance(value, six.string_types):
-                value = literal_eval(value)
+                try:
+                    value = literal_eval(value)
+                except:
+                    pass
             key_list = key.split('.')
+
             tmp_dic = dic
             for subkey in key_list[:-1]:
-                tmp_dic.setdefault(subkey, dict())
+                assert subkey in tmp_dic, "Can not update {}, because it is not in config.".format(
+                    key)
                 tmp_dic = tmp_dic[subkey]
+            assert key_list[
+                -1] in tmp_dic, "Can not update {}, because it is not in config.".format(
+                    key)
             tmp_dic[key_list[-1]] = value
 
     return dic
