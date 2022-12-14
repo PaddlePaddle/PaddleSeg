@@ -110,7 +110,9 @@ lr_scheduler:
   learning_rate: 0.0005
   power: 0.9
   end_lr: 0.0
-  decay_steps: *iters
+  # Do not specify `decay_steps` here
+  # Rather, PaddleSeg automatically determines `decay_steps`.
+  # decay_steps: *iters
   warmup_iters: 1000
   warmup_start_lr: 5.e-7
 
