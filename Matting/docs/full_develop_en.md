@@ -73,6 +73,7 @@ PPM-100/
 
 The Matting project supports configurable direct drive, with model config files placed in [configs](../configs/) directory.
 You can select a config file based on the actual situation to perform training, prediction et al.
+The trimap-based methods (DIM) do not support video processing.
 
 This tutorial uses [configs/quick_start/ppmattingv2-stdc1-human_512.yml](../configs/quick_start/ppmattingv2-stdc1-human_512.yml) for teaching demonstrations.
 
@@ -218,6 +219,7 @@ python deploy/python/infer.py \
 If the model requires trimap information, pass the trimap path through '--trimap_path'.
 
 `--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
+
 `--video_path` can pass a video path to have a video matting.
 
 Run the following command to view more parameters.

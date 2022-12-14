@@ -71,7 +71,7 @@ PPM-100/
 
 ## 模型选择
 
-Matting项目支持配置化直接驱动，模型配置文件均放置于[configs](../configs/)目录下，大家可根据实际情况选择相应的配置文件进行训练、预测等流程。
+Matting项目支持配置化直接驱动，模型配置文件均放置于[configs](../configs/)目录下，大家可根据实际情况选择相应的配置文件进行训练、预测等流程。Trimap-based类方法（DIM）暂不支持处理视频。
 
 该教程中使用[configs/quick_start/ppmattingv2-stdc1-human_512.yml](../configs/quick_start/ppmattingv2-stdc1-human_512.yml)模型配置文件进行教学演示。
 
@@ -219,6 +219,7 @@ python deploy/python/infer.py \
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
 
 `--fg_estimate False` 可关闭前景估计功能，可提升预测速度，但图像质量会有所降低
+
 `--video_path` 传入视频路径，可进行视频抠图
 
 更多参数信息请运行如下命令进行查看:
