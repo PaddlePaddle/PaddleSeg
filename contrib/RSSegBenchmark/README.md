@@ -1,3 +1,5 @@
+English | [简体中文](README_CN.md)
+
 # A Benchmark for Segmentation on Remote Sensing Images
 
 ## 1 Introduction
@@ -108,18 +110,7 @@ c. Download the repository.
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-d. Install dependencies.
-```shell
-cd PaddleSeg
-pip install -r requirements.txt
-```
-
-e. Build.
-
-```shell
-cd PaddleSeg
-python setup.py install
-```
+d. Install PaddleSeg [office website](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.7/docs/install.md)
 
 f. Go to the benchmark directory.
 
@@ -166,7 +157,7 @@ Training with one GPU.
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python ../../tools/train.py \
+python train.py \
        --config configs/{YOUR CONFIG FILE} \
        --do_eval \
        --save_interval 8000 \
@@ -175,8 +166,8 @@ python ../../tools/train.py \
 Training with multiple GPUs.
 
 ```shell
-export CUDA_VISIBLE_DEVICES= 0,1,2,3
-python -m paddle.distributed.launch ../../tools/train.py \
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+python -m paddle.distributed.launch train.py \
       --config configs/{YOUR CONFIG FILE} \
       --do_eval \
       --save_interval 8000 \
@@ -191,7 +182,7 @@ python -m paddle.distributed.launch ../../tools/train.py \
 Get evaluation metrics of the best model.
 
 ```shell
-python ../../tools/val.py \
+python val.py \
       --config configs/{YOUR CONFIG FILE} \
       --model_path {YOUR BEST MODEL PATH}
 ```
@@ -202,7 +193,7 @@ python ../../tools/val.py \
 
 Predict and save the segmentation result of an input image with the best model.
 ```shell
-python ../../tools/predict.py \
+python predict.py \
        --config configs/{YOUR CONFIG FILE} \
        --model_path {YOUR BEST MODEL PATH}
        --image_path {IMAGE PATH}\

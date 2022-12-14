@@ -5,7 +5,7 @@ model:
   backbone:
     type: ResNet50
     ssl_pretrained: True
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/pssl/densecl_imgnet_epoch200.zip
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/ssl/densecl_imgnet_epoch200.zip
   num_classes: 16
   backbone_indices: [0, 3]
   aspp_ratios: [1, 12, 24, 36]

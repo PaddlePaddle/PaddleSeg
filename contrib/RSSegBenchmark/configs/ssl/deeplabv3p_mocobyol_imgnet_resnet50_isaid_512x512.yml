@@ -5,7 +5,7 @@ model:
   backbone:
     type: ResNet50
     ssl_pretrained: True
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/pssl/mocobyol_r50_ep300_ckpt.zip
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/ssl/mocobyol_r50_ep300_ckpt.zip
   num_classes: 16
   backbone_indices: [0, 3]
   aspp_ratios: [1, 12, 24, 36]

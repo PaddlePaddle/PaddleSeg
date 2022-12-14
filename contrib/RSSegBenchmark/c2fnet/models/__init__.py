@@ -12,5 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .backbones import *
 from .c2fnet import C2FNet

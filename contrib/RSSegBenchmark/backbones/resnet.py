@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+from urllib.parse import urlparse
+
 import paddle
 import paddle.nn as nn
 
 from paddleseg.cvlibs import manager
-from paddleseg.utils import utils
+from paddleseg.utils import utils, logger
 
 __all__ = ["ResNet50", "ResNet101"]
 
@@ -265,7 +268,7 @@ def load_pretrained_model_ssl_resnet(model, pretrained_model):
         logger.info('Loading pretrained model from {}'.format(pretrained_model))
 
         if urlparse(pretrained_model).netloc:
-            pretrained_model = download_pretrained_model(pretrained_model)
+            pretrained_model = utils.download_pretrained_model(pretrained_model)
 
         if os.path.exists(pretrained_model):
             para_state_dict = paddle.load(pretrained_model)['state_dict']
