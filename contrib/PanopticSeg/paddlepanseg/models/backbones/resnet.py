@@ -18,6 +18,9 @@
 
 # Copyright (c) Facebook, Inc. and its affiliates.
 
+# NOTE: This file implements vanilla ResNet architectures, which differ 
+# from the ResNet-vd implementation in PaddleSeg.
+
 import numpy as np
 import paddle
 import paddle.nn as nn
@@ -226,9 +229,9 @@ class ResNet(nn.Layer):
     def __init__(self, stem, stages, pretrained=None):
         """
         Args:
-            stem (nn.Module): a stem module
-            stages (list[list[CNNBlockBase]]): several (typically 4) stages,
-                each contains multiple :class:`CNNBlockBase`.
+            stem (nn.Module): a stem module.
+            stages (list[list[paddle.nn.Layer]]): several (typically 4) stages,
+                each contains multiple :class:`paddle.nn.Layer`.
         """
         super().__init__()
         self.stem = stem
@@ -257,6 +260,7 @@ class ResNet(nn.Layer):
         """
         Args:
             x: Tensor of shape (N,C,H,W). H, W must be a multiple of ``self.size_divisibility``.
+            
         Returns:
             dict[str->Tensor]: names and the corresponding features
         """
@@ -274,8 +278,9 @@ class ResNet(nn.Layer):
                    **kwargs):
         """
         Create a list of blocks of the same type that forms one ResNet stage.
+
         Args:
-            block_class (type): a subclass of CNNBlockBase that's used to create all blocks in this
+            block_class (type): a subclass of paddle.nn.Layer that's used to create all blocks in this
                 stage. A module of this type must not change spatial resolution of inputs unless its
                 stride != 1.
             num_blocks (int): number of blocks in this stage
@@ -286,8 +291,10 @@ class ResNet(nn.Layer):
                 argument is a list of values to be passed to each block in the
                 stage. Otherwise, the same argument is passed to every block
                 in the stage.
+
         Returns:
-            list[CNNBlockBase]: a list of block module.
+            list[paddle.nn.Layer]: a list of block module.
+
         Examples:
         ::
             stage = ResNet.make_stage(
@@ -328,6 +335,7 @@ class ResNet(nn.Layer):
         Created list of ResNet stages from pre-defined depth (one of 18, 34, 50, 101, 152).
         If it doesn't create the ResNet variant you need, please use :meth:`make_stage`
         instead for fine-grained customization.
+
         Args:
             depth (int): depth of ResNet
             block_class (type): the CNN block class. Has to accept
@@ -337,8 +345,9 @@ class ResNet(nn.Layer):
             kwargs:
                 other arguments to pass to `make_stage`. Should not contain
                 stride and channels, as they are predefined for each depth.
+
         Returns:
-            list[list[CNNBlockBase]]: modules in all stages; see arguments of
+            list[list[paddle.nn.Layer]]: modules in all stages; see arguments of
                 :class:`ResNet.__init__`.
         """
         num_blocks_per_stage = {
@@ -374,13 +383,6 @@ class ResNet(nn.Layer):
     def init_weight(self):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
-
-
-def make_stage(*args, **kwargs):
-    """
-    Deprecated alias for backward compatibiltiy.
-    """
-    return ResNet.make_stage(*args, **kwargs)
 
 
 def build_resnet(**cfg):
