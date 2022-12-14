@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse
+import os
 import io
 import sys
 import contextlib
@@ -198,16 +199,20 @@ def analyze(args):
     custom_ops = {paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn}
     inputs = paddle.randn(args.input_shape)
 
-    cfg = Config(args.config)
-
     if args.proj is not None:
-        with work_on_project(args.proj):
+        config = os.path.abspath(args.config)
+        # NOTE: From #2806 PaddleSeg eagerly builds datasets during config 
+        # construction. We set `switch_dir` to True such that datasets can be 
+        # correctly built with the relative paths specified in the config file.
+        with work_on_project(args.proj, switch_dir=True):
+            cfg = Config(config)
             dynamic_flops(
                 cfg.model,
                 inputs,
                 custom_ops=custom_ops,
                 num_levels=args.num_levels)
     else:
+        cfg = Config(args.config)
         dynamic_flops(
             cfg.model,
             inputs,
