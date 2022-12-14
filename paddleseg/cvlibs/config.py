@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
 import codecs
 import os
-from typing import Any, Dict, Generic
 import warnings
 from ast import literal_eval
+from typing import Any, Dict, Generic
 
-import paddle
 import yaml
-import six
+import paddle
 
 from paddleseg.cvlibs import manager
-from paddleseg.utils import logger
+from paddleseg.utils import logger, utils
 
 
 class Config(object):
@@ -96,7 +96,7 @@ class Config(object):
 
     def __str__(self) -> str:
         # Use NoAliasDumper to avoid yml anchor 
-        return yaml.dump(self.dic, Dumper=NoAliasDumper)
+        return yaml.dump(self.dic, Dumper=utils.NoAliasDumper)
 
     #################### hyper parameters
     @property
@@ -405,11 +405,6 @@ class Config(object):
             else:
                 _check_ignore_index(loss_cfg_i, dataset_ignore_index)
                 loss_cfg_i['ignore_index'] = dataset_ignore_index
-
-
-class NoAliasDumper(yaml.SafeDumper):
-    def ignore_aliases(self, data):
-        return True
 
 
 def merge_config_dict(dic, base_dic):

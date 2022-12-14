@@ -20,88 +20,69 @@ import numpy as np
 import cv2
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils import get_sys_env, logger, utils
 from paddleseg.core import train
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
-    # params of training
+
+    # Common params
+    parser.add_argument("--config", help="The path of config file.", type=str)
     parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
-    parser.add_argument(
-        '--iters',
-        dest='iters',
-        help='Iterations in training.',
-        type=int,
-        default=None)
-    parser.add_argument(
-        '--batch_size',
-        dest='batch_size',
-        help='Mini batch size of one gpu or cpu.',
-        type=int,
-        default=None)
-    parser.add_argument(
-        '--learning_rate',
-        dest='learning_rate',
-        help='Learning rate',
-        type=float,
-        default=None)
-    parser.add_argument(
-        '--opts',
-        help='Update the key-value pairs of all options.',
-        default=None,
-        nargs='+')
-    parser.add_argument(
-        '--save_interval',
-        dest='save_interval',
-        help='How many iters to save a model snapshot once during training.',
-        type=int,
-        default=1000)
-    parser.add_argument(
-        '--resume_model',
-        dest='resume_model',
-        help='The path of the model to resume.',
-        type=str,
-        default=None)
+        '--device',
+        help='Set the device place for training model.',
+        default='gpu',
+        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
+        type=str)
     parser.add_argument(
         '--save_dir',
-        dest='save_dir',
         help='The directory for saving the model snapshot.',
         type=str,
         default='./output')
     parser.add_argument(
-        '--keep_checkpoint_max',
-        dest='keep_checkpoint_max',
-        help='Maximum number of checkpoints to save.',
-        type=int,
-        default=5)
-    parser.add_argument(
         '--num_workers',
-        dest='num_workers',
-        help='Number of workers for data loader.',
+        help='Number of workers for data loader. Bigger num_workers can speed up data processing.',
         type=int,
         default=0)
     parser.add_argument(
         '--do_eval',
-        dest='do_eval',
-        help='Whether to do evaluation while training.',
+        help='Whether to do evaluation in training.',
         action='store_true')
     parser.add_argument(
+        '--use_vdl',
+        help='Whether to record the data to VisualDL in training.',
+        action='store_true')
+
+    # Runntime params
+    parser.add_argument(
+        '--resume_model',
+        help='The path of the model to resume training.',
+        type=str)
+    parser.add_argument('--iters', help='Iterations in training.', type=int)
+    parser.add_argument(
+        '--batch_size', help='Mini batch size of one gpu or cpu. ', type=int)
+    parser.add_argument('--learning_rate', help='Learning rate.', type=float)
+    parser.add_argument(
+        '--save_interval',
+        help='How many iters to save a model snapshot once during training.',
+        type=int,
+        default=1000)
+    parser.add_argument(
         '--log_iters',
-        dest='log_iters',
         help='Display logging information at every `log_iters`.',
         default=10,
         type=int)
     parser.add_argument(
-        '--use_vdl',
-        dest='use_vdl',
-        help='Whether to record the data to VisualDL during training.',
-        action='store_true')
+        '--keep_checkpoint_max',
+        help='Maximum number of checkpoints to save.',
+        type=int,
+        default=5)
+
+    # Other params
     parser.add_argument(
         '--seed',
-        dest='seed',
-        help='Set the random seed during training.',
+        help='Set the random seed in training.',
         default=None,
         type=int)
     parser.add_argument(
@@ -121,79 +102,45 @@ def parse_args():
                 parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel \
                 and batchnorm. Default is O1(amp).")
     parser.add_argument(
-        '--data_format',
-        dest='data_format',
-        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
-        type=str,
-        default='NCHW')
-    parser.add_argument(
         '--profiler_options',
         type=str,
-        default=None,
         help='The option of train profiler. If profiler_options is not None, the train ' \
             'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
     )
     parser.add_argument(
-        '--device',
-        dest='device',
-        help='Device place to be set, which can be gpu, xpu, npu, mlu or cpu.',
-        default='gpu',
-        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
-        type=str)
+        '--data_format',
+        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        type=str,
+        default='NCHW')
     parser.add_argument(
         '--repeats',
         type=int,
         default=1,
         help="Repeat the samples in the dataset for `repeats` times in each epoch."
     )
+    parser.add_argument(
+        '--opts', help='Update the key-value pairs of all options.', nargs='+')
 
     return parser.parse_args()
 
 
 def main(args):
-    if args.seed is not None:
-        paddle.seed(args.seed)
-        np.random.seed(args.seed)
-        random.seed(args.seed)
-
-    env_info = get_sys_env()
-    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
-    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
-                     ['-' * 48])
-    logger.info(info)
-
-    if args.device == 'gpu' and env_info[
-            'Paddle compiled with cuda'] and env_info['GPUs used']:
-        place = 'gpu'
-    elif args.device == 'xpu' and paddle.is_compiled_with_xpu():
-        place = 'xpu'
-    elif args.device == 'npu' and paddle.is_compiled_with_npu():
-        place = 'npu'
-    elif args.device == 'mlu' and paddle.is_compiled_with_mlu():
-        place = 'mlu'
-    else:
-        place = 'cpu'
-
-    paddle.set_device(place)
-    if not args.cfg:
-        raise RuntimeError('No configuration file specified.')
-
-    nranks = paddle.distributed.ParallelEnv().nranks
-    # Limit cv2 threads if too many subprocesses are spawned.
-    # This should reduce resource allocation and thus boost performance.
-    if nranks >= 8 and args.num_workers >= 8:
-        logger.warning(
-            "The number of threads used by OpenCV is set to 1 to improve performance."
-        )
-        cv2.setNumThreads(1)
-
+    assert args.config is not None, \
+        'No configuration file specified, please set --config'
     cfg = Config(
-        args.cfg,
+        args.config,
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size,
         opts=args.opts)
 
+    utils.show_env_info()
+    utils.show_cfg_info(cfg)
+    utils.set_seed(args.seed)
+    utils.set_device(args.device)
+    utils.set_cv2_num_threads(args.num_workers)
+
+    # TODO refactor
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
         if cfg.dic['model']['type'] != 'DeepLabV3P':
@@ -205,31 +152,18 @@ def main(args):
         for i in range(loss_len):
             cfg.dic['loss']['types'][i]['data_format'] = args.data_format
 
-    train_dataset = cfg.train_dataset
-    if train_dataset is None:
-        raise RuntimeError(
-            'The training dataset is not specified in the configuration file.')
-    elif len(train_dataset) == 0:
-        raise ValueError(
-            'The length of train_dataset is 0. Please check if your dataset is valid'
-        )
+    model = utils.convert_sync_batchnorm(cfg.model, args.device)
+    logger.info(model)
 
+    train_dataset = cfg.train_dataset
+    assert train_dataset is not None, \
+        'The training dataset is not specified in the configuration file.'
+    assert len(train_dataset) != 0, \
+        'The length of train_dataset is 0. Please check whether the dataset is valid.'
+    # TODO refactor
     if args.repeats > 1:
         train_dataset.file_list *= args.repeats
-
     val_dataset = cfg.val_dataset if args.do_eval else None
-    losses = cfg.loss
-
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
-
-    # convert bn to sync_bn if necessary
-    if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
-        model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
-    else:
-        model = cfg.model
 
     train(
         model,
@@ -244,7 +178,7 @@ def main(args):
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
-        losses=losses,
+        losses=cfg.loss,
         keep_checkpoint_max=args.keep_checkpoint_max,
         test_config=cfg.test_config,
         precision=args.precision,
