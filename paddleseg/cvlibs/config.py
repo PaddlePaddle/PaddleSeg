@@ -278,10 +278,15 @@ class Config(object):
             transforms.append(create_object(i))
         return transforms
 
-    #################### test
+    #################### test and export
     @property
     def test_config(self) -> Dict:
         return self.dic.get('test_config', {})
+
+    # TODO remove export_config
+    @property
+    def export_config(self) -> Dict:
+        return self.dic.get('export', {})
 
     #################### check and synchronize
     def _check_config(self):
