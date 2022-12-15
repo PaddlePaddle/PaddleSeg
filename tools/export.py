@@ -63,7 +63,6 @@ class WrappedModel(paddle.nn.Layer):
 
     def forward(self, x):
         outs = self.model(x)
-
         new_outs = []
         for out in outs:
             if self.output_op == 'argmax':
@@ -103,7 +102,6 @@ def main(args):
     val_dataset_config = cfg.val_dataset_config
     assert val_dataset_config != {}, 'No val_dataset specified in the configuration file.'
     transforms = val_dataset_config.get('transforms', None)
-    assert transforms is not None, 'No transforms specified in val_dataset.'
     output_dtype = 'int32' if args.output_op == 'argmax' else 'float32'
 
     # TODO add test config
