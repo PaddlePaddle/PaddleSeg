@@ -1,0 +1,11 @@
+_base_: '../fcn/fcn_resnet50_isaid_512x512_80k.yml'
+
+model:
+  type: FCN
+  backbone:
+    type: ResNet50
+    ssl_pretrained: True
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/ssl/pixpro_r50_ep100_no_instance_with_linear.zip
+  num_classes: 16
+  pretrained: Null
+  backbone_indices: [-1]
