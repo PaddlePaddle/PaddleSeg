@@ -60,4 +60,4 @@ epoch:500
 flags:FLAGS_eager_delete_tensor_gb=0.0;FLAGS_fraction_of_gpu_memory_to_use=0.98;FLAGS_conv_workspace_size_limit=4096;FLAGS_cudnn_deterministic=False
 log_iters:5;skip_iters:3;repeats:500
 ===========================to_static_train_benchmark_params===========================
-to_static_train:--opts to_static_training True
+to_static_train:--opts to_static_training=True

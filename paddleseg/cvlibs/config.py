@@ -484,9 +484,6 @@ def update_config_dict(dic: dict,
                 assert subkey in tmp_dic, "Can not update {}, because it is not in config.".format(
                     key)
                 tmp_dic = tmp_dic[subkey]
-            assert key_list[
-                -1] in tmp_dic, "Can not update {}, because it is not in config.".format(
-                    key)
             tmp_dic[key_list[-1]] = value
 
     return dic
