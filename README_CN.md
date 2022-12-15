@@ -441,6 +441,7 @@
 * [PaddleSeg实战之车道线图像分割](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
 * [PaddleSeg动态图API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
 * [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
+* [车路协同：交互式分割技术在智慧建图中的应用和实践](https://aistudio.baidu.com/aistudio/projectdetail/5089472)
 
 ## 许可证书
 本项目的发布受Apache 2.0 license许可认证。
