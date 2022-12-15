@@ -197,7 +197,7 @@ python predict.py \
        --config configs/{YOUR CONFIG FILE} \
        --model_path {YOUR BEST MODEL PATH}
        --image_path {IMAGE PATH}\
-       --save_dir {OUTPUT DIR}}
+       --save_dir {OUTPUT DIR}
 ```
 
 *Note: For more details about predicting settings, please check the [PaddleSeg document](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.6/docs/predict/predict.md).*
@@ -207,4 +207,4 @@ python predict.py \
 
 wangqingzhong@baidu.com
 
-chensilin@baidu.com
+silin.chen@cumt.edu.cn

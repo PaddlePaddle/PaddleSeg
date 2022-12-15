@@ -4,10 +4,10 @@
 
 ## 1 引言
 
-语义分割被广泛地应用于遥感图像目标检测中，助力土地覆盖分类、灾难预测以及城市规划等等。本项目利用PaddleSeg进行遥感图像语义分割主要贡献如下：
+语义分割被广泛地应用于遥感图像目标检测中，助力土地覆盖分类、灾难预测以及城市规划等等。本项目利用PaddleSeg进行遥感图像语义分割，主要贡献如下：
 
 * **遥感图像语义分割Benchmark：** 向用户提供标准的数据处理、参数配置以及一套可比较的基线模型。
-* **自监督学习：** 基于自监督学习提供多个预训练模型，助力自监督在遥感领域的应用和研究。
+* **自监督学习：** 提供多个基于自监督学习方式预训练的模型，助力自监督在遥感领域的应用和研究。
 * **一个从粗到精细化的分割模型：** 基于上述Benchmark提出一个优化小目标分割准确率的模型。[详情请见](./c2fnet/README.md)。
 
 
@@ -53,7 +53,7 @@
 
 ### 2.2 自监督预训练模型
 
-我们基于[PASSL](https://github.com/PaddlePaddle/PASSL)研究了自监督学习在遥感图像的泛化能力。本项目向用户提供一些有价值的实验结果和多个自监督预训练模型便于用户的进一步研究。
+我们基于[PASSL](https://github.com/PaddlePaddle/PASSL)研究了自监督学习在遥感图像的泛化能力。本项目向用户提供一些有价值的实验结果和多个自监督预训练模型，便于用户的进一步研究。
 
 #### 2.2.1 基于ImageNet的自监督预训练模型
 
@@ -129,19 +129,19 @@ a. 下载数据集。
 
 b. 预处理数据集。
 
-处理 iSAID.
+处理 iSAID。
 
 ```python
 python data/prepare_isaid.py {PATH OF ISAID}
 ```
 
-处理 ISPRS Potsdam.
+处理 ISPRS Potsdam。
 
 ```python
 python data/prepare_potsdam.py {PATH OF POTSDAM}
 ```
 
-处理 ISPRS Vaihingen.
+处理 ISPRS Vaihingen。
 
 ```python
 python data/prepare_vaihingen.py {PATH OF VAIHINGEN}
@@ -196,7 +196,7 @@ python predict.py \
        --config configs/{YOUR CONFIG FILE} \
        --model_path {YOUR BEST MODEL PATH}
        --image_path {IMAGE PATH}\
-       --save_dir {OUTPUT DIR}}
+       --save_dir {OUTPUT DIR}
 ```
 *注意：更多细节参考[PaddleSeg文档](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.6/docs/predict/predict.md)。*
 
@@ -205,4 +205,4 @@ python predict.py \
 
 wangqingzhong@baidu.com
 
-chensilin@baidu.com
+silin.chen@cumt.edu.cn
