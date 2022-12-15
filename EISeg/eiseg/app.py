@@ -48,6 +48,10 @@ from plugin.n2grid import RSGrids, Grids, checkOpenGrid
 from plugin.video import InferenceCore, overlay_davis
 from plugin.det import DetInfer
 
+import PIL
+import io
+import base64
+
 
 class APP_EISeg(QMainWindow, Ui_EISeg):
     IDILE, ANNING, EDITING = 0, 1, 2
@@ -112,6 +116,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "cutout": True,
             "yolo": False,
             "voc": False,
+            "json_labelme": True
         }  # 是否保存这几个格式
         self.outputDir = None  # 标签保存路径
         self.labelPaths = []  # 所有outputdir中的标签文件路径
@@ -1265,6 +1270,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.cbbLabelFind.clear()
         for lab in labs:
             self.cbbLabelFind.addItem(lab.name)
+            self.focusToLable(lab.idx)
 
     # 多边形标注
     def createPoly(self, curr_polygon, color):
@@ -2039,6 +2045,54 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 open(jsonPath, "w", encoding="utf-8").write(json.dumps(labels))
                 self.labelPaths.append(jsonPath)
 
+            # 尝试保存labelme相同格式的json文件
+            if self.save_status["json_labelme"]:
+                polygons = self.scene.polygon_items
+                labels = dict(
+                    version="1.1",
+                    flags={},
+                    shapes=[],
+                    imagePath=None,
+                    imageData=None,
+                    imageHeight=None,
+                    imageWidth=None)
+                labels["imagePath"] = self.imagePath
+                imgData = self.load_image_file(self.imagePath)
+                labels["imageData"] = base64.b64encode(imgData).decode("utf-8")
+                img = cv2.imread(self.imagePath)
+                size = img.shape
+                labels["imageHeight"] = size[0]
+                labels["imageWidth"] = size[1]
+                for polygon in polygons:
+                    l = self.controller.labelList[polygon.labelIndex - 1]
+                    label = {
+                        "label": l.name,
+                        "points": [],
+                        "group_id": None,
+                        "shape_type": "polygon",
+                        "flags": {}
+                    }
+                    for p in polygon.scnenePoints:
+                        label["points"].append(p)
+                    labels["shapes"].append(label)
+
+                if not osp.exists(
+                        osp.join(os.path.dirname(savePath), "labelme")):
+                    os.makedirs(osp.join(os.path.dirname(savePath), "labelme"))
+                ri = savePath.rindex('/')
+                fileName = savePath[ri + 1:]
+                savePath = osp.join(
+                    osp.join(os.path.dirname(savePath), "labelme"), fileName)
+
+                if self.origExt:
+                    jsonPath = savePath + "_labelme" + ".json"
+                else:
+                    jsonPath = osp.splitext(savePath)[0] + "_labelme" + ".json"
+                open(jsonPath, "w", encoding="utf-8").write(json.dumps(labels))
+
+                label_path = osp.join(os.path.dirname(savePath), "labels.txt")
+                self.save_labelName_txt(path=label_path)
+
             # 4.5 保存coco
             if self.save_status["coco"]:
                 if not self.coco.hasImage(osp.basename(self.imagePath)):
@@ -2140,7 +2194,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 2. 加载标签
         # 2.1 如果保存coco格式，加载coco标签
         if self.save_status["coco"]:
-            defaultPath = osp.join(self.outputDir, "annotations.json")
+            if self.type_seg:
+                defaultPath = osp.join(self.outputDir, "annotations.json")
+            else:
+                defaultPath = osp.join(
+                    osp.join(self.outputDir, "COCO"), "annotations.json")
             if osp.exists(defaultPath):
                 self.initCoco(defaultPath)
 
@@ -3240,6 +3298,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 yolo_label = str(label["labelIdx"]) + " " + bbox
                 labels.append(yolo_label)
 
+            if not osp.exists(osp.join(os.path.dirname(savePath), "YOLO")):
+                os.makedirs(osp.join(os.path.dirname(savePath), "YOLO"))
+            ri = savePath.rindex('/')
+            fileName = savePath[ri + 1:]
+            savePath = osp.join(
+                osp.join(os.path.dirname(savePath), "YOLO"), fileName)
+
             if self.origExt:
                 txtPath = savePath + ".txt"
             else:
@@ -3279,6 +3344,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     "ymax": label["points"][2][-1],
                 }
                 objects.append(voc_object)
+
+            if not osp.exists(osp.join(os.path.dirname(savePath), "VOC")):
+                os.makedirs(osp.join(os.path.dirname(savePath), "VOC"))
+            ri = savePath.rindex('/')
+            fileName = savePath[ri + 1:]
+            savePath = osp.join(
+                osp.join(os.path.dirname(savePath), "VOC"), fileName)
 
             if self.origExt:
                 xmlPath = savePath + ".xml"
@@ -3321,6 +3393,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     self.coco.addCategory(lab.idx, lab.name, lab.color)
             saveDir = (self.outputDir
                        if self.outputDir is not None else osp.dirname(savePath))
+
+            if not osp.exists(osp.join(saveDir, "COCO")):
+                os.makedirs(osp.join(saveDir, "COCO"))
+            saveDir = osp.join(osp.join(saveDir, "COCO"))
+
             cocoPath = osp.join(saveDir, "annotations.json")
             open(
                 cocoPath, "w",
@@ -3340,3 +3417,30 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.tr("启用手动标注流程提醒"),
                 self.tr("请先点击新建标签或是导入标签，然后打开图像文件，即可开始手动画框标注！"))
             return False
+
+    def load_image_file(self, filename):
+        try:
+            image_pil = PIL.Image.open(filename)
+        except IOError:
+            logging.error("Failed opening image file: {}".format(filename))
+            return
+
+        with io.BytesIO() as f:
+            ext = osp.splitext(filename)[1].lower()
+            if ext in [".jpg", ".jpeg"]:
+                format = "JPEG"
+            else:
+                format = "PNG"
+            image_pil.save(f, format=format)
+            f.seek(0)
+            return f.read()
+
+    def save_labelName_txt(self, path):
+        labelName = []
+        labelName.append("__ignore__")
+        for lab in self.controller.labelList:
+            labelName.append(lab.name)
+
+        with open(path, "w", encoding="utf-8") as f:
+            for label in labelName:
+                f.write(label + "\n")
