@@ -47,7 +47,7 @@ PaddleLabel 的代码分布于三个项目中，本项目包含 PaddleLabel 的�
 - 欢迎大家扫码加入 PaddleLabel 微信群，和小伙伴们一起交流学习。
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/29757093/206070067-4e61cc56-34af-4e11-ba64-d4976e439bda.png"  width = "200" />
+<img src="https://user-images.githubusercontent.com/35907364/208010236-55b26c86-5d61-44ec-aefb-46fe5a6b3b6c.png"  width = "200" />
 </div>
 
 ## 使用教程
