@@ -1,14 +1,14 @@
 English | [简体中文](whole_process_cn.md)
 # Learn PaddleSeg in 20 mins
 
-Paddleseg is composed of code modules and controls the setting use configs, in this way, it realize the full-process from data label to model deployment. In this tutorial, we will use `PP-LiteSeg model` and `Medical Video Disc Segmentation Dataset` as example to help you learn Paddleseg easily and quickily.
+Paddleseg is composed of code modules and controls the setting use configs, in this way, it implements the full-process from data labeling to model deployment. In this tutorial, we will use `PP-LiteSeg model` and `Medical Video Disc Segmentation Dataset` as examples to help you learn Paddleseg easily and quickily.
 
 This tutorial contains the following steps:
 
-1. **Prepare the environment**: PaddleSeg's software environment.
+1. **Preparing the environment**: PaddleSeg's software environment.
 2. **Data preparation**: How to prepare and organize custom datasets.
 3. **Model training**: Training configuration and start training.
-4. **Visualize the training process**: Use VDL to show the training process.
+4. **Visualizing the training process**: Use VDL to show the training process.
 5. **Model evaluation**: Evaluate the model.
 6. **Model prediction and visualization**: Use the trained model to make predictions and visualize the results at the same time.
 7. **Model export**: How to export a model that can be deployed.
@@ -63,7 +63,7 @@ PaddleSeg lists every option that can be optimized in the configuration file. Us
 
 **Key Parameter:**
 
--1: In the learning rate given in the PaddleSeg configuration file, except for the single-card learning rate in "pp_liteseg_optic_disc_512x512_1k.yml", the rest of the configuration files are all 4-card learning rates. If the user is training with a single card, then learn The rate setting should become 1/4 of the original.
+-1: In the learning rate given in the PaddleSeg configuration file, except for the single-card learning rate in "pp_liteseg_optic_disc_512x512_1k.yml", the rest of the configuration files are all 4-card learning rates. If the user is training with a single card, then the learning rate should be decreased to 1/4 of the original.
 -2: The configuration file in PaddleSeg gives a variety of loss functions: CrossEntropy Loss, BootstrappedCrossEntropy Loss, Dice Loss, BCE Loss, OhemCrossEntropyLoss, RelaxBoundaryLoss, OhemEdgeAttentionLoss, Lovasz Hinge Loss, Lovasz Soft Loss, users can perform according to their own needs Change.
 -3: The details of config file are as following.
 
@@ -132,7 +132,7 @@ A: The information related to the model scheme is in the configuration file, and
 
 ### **3.3 Modify Configuration Files**
 
-When the user prepares the dataset, he can specify the location in the configuration file to modify the data path for further training
+When the user prepares the dataset, he can specify the dataset location in the configuration file and can also modify the data path for further training
 
 Here, we take the "pp_liteseg_optic_disc_512x512_1k.yml" file mentioned in the above article as an example, and select the data configuration part for your explanation.
 
@@ -142,7 +142,7 @@ Mainly focus on these parameters:
 - The dataset_root path contains the path where the label and image are located; in the example: dataset_root: dataset/optic_disc_seg
 - train_path is the path of txt; in the example: train_path: dataset/optic_disc_seg/train_list.txt
 - num_classes is the category (the background is also counted as a category);
-- Transform is a strategy for data preprocessing, users can change according to their actual needs
+- Transform section is for data augmentation, users can change according to their actual needs
 
 ```
 train_dataset:
@@ -225,7 +225,7 @@ output
 
 ### **3.6 In-depth Exploration of Configuration Files**
 
-- We just took out a PP-LiteSeg configuration file for everyone to experience how to configure the dataset. In this example, all the parameters are placed in a yml file, but the actual PaddleSeg configuration file is for better reuse For compatibility and compatibility, a more coupled design is adopted, that is, a model requires more than two configuration files to achieve. Below we will use DeeplabV3p as an example to illustrate the coupling settings of the configuration files.
+- We just came up with a PP-LiteSeg configuration file to give you a brief idea of how to configure the dataset. In this example, all parameters are placed in a single yml file, but the actual PaddleSeg configuration file is designed with more coupling for better reuse and compatibility, i.e., more than two configuration files are needed to implement a model. Below we will use DeeplabV3p as an example to illustrate the coupling settings of the configuration files.
 - For example, if we want to change the configuration of the deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml file, we will find that the file also depends on the (base) cityscapes.yml file. At this point, we need to open the cityscapes.yml file synchronously to set the corresponding parameters.
 
 ![](./images/fig3.png)
