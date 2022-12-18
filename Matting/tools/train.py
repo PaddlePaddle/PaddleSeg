@@ -21,7 +21,7 @@ import random
 import numpy as np
 import paddle
 import paddle.nn as nn
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -32,6 +32,7 @@ manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting
 from ppmatting.core import train
+from ppmatting.utils import Config
 
 
 def parse_args():
@@ -56,6 +57,11 @@ def parse_args():
         help='Learning rate',
         type=float,
         default=None)
+    parser.add_argument(
+        '--opts',
+        help='Update the key-value pairs of all options.',
+        default=None,
+        nargs='+')
     parser.add_argument(
         '--save_interval',
         dest='save_interval',
@@ -186,7 +192,8 @@ def main(args):
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
-        batch_size=args.batch_size)
+        batch_size=args.batch_size,
+        opts=args.opts)
 
     train_dataset = cfg.train_dataset
     if train_dataset is None:

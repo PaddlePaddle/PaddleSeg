@@ -17,7 +17,7 @@ import os
 import sys
 
 import paddle
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +28,7 @@ manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting
 from ppmatting.core import bg_replace_video
+from ppmatting.utils import Config
 
 
 def parse_args():

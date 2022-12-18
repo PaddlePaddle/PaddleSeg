@@ -468,7 +468,12 @@ def update_dic(dic: dict,
                 format(opts))
         for key, value in zip(opts[0::2], opts[1::2]):
             if isinstance(value, six.string_types):
-                value = literal_eval(value)
+                try:
+                    value = literal_eval(value)
+                except ValueError:
+                    pass
+                except SyntaxError:
+                    pass
             key_list = key.split('.')
             tmp_dic = dic
             for subkey in key_list[:-1]:
