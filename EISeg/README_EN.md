@@ -42,11 +42,11 @@
 
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> Latest Developments
+* [2022-12-16] :fire: EISeg 1.1 has been released!
+  - Added the annotation ability for detection , which can be marked manually or using the detection model PicoDet-S for labeling.
+  - Detection annotation result supports various formats such as COCO, VOC and YOLO.
+  - Added LabelMe JSON format for segmentation result.
 * [2022-09-16] :fire: The annotation model MUSCLE has been accepted by MICCAI 2022. For details, please refer to [MUSCLE](docs/MUSCLE_en.md), the model can be downloaded [here](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_resnet50_deeplab_chest_xray.zip).
-* [2022-07-20] :fire: EISeg 1.0 is released!
-  - Added  interactive video object segmentation for general scenes, this work is based on EISeg interactive segmentation model and [MiVOS](https://github.com/hkchengrex/MiVOS).
-  - Added 3D segmentation capabilities for abdominal multi-organ and CT vertebral data, and provides 3D visualization tools. For details, please refer to [3D Anotations](docs/video.md).
-
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> Introduction
 
@@ -71,7 +71,7 @@ EISeg (Efficient Interactive Segmentation) is an efficient and intelligent inter
 * [Detection](docs/det_en.md)
 
 ## <img src="../docs/images/anli.png" width="20"/> Version Updates
-
+- 2022.12.16  **1.1.0**： 【1】 Added the annotation ability for detection , which can be marked manually or using the detection model PicoDet-S for labeling. 【2】Detection annotation result supports various formats such as COCO, VOC and YOLO. 【3】Added LabelMe JSON format for segmentation result.
 - 2022.07.20  **1.0.0**：【1】Add the ability of interactive video object segmentation. 【2】Add 3D annotation model for abdominal multi-organ【3】Added 3D annotation model for  CT vertebra.
 - 2022.04.10  **0.5.0**: 【1】Add chest_xray interactive model;【2】Add MRSpineSeg interactive model;【3】Add industrial quality inspection model;【4】Fix geo-transform / CRS error when shapefile saved.
 - 2021.12.14 **0.4.1**: 【1】Fix the bug of crashing; 【2】Newly add the post-labeling operation of remote sensing building images.
