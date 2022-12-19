@@ -103,10 +103,19 @@ def predict(model,
             sem_pred = pp_out['sem_pred'][0, 0].numpy()
             sem_vis = visualize_semantic(sem_pred, colormap)
             ins_vis = visualize_instance(pan_pred, ignore_ins_id=0)
-            pan_vis = visualize_panoptic(pan_pred, label_divisor=label_divisor, ignore_index=ignore_index)
+            pan_vis = visualize_panoptic(
+                pan_pred,
+                label_divisor=label_divisor,
+                ignore_index=ignore_index)
 
-            Image.fromarray(sem_vis).convert('RGB').save(osp.join(save_dir, get_save_name(im_path, image_dir, '_sem.png')))
-            Image.fromarray(ins_vis).convert('RGB').save(osp.join(save_dir, get_save_name(im_path, image_dir, '_ins.png')))
-            Image.fromarray(pan_vis).convert('RGB').save(osp.join(save_dir, get_save_name(im_path, image_dir, '_pan.png')))
+            Image.fromarray(sem_vis).convert('RGB').save(
+                osp.join(save_dir,
+                         get_save_name(im_path, image_dir, '_sem.png')))
+            Image.fromarray(ins_vis).convert('RGB').save(
+                osp.join(save_dir,
+                         get_save_name(im_path, image_dir, '_ins.png')))
+            Image.fromarray(pan_vis).convert('RGB').save(
+                osp.join(save_dir,
+                         get_save_name(im_path, image_dir, '_pan.png')))
 
             progbar_pred.update(i + 1)

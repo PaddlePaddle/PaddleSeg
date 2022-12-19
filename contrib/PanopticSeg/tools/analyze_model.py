@@ -69,9 +69,11 @@ def _count_layer_stats(layer, counters, level, res):
         children_names = set(m.full_name() for m in children)
         res_of_layer = []
         for child in children:
-            res_of_layer = _count_layer_stats(child, counters, level+1, res_of_layer)
+            res_of_layer = _count_layer_stats(child, counters, level + 1,
+                                              res_of_layer)
         for name in counters.keys():
-            info[name] = sum(item[name] for item in res_of_layer if item['Layer Name'] in children_names)
+            info[name] = sum(item[name] for item in res_of_layer
+                             if item['Layer Name'] in children_names)
         res.append(info)
         res.extend(res_of_layer)
     else:
@@ -101,7 +103,8 @@ def _stats_to_table(stats, cols):
             if isinstance(ele, float):
                 row[i] = _round(ele)
         rel_level = (level - min_level)
-        row = ['']*rel_level+[row[0]]+['']*(num_pad_cols-rel_level)+row[1:]
+        row = [''] * rel_level + [row[0]] + [''] * (num_pad_cols - rel_level
+                                                    ) + row[1:]
         table.add_row(row)
     return table
 
@@ -119,7 +122,6 @@ def _to_giga(x):
 
 
 def dynamic_flops(model, inputs, custom_ops=None, num_levels=None):
-
     def _add_hooks(m):
         if len(list(m.children())) > 0:
             return
@@ -159,7 +161,7 @@ def dynamic_flops(model, inputs, custom_ops=None, num_levels=None):
     types_collection = set()
     if custom_ops is None:
         custom_ops = {}
-    
+
     training = model.training
 
     model.eval()
@@ -174,12 +176,14 @@ def dynamic_flops(model, inputs, custom_ops=None, num_levels=None):
         handler.remove()
 
     counters = {
-        'Params (M)': lambda m: _to_mega(m.total_params), 
-        'FLOPs (G)': lambda m: _to_giga(m.total_ops)}
+        'Params (M)': lambda m: _to_mega(m.total_params),
+        'FLOPs (G)': lambda m: _to_giga(m.total_ops)
+    }
     stats = _count_layer_stats(model, counters, 1, [])
     if num_levels is not None:
         stats = list(filter(lambda info: info['Level'] <= num_levels, stats))
-    table = _stats_to_table(stats, ['Layer Name', 'Input Shape', 'Output Shape', *counters.keys()])
+    table = _stats_to_table(
+        stats, ['Layer Name', 'Input Shape', 'Output Shape', *counters.keys()])
 
     with _redirect_stdout_to_str() as sio:
         table.print_table()

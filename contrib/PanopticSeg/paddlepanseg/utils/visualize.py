@@ -86,7 +86,11 @@ def visualize_semantic(semantic, colormap=None, image=None, weight=0.5):
     return colored_semantic
 
 
-def visualize_instance(instance, ignore_ins_id=0, image=None, weight=0.5, use_random_color=False):
+def visualize_instance(instance,
+                       ignore_ins_id=0,
+                       image=None,
+                       weight=0.5,
+                       use_random_color=False):
     """
     Visualize instance segmentation results.
 
@@ -140,11 +144,12 @@ def visualize_panoptic(panoptic,
             Default: 0.5.
         ignore_index (int, optional): The class ID to be ignored. Default: 255.
     """
+
     def _random_color(base, max_dist=30):
         color = base + np.random.randint(
             low=-max_dist, high=max_dist + 1, size=3)
         return tuple(np.maximum(0, np.minimum(255, color)))
-    
+
     colored_panoptic = np.zeros(
         (panoptic.shape[0], panoptic.shape[1], 3), dtype=np.uint8)
     if colormap is None:
