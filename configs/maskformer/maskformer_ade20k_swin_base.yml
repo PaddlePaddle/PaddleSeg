@@ -6,10 +6,10 @@ train_dataset:
   dataset_root: data/ADEChallengeData2016/
   transforms: 
     - type: ResizeByShort
-      short_size: [256, 307, 358, 409, 460, 512, 563, 614, 665, 716, 768, 819, 870, 921, 972, 1024]
-      max_size: 2048
+      short_size: [320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344]
+      max_size: 2560
     - type: RandomPaddingCrop
-      crop_size: [512, 512] 
+      crop_size: [640, 640] 
     - type: RandomDistort
       brightness_range: 0.125
       brightness_prob: 1.0
@@ -21,7 +21,7 @@ train_dataset:
       hue_prob: 1.0
     - type: RandomHorizontalFlip
   to_mask: True
-  size_divisibility: 512
+  size_divisibility: 640
   normalize: True
   
 
@@ -39,8 +39,8 @@ model:
   type: MaskFormer
   num_classes: 150
   backbone:
-    type: SwinTransformer_tiny_patch4_window7_224_maskformer
-  pretrained: https://bj.bcebos.com/paddleseg/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_tiny/pretrain/model.pdparams
+    type: SwinTransformer_base_patch4_window7_384_maskformer
+  pretrained: https://bj.bcebos.com/paddleseg/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_base/pretrain/model.pdparams
 
 optimizer:
   type: AdamW

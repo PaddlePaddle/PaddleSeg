@@ -386,8 +386,8 @@ class Transformer(nn.Layer):
         self.init_weight()
 
     def init_weight(self):
-        for p in self.parameters():
-            if len(p.shape) > 1:
+        for name, p in self.named_parameters():
+            if len(p.shape) > 1 and ('attn' not in name):
                 param_init.xavier_uniform(p)
 
     def forward(self, src, mask, query_embed, pos_embed):
@@ -423,7 +423,7 @@ class MLP(nn.Layer):
         h = [hidden_dim] * (num_layers - 1)
         self.layers = nn.LayerList(
             nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
-        self.init_weight
+        self.init_weight()
 
     def init_weight(self):
         for layer in self.layers:
@@ -466,7 +466,7 @@ class TransformerPredictor(nn.Layer):
             normalize_before=pre_norm,
             return_intermediate_dec=deep_supervision)
 
-        self.query_embed = nn.Embedding(num_queries, hidden_dim)  # lookup dict
+        self.query_embed = nn.Embedding(num_queries, hidden_dim)
 
         if in_channels != hidden_dim or enforce_input_project:
             self.input_proj = nn.Conv2D(in_channels, hidden_dim, kernel_size=1)
@@ -482,8 +482,8 @@ class TransformerPredictor(nn.Layer):
         self.init_weight()
 
     def init_weight(self, ):
-        param_init.th_linear_fill(self.class_embed)  # todo: rm it
-        param_init.normal_init(self.query_embed.weight)
+        param_init.th_linear_fill(self.class_embed)
+        param_init.normal_init(self.query_embed.weight, mean=0.0, std=1.0)
 
     def forward(self, x, mask_features):
         pos = self.pe_layer(x)

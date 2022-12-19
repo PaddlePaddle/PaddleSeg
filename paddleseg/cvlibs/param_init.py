@@ -190,45 +190,11 @@ def xavier_uniform(param, **kwargs):
 
 
 def c2_xavier_fill(layer):
-    try:
+    if hasattr(layer, "weight"):
         kaiming_uniform(
             layer.weight, negative_slope=1, nonlinearity='leaky_relu')
-    except AttributeError:
-        pass
-    try:
-        if layer.bias is not None:
-            constant_init(layer.bias, value=0)
-    except AttributeError:
-        pass
-
-
-def _calculate_fan_in_and_fan_out(tensor):
-    dimensions = len(tensor.shape)
-    if dimensions < 2:
-        raise ValueError(
-            "Fan in and fan out can not be computed for tensor with fewer than 2 dimensions"
-        )
-
-    num_input_fmaps = tensor.shape[1]
-    num_output_fmaps = tensor.shape[0]
-    receptive_field_size = 1
-    if len(tensor.shape) > 2:
-        for s in tensor.shape[2:]:
-            receptive_field_size *= s
-    fan_in = num_input_fmaps * receptive_field_size
-    fan_out = num_output_fmaps * receptive_field_size
-
-    return fan_in, fan_out
-
-
-def c2_linear_fill(layer):
-    import math
-    kaiming_uniform(
-        layer.weight, negative_slope=math.sqrt(5), nonlinearity='leaky_relu')
-    if layer.bias is not None:
-        fan_in, _ = _calculate_fan_in_and_fan_out(layer.weight)
-        bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
-        uniform_init(layer.bias, low=-bound, high=bound)
+    if getattr(layer, 'bias', None) is not None:
+        constant_init(layer.bias, value=0)
 
 
 def th_multihead_fill(layer, qkv_same_embed_dim=True):
@@ -250,14 +216,8 @@ def th_multihead_fill(layer, qkv_same_embed_dim=True):
 def th_linear_fill(layer):
     nn.initializer.KaimingUniform(
         negative_slope=math.sqrt(5), nonlinearity='leaky_relu')(layer.weight)
+
     if getattr(layer, 'bias', None) is not None:
         fan_in = layer.weight.shape[0]
         bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
         nn.initializer.Uniform(low=-bound, high=bound)(layer.bias)
-
-
-class THLinearInitMixin(object):
-    def init_weight(self):
-        for layer in self.sublayers():
-            if isinstance(layer, nn.Linear):
-                th_linear_fill(layer)
