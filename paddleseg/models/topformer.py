@@ -63,19 +63,6 @@ class TopFormer(nn.Layer):
             in_channels=head_in_channels,
             use_dw=head_use_dw,
             align_corners=align_corners)
-        self.c = nn.Conv2D(
-            in_channels=150,
-            out_channels=150 * 256,
-            kernel_size=1,
-            stride=1,
-            padding=0)
-        self.c1 = nn.Conv2D(
-            in_channels=150,
-            out_channels=150 * 16,
-            kernel_size=1,
-            stride=1,
-            padding=0)
-        self.dc = nn.Conv2DTranspose(150, 150, 16, 16)
 
         self.align_corners = align_corners
         self.pretrained = pretrained
@@ -85,7 +72,7 @@ class TopFormer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def forward(self, x, upsample='valid'):
+    def forward(self, x, upsample='intepolate'):
         x_hw = paddle.shape(x)[2:]
         x_shape = paddle.shape(x)
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
@@ -94,38 +81,19 @@ class TopFormer(nn.Layer):
         if upsample == 'intepolate':
             x = F.interpolate(
                 x, x_hw, mode='bilinear', align_corners=self.align_corners)
-        elif upsample == 'conv11':
-            # import pdb;pdb.set_trace()
-            x = self.c(x)
-            x = x.reshape([1, 150, 512, 512])
-        elif upsample == 'deconv':
-            x = self.dc(x)
-        elif upsample == 'hybrid':
-            x = F.interpolate(
-                x, x_hw / 4, mode='bilinear', align_corners=self.align_corners)
-            x = self.c1(x)
-            x = x.reshape([1, 150, 512, 512])
-        elif upsample == 'step':
-            x = F.interpolate(
-                x, x_hw / 8, mode='bilinear', align_corners=self.align_corners)
-            x = F.interpolate(
-                x, x_hw / 4, mode='bilinear', align_corners=self.align_corners)
-            x = F.interpolate(
-                x, x_hw / 2, mode='bilinear', align_corners=self.align_corners)
-            x = F.interpolate(
-                x, x_hw, mode='bilinear', align_corners=self.align_corners)
         elif upsample == 'valid':
             if not self.training:
-                import numpy as np
-                labelset = np.unique(paddle.argmax(x, 1).numpy())
-                labelset = paddle.to_tensor(labelset, dtype='int32')
-                # labelset = paddle.unique(paddle.argmax(x, 1))
-
-                x = paddle.gather(
-                    x, labelset, axis=1
-                )  # Tensor(shape=[7], dtype=int32, place=Place(gpu:0), stop_gradient=True, [8  , 29 , 40 , 112, 127, 133, 146])
+                labelset = paddle.unique(paddle.argmax(x, 1))
+                x = paddle.gather(x, labelset, axis=1)
                 x = F.interpolate(
                     x, x_hw, mode='bilinear', align_corners=self.align_corners)
+
+                pred = paddle.argmax(x, 1)
+                pred_retrieve = paddle.zeros(pred.shape, dtype='int32')
+                for i, val in enumerate(labelset):
+                    pred_retrieve[pred == i] = labelset[i].cast('int32')
+
+                return [pred_retrieve]
             else:
                 x = F.interpolate(
                     x, x_hw, mode='bilinear', align_corners=self.align_corners)

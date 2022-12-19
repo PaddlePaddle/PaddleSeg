@@ -7,6 +7,83 @@ from paddleseg import utils
 from paddleseg.models.backbones.transformer_utils import Identity, DropPath
 
 
+class InjectionMultiSumCBR(nn.Layer):
+    def __init__(self, in_channels, out_channels, activations=None):
+        '''
+        local_embedding: conv-bn-relu
+        global_embedding: conv-bn-relu
+        global_act: conv
+        '''
+        super(InjectionMultiSumCBR, self).__init__()
+
+        self.local_embedding = ConvBNAct(
+            in_channels, out_channels, kernel_size=1)
+        self.global_embedding = ConvBNAct(
+            in_channels, out_channels, kernel_size=1)
+        self.global_act = ConvBNAct(
+            in_channels, out_channels, kernel_size=1, norm=None, act=None)
+        self.act = HSigmoid()
+
+    def forward(self, x_low, x_global):
+        xl_hw = paddle.shape(x)[2:]
+        local_feat = self.local_embedding(x_low)
+        # kernel
+        global_act = self.global_act(x_global)
+        global_act = F.interpolate(
+            self.act(global_act), xl_hw, mode='bilinear', align_corners=False)
+        # feat_h
+        global_feat = self.global_embedding(x_global)
+        global_feat = F.interpolate(
+            global_feat, xl_hw, mode='bilinear', align_corners=False)
+        out = local_feat * global_act + global_feat
+        return out
+
+
+class FuseBlockSum(nn.Layer):
+    def __init__(self, in_channels, out_channels, activations=None):
+        super(FuseBlockSum, self).__init__()
+
+        self.fuse1 = ConvBNAct(
+            in_channels, out_channels, kernel_size=1, act=None)
+        self.fuse2 = ConvBNAct(
+            in_channels, out_channels, kernel_size=1, act=None)
+
+    def forward(self, x_low, x_high):
+        xl_hw = paddle.shape(x)[2:]
+        inp = self.fuse1(x_low)
+        kernel = self.fuse2(x_high)
+        feat_h = F.interpolate(
+            kernel, xl_hw, mode='bilinear', align_corners=False)
+        out = inp + feat_h
+        return out
+
+
+class FuseBlockMulti(nn.Layer):
+    def __init__(
+            self,
+            in_channels,
+            out_channels,
+            stride=1,
+            activations=None, ):
+        super(FuseBlockMulti, self).__init__()
+        assert stride in [1, 2], "The stride should be 1 or 2."
+
+        self.fuse1 = ConvBNAct(
+            in_channels, out_channels, kernel_size=1, act=None)
+        self.fuse2 = ConvBNAct(
+            in_channels, out_channels, kernel_size=1, act=None)
+        self.act = HSigmoid()
+
+    def forward(self, x_low, x_high):
+        xl_hw = paddle.shape(x)[2:]
+        inp = self.fuse1(x_low)
+        sig_act = self.fuse2(x_high)
+        sig_act = F.interpolate(
+            self.act(sig_act), xl_hw, mode='bilinear', align_corners=False)
+        out = inp * sig_act
+        return out
+
+
 class InjectionMultiSumSimple(nn.Layer):
     def __init__(self,
                  in_channels,

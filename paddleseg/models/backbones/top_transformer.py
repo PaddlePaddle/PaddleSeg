@@ -22,6 +22,7 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 from paddleseg import utils
 from paddleseg.models.backbones.transformer_utils import Identity, DropPath
+from paddleseg.models.backbones.topformer_utils import *
 
 __all__ = ["TopTransformer_Base", "TopTransformer_Small", "TopTransformer_Tiny"]
 
@@ -504,83 +505,6 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
         return res
 
 
-class InjectionMultiSumCBR(nn.Layer):
-    def __init__(self, in_channels, out_channels, activations=None):
-        '''
-        local_embedding: conv-bn-relu
-        global_embedding: conv-bn-relu
-        global_act: conv
-        '''
-        super(InjectionMultiSumCBR, self).__init__()
-
-        self.local_embedding = ConvBNAct(
-            in_channels, out_channels, kernel_size=1)
-        self.global_embedding = ConvBNAct(
-            in_channels, out_channels, kernel_size=1)
-        self.global_act = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, norm=None, act=None)
-        self.act = HSigmoid()
-
-    def forward(self, x_low, x_global):
-        xl_hw = paddle.shape(x)[2:]
-        local_feat = self.local_embedding(x_low)
-        # kernel
-        global_act = self.global_act(x_global)
-        global_act = F.interpolate(
-            self.act(global_act), xl_hw, mode='bilinear', align_corners=False)
-        # feat_h
-        global_feat = self.global_embedding(x_global)
-        global_feat = F.interpolate(
-            global_feat, xl_hw, mode='bilinear', align_corners=False)
-        out = local_feat * global_act + global_feat
-        return out
-
-
-class FuseBlockSum(nn.Layer):
-    def __init__(self, in_channels, out_channels, activations=None):
-        super(FuseBlockSum, self).__init__()
-
-        self.fuse1 = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, act=None)
-        self.fuse2 = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, act=None)
-
-    def forward(self, x_low, x_high):
-        xl_hw = paddle.shape(x)[2:]
-        inp = self.fuse1(x_low)
-        kernel = self.fuse2(x_high)
-        feat_h = F.interpolate(
-            kernel, xl_hw, mode='bilinear', align_corners=False)
-        out = inp + feat_h
-        return out
-
-
-class FuseBlockMulti(nn.Layer):
-    def __init__(
-            self,
-            in_channels,
-            out_channels,
-            stride=1,
-            activations=None, ):
-        super(FuseBlockMulti, self).__init__()
-        assert stride in [1, 2], "The stride should be 1 or 2."
-
-        self.fuse1 = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, act=None)
-        self.fuse2 = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, act=None)
-        self.act = HSigmoid()
-
-    def forward(self, x_low, x_high):
-        xl_hw = paddle.shape(x)[2:]
-        inp = self.fuse1(x_low)
-        sig_act = self.fuse2(x_high)
-        sig_act = F.interpolate(
-            self.act(sig_act), xl_hw, mode='bilinear', align_corners=False)
-        out = inp * sig_act
-        return out
-
-
 SIM_BLOCK = {
     "fuse_sum": FuseBlockSum,
     "fuse_multi": FuseBlockMulti,
@@ -630,7 +554,7 @@ class TopTransformer(nn.Layer):
             self.feat_channels = [24, 88, 176, 352]
             from .esnet import ESNet_x0_75
             self.tpm = ESNet_x0_75()
-            pretrained = None  # TODO add pretrain model
+            pretrained = "saved_model/best_model_esnet075.pdparams"
         elif backbone == 'esnet1_0':
             self.feat_channels = [24, 120, 232, 464]
             from .esnet import ESNet_x1_0
@@ -660,7 +584,7 @@ class TopTransformer(nn.Layer):
             self.feat_channels = [24, 48, 96, 120]
             from .mobilenetv3 import MobileNetV3_large_x1_0_edit_x0_75
             self.tpm = MobileNetV3_large_x1_0_edit_x0_75()
-            pretrained = None
+            pretrained = 'saved_model/best_model_mbv3edit075.pdparams'
         else:
             raise NotImplementedError('Backbone {} is not supported.'.format(
                 backbone))
@@ -796,7 +720,6 @@ def TopTransformer_Base(**kwargs):
         c2t_stride=2,
         drop_path_rate=0.,
         act_layer=nn.ReLU6,
-        injection_type="InjectionMultiSumallmultiallsum",
         injection=True,
         **kwargs)
     return model

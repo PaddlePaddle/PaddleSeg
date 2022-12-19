@@ -166,9 +166,9 @@ def inference(model,
     if hasattr(model, 'data_format') and model.data_format == 'NHWC':
         logit = logit.transpose((0, 3, 1, 2))
     if trans_info is not None:
-        logit = reverse_transform(
-            logit, trans_info, mode='bilinear')  # trans_info==[]
+        logit = reverse_transform(logit, trans_info, mode='bilinear')
         pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
+        # pred = logits
         return pred, logit
     else:
         return logit
