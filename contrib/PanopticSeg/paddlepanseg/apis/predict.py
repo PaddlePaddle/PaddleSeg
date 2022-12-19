@@ -108,7 +108,10 @@ def pred_with_args(args):
         transforms=transforms,
         postprocessor=cfg.postprocessor,
         image_list=image_list,
+        label_divisor=val_dataset.label_divisor,
+        ignore_index=val_dataset.ignore_index,
         image_dir=image_dir,
+        colormap=val_dataset.get_colormap(),
         save_dir=args.save_dir)
 
 

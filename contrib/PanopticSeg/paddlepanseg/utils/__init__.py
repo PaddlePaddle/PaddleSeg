@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .visualize import visualize_semantic, visualize_instance, visualize_panoptic, cityscape_colormap
+from .visualize import visualize_semantic, visualize_instance, visualize_panoptic
 from .misc import tabulate_metrics

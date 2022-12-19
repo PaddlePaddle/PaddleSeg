@@ -37,12 +37,12 @@ class SemSegEvaluator(Evaluator):
             **2).reshape(self._N, self._N)
 
     def evaluate(self):
-        acc = np.zeros(self.num_classes, dtype=np.float)
-        iou = np.zeros(self.num_classes, dtype=np.float)
-        tp = self.conf_matrix.diagonal()[:-1].astype(np.float)
-        pos_gt = np.sum(self.conf_matrix[:-1, :-1], axis=0).astype(np.float)
+        acc = np.zeros(self.num_classes, dtype=float)
+        iou = np.zeros(self.num_classes, dtype=float)
+        tp = self.conf_matrix.diagonal()[:-1].astype(float)
+        pos_gt = np.sum(self.conf_matrix[:-1, :-1], axis=0).astype(float)
         class_weights = pos_gt / np.sum(pos_gt)
-        pos_pred = np.sum(self.conf_matrix[:-1, :-1], axis=1).astype(np.float)
+        pos_pred = np.sum(self.conf_matrix[:-1, :-1], axis=1).astype(float)
 
         acc_valid = pos_pred > 0
         acc[acc_valid] = tp[acc_valid] / pos_pred[acc_valid]

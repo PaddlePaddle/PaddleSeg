@@ -61,12 +61,12 @@ class PanopticDeepLabPostprocessor(Postprocessor):
 
         # For semantic segmentation evaluation.
         sem_prob = F.softmax(r, axis=0)  # [C, H, W]
-        pp_out['sem_prob'] = sem_prob
-        pp_out['sem_pred'] = paddle.argmax(sem_prob, axis=0, keepdim=True)
+        pp_out['sem_prob'] = sem_prob.unsqueeze(0)
+        pp_out['sem_pred'] = paddle.argmax(sem_prob, axis=0, keepdim=True).unsqueeze(0)
 
         # Post-processing to get panoptic segmentation.
         panoptic_image = self._get_panoptic_segmentation(
-            pp_out['sem_pred'].unsqueeze(0), c, o)
+            pp_out['sem_pred'], c, o)
         pp_out['pan_pred'] = panoptic_image
         return pp_out
 

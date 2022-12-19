@@ -17,6 +17,7 @@ import copy
 import os
 import os.path as osp
 
+import numpy as np
 import paddle
 from paddle.fluid.dataloader.collate import default_collate_fn
 from paddleseg.transforms import Compose
@@ -92,6 +93,10 @@ class PanopticDataset(paddle.io.Dataset):
     @classmethod
     def convert_id_for_train(cls, id_):
         return id_
+
+    @classmethod
+    def get_colormap(cls):
+        return None
 
 
 class COCOStylePanopticDataset(PanopticDataset):
@@ -210,3 +215,10 @@ class COCOStylePanopticDataset(PanopticDataset):
             if cat['isthing']:
                 thing_ids.append(i)
         return thing_ids
+
+    @classmethod
+    def get_colormap(cls):
+        colormap = np.zeros((256, 3), dtype=np.uint8)
+        for i, cat in enumerate(cls.CATEGORY_META_INFO):
+            colormap[i] = cat['color']
+        return colormap

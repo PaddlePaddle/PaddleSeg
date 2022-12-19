@@ -46,13 +46,13 @@ _COLORS = np.array([
 ]).astype(np.float32).reshape(-1, 3)
 
 
-def random_color(rgb=False, maximum=255):
+def random_color(rgb=True, maximum=255):
     """
     Reference: https://github.com/facebookresearch/detectron2/blob/master/detectron2/utils/colormap.py#L111
 
     Args:
-        rgb (bool, optional): whether or not to return RGB colors or BGR colors. Default: False.
-        maximum (int, optional): either 255 or 1. Default: 255.
+        rgb (bool, optional): Whether or not to return RGB colors or BGR colors. Default: True.
+        maximum (int, optional): Either 255 or 1. Default: 255.
 
     Returns:
         ndarray: a vector of 3 numbers
@@ -64,120 +64,99 @@ def random_color(rgb=False, maximum=255):
     return ret
 
 
-def cityscape_colormap():
-    """Get CityScapes colormap"""
-    colormap = np.zeros((256, 3), dtype=np.uint8)
-    colormap[0] = [128, 64, 128]
-    colormap[1] = [244, 35, 232]
-    colormap[2] = [70, 70, 70]
-    colormap[3] = [102, 102, 156]
-    colormap[4] = [190, 153, 153]
-    colormap[5] = [153, 153, 153]
-    colormap[6] = [250, 170, 30]
-    colormap[7] = [220, 220, 0]
-    colormap[8] = [107, 142, 35]
-    colormap[9] = [152, 251, 152]
-    colormap[10] = [70, 130, 180]
-    colormap[11] = [220, 20, 60]
-    colormap[12] = [255, 0, 0]
-    colormap[13] = [0, 0, 142]
-    colormap[14] = [0, 0, 70]
-    colormap[15] = [0, 60, 100]
-    colormap[16] = [0, 80, 100]
-    colormap[17] = [0, 0, 230]
-    colormap[18] = [119, 11, 32]
-    colormap = colormap[:, ::-1]
-    return colormap
-
-
-def visualize_semantic(semantic, save_path, colormap, image=None, weight=0.5):
+def visualize_semantic(semantic, colormap=None, image=None, weight=0.5):
     """
-    Save semantic segmentation results.
+    Visualize semantic segmentation results.
 
     Args:
-        semantic (np.ndarray): The result semantic segmenation results, shape is (h, w).
-        save_path (str): The save path.
-        colormap (np.ndarray): A color map for visualization.
-        image (np.ndarray, optional): Origin image to prediction, merge semantic with
-            image if provided. Default: None.
-        weight (float, optional): The image weight when merge semantic with image. Default: 0.5.
+        semantic (np.ndarray): The semantic segmenation results, whose shape is (h, w).
+        colormap (np.ndarray, optional): The color map used for visualization. Default: None.
+        image (np.ndarray, optional): The original input image. Merge the segmentation result 
+            with `image` if it is provided. Default: None.
+        weight (float, optional): The weight of original image when performing image merge. 
+            Default: 0.5.
     """
     semantic = semantic.astype('uint8')
+    if colormap is None:
+        colormap = _COLORS
     colored_semantic = colormap[semantic]
     if image is not None:
         colored_semantic = cv2.addWeighted(image, weight, colored_semantic,
                                            1 - weight, 0)
-    cv2.imwrite(save_path, colored_semantic)
+    return colored_semantic
 
 
-def visualize_instance(instance, save_path, stuff_id=0, image=None, weight=0.5):
+def visualize_instance(instance, ignore_ins_id=0, image=None, weight=0.5, use_random_color=False):
     """
-    Save instance segmentation results.
+    Visualize instance segmentation results.
 
     Args:
-        instance (np.ndarray): The instance segmentation results, shape is (h, w).
-        save_path (str): The save path.
-        stuff_id (int, optional): Id for background that not want to plot.
-        image (np.ndarray, optional): Origin image to prediction, merge instance with
-            image if provided. Default: None.
-        weight (float, optional): The image weight when merge instance with image. Default: 0.5.
+        instance (np.ndarray): The instance segmentation results, whose shape is (h, w).
+        ignore_ins_id (int, optional): ID for background area that you do not want to plot.
+        image (np.ndarray, optional): The original input image. Merge the segmentation result 
+            with `image` if it is provided. Default: None.
+        weight (float, optional): The weight of original image when performing image merge. 
+            Default: 0.5.
+        use_random_color (bool, optional): Whether or not to use randomly selected color to
+            visualize instances. Default: False.
     """
-    # Add color map for instance segmentation result.
+    # Add color map for instance segmentation result
     ids = np.unique(instance)
     num_colors = len(ids)
     colormap = np.zeros((num_colors, 3), dtype=np.uint8)
     # Maps label to continuous value
     for i in range(num_colors):
         instance[instance == ids[i]] = i
-        colormap[i, :] = random_color(maximum=255)
-        if ids[i] == stuff_id:
+        if use_random_color:
+            colormap[i, :] = random_color(maximum=255)
+        else:
+            colormap[i, :] = _COLORS[i] * 255
+        if ids[i] == ignore_ins_id:
             colormap[i, :] = np.array([0, 0, 0])
     colored_instance = colormap[instance]
 
     if image is not None:
         colored_instance = cv2.addWeighted(image, weight, colored_instance,
                                            1 - weight, 0)
-    cv2.imwrite(save_path, colored_instance)
+    return colored_instance
 
 
 def visualize_panoptic(panoptic,
-                       save_path,
                        label_divisor,
-                       colormap,
+                       colormap=None,
                        image=None,
                        weight=0.5,
                        ignore_index=255):
     """
-    Save panoptic segmentation results.
+    Visualize panoptic segmentation results.
 
     Args:
-        panoptic (np.ndarray): The panoptic segmentation results, shape is (h, w).
-        save_path (str): The save path.
-        label_divisor (int): Used to convert panoptic id = semantic id * label_divisor + instance_id.
-        colormap (np.ndarray): A color map for visualization.
-        image (np.ndarray, optional): Origin image to prediction, merge panoptic with
-            image if provided. Default: None.
-        weight (float, optional): The image weight when merge panoptic with image. Default: 0.5.
-        ignore_index (int, optional): Specifies a target value that is ignored. Default: 255.
+        panoptic (np.ndarray): The panoptic segmentation results, whose shape is (h, w).
+        label_divisor (int): Used for conversion between semantic IDs and panoptic IDs.
+        colormap (np.ndarray, optional): The color map used for visualization. Default: None.
+        image (np.ndarray, optional): The original input image. Merge the segmentation result 
+            with `image` if it is provided. Default: None.
+        weight (float, optional): The weight of original image when performing image merge. 
+            Default: 0.5.
+        ignore_index (int, optional): The class ID to be ignored. Default: 255.
     """
-    colored_panoptic = np.zeros(
-        (panoptic.shape[0], panoptic.shape[1], 3), dtype=np.uint8)
-    taken_colors = set((0, 0, 0))
-
     def _random_color(base, max_dist=30):
         color = base + np.random.randint(
             low=-max_dist, high=max_dist + 1, size=3)
         return tuple(np.maximum(0, np.minimum(255, color)))
+    
+    colored_panoptic = np.zeros(
+        (panoptic.shape[0], panoptic.shape[1], 3), dtype=np.uint8)
+    if colormap is None:
+        colormap = _COLORS
+    taken_colors = set((0, 0, 0))
 
     for lab in np.unique(panoptic):
         mask = panoptic == lab
-
-        ignore_mask = panoptic == ignore_index
-        ins_mask = panoptic > label_divisor
-        if lab > label_divisor:
-            base_color = colormap[lab // label_divisor]
-        elif lab != ignore_index:
-            base_color = colormap[lab]
+        # XXX: The conversion strategy is hard-coded
+        cat_id = (lab // label_divisor) - 1
+        if cat_id != ignore_index:
+            base_color = colormap[cat_id]
         else:
             continue
         if tuple(base_color) not in taken_colors:
@@ -185,6 +164,7 @@ def visualize_panoptic(panoptic,
             color = base_color
         else:
             while True:
+                # XXX: This might result in an infinite loop
                 color = _random_color(base_color)
                 if color not in taken_colors:
                     taken_colors.add(color)
@@ -194,4 +174,4 @@ def visualize_panoptic(panoptic,
     if image is not None:
         colored_panoptic = cv2.addWeighted(image, weight, colored_panoptic,
                                            1 - weight, 0)
-    cv2.imwrite(save_path, colored_panoptic)
+    return colored_panoptic

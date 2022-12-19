@@ -22,7 +22,7 @@ import paddleseg
 from paddleseg.utils import logger, progbar
 from PIL import Image
 
-from paddlepanseg.transforms.functional import id2rgb
+from paddlepanseg.utils.visualize import visualize_instance, visualize_semantic, visualize_panoptic
 from paddlepanseg.cvlibs import build_info_dict
 from . import infer
 
@@ -39,7 +39,7 @@ def partition_list(arr, m):
     return [arr[i:i + n] for i in range(0, len(arr), n)]
 
 
-def get_save_name(im_path, im_dir, ext='.png'):
+def get_save_name(im_path, im_dir, suffix='.png'):
     """Get the saved name"""
     if im_dir is not None:
         im_file = im_path.replace(im_dir, '')
@@ -47,8 +47,8 @@ def get_save_name(im_path, im_dir, ext='.png'):
         im_file = osp.basename(im_path)
     if im_file[0] == '/':
         im_file = im_file[1:]
-    if ext is not None:
-        im_file = osp.splitext(im_file)[0] + ext
+    if suffix is not None:
+        im_file = osp.splitext(im_file)[0] + suffix
     return im_file
 
 
@@ -57,6 +57,9 @@ def predict(model,
             transforms,
             postprocessor,
             image_list,
+            label_divisor,
+            ignore_index,
+            colormap=None,
             image_dir=None,
             save_dir='output'):
     """
@@ -68,6 +71,9 @@ def predict(model,
         transforms (paddleseg.transforms.Compose): The pipeline for data preprocessing of the input image.
         postprocessor (paddlepanseg.postprocessors.Postprocessor): Used to postprocess model output.
         image_list (list): A list of image path to be predicted.
+        label_divisor (int): Used for conversion between semantic IDs and panoptic IDs.
+        ignore_index (int): The class ID to be ignored. Default: 255.
+        color_map (list, optional): The colormap used for visualization. Default: None.
         image_dir (str, optional): The root directory of the images to predict. Default: None.
         save_dir (str, optional): The directory for saving the predicted results. Default: 'output'.
     """
@@ -92,9 +98,15 @@ def predict(model,
 
             pp_out = infer.inference(
                 model=model, data=data, postprocessor=postprocessor)
-            ps = id2rgb(pp_out['pan_pred'][0, 0].numpy())
+            # NOTE: We do not perform id conversion before visualization
+            pan_pred = pp_out['pan_pred'][0, 0].numpy()
+            sem_pred = pp_out['sem_pred'][0, 0].numpy()
+            sem_vis = visualize_semantic(sem_pred, colormap)
+            ins_vis = visualize_instance(pan_pred, ignore_ins_id=0)
+            pan_vis = visualize_panoptic(pan_pred, label_divisor=label_divisor, ignore_index=ignore_index)
 
-            im_file = get_save_name(im_path, image_dir)
-            Image.fromarray(ps).convert('RGB').save(osp.join(save_dir, im_file))
+            Image.fromarray(sem_vis).convert('RGB').save(osp.join(save_dir, get_save_name(im_path, image_dir, '_sem.png')))
+            Image.fromarray(ins_vis).convert('RGB').save(osp.join(save_dir, get_save_name(im_path, image_dir, '_ins.png')))
+            Image.fromarray(pan_vis).convert('RGB').save(osp.join(save_dir, get_save_name(im_path, image_dir, '_pan.png')))
 
             progbar_pred.update(i + 1)
