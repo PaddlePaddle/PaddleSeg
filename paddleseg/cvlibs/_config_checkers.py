@@ -48,7 +48,7 @@ class ConfigChecker(object):
             # Do nothing here as `self.apply_rule()` already handles the exceptions
 
 
-class _Rule(object):
+class Rule(object):
     def check_and_correct(self, cfg):
         # Be free to add in-place modification here
         raise NotImplementedError
@@ -61,7 +61,7 @@ class _Rule(object):
         self.check_and_correct(cfg)
 
 
-class DefaultPrimaryRule(_Rule):
+class DefaultPrimaryRule(Rule):
     def check_and_correct(self, cfg):
         assert cfg.dic.get('model', None) is not None, \
             'No model specified in the configuration file.'
@@ -69,7 +69,7 @@ class DefaultPrimaryRule(_Rule):
             'One of `train_dataset` or `val_dataset should be given, but there are none.'
 
 
-class DefaultLossRule(_Rule):
+class DefaultLossRule(Rule):
     def __init__(self, loss_name):
         super().__init__()
         self.loss_name = loss_name
@@ -93,7 +93,7 @@ class DefaultLossRule(_Rule):
                         len_types, len_coef))
 
 
-class DefaultSyncNumClassesRule(_Rule):
+class DefaultSyncNumClassesRule(Rule):
     def check_and_correct(self, cfg):
         num_classes_set = set()
 
@@ -129,7 +129,7 @@ class DefaultSyncNumClassesRule(_Rule):
             cfg.dic['val_dataset']['num_classes'] = num_classes
 
 
-class DefaultSyncImgChannelsRule(_Rule):
+class DefaultSyncImgChannelsRule(Rule):
     def check_and_correct(self, cfg):
         img_channels_set = set()
         model_cfg = cfg.dic['model']
@@ -168,7 +168,7 @@ class DefaultSyncImgChannelsRule(_Rule):
             cfg.dic['val_dataset']['img_channels'] = img_channels
 
 
-class DefaultSyncIgnoreIndexRule(_Rule):
+class DefaultSyncIgnoreIndexRule(Rule):
     def __init__(self, loss_name):
         super().__init__()
         self.loss_name = loss_name

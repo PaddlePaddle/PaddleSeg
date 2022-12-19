@@ -22,6 +22,7 @@ import yaml
 import paddle
 
 from . import _config_checkers as checker
+from . import builder
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger, utils
 from paddleseg.utils.utils import CachedProperty as cached_property
@@ -31,7 +32,7 @@ _BASE_KEY = '_base_'
 
 
 class Config(object):
-    '''
+    """
     Training configuration parsing. The only yaml/yml file is supported.
 
     The following hyper-parameters are available in the config file:
@@ -70,7 +71,7 @@ class Config(object):
         # since the model builder uses some properties in dataset.
         model = cfg.model
         ...
-    '''
+    """
 
     def __init__(self,
                  path: str,
@@ -78,7 +79,8 @@ class Config(object):
                  batch_size: Optional[int]=None,
                  iters: Optional[int]=None,
                  opts: Optional[list]=None,
-                 sanity_checker: Optional[checker.ConfigChecker]=None):
+                 sanity_checker: Optional[checker.ConfigChecker]=None,
+                 component_builder: Optional[builder.ComponentBuilder]=None):
         assert os.path.exists(path), \
             'Config path ({}) does not exist'.format(path)
         assert path.endswith('yml') or path.endswith('yaml'), \
@@ -91,6 +93,13 @@ class Config(object):
             batch_size=batch_size,
             iters=iters,
             opts=opts)
+
+        # We have to build the component builder before doing any sanity checks
+        # This is because during a sanity check, some component objects are (possibly) 
+        # required to be constructed.
+        if component_builder is None:
+            component_builder = self._build_default_component_builder()
+        self.builder = component_builder
 
         if sanity_checker is None:
             sanity_checker = self._build_default_sanity_checker()
@@ -223,7 +232,7 @@ class Config(object):
         args = self.dic.get(loss_name, {}).copy()
         losses = {'coef': args['coef'], "types": []}
         for loss_cfg in args['types']:
-            losses['types'].append(self.create_object(loss_cfg))
+            losses['types'].append(self.builder.create_object(loss_cfg))
         return losses
 
     #################### model
@@ -231,7 +240,7 @@ class Config(object):
     def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
         if not self._model:
-            self._model = self.create_object(model_cfg)
+            self._model = self.builder.create_object(model_cfg)
         return self._model
 
     #################### dataset
@@ -246,26 +255,26 @@ class Config(object):
     @cached_property
     def train_dataset_class(self) -> Any:
         dataset_type = self.train_dataset_config['type']
-        return load_component_class(dataset_type)
+        return self.builder.load_component_class(dataset_type)
 
     @cached_property
     def val_dataset_class(self) -> Any:
         dataset_type = self.val_dataset_config['type']
-        return load_component_class(dataset_type)
+        return self.builder.load_component_class(dataset_type)
 
     @cached_property
     def train_dataset(self) -> paddle.io.Dataset:
         _train_dataset = self.train_dataset_config
         if not _train_dataset:
             return None
-        return self.create_object(_train_dataset)
+        return self.builder.create_object(_train_dataset)
 
     @cached_property
     def val_dataset(self) -> paddle.io.Dataset:
         _val_dataset = self.val_dataset_config
         if not _val_dataset:
             return None
-        return self.create_object(_val_dataset)
+        return self.builder.create_object(_val_dataset)
 
     @cached_property
     def val_transforms(self) -> list:
@@ -275,8 +284,8 @@ class Config(object):
             return []
         _transforms = _val_dataset.get('transforms', [])
         transforms = []
-        for i in _transforms:
-            transforms.append(self.create_object(i))
+        for tf in _transforms:
+            transforms.append(self.builder.create_object(tf))
         return transforms
 
     #################### test and export
@@ -298,10 +307,7 @@ class Config(object):
         return parse_from_yaml(path, *args, **kwargs)
 
     @classmethod
-    def create_object(cls, cfg: dict, *args, **kwargs) -> Any:
-        return create_object(cfg, *args, **kwargs)
-
-    def _build_default_sanity_checker(self):
+    def _build_default_sanity_checker(cls):
         rules = []
         rules.append(checker.DefaultPrimaryRule())
         rules.append(checker.DefaultSyncNumClassesRule())
@@ -315,9 +321,18 @@ class Config(object):
 
         return checker.ConfigChecker(rules, allow_update=True)
 
+    @classmethod
+    def _build_default_component_builder(cls):
+        com_list = [
+            manager.MODELS, manager.BACKBONES, manager.DATASETS,
+            manager.TRANSFORMS, manager.LOSSES
+        ]
+        component_builder = builder.DefaultComponentBuilder(com_list=com_list)
+        return component_builder
+
 
 def merge_config_dicts(dic, base_dic):
-    '''Merge dic to base_dic and return base_dic.'''
+    """Merge dic to base_dic and return base_dic."""
     base_dic = base_dic.copy()
     dic = dic.copy()
 
@@ -335,7 +350,7 @@ def merge_config_dicts(dic, base_dic):
 
 
 def parse_from_yaml(path: str):
-    '''Parse a yaml file and build config'''
+    """Parse a yaml file and build config"""
     with codecs.open(path, 'r', 'utf-8') as file:
         dic = yaml.load(file, Loader=yaml.FullLoader)
 
@@ -356,7 +371,7 @@ def _update_config_dict(dic: dict,
                         batch_size: Optional[int]=None,
                         iters: Optional[int]=None,
                         opts: Optional[list]=None):
-    '''Update config'''
+    """Update config"""
     # TODO: If the items to update are marked as anchors in the yaml file,
     # we should synchronize the references.
     dic = dic.copy()
@@ -391,48 +406,3 @@ def _update_config_dict(dic: dict,
             tmp_dic[key_list[-1]] = value
 
     return dic
-
-
-def load_component_class(com_name: str, com_list: Optional[list]=None) -> Any:
-    '''Load component class, such as model, loss, dataset, etc.'''
-    if com_list is None:
-        com_list = [
-            manager.MODELS, manager.BACKBONES, manager.DATASETS,
-            manager.TRANSFORMS, manager.LOSSES
-        ]
-
-    for com in com_list:
-        if com_name in com.components_dict:
-            return com[com_name]
-
-    raise RuntimeError('The specified component ({}) was not found.'.format(
-        com_name))
-
-
-def create_object(cfg: dict, com_list: Optional[list]=None) -> Any:
-    '''Create Python object, such as model, loss, dataset, etc.'''
-    cfg = cfg.copy()
-    if 'type' not in cfg:
-        raise RuntimeError('No object information in {}.'.format(cfg))
-
-    component = load_component_class(cfg.pop('type'), com_list=com_list)
-
-    params = {}
-    for key, val in cfg.items():
-        if is_meta_type(val):
-            params[key] = create_object(val)
-        elif isinstance(val, list):
-            params[key] = [
-                create_object(item) if is_meta_type(item) else item
-                for item in val
-            ]
-        else:
-            params[key] = val
-
-    return component(**params)
-
-
-def is_meta_type(obj):
-    # TODO: should we define a protocol (see https://peps.python.org/pep-0544/#defining-a-protocol)
-    # to make it more pythonic?
-    return isinstance(obj, dict) and 'type' in obj
