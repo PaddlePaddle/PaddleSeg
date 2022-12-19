@@ -55,7 +55,18 @@ class ComponentBuilder(object):
             else:
                 params[key] = val
 
-        return self._create_object_impl(component, **params)
+        try:
+            obj = self._create_object_impl(component, **params)
+        except Exception as e:
+            if hasattr(component, '__name__'):
+                com_name = component.__name__
+            else:
+                com_name = ''
+            raise RuntimeError(
+                f"Tried to create a {com_name} object, but the operation has failed. "
+                "Please double check the arguments used to create the object.\n"
+                f"The error message is: \n{str(e)}")
+        return obj
 
     def _create_object_impl(self, component, *args, **kwargs):
         raise NotImplementedError
@@ -70,17 +81,7 @@ class ComponentBuilder(object):
 
 class DefaultComponentBuilder(ComponentBuilder):
     def _create_object_impl(self, component, *args, **kwargs):
-        try:
-            return component(*args, **kwargs)
-        except Exception as e:
-            if hasattr(component, '__name__'):
-                com_name = component.__name__
-            else:
-                com_name = ''
-            raise RuntimeError(
-                f"Tried to create a {com_name} object, but the operation has failed. "
-                "Please double check the arguments used to create the object.\n"
-                f"The error message is: \n{str(e)}")
+        return component(*args, **kwargs)
 
     def load_component_class_from_config(self, cfg):
         # XXX: `cfg` is modified in place. We pop out the 'type' key.
