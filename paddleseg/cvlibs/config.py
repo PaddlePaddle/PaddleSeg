@@ -21,7 +21,7 @@ from typing import Any, Dict, Optional
 import yaml
 import paddle
 
-from . import _sanity_checkers as sc
+from . import _config_checkers as checker
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger, utils
 from paddleseg.utils.utils import CachedProperty as cached_property
@@ -78,7 +78,7 @@ class Config(object):
                  batch_size: Optional[int]=None,
                  iters: Optional[int]=None,
                  opts: Optional[list]=None,
-                 sanity_checker: Optional[sc.SanityChecker]=None):
+                 sanity_checker: Optional[checker.ConfigChecker]=None):
         assert os.path.exists(path), \
             'Config path ({}) does not exist'.format(path)
         assert path.endswith('yml') or path.endswith('yaml'), \
@@ -303,17 +303,17 @@ class Config(object):
 
     def _build_default_sanity_checker(self):
         rules = []
-        rules.append(sc.DefaultPrimaryRule())
-        rules.append(sc.DefaultSyncNumClassesRule())
-        rules.append(sc.DefaultSyncImgChannelsRule())
+        rules.append(checker.DefaultPrimaryRule())
+        rules.append(checker.DefaultSyncNumClassesRule())
+        rules.append(checker.DefaultSyncImgChannelsRule())
         # Losses
-        rules.append(sc.DefaultLossRule('loss'))
-        rules.append(sc.DefaultSyncIgnoreIndexRule('loss'))
+        rules.append(checker.DefaultLossRule('loss'))
+        rules.append(checker.DefaultSyncIgnoreIndexRule('loss'))
         # Distillation losses
-        rules.append(sc.DefaultLossRule('distill_loss'))
-        rules.append(sc.DefaultSyncIgnoreIndexRule('distill_loss'))
+        rules.append(checker.DefaultLossRule('distill_loss'))
+        rules.append(checker.DefaultSyncIgnoreIndexRule('distill_loss'))
 
-        return sc.SanityChecker(rules, allow_update=True)
+        return checker.ConfigChecker(rules, allow_update=True)
 
 
 def merge_config_dicts(dic, base_dic):

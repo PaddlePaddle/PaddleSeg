@@ -15,7 +15,16 @@
 import copy
 
 
-class SanityChecker(object):
+class ConfigChecker(object):
+    """
+    This class performs sanity checks on configuration objects and (optionally) updates the configurations
+        (e.g., synchronize specific key-value pairs) based on a set of rules. 
+
+    Args:
+        rule_list (list): A list of rules on which all checks and updates are based.
+        allow_update (bool, optional): Whether or not to allow updating the configuration object.
+    """
+
     def __init__(self, rule_list, allow_update=True):
         super().__init__()
         self.rule_list = rule_list
@@ -27,7 +36,8 @@ class SanityChecker(object):
             rule.apply(cfg, self.allow_update)
         except Exception as e:
             raise RuntimeError(
-                "Sanity check failed. There should be some problems with your config file. "
+                "Sanity check on the configuration file has failed. "
+                "There should be some problems with your config file. "
                 "Please check it carefully.\n"
                 f"The failed rule is {rule.__class__.__name__}, and the error message is: \n{str(e)}"
             )
