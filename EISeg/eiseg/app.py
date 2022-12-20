@@ -2076,19 +2076,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                         label["points"].append(p)
                     labels["shapes"].append(label)
 
-                if not osp.exists(
-                        osp.join(os.path.dirname(savePath), "labelme")):
-                    os.makedirs(osp.join(os.path.dirname(savePath), "labelme"))
-                ri = savePath.rindex('/')
-                fileName = savePath[ri + 1:]
-                savePath = osp.join(
-                    osp.join(os.path.dirname(savePath), "labelme"), fileName)
-
                 if self.origExt:
-                    jsonPath = savePath + "_labelme" + ".json"
+                    lmjsonPath = savePath + "_labelme.json"
                 else:
-                    jsonPath = osp.splitext(savePath)[0] + "_labelme" + ".json"
-                open(jsonPath, "w", encoding="utf-8").write(json.dumps(labels))
+                    lmjsonPath = osp.splitext(savePath)[0] + "_labelme.json"
+                open(lmjsonPath, "w", encoding="utf-8").write(json.dumps(labels))
 
                 label_path = osp.join(os.path.dirname(savePath), "labels.txt")
                 self.save_labelName_txt(path=label_path)
