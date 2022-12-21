@@ -44,7 +44,6 @@ optimizer:
   _inherited_: False
   type: AdamW
   weight_decay: 0.01
-  backbone_lr_mult: 0.1
 
 lr_scheduler:
   type: PolynomialDecay
@@ -66,5 +65,4 @@ model:
     type: TopTransformer_Base
     lr_mult: 0.1
     pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip
-    backbone: MobileNetV3_large_x1_0_edit_x0_75
-    injection_type: InjectionMultiSumallmultiallsum
+    backbone: esnet0_75

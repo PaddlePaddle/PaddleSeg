@@ -168,6 +168,7 @@ def inference(model,
     if trans_info is not None:
         logit = reverse_transform(logit, trans_info, mode='bilinear')
         pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
+        # pred = logits
         return pred, logit
     else:
         return logit

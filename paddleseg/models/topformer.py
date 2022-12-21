@@ -77,28 +77,26 @@ class TopFormer(nn.Layer):
         x_shape = paddle.shape(x)
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
-        upsample_rate = x.shape[-1] / x_hw[-1]
-        print('The upsample rate is ', upsample_rate)
+        upsample_rate = (x.shape[-1] / x_hw[-1]).numpy()[0]
         if upsample == 'intepolate':
             x = F.interpolate(
                 x, x_hw, mode='bilinear', align_corners=self.align_corners)
-        elif upsample == 'conv11':
-            c = nn.Conv2D(
-                in_channels=x.shape[1],
-                out_channels=x.shape[1] * upsample_rate * upsample_rate,
-                kernel_size=1,
-                stride=1,
-                padding=0)
-            x = c(x)
-            x = x.reshape(x_shape)
-        elif upsample == 'deconv':
-            pass
-        elif upsample == 'hybrid':
-            pass
-        elif upsample == 'step':
-            pass
         elif upsample == 'valid':
-            pass
+            if not self.training:
+                labelset = paddle.unique(paddle.argmax(x, 1))
+                x = paddle.gather(x, labelset, axis=1)
+                x = F.interpolate(
+                    x, x_hw, mode='bilinear', align_corners=self.align_corners)
+
+                pred = paddle.argmax(x, 1)
+                pred_retrieve = paddle.zeros(pred.shape, dtype='int32')
+                for i, val in enumerate(labelset):
+                    pred_retrieve[pred == i] = labelset[i].cast('int32')
+
+                return [pred_retrieve]
+            else:
+                x = F.interpolate(
+                    x, x_hw, mode='bilinear', align_corners=self.align_corners)
         else:
             raise NotImplementedError(upsample, "is not implemented")
 

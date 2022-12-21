@@ -265,6 +265,7 @@ class Config(object):
                                ' the model does not have backbone')
             else:
                 backbone_lr_mult = args.pop('backbone_lr_mult')
+                print('!!!! backbone lr_multi is set to', backbone_lr_mult)
                 backbone_params = self.model.backbone.parameters()
                 backbone_params_id = [id(x) for x in backbone_params]
                 other_params = [
