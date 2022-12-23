@@ -41,6 +41,7 @@ class LPSNet(nn.Layer):
         channels (lsit): Channels of each block.
         scale_ratios (list): Scale ratio for each branch. The number of branchs depends on length of scale_ratios.
         num_classes (int): The unique number of target classes.
+        in_channels (int):  The channels of input image. Default: 3.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 

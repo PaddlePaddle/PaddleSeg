@@ -28,7 +28,7 @@ Training settings are as following.
 | ------------- | --------------- | --------------------- |
 | size: 224     | flip horizontal | ImageNet mean and std |
 
-With the pretrained model, LPSNet is able to obtain **74.28%** mIoU on CityScapes eval set, whose traning settings followed description in the official paper.
+With the pretrained model, LPSNet-m is able to obtain **74.28%** mIoU on CityScapes eval set, whose traning settings followed description in the official paper.
 
 Furthermore, in order to obtain the best performance of semantic segmentation and accelerate convergence speed, more complicated data augments are applied, for instance, **random erasing** and batch transform **mixup**.
 
@@ -50,3 +50,10 @@ To make up for the deficiencies of such a low-performance pretrained model, the 
 4. Appropriately increase the **learning rate**.
 
 There are plenty of ways to perfect model performance. But with the limited time and computational resources, only a few have been tested. The result is, way 1 and 2 are proven to be valid.
+
+Besides，other two models with pretrained weights are trained with the same config on cityscapes.
+
+| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
+|-|-|-|-|-|-|-|-|
+|lpsnet_s|-|1536x769|200000|71.73%|72.71%|73.76%|[model]() \| [log]() \| [vdl]()|
+|lpsnet_l|-|1536x769|200000|75.72%|76.53%|77.23%|[model]() \| [log]() \| [vdl]()|

@@ -47,7 +47,7 @@ lr_scheduler:
 model:
   type: LPSNet
   in_channels: 3
-  depth: [1, 3, 3, 10, 10]
+  depths: [1, 3, 3, 10, 10]
   channels: [8, 24, 48, 96, 96]
   scale_ratios: [1, 0.25]
   pretrained: 
