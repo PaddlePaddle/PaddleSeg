@@ -146,7 +146,7 @@ python tools/predict.py --help
 export CUDA_VISIBLE_DEVICES=0
 python tools/predict_video.py \
     --config configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml \
-    --model_path pretrained_models/ppmattingv2-stdc1-human_512.pdparams \
+    --model_path output/best_model/model.pdparams \
     --video_path path/to/video \
     --save_dir ./output/results \
     --fg_estimate True
@@ -185,7 +185,7 @@ python tools/bg_replace.py --help
 export CUDA_VISIBLE_DEVICES=0
 python tools/bg_replace_video.py \
     --config configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml \
-    --model_path pretrained_models/ppmattingv2-stdc1-human_512.pdparams \
+    --model_path output/best_model/model.pdparams \
     --video_path path/to/video \
     --background 'g' \
     --save_dir ./output/results \

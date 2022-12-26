@@ -18,7 +18,7 @@ import sys
 
 import paddle
 import yaml
-from paddleseg.cvlibs import Config, manager
+from paddleseg.cvlibs import manager
 from paddleseg.utils import logger
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -28,7 +28,7 @@ manager.BACKBONES._components_dict.clear()
 manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting
-from ppmatting.utils import get_input_spec
+from ppmatting.utils import get_input_spec, Config
 
 
 def parse_args():

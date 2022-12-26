@@ -393,8 +393,9 @@ def _update_config_dict(dic: dict,
             if isinstance(value, six.string_types):
                 try:
                     value = literal_eval(value)
-                except:
-                    # Ignore exceptions during literal evaluation
+                except ValueError:
+                    pass
+                except SyntaxError:
                     pass
             key_list = key.split('.')
 

@@ -443,6 +443,7 @@ Note that:
 * [Using PaddleSeg for Lane Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
 * [PaddleSeg in APIs](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
 * [Learn Paddleseg in 10 Mins](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
+* [Application of Interactive Segmentation Technology in Smart Mapping](https://aistudio.baidu.com/aistudio/projectdetail/5089472)
 
 ## License
 

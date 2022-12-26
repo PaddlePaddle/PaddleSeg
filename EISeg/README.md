@@ -40,10 +40,11 @@
 
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> 最新动态
+* [2022-12-16] :fire: EISeg 1.1版本发布！
+  - 新增检测标注功能，可手工标注或使用预标注模型PicoDet进行标注。
+  - 检测标注结果保存格式支持COCO, VOC及YOLO等多种格式。
+  - 分割新增LabelMe JSON保存格式。
 * [2022-09-16] :fire: EISeg使用的X光胸腔标注模型MUSCLE已经被MICCAI 2022接收，具体可参见[MUSCLE](docs/MUSCLE.md), 标注模型下载[地址](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_resnet50_deeplab_chest_xray.zip).
-* [2022-07-20] :fire: EISeg 1.0版本发布！
-  - 新增用于通用场景视频交互式分割能力，以EISeg交互式分割模型及[MiVOS](https://github.com/hkchengrex/MiVOS)算法为基础，全面提升视频标注体验。详情使用请参考[视频标注](docs/video.md)。
-  - 新增用于腹腔多器官及CT椎骨数据3D分割能力，并提供3D可视化工具，给予医疗领域3D标注新的思路。详情使用请参考[3D标注](docs/video.md)。
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> 简介
 
@@ -81,7 +82,8 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
 
 
 ## <img src="../docs/images/anli.png" width="20"/> 更新历史
-- 2022.07.20  **1.0.0**：【1】新增交互式视频分割功能【2】新增腹腔多器官3D标注模型【3】新增CT椎骨3D标注模型。
+- 2022.12.16  **1.1.0**：【1】新增检测标注能力，支持手工标注或使用PicoDet模型进行预标注； 【2】检测标注结果保存格式支持COCO, VOC及YOLO等多种格式；【3】分割新增LabelMe JSON保存格式。
+- 2022.07.20  **1.0.0**：【1】新增交互式视频分割功能；【2】新增腹腔多器官3D标注模型【3】新增CT椎骨3D标注模型。
 - 2022.04.10  **0.5.0**：【1】新增chest_xray模型；【2】新增MRSpineSeg模型；【3】新增铝板质检标注模型；【4】修复保存shp时可能坐标出错。
 - 2021.11.16  **0.4.0**：【1】将动态图预测转换成静态图预测，单次点击速度提升十倍；【2】新增遥感图像标注功能，支持多光谱数据通道的选择；【3】支持大尺幅数据的切片（多宫格）处理；【4】新增医疗图像标注功能，支持读取dicom的数据格式，支持选择窗宽和窗位。
 - 2021.09.16  **0.3.0**：【1】初步完成多边形编辑功能，支持对交互标注的结果进行编辑；【2】支持中/英界面；【3】支持保存为灰度/伪彩色标签和COCO格式；【4】界面拖动更加灵活；【5】标签栏可拖动，生成mask的覆盖顺序由上往下覆盖。
