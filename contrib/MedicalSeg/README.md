@@ -47,7 +47,6 @@ The MedicalSeg panorama is as follows, and its main features include:
 - [2022-9] Release MedicalSegV2. It provides 3 cutting-edge models to support whole process deployment applications, including nnformer, TransUnet and nnUnet, allowing you to experience a stronger and more accurate segmentation effect; a new 3D medical image intelligent annotation platform [EISeg-Med3D]( ../../EISeg/med3d/README_en.md) to quickly and easily achieve accurate 3D medical image annotation.
 - [2022-4] Release MedicalSegV1. It provides the whole process from data preprocessing in 3D medical image segmentation to training and deployment, including native support for five datasets, and high-precision preprocessing on vertebrae and lungs Train the model.
 
-
 ## <img src="../../docs/images/chat.png" width="25"/> Communicate with us
 **MedicalSeg just released! If you find any problem using it or want to share any future develop suggestions, please open a github issue or join us by scanning the following QR code.**
 
