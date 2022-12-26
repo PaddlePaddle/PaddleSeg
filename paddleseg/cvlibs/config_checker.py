@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,20 +43,16 @@ class ConfigChecker(object):
             )
 
     def apply_all_rules(self, cfg):
-        for i, rule in enumerate(self.rule_list):
+        for i in range(len(self.rule_list)):
             self.apply_rule(i, cfg)
-            # Do nothing here as `self.apply_rule()` already handles the exceptions
 
 
 class Rule(object):
     def check_and_correct(self, cfg):
-        # Be free to add in-place modification here
         raise NotImplementedError
 
     def apply(self, cfg, allow_update):
         if not allow_update:
-            # If update is not allowed, make a deep copy, such that the original 
-            # `cfg` will remain unchanged.
             cfg = copy.deepcopy(cfg)
         self.check_and_correct(cfg)
 
@@ -65,7 +61,7 @@ class DefaultPrimaryRule(Rule):
     def check_and_correct(self, cfg):
         assert cfg.dic.get('model', None) is not None, \
             'No model specified in the configuration file.'
-        assert cfg.train_dataset_config or self.val_dataset_config, \
+        assert cfg.train_dataset_config or cfg.val_dataset_config, \
             'One of `train_dataset` or `val_dataset should be given, but there are none.'
 
 

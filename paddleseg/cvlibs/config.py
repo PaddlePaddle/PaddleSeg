@@ -21,8 +21,8 @@ from typing import Any, Dict, Optional
 import yaml
 import paddle
 
-from . import _config_checkers as checker
-from . import builder
+from paddleseg.cvlibs import config_checker as checker
+from paddleseg.cvlibs import builder
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger, utils
 from paddleseg.utils.utils import CachedProperty as cached_property
@@ -79,7 +79,7 @@ class Config(object):
                  batch_size: Optional[int]=None,
                  iters: Optional[int]=None,
                  opts: Optional[list]=None,
-                 sanity_checker: Optional[checker.ConfigChecker]=None,
+                 checker: Optional[checker.ConfigChecker]=None,
                  component_builder: Optional[builder.ComponentBuilder]=None):
         assert os.path.exists(path), \
             'Config path ({}) does not exist'.format(path)
@@ -101,12 +101,9 @@ class Config(object):
             component_builder = self._build_default_component_builder()
         self.builder = component_builder
 
-        if sanity_checker is None:
-            sanity_checker = self._build_default_sanity_checker()
-        sanity_checker.apply_all_rules(self)
-
-        self._model = None
-        self._losses = None
+        if checker is None:
+            checker = self._build_default_checker()
+        checker.apply_all_rules(self)
 
     def __str__(self) -> str:
         # Use NoAliasDumper to avoid yml anchor 
@@ -210,15 +207,11 @@ class Config(object):
     #################### loss
     @cached_property
     def loss(self) -> dict:
-        if self._losses is None:
-            self._losses = self._prepare_loss('loss')
-        return self._losses
+        return self._prepare_loss('loss')
 
     @cached_property
     def distill_loss(self) -> dict:
-        if not hasattr(self, '_distill_losses'):
-            self._distill_losses = self._prepare_loss('distill_loss')
-        return self._distill_losses
+        return self._prepare_loss('distill_loss')
 
     def _prepare_loss(self, loss_name):
         """
@@ -239,11 +232,9 @@ class Config(object):
     @cached_property
     def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
-        if not self._model:
-            self._model = self.builder.create_object(model_cfg)
-        return self._model
+        return self.builder.create_object(model_cfg)
 
-    #################### dataset
+    #################### dataset and transforms
     @cached_property
     def train_dataset_config(self) -> Dict:
         return self.dic.get('train_dataset', {}).copy()
@@ -298,16 +289,18 @@ class Config(object):
     def export_config(self) -> Dict:
         return self.dic.get('export', {})
 
+    #################### checker and builder
+
     @classmethod
     def update_config_dict(cls, dic: dict, *args, **kwargs) -> dict:
-        return _update_config_dict(dic, *args, **kwargs)
+        return update_config_dict(dic, *args, **kwargs)
 
     @classmethod
     def parse_from_yaml(cls, path: str, *args, **kwargs) -> dict:
         return parse_from_yaml(path, *args, **kwargs)
 
     @classmethod
-    def _build_default_sanity_checker(cls):
+    def _build_default_checker(cls):
         rules = []
         rules.append(checker.DefaultPrimaryRule())
         rules.append(checker.DefaultSyncNumClassesRule())
@@ -331,6 +324,23 @@ class Config(object):
         return component_builder
 
 
+def parse_from_yaml(path: str):
+    """Parse a yaml file and build config"""
+    with codecs.open(path, 'r', 'utf-8') as file:
+        dic = yaml.load(file, Loader=yaml.FullLoader)
+
+    if _BASE_KEY in dic:
+        base_files = dic.pop(_BASE_KEY)
+        if isinstance(base_files, str):
+            base_files = [base_files]
+        for bf in base_files:
+            base_path = os.path.join(os.path.dirname(path), bf)
+            base_dic = parse_from_yaml(base_path)
+            dic = merge_config_dicts(dic, base_dic)
+
+    return dic
+
+
 def merge_config_dicts(dic, base_dic):
     """Merge dic to base_dic and return base_dic."""
     base_dic = base_dic.copy()
@@ -349,28 +359,11 @@ def merge_config_dicts(dic, base_dic):
     return base_dic
 
 
-def parse_from_yaml(path: str):
-    """Parse a yaml file and build config"""
-    with codecs.open(path, 'r', 'utf-8') as file:
-        dic = yaml.load(file, Loader=yaml.FullLoader)
-
-    if _BASE_KEY in dic:
-        base_files = dic.pop(_BASE_KEY)
-        if isinstance(base_files, str):
-            base_files = [base_files]
-        for bf in base_files:
-            base_path = os.path.join(os.path.dirname(path), bf)
-            base_dic = parse_from_yaml(base_path)
-            dic = merge_config_dicts(dic, base_dic)
-
-    return dic
-
-
-def _update_config_dict(dic: dict,
-                        learning_rate: Optional[float]=None,
-                        batch_size: Optional[int]=None,
-                        iters: Optional[int]=None,
-                        opts: Optional[list]=None):
+def update_config_dict(dic: dict,
+                       learning_rate: Optional[float]=None,
+                       batch_size: Optional[int]=None,
+                       iters: Optional[int]=None,
+                       opts: Optional[list]=None):
     """Update config"""
     # TODO: If the items to update are marked as anchors in the yaml file,
     # we should synchronize the references.
