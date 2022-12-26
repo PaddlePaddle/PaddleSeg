@@ -7,53 +7,48 @@ arXiv preprint arXiv:2207.13600 (2022).
 
 ## Performance
 
-### ImageNet pretrained
+### Cityscapes
 
-Trained medium model of LPSNet on ImageNet dataset for 100 epochs, finally got top-1 accuracy **0.543** and top-5 accuracy **0.786**.
+| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
+|-|-|-|-|-|-|-|-|
+|lpsnet_m|-|1536x769|200000|75.29%|76.03%|77.03%|[model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/lpsnet_m_cityscapes_1536x1024_200k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/lpsnet_m_cityscapes_1536x1024_200k/train.log) \| [vdl]()|
+|lpsnet_s|-|1536x769|200000|71.73%|72.71%|73.76%|[model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/lpsnet_s_cityscapes_1536x1024_200k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/lpsnet_s_cityscapes_1536x1024_200k/train.log) \| [vdl]()|
+|lpsnet_l|-|1536x769|200000|75.72%|76.53%|77.23%|[model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/lpsnet_l_cityscapes_1536x1024_200k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/lpsnet_l_cityscapes_1536x1024_200k/train.log) \| [vdl]()|
+
+Note that: To make up for the deficiencies of low-performance pretrained(see [ImageNet](#ImageNet)) models, the following changes are applied:
+
+1. Extend iterations to **200k**.
+2. Adjust the parameters of **RandomDistort**.
+
+### ImageNet
+
+| Model    | Epoch | Top-1 accuracy | Top-5 accuracy |
+| -------- | ----- | -------------- | -------------- |
+| lpsnet_s | 120   | 0.403          | 0.666          |
+| lpsnet_m | 100   | 0.543          | 0.786          |
+| lpsnet_l | 120   | 0.525          | 0.773          |
 
 Training settings are as following.
 
 **Optimizer**
 
-| Optimizer    | LR Schedular                      | Regularizer  |
-| ------------ | --------------------------------- | ------------ |
-| momentum:0.9 | Piecewice                         | L2           |
-| -            | lr:0.1                            | coeff:0.0001 |
-| -            | decay_epochs:[30, 60, 90]         | -            |
-| -            | values:[0.1, 0.01, 0.001, 0.0001] | -            |
+| Optimizer          | LR Schedular                       | Regularizer  |
+| ------------------ | ---------------------------------- | ------------ |
+| type: Momentum     |  type: Piecewice                   | type: L2     |
+| momentum: 0.9      | lr: 0.1                            | coeff:0.0001 |
+| use_nesterov: true | decay_epochs: [30, 60, 90]         | -            |
+| -                  | values: [0.1, 0.01, 0.001, 0.0001] | -            |
 
-**Data augments**
+**Data Augmentation**
 
 | RandCropImage | RandFlipImage   | Normalize             |
 | ------------- | --------------- | --------------------- |
 | size: 224     | flip horizontal | ImageNet mean and std |
 
-With the pretrained model, LPSNet-m is able to obtain **74.28%** mIoU on CityScapes eval set, whose traning settings followed description in the official paper.
+With the pretrained model, lpsnet_m is able to obtain **74.28%** mIoU on CityScapes eval set, whose training settings followed description in the official paper.
 
 Furthermore, in order to obtain the best performance of semantic segmentation and accelerate convergence speed, more complicated data augments are applied, for instance, **random erasing** and batch transform **mixup**.
 
 The performance of classification improved a little, whose top-1 accuracy increased to **0.564** and top-5 accuracy increased to **0.805**. However, the model is unable to converge to higher than before.
 
-So the following performance are all trained with the first ImageNet pretrained weights.
-
-### Cityscapes
-
-| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
-|-|-|-|-|-|-|-|-|
-|lpsnet_m|-|1536x769|200000|75.29%|76.03%|77.03%|[model]() \| [log]() \| [vdl]()|
-
-To make up for the deficiencies of such a low-performance pretrained model, the following attempts are tested:
-
-1. Extend interations to **200k**.
-2. Adjust the parameters of **RandomDistort**.
-3. Decrease the threshold of **OhemCrossEntropyLoss.**
-4. Appropriately increase the **learning rate**.
-
-There are plenty of ways to perfect model performance. But with the limited time and computational resources, only a few have been tested. The result is, way 1 and 2 are proven to be valid.
-
-Besides，other two models with pretrained weights are trained with the same config on cityscapes.
-
-| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
-|-|-|-|-|-|-|-|-|
-|lpsnet_s|-|1536x769|200000|71.73%|72.71%|73.76%|[model]() \| [log]() \| [vdl]()|
-|lpsnet_l|-|1536x769|200000|75.72%|76.53%|77.23%|[model]() \| [log]() \| [vdl]()|
+So all the models in section [Cityscapes](#Cityscapes) are all pretrained with the original ImageNet training settings.
