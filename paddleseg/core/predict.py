@@ -146,5 +146,5 @@ def predict(model,
 
             progbar_pred.update(i + 1)
 
-    logger.info("Predicted images are saved in {} and {}".format(
+    logger.info("Predicted images are saved in {} and {} .".format(
         added_saved_dir, pred_saved_dir))
