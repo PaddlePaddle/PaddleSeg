@@ -2076,11 +2076,19 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                         label["points"].append(p)
                     labels["shapes"].append(label)
 
+                if not osp.exists(
+                        osp.join(os.path.dirname(savePath), "labelme")):
+                    os.makedirs(osp.join(os.path.dirname(savePath), "labelme"))
+                ri = savePath.replace("\\", "/").rindex('/')
+                fileName = savePath[ri + 1:]
+                savePath = osp.join(
+                    osp.join(os.path.dirname(savePath), "labelme"), fileName)
+
                 if self.origExt:
-                    lmjsonPath = savePath + "_labelme.json"
+                    jsonPath = savePath + "_labelme.json"
                 else:
-                    lmjsonPath = osp.splitext(savePath)[0] + "_labelme.json"
-                open(lmjsonPath, "w", encoding="utf-8").write(json.dumps(labels))
+                    jsonPath = osp.splitext(savePath)[0] + "_labelme.json"
+                open(jsonPath, "w", encoding="utf-8").write(json.dumps(labels))
 
                 label_path = osp.join(os.path.dirname(savePath), "labels.txt")
                 self.save_labelName_txt(path=label_path)
@@ -3264,7 +3272,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.labCorres.userLabDict = json.loads(f.read())
             # print("self.labCorres.userLabDict: ", self.labCorres.userLabDict)
 
-        # 将检测结果对应的标签保存为yolo、voc、coco三种格式
+    # 将检测结果对应的标签保存为yolo、voc、coco三种格式
     def save_yolo_format(self, saveAs=False, savePath=None):
         self.save_status["yolo"] = saveAs
 
@@ -3292,7 +3300,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
             if not osp.exists(osp.join(os.path.dirname(savePath), "YOLO")):
                 os.makedirs(osp.join(os.path.dirname(savePath), "YOLO"))
-            ri = savePath.rindex('/')
+            ri = savePath.replace("\\", "/").rindex('/')
             fileName = savePath[ri + 1:]
             savePath = osp.join(
                 osp.join(os.path.dirname(savePath), "YOLO"), fileName)
@@ -3339,7 +3347,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
             if not osp.exists(osp.join(os.path.dirname(savePath), "VOC")):
                 os.makedirs(osp.join(os.path.dirname(savePath), "VOC"))
-            ri = savePath.rindex('/')
+            ri = savePath.replace("\\", "/").rindex('/')
             fileName = savePath[ri + 1:]
             savePath = osp.join(
                 osp.join(os.path.dirname(savePath), "VOC"), fileName)
