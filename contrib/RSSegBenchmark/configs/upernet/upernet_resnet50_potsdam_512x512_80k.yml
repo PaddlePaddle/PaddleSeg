@@ -1,0 +1,19 @@
+_base_: '../_base_/potsdam.yml'
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
+
+model:
+  type: UPerNet
+  backbone:
+    type: ResNet50
+    pretrained: https://paddle-hapi.bj.bcebos.com/models/resnet50.pdparams
+  num_classes: 6
+  backbone_indices: [0, 1, 2, 3]
+  channels: 512
+  dropout_prob: 0.1
+  enable_auxiliary_loss: True

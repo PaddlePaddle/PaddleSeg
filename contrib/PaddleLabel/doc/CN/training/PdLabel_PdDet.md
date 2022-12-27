@@ -2,7 +2,7 @@
 
 PaddleLabel 标注数据+PaddleDetection 训练预测=快速完成一次目标检测的任务
 
----
+______________________________________________________________________
 
 ## 1. 数据准备
 
@@ -55,11 +55,11 @@ cp -r ./roadsign_det_dataset/* ./PaddleDection/dataset/roadsign_det_dataset
 该任务主要涉及 6 个配置文件，分别是:
 
 1. 主配置文件入口：yolov3_mobilenet_v1_roadsign.yml
-2. 定义训练数据的路径：roadsign_voc.yml
-3. 定义公共参数：runtime.yml
-4. 定义优化器的策略：optimizer_40e.yml
-5. 定义模型和主干网络：yolov3_mobilenet_v1.yml
-6. 定义数据预处理方式：yolov3_reader.yml
+1. 定义训练数据的路径：roadsign_voc.yml
+1. 定义公共参数：runtime.yml
+1. 定义优化器的策略：optimizer_40e.yml
+1. 定义模型和主干网络：yolov3_mobilenet_v1.yml
+1. 定义数据预处理方式：yolov3_reader.yml
 
 这里我们只需要改动一个配置文件即定义训练数据的路径的配置文件：
 

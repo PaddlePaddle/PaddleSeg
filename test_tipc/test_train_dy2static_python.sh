@@ -43,7 +43,7 @@ do
     # start dy2static train
     dy2static_output=$LOG_PATH/${config_name}_python_train_infer_dy2static_output.txt
     dy2static_loss=$LOG_PATH/${config_name}_dy2static_loss.txt
-    sed -i '16s/$/ --to_static/' ${FILENAME}
+    sed -i '16s/$/ --opts to_static_training True/' ${FILENAME}
     cmd="bash test_tipc/test_train_inference_python.sh ${FILENAME} $MODE >$dy2static_output 2>&1"
     echo $cmd
     eval $cmd

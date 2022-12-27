@@ -73,6 +73,7 @@ PPM-100/
 
 The Matting project supports configurable direct drive, with model config files placed in [configs](../configs/) directory.
 You can select a config file based on the actual situation to perform training, prediction et al.
+The trimap-based methods (DIM) do not support video processing.
 
 This tutorial uses [configs/quick_start/ppmattingv2-stdc1-human_512.yml](../configs/quick_start/ppmattingv2-stdc1-human_512.yml) for teaching demonstrations.
 
@@ -119,6 +120,7 @@ python tools/val.py --help
 ```
 
 ## Prediction
+### Image Prediction
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python tools/predict.py \
@@ -139,8 +141,20 @@ Run the following command to view more parameters.
 python tools/predict.py --help
 ```
 
+### Video Prediction
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python tools/predict_video.py \
+    --config configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml \
+    --model_path output/best_model/model.pdparams \
+    --video_path path/to/video \
+    --save_dir ./output/results \
+    --fg_estimate True
+```
+
 
 ## Background Replacement
+### Image Background Replacement
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python tools/bg_replace.py \
@@ -164,6 +178,18 @@ You can directly download the provided model for background replacement.
 Run the following command to view more parameters.
 ```shell
 python tools/bg_replace.py --help
+```
+
+### Video Background Replacement
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python tools/bg_replace_video.py \
+    --config configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml \
+    --model_path output/best_model/model.pdparams \
+    --video_path path/to/video \
+    --background 'g' \
+    --save_dir ./output/results \
+    --fg_estimate True
 ```
 
 ## Export and Deployment
@@ -193,6 +219,8 @@ python deploy/python/infer.py \
 If the model requires trimap information, pass the trimap path through '--trimap_path'.
 
 `--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
+
+`--video_path` can pass a video path to have a video matting.
 
 Run the following command to view more parameters.
 ```shell
