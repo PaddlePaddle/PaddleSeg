@@ -1,4 +1,4 @@
-_base_: './_base_cityscapes_1536x1024_200k.yml'
+_base_: './lpsnet_m_cityscapes_1536x1024_200k.yml'
 
 model:
   type: LPSNet
@@ -8,4 +8,3 @@ model:
   scale_ratios: [0.75, 0.25]
   pretrained: https://paddleseg.bj.bcebos.com/dygraph/cityscapes/lpsnet_s_cityscapes_1536x1024_200k/lpsnet_s_pretrained_imagenet.zip
   num_classes: 19
-

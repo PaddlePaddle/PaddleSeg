@@ -66,7 +66,7 @@ class LPSNet(nn.Layer):
 
         if self.num_blocks != len(self.channels):
             raise ValueError(
-                f"Expect depths and channels have save length, but got {self.num_blocks} and {len(self.channels)}"
+                f"Expect depths and channels have same length, but got {self.num_blocks} and {len(self.channels)}"
             )
 
         self.nets = nn.LayerList(
