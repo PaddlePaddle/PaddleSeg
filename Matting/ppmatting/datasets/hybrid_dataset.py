@@ -16,19 +16,16 @@ import os
 import math
 
 import cv2
-import random
 import numpy as np
-from PIL import Image
-
+import random
 import paddle
-from paddleseg.transforms import functional
 from paddleseg.cvlibs import manager
 
 import ppmatting.transforms as T
 
 
 @manager.DATASETS.add_component
-class AIM500(paddle.io.Dataset):
+class MattingDataset(paddle.io.Dataset):
     """
     Pass in a dataset that conforms to the format.
         matting_dataset/
@@ -80,11 +77,19 @@ class AIM500(paddle.io.Dataset):
         self.get_trimap = get_trimap
         self.separator = separator
         self.key_del = key_del
-        self.mean = [0.485, 0.456, 0.406]
-        self.std = [0.229, 0.224, 0.225]
+        self.if_rssn = if_rssn
 
-        # check file (only for test)
-        if mode == 'val':
+        # check file
+        if mode == 'train' or mode == 'trainval':
+            if train_file is None:
+                raise ValueError(
+                    "When `mode` is 'train' or 'trainval', `train_file must be provided!"
+                )
+            if isinstance(train_file, str):
+                train_file = [train_file]
+            file_list = train_file
+
+        if mode == 'val' or mode == 'trainval':
             if val_file is None:
                 raise ValueError(
                     "When `mode` is 'val' or 'trainval', `val_file must be provided!"
@@ -93,55 +98,71 @@ class AIM500(paddle.io.Dataset):
                 val_file = [val_file]
             file_list = val_file
 
+        if mode == 'trainval':
+            file_list = train_file + val_file
+
         # read file
-        self.fg_list = []
+        self.fg_bg_list = []
         for file in file_list:
             file = os.path.join(dataset_root, file)
             with open(file, 'r') as f:
                 lines = f.readlines()
                 for line in lines:
                     line = line.strip()
-                    self.fg_list.append(line)
+                    self.fg_bg_list.append(line)
         if mode != 'val':
-            random.shuffle(self.fg_list)
+            random.shuffle(self.fg_bg_list)
 
     def __getitem__(self, idx):
         data = {}
-        data['trans_info'] = []  # Record shape change information
-
-        # load images
-        fg_file = self.fg_list[idx]
-        data['img_name'] = fg_file.split("/")[-1]  # using in save prediction results
-        fg_file = os.path.join(self.dataset_root, fg_file)
-        alpha_file = fg_file.replace('/fg', '/alpha').replace('.jpg', '.png')
-        fg = np.array(Image.open(fg_file))
-        alpha = np.array(Image.open(alpha_file))
-        data['img'] = fg[:, :, :3] if fg.ndim > 2 else fg
-        data['alpha'] = alpha[:, :, 0] if alpha.ndim > 2 else alpha
+        fg_bg_file = self.fg_bg_list[idx]
+        fg_bg_file = fg_bg_file.split(self.separator)
+        data['img_name'] = fg_bg_file[0]  # using in save prediction results
+        fg_file = os.path.join(self.dataset_root, fg_bg_file[0])
+        alpha_file = fg_file.replace('/fg', '/alpha')
+        fg = cv2.imread(fg_file)
+        alpha = cv2.imread(alpha_file, 0)
+        data['alpha'] = alpha
         data['gt_fields'] = []
 
+        # line is: fg [bg] [trimap]
+        if len(fg_bg_file) >= 2:
+            bg_file = os.path.join(self.dataset_root, fg_bg_file[1])
+            bg = cv2.imread(bg_file)
+            data['img'], data['fg'], data['bg'] = self.composite(fg, alpha, bg)
+            if self.mode in ['train', 'trainval']:
+                data['gt_fields'].append('fg')
+                data['gt_fields'].append('bg')
+                data['gt_fields'].append('alpha')
+            if len(fg_bg_file) == 3 and self.get_trimap:
+                if self.mode == 'val':
+                    trimap_path = os.path.join(self.dataset_root, fg_bg_file[2])
+                    if os.path.exists(trimap_path):
+                        data['trimap'] = trimap_path
+                        data['gt_fields'].append('trimap')
+                        data['ori_trimap'] = cv2.imread(trimap_path, 0)
+                    else:
+                        raise FileNotFoundError(
+                            'trimap is not Found: {}'.format(fg_bg_file[2]))
+        else:
+            data['img'] = fg
+            if self.mode in ['train', 'trainval']:
+                data['fg'] = fg.copy()
+                data['bg'] = fg.copy()
+                data['gt_fields'].append('fg')
+                data['gt_fields'].append('bg')
+                data['gt_fields'].append('alpha')
+
+        data['trans_info'] = []  # Record shape change information
+
+        # Generate trimap from alpha if no trimap file provided
         if self.get_trimap:
-            trimap_file = fg_file.replace('/fg', '/trimap').replace('.jpg', '.png')
-            if os.path.exists(trimap_file):
-                trimap = np.array(Image.open(trimap_file))
-                trimap = trimap[:, :, 0] if trimap.ndim > 2 else trimap
-                data['trimap'] = trimap
+            if 'trimap' not in data:
+                data['trimap'] = self.gen_trimap(
+                    data['alpha'], mode=self.mode).astype('float32')
                 data['gt_fields'].append('trimap')
                 if self.mode == 'val':
                     data['ori_trimap'] = data['trimap'].copy()
-            else:
-                raise FileNotFoundError('trimap is not Found: {}'.format(trimap_file))
-        
-        data = self.transforms(data)
-        normalize = paddle.vision.transforms.Normalize(mean=self.mean, std=self.std)
-        
-        if data.get('img_g') is not None:
-            data['img_g'] = paddle.to_tensor(data['img_g']).transpose(perm=[2, 0, 1]) / 255.0
-            data['img_g'] = normalize(data['img_g'])
-
-        if data.get('img_l') is not None:
-            data['img_l'] = paddle.to_tensor(data['img_l']).transpose(perm=[2, 0, 1]) / 255.0
-            data['img_l'] = normalize(data['img_l'])
 
         # Delete key which is not need
         if self.key_del is not None:
@@ -150,15 +171,16 @@ class AIM500(paddle.io.Dataset):
                     data.pop(key)
                 if key in data['gt_fields']:
                     data['gt_fields'].remove(key)
+        data = self.transforms(data)
 
         # When evaluation, gt should not be transforms.
+        if self.mode == 'val':
+            data['gt_fields'].append('alpha')
+
         data['img'] = data['img'].astype('float32')
         for key in data.get('gt_fields', []):
             data[key] = data[key].astype('float32')
 
-        if self.mode == 'val':
-            data['gt_fields'].append('alpha')
-        
         if 'trimap' in data:
             data['trimap'] = data['trimap'][np.newaxis, :, :]
         if 'ori_trimap' in data:
@@ -169,7 +191,39 @@ class AIM500(paddle.io.Dataset):
         return data
 
     def __len__(self):
-        return len(self.fg_list)
+        return len(self.fg_bg_list)
+
+    def composite(self, fg, alpha, ori_bg):
+        if self.if_rssn:
+            if np.random.rand() < 0.5:
+                fg = cv2.fastNlMeansDenoisingColored(fg, None, 3, 3, 7, 21)
+                ori_bg = cv2.fastNlMeansDenoisingColored(ori_bg, None, 3, 3, 7,
+                                                         21)
+            if np.random.rand() < 0.5:
+                radius = np.random.choice([19, 29, 39, 49, 59])
+                ori_bg = cv2.GaussianBlur(ori_bg, (radius, radius), 0, 0)
+        fg_h, fg_w = fg.shape[:2]
+        ori_bg_h, ori_bg_w = ori_bg.shape[:2]
+
+        wratio = fg_w / ori_bg_w
+        hratio = fg_h / ori_bg_h
+        ratio = wratio if wratio > hratio else hratio
+
+        # Resize ori_bg if it is smaller than fg.
+        if ratio > 1:
+            resize_h = math.ceil(ori_bg_h * ratio)
+            resize_w = math.ceil(ori_bg_w * ratio)
+            bg = cv2.resize(
+                ori_bg, (resize_w, resize_h), interpolation=cv2.INTER_LINEAR)
+        else:
+            bg = ori_bg
+
+        bg = bg[0:fg_h, 0:fg_w, :]
+        alpha = alpha / 255
+        alpha = np.expand_dims(alpha, axis=2)
+        image = alpha * fg + (1 - alpha) * bg
+        image = image.astype(np.uint8)
+        return image, fg, bg
 
     @staticmethod
     def gen_trimap(alpha, mode='train', eval_kernel=7):
