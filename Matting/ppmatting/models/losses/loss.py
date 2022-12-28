@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import cv2
+import numpy as np
+
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
-import cv2
 
 
 @manager.LOSSES.add_component
@@ -161,3 +163,63 @@ class LaplacianLoss(nn.Layer):
             current = F.avg_pool2d(filtered, 2)
         pyr.append(current)
         return pyr
+
+
+@manager.LOSSES.add_component
+class AlphaLoss(nn.Layer):
+    def __init__(self, eps=1e-12):
+        super().__init__()
+        self.eps = eps
+
+    def forward(self, logit, label, mask=None):      
+        if len(label.shape) == 3:
+            label = label.unsqueeze(1)
+
+        if mask is not None:
+            if len(mask.shape) == 3:
+                mask = mask.unsqueeze(1)
+            weighted = paddle.zeros(label.shape)
+            weighted[mask == 128] = 1.
+
+            logit = logit * weighted
+            label = label * weighted
+            loss = paddle.sqrt((logit - label) ** 2 + self.eps)
+            loss = loss.sum() / (weighted.sum() + 1.)
+        else:
+            weighted = paddle.ones(label.shape)
+            loss = paddle.sqrt((logit - label) ** 2 + self.eps)
+            loss = loss.sum() / weighted.sum()
+
+        return loss
+
+
+@manager.LOSSES.add_component
+class CompositionLoss(nn.Layer):
+    def __init__(self, eps=1e-12):
+        super().__init__()
+        self.eps = eps
+
+    def forward(self, logit, label, img, fg, bg, mask=None):
+        if len(label.shape) == 3:
+            label = label.unsqueeze(1)
+
+        if mask is not None:
+            if len(mask.shape) == 3:
+                mask = mask.unsqueeze(1)
+            weighted = paddle.zeros(label.shape)
+            weighted[mask == 128] = 1.
+
+            logit = logit * weighted
+            label = label * weighted
+            logit_3x = paddle.concat([logit, logit, logit], 1)
+            comp = logit_3x * fg + (1. - logit_3x) * bg
+            loss = paddle.sqrt((comp - img) ** 2 + self.eps)
+            loss = loss.sum() / (weighted.sum() + 1.)
+        else:
+            weighted = paddle.ones(label.shape)
+            logit_3x = paddle.concat([logit, logit, logit], 1)
+            comp = logit_3x * fg + (1. - logit_3x) * bg
+            loss = paddle.sqrt((comp - img) ** 2 + self.eps)
+            loss = loss.sum() / weighted.sum()
+        
+        return loss
