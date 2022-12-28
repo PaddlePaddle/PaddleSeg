@@ -22,6 +22,7 @@ from paddleseg.transforms import functional
 from paddleseg.cvlibs import manager
 from paddleseg.utils import seg_env
 from PIL import Image
+from skimage.transform import resize
 
 
 @manager.TRANSFORMS.add_component
@@ -788,4 +789,71 @@ class RandomReJpeg:
         cv2.imwrite(tmp_name, img, [int(cv2.IMWRITE_JPEG_QUALITY), q])
         data['img'] = cv2.imread(tmp_name)
 
+        return data
+
+@manager.TRANSFORMS.add_component
+class HybridResize:
+    """
+    Resize the image for different testing strategy.
+
+    Args:
+        global_ratio (float, optional): The scale ratio of global. Default: 0.25.
+        local_ratio (float, optinal): The scale ratio of local.  Default: 0.5.
+        max_size (list|tuple, optional): The maxiumn size of image. index 0 means height of image, and index 1 means width of image. Default: [1600, 1600].
+        if_hybrid (bool): Enable hybird test strategy. Default: False
+
+    Raises:
+        TypeError: When max_size is neither list nor tuple.
+        ValueError: When the length of max_size is not 2.
+    """
+    def __init__(self, global_ratio=0.25, 
+                    local_ratio=0.5, 
+                    max_size=[1600, 1600], 
+                    if_hybrid=True):
+        self.global_ratio = global_ratio
+        self.local_ratio = local_ratio
+        self.max_size = max_size
+        self.if_hybrid = if_hybrid
+
+        if not isinstance(global_ratio, float) and not isinstance(local_ratio, float):
+            raise TypeError(
+                "Type of global_ratio or local_ratio is invalid. It should be float, now is {}, {}"
+                .format(type(global_ratio), type(local_ratio)))
+
+        if isinstance(max_size, list) or isinstance(max_size, tuple):
+            if len(max_size) != 2:
+                raise ValueError(
+                    '`max_size` should include 2 elements, but it is {}'.
+                    format(max_size))
+        else:
+            raise TypeError(
+                "Type of max_size is invalid. It should be list or tuple, now is {}"
+                .format(type(max_size)))
+
+    def __call__(self, data):
+        x = data['img'].copy()
+        h, w, c = x.shape
+
+        if self.if_hybrid:
+            resize_h_g = int(h * self.global_ratio)
+            resize_w_g = int(w * self.global_ratio)
+            new_h_g = min(self.max_size[0], resize_h_g - (resize_h_g % 32))
+            new_w_g = min(self.max_size[1], resize_w_g - (resize_w_g % 32))
+            data['img_g'] = resize(x, (new_h_g, new_w_g)) * 255.0
+            data['img_g'] = data['img_g'].astype(np.float32)[:, :, :]
+            
+            resize_h_l = int(h * self.local_ratio)
+            resize_w_l = int(w * self.local_ratio)
+            new_h_l = min(self.max_size[0], resize_h_l - (resize_h_l % 32))
+            new_w_l = min(self.max_size[1], resize_w_l - (resize_w_l % 32))
+            data['img_l'] = resize(x, (new_h_l, new_w_l)) * 255.0
+            data['img_l'] = data['img_l'].astype(np.float32)[:, :, :]
+        else:
+            resize_h = int(h / 4)
+            resize_w = int(w / 4)
+            new_h = min(self.max_size[0], resize_h - (resize_h % 32))
+            new_w = min(self.max_size[1], resize_w - (resize_w % 32))
+            data['img'] = resize(data['img'], (new_h, new_w)) * 255.0
+            data['img'] = data['img'].astype(np.float32)[:, :, :]
+            
         return data

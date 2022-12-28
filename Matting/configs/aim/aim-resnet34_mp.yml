@@ -1,0 +1,51 @@
+batch_size: 4
+iters: 50000
+
+train_dataset:
+  type: AIM500
+  dataset_root: data/PPM-100
+  train_file: train.txt
+  transforms:
+    - type: LoadImages
+    - type: RandomResize
+      size: [2048, 2048]
+      scale: [0.3, 1.5]
+    - type: RandomCrop
+      crop_size: [2048, 2048]
+    - type: RandomDistort
+    - type: RandomBlur
+      prob: 0.1
+    - type: RandomHorizontalFlip
+    - type: Padding
+      target_size: [2048, 2048]
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: AIM500
+  dataset_root: /home/aistudio/data/data176745/matting_datasets
+  val_file: val.txt
+  transforms:
+    - type: HybridResize
+      if_hybrid: True
+      global_ratio: 0.25
+      local_ratio: 0.5
+      max_size: [1600, 1600]
+  mode: val
+  get_trimap: True
+
+model:
+  type: AIM
+#   backbone:
+#     type: ResNet34_mp
+#     pretrained: https://paddleseg.bj.bcebos.com/matting/models/xxxxx/model.pdparams
+  pretrained: Null
+
+optimizer:
+  type: adam
+  weight_decay: 4.0e-5
+
+lr_scheduler:
+  type: PiecewiseDecay
+  boundaries: [30000, 40000]
+  values: [0.001, 0.0001, 0.00001]
