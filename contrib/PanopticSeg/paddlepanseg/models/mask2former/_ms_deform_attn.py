@@ -37,17 +37,9 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 from paddleseg.cvlibs import param_init
-from paddleseg.utils import logger
-if paddle.is_compiled_with_cuda():
-    try:
-        import ms_deform_attn as msda
-    except ImportError:
-        logger.warning(
-            "Cannot import ms_deform_attn. Please compile and install the external Cpp operator first."
-        )
-        raise
 
 from paddlepanseg.models.param_init import THLinearInitMixin
+from paddlepanseg.utils import use_custom_op
 
 
 def slow_ms_deform_attn(value, value_spatial_shapes, sampling_locations,
@@ -201,9 +193,10 @@ class MSDeformAttn(nn.Layer, THLinearInitMixin):
                 format(reference_points.shape[-1]))
         if paddle.is_compiled_with_cuda():
             # GPU
-            output = msda.ms_deform_attn(
-                value, input_spatial_shapes, input_level_start_index,
-                sampling_locations, attention_weights, self.im2col_step)
+            with use_custom_op('ms_deform_attn') as msda:
+                output = msda.ms_deform_attn(
+                    value, input_spatial_shapes, input_level_start_index,
+                    sampling_locations, attention_weights, self.im2col_step)
         else:
             # CPU
             output = slow_ms_deform_attn(value, input_spatial_shapes,

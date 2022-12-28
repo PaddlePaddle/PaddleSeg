@@ -13,4 +13,4 @@
 # limitations under the License.
 
 from .visualize import visualize_semantic, visualize_instance, visualize_panoptic
-from .misc import tabulate_metrics
+from .misc import tabulate_metrics, import_custom_op, use_custom_op

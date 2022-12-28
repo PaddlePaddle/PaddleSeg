@@ -121,7 +121,7 @@ lr_scheduler:
 
 loss:
   types:
-    - type: Mask2FormerCombinedLoss
+    - type: MaskFormerCombinedLoss
       num_classes: *num_classes
       weight_ce: 2.0
       weight_mask: 5.0
@@ -134,7 +134,7 @@ loss:
   coef: [1]
 
 postprocessor:
-  type: Mask2FormerPostprocessor
+  type: MaskFormerPostprocessor
   num_classes: *num_classes
   object_mask_threshold: 0.8
   overlap_threshold: 0.8

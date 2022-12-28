@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .mask2former_losses import Mask2FormerCombinedLoss
+from .mask2former import Mask2Former

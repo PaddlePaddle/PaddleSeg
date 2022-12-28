@@ -12,19 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import importlib
-
-
-def _load_module_if_exists(module, package=None):
-    spec = importlib.util.find_spec(module, package=package)
-    if spec is None:
-        return None
-    mod = importlib.import_module(module, package=package)
-    return mod
-
-
-def load_modules(package=None):
-    _load_module_if_exists('datasets', package=package)
-    _load_module_if_exists('models', package=package)
-    _load_module_if_exists('postprocessors', package=package)
-    _load_module_if_exists('transforms', package=package)
+from .maskformer import GenerateMaskFormerTrainTargets
+from .panoptic_deeplab import GeneratePanopticDeepLabTrainTargets

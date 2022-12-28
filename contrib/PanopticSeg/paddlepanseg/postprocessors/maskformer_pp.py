@@ -20,7 +20,6 @@
 
 from collections import Counter
 
-import numpy as np
 import paddle
 import paddle.nn.functional as F
 
@@ -29,7 +28,7 @@ from paddlepanseg.postprocessors.base_pp import Postprocessor
 
 
 @manager.POSTPROCESSORS.add_component
-class Mask2FormerPostprocessor(Postprocessor):
+class MaskFormerPostprocessor(Postprocessor):
     def __init__(self,
                  num_classes,
                  thing_ids,

@@ -19,9 +19,9 @@ import paddle.nn.functional as F
 import paddleseg
 
 from paddlepanseg.cvlibs import manager
-from paddlepanseg.models.losses import AdaptedSegLoss, PanLoss
+from paddlepanseg.models.losses import PanLoss
 
-__all__ = ['CenterLoss', 'OffsetLoss', 'CrossEntropyLoss']
+__all__ = ['CenterLoss', 'OffsetLoss']
 
 
 @manager.LOSSES.add_component
@@ -68,19 +68,3 @@ class OffsetLoss(PanLoss):
         else:
             loss = loss.sum() * 0
         return loss
-
-
-@manager.LOSSES.add_component
-class CrossEntropyLoss(AdaptedSegLoss):
-    def __init__(self, *args, ignore_index=255, **kwargs):
-        key_maps = {
-            'logit': ['net_out', 'sem_out'],
-            'label': ['sample', 'sem_label'],
-            'semantic_weights': ['sample', 'sem_seg_weights']
-        }
-        super().__init__(
-            paddleseg.models.losses.CrossEntropyLoss,
-            *args,
-            key_maps=key_maps,
-            ignore_index=ignore_index,
-            **kwargs)

@@ -14,7 +14,7 @@ train_infer_img_dir:test_tipc/data/coco/val_list.txt
 null:null
 ##
 trainer:norm
-norm_train:projects/mask2former/run.py train --do_eval --log_iters 5
+norm_train:tools/train.py --do_eval --log_iters 5
 pact_train:null
 fpgm_train:null
 distill_train:null

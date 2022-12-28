@@ -13,3 +13,5 @@
 # limitations under the License.
 
 from .base_pp import Postprocessor
+from .panoptic_deeplab_pp import PanopticDeepLabPostprocessor
+from .maskformer_pp import MaskFormerPostprocessor

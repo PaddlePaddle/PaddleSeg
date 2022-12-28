@@ -13,9 +13,12 @@
 # limitations under the License.
 
 import copy
+import importlib
 from collections.abc import Mapping, Sequence
+from contextlib import contextmanager
 
 from tabulate import tabulate
+from paddleseg.utils import logger
 
 
 def set_digits(obj, digits):
@@ -47,3 +50,31 @@ def tabulate_metrics(metrics,
     if newline:
         tab = '\n' + tab
     return tab
+
+
+def import_custom_op(op_mod, must, op_sub_mod):
+    spec = importlib.util.find_spec(op_mod)
+    if spec is None:
+        logger.warning(
+            f"Custom operator {op_mod} is not found. Please check if it is properly installed."
+        )
+        if not must:
+            logger.warning(
+                f"{op_sub_mod} is used instead of {op_mod}."
+            )
+            importlib.import_module(op_sub_mod)
+            return mod
+        else:
+            raise ImportError
+    else:
+        mod = importlib.import_module(op_mod)
+        return mod
+
+
+@contextmanager
+def use_custom_op(op_mod, must=True, op_sub_mod=None):
+    mod = import_custom_op(op_mod, must=must, op_sub_mod=op_sub_mod)
+    try:
+        yield mod
+    finally:
+        pass

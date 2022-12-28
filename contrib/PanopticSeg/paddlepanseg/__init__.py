@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os.path as osp
 from . import core, cvlibs, datasets, models, postprocessors, transforms
 
 __version__ = '0.0.0'
+__custom_op_path__ = osp.abspath(osp.normpath(osp.join(osp.dirname(__file__), 'models', 'ops')))

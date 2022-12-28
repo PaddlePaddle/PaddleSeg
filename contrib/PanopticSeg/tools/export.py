@@ -14,14 +14,12 @@
 
 import argparse
 import os
-from turtle import forward
 
 import paddle
 import yaml
 from paddleseg.utils import logger
 
 from paddlepanseg.cvlibs import Config
-from paddlepanseg.transforms import constr_test_transforms
 
 
 class PanSegInferNetWrapper(paddle.nn.Layer):

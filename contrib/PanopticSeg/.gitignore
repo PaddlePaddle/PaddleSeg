@@ -110,8 +110,8 @@ venv.bak/
 
 .vscode/
 
-/projects/*/data/
-/projects/*/output/
-/projects/*/weights/
+/data/
+/output/
+/weights/
 /test_tipc/data/
 /test_tipc/output/

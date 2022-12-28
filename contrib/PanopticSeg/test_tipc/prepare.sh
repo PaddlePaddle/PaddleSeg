@@ -21,8 +21,8 @@ pip install -r requirements.txt
 # Install current version of PaddlePanSeg
 pip install -e .
 if [ "${model_name}" = mask2former ]; then
-    # Compile custom OP
-    pip install -e projects/mask2former/ops/ms_deform_attn
+    # Install custom OPs
+    pip install -e paddlepanseg/models/ops/*
 fi
 
 # Download pretrained weights

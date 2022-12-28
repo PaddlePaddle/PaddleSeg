@@ -26,7 +26,7 @@ setup(
     version=paddlepanseg.__version__.replace('-', ''),
     description=('End-to-end panoptic segmentation kit based on PaddleSeg.'),
     long_description='',
-    author='PaddlePaddle Author',
+    author='PaddlePaddle Authors',
     author_email='',
     install_requires=REQUIRED_PACKAGES,
     packages=find_packages(),

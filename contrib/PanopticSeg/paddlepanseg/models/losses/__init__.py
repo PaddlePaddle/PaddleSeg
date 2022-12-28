@@ -13,3 +13,6 @@
 # limitations under the License.
 
 from .pan_loss import AdaptedSegLoss, PanLoss
+from .cross_entropy_loss import CrossEntropyLoss
+from .panoptic_deeplab_losses import CenterLoss, OffsetLoss
+from .maskformer_losses import MaskFormerCombinedLoss

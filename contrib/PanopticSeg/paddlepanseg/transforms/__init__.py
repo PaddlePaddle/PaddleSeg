@@ -14,3 +14,4 @@
 
 from .transforms import *
 from .test_transforms import constr_test_transforms
+from .generate_targets import *

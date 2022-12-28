@@ -219,7 +219,7 @@ def nested_tensor_from_tensor_list(tensor_list):
 
 
 @manager.LOSSES.add_component
-class Mask2FormerCombinedLoss(PanLoss):
+class MaskFormerCombinedLoss(PanLoss):
     def __init__(self,
                  num_classes,
                  weight_ce,
