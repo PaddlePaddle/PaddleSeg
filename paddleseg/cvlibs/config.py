@@ -290,7 +290,6 @@ class Config(object):
         return self.dic.get('export', {})
 
     #################### checker and builder
-
     @classmethod
     def update_config_dict(cls, dic: dict, *args, **kwargs) -> dict:
         return update_config_dict(dic, *args, **kwargs)
