@@ -20,6 +20,7 @@ import yaml
 
 from paddleseg.cvlibs import Config
 from paddleseg.utils import logger, utils
+from paddleseg.deploy.export import WrappedModel
 
 
 def parse_args():
@@ -51,26 +52,6 @@ def parse_args():
         "softmax op to the logit according the actual situation.")
 
     return parser.parse_args()
-
-
-class WrappedModel(paddle.nn.Layer):
-    def __init__(self, model, output_op):
-        super().__init__()
-        self.model = model
-        self.output_op = output_op
-        assert output_op in ['argmax', 'softmax'], \
-            "output_op should in ['argmax', 'softmax']"
-
-    def forward(self, x):
-        outs = self.model(x)
-        new_outs = []
-        for out in outs:
-            if self.output_op == 'argmax':
-                out = paddle.argmax(out, axis=1, dtype='int32')
-            elif self.output_op == 'softmax':
-                out = paddle.nn.functional.softmax(out, axis=1)
-            new_outs.append(out)
-        return new_outs
 
 
 def main(args):

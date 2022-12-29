@@ -15,23 +15,15 @@
 import argparse
 import codecs
 import os
-import sys
 import time
-
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
 
 import yaml
 import numpy as np
-from paddle.inference import create_predictor, PrecisionType
-from paddle.inference import Config as PredictConfig
 
-import paddleseg.transforms as T
+import paddleseg.deploy.infer as infer_api
 from paddleseg.cvlibs import manager
-from paddleseg.utils import get_sys_env, logger, get_image_list
+from paddleseg.utils import logger
 from paddleseg.utils.visualize import get_pseudo_color_map
-
-from infer import use_auto_tune, auto_tune, DeployConfig, Predictor
 
 
 def parse_args():
@@ -136,7 +128,7 @@ def parse_args():
     return parser.parse_args()
 
 
-class PredictorBenchmark(Predictor):
+class PredictorBenchmark(infer_api.Predictor):
     def run(self, img_path):
         args = self.args
         input_names = self.predictor.get_input_names()
@@ -180,7 +172,7 @@ class PredictorBenchmark(Predictor):
                 "type": "Resize",
                 'target_size': [args.resize_width, args.resize_height]
             })
-            transforms = DeployConfig.load_transforms(transforms_dic)
+            transforms = infer_api.DeployConfig.load_transforms(transforms_dic)
             return transforms(data)['img']
 
     def _save_imgs(self, results):
@@ -196,18 +188,18 @@ def main(args):
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
-    if use_auto_tune(args):
+    if infer_api.use_auto_tune(args):
         if args.resize_width == 0 and args.resize_height == 0:
-            auto_tune(args, args.image_path, 1)
+            infer_api.auto_tune(args, args.image_path, 1)
         else:
             img = np.random.rand(1, 3, args.resize_height,
                                  args.resize_width).astype("float32")
-            auto_tune(args, img, 1)
+            infer_api.auto_tune(args, img, 1)
 
     predictor = PredictorBenchmark(args)
     predictor.run(args.image_path)
 
-    if use_auto_tune(args) and \
+    if infer_api.use_auto_tune(args) and \
         os.path.exists(args.auto_tuned_shape_file):
         os.remove(args.auto_tuned_shape_file)
 

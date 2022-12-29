@@ -14,21 +14,16 @@
 
 import argparse
 import os
-import sys
 
 import paddle
 import yaml
-
-__dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
+from paddleslim import QAT
 
 from paddleseg.cvlibs import Config
 from paddleseg.utils import logger, utils
+from paddleseg.deploy.export import WrappedModel
 from qat_config import quant_config
 from qat_train import skip_quant
-from export import SavedSegmentationNet
-
-from paddleslim import QAT
 
 
 def parse_args():
@@ -85,8 +80,7 @@ def main(args):
             '`--with_softmax` will be deprecated. Please use `--output_op`.')
         output_op = 'softmax'
 
-    new_net = net if output_op == 'none' else SavedSegmentationNet(net,
-                                                                   output_op)
+    new_net = net if output_op == 'none' else WrappedModel(net, output_op)
 
     new_net.eval()
     save_path = os.path.join(args.save_dir, 'model')
