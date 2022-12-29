@@ -1,0 +1,110 @@
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import paddle.nn as nn
+import paddle.nn.functional as F
+from paddleseg.utils import utils
+
+from paddlepanseg.cvlibs import manager
+from paddlepanseg.cvlibs import build_info_dict
+from .pixel_decoder import MSDeformAttnPixelDecoder
+from .transformer_decoder import MultiScaleMaskedTransformerDecoder
+
+__all__ = ['Mask2Former']
+
+
+@manager.MODELS.add_component
+class Mask2Former(nn.Layer):
+    """
+    The Mask2Former implementation based on PaddlePaddle.
+
+    The original article refers to
+     Bowen Cheng, et, al. "Masked-attention Mask Transformer for Universal Image Segmentation"
+     (https://arxiv.org/abs/2112.01527)
+
+    Args:
+        tbd
+    """
+
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 backbone_indices,
+                 backbone_feat_os,
+                 num_queries,
+                 pd_num_heads,
+                 pd_conv_dim,
+                 pd_mask_dim,
+                 pd_ff_dim,
+                 pd_num_layers,
+                 pd_common_stride,
+                 td_hidden_dim,
+                 td_num_heads,
+                 td_ff_dim,
+                 td_num_layers,
+                 td_pre_norm,
+                 td_mask_dim,
+                 td_enforce_proj,
+                 pretrained=None):
+        super().__init__()
+
+        self.backbone = backbone
+        self.num_queries = num_queries
+        self.pixel_decoder = MSDeformAttnPixelDecoder(
+            in_feat_strides=backbone_feat_os,
+            in_feat_chns=self.backbone.feat_channels,
+            feat_indices=backbone_indices,
+            num_heads=pd_num_heads,
+            ff_dim=pd_ff_dim,
+            num_enc_layers=pd_num_layers,
+            conv_dim=pd_conv_dim,
+            mask_dim=pd_mask_dim,
+            common_stride=pd_common_stride)
+        self.transformer_decoder = MultiScaleMaskedTransformerDecoder(
+            in_channels=pd_conv_dim,
+            num_classes=num_classes,
+            hidden_dim=td_hidden_dim,
+            num_queries=self.num_queries,
+            num_heads=td_num_heads,
+            ff_dim=td_ff_dim,
+            num_dec_layers=td_num_layers,
+            pre_norm=td_pre_norm,
+            mask_dim=td_mask_dim,
+            enforce_input_proj=td_enforce_proj)
+
+        self.pretrained = pretrained
+        self.init_weight()
+
+    def forward(self, x):
+        features = self.backbone(x)
+        multi_scale_features, mask_features = self.pixel_decoder(features)
+        pred_logits, pred_masks, aux_logits, aux_masks = self.transformer_decoder(
+            multi_scale_features, mask_features)
+        res = build_info_dict(
+            _type_='net_out', logits=pred_logits, masks=pred_masks)
+        res['map_fields'] = ['masks']
+        if self.training:
+            res['aux_logits'] = aux_logits
+            res['aux_masks'] = aux_masks
+        else:
+            res['masks'] = F.interpolate(
+                res['masks'],
+                size=x.shape[-2:],
+                mode='bilinear',
+                align_corners=False)
+        return res
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
