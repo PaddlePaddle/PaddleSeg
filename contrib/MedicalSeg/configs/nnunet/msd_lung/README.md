@@ -1,5 +1,5 @@
 # [Medical Segmentation Decathlon](http://medicaldecathlon.com/)
-针对96个3D肺部肿瘤数据进行训练 (包含 64 例训练 + 32 例测试)
+针对96个3D肺部肿瘤数据进行训练 (包含 64 例训练 + 32 例测试)  
 
 ## 性能
 
