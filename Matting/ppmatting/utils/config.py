@@ -24,15 +24,12 @@ import six
 
 import paddleseg
 from paddleseg.utils import logger
+from paddleseg.cvlibs import config_checker as checker
 
 
 class Config(paddleseg.cvlibs.Config):
-    def check_sync_config(self) -> None:
-        """
-        Overload the config due to some checks is not need in matting project.
-        """
-        if self.dic.get('model', None) is None:
-            raise RuntimeError('No model specified in the configuration file.')
-        if (not self.train_dataset_config) and (not self.val_dataset_config):
-            raise ValueError('One of `train_dataset` or `val_dataset '
-                             'should be given, but there are none.')
+    @classmethod
+    def _build_default_checker(cls):
+        rules = []
+        rules.append(checker.DefaultPrimaryRule())
+        return checker.ConfigChecker(rules, allow_update=True)
