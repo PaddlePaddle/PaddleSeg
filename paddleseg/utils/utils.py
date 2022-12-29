@@ -12,18 +12,88 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import contextlib
 import filelock
-import os
 import tempfile
-import numpy as np
 import random
 from urllib.parse import urlparse, unquote
 
+import yaml
+import numpy as np
 import paddle
 
-from paddleseg.utils import logger, seg_env
+from paddleseg.utils import logger, seg_env, get_sys_env
 from paddleseg.utils.download import download_file_and_uncompress
+
+
+def set_seed(seed=None):
+    if seed is not None:
+        paddle.seed(seed)
+        np.random.seed(seed)
+        random.seed(seed)
+
+
+def show_env_info():
+    env_info = get_sys_env()
+    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
+    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
+                     ['-' * 48])
+    logger.info(info)
+
+
+def show_cfg_info(config):
+    msg = '\n---------------Config Information---------------\n'
+    ordered_module = ('batch_size', 'iters', 'train_dataset', 'val_dataset',
+                      'optimizer', 'lr_scheduler', 'loss', 'model')
+    all_module = set(config.dic.keys())
+    for module in ordered_module:
+        if module in config.dic:
+            module_dic = {module: config.dic[module]}
+            msg += str(yaml.dump(module_dic, Dumper=NoAliasDumper))
+            all_module.remove(module)
+    for module in all_module:
+        module_dic = {module: config.dic[module]}
+        msg += str(yaml.dump(module_dic, Dumper=NoAliasDumper))
+    msg += '------------------------------------------------\n'
+    logger.info(msg)
+
+
+def set_device(device):
+    env_info = get_sys_env()
+    if device == 'gpu' and env_info['Paddle compiled with cuda'] \
+        and env_info['GPUs used']:
+        place = 'gpu'
+    elif device == 'xpu' and paddle.is_compiled_with_xpu():
+        place = 'xpu'
+    elif device == 'npu' and paddle.is_compiled_with_npu():
+        place = 'npu'
+    elif device == 'mlu' and paddle.is_compiled_with_mlu():
+        place = 'mlu'
+    else:
+        place = 'cpu'
+    paddle.set_device(place)
+    logger.info("Set device: {}".format(place))
+
+
+def convert_sync_batchnorm(model, device):
+    # Convert bn to sync_bn when use multi GPUs
+    env_info = get_sys_env()
+    if device == 'gpu' and env_info['Paddle compiled with cuda'] \
+        and env_info['GPUs used'] and paddle.distributed.ParallelEnv().nranks > 1:
+        model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+        logger.info("Convert bn to sync_bn")
+    return model
+
+
+def set_cv2_num_threads(num_workers):
+    # Limit cv2 threads if too many subprocesses are spawned.
+    # This should reduce resource allocation and thus boost performance.
+    nranks = paddle.distributed.ParallelEnv().nranks
+    if nranks >= 8 and num_workers >= 8:
+        logger.warning("The number of threads used by OpenCV is " \
+            "set to 1 to improve performance.")
+        cv2.setNumThreads(1)
 
 
 @contextlib.contextmanager
@@ -38,8 +108,9 @@ def load_entire_model(model, pretrained):
     if pretrained is not None:
         load_pretrained_model(model, pretrained)
     else:
-        logger.warning('Not all pretrained params of {} are loaded, ' \
-                       'training from scratch or a pretrained backbone.'.format(model.__class__.__name__))
+        logger.warning('Weights are not loaded for {} model since the '
+                       'path of weights is None'.format(
+                           model.__class__.__name__))
 
 
 def download_pretrained_model(pretrained_model):
@@ -177,3 +248,31 @@ def get_image_list(image_path):
             'There are not image file in `--image_path`={}'.format(image_path))
 
     return image_list, image_dir
+
+
+class NoAliasDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data):
+        return True
+
+
+class CachedProperty(object):
+    """
+    A property that is only computed once per instance and then replaces itself with an ordinary attribute.
+
+    The implementation refers to https://github.com/pydanny/cached-property/blob/master/cached_property.py .
+        Note that this implementation does NOT work in multi-thread or coroutine senarios.
+    """
+
+    def __init__(self, func):
+        super().__init__()
+        self.func = func
+        self.__doc__ = getattr(func, '__doc__', '')
+
+    def __get__(self, obj, cls):
+        if obj is None:
+            return self
+        val = self.func(obj)
+        # Hack __dict__ of obj to inject the value
+        # Note that this is only executed once
+        obj.__dict__[self.func.__name__] = val
+        return val
