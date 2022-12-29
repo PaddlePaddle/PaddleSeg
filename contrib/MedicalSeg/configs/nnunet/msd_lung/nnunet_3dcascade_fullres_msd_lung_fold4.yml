@@ -1,7 +1,7 @@
 _base_: '../../_base_/global_configs.yml'
 
 batch_size: 1
-iters: 40000
+iters: 100000
 
 model:
   type: NNUNet
