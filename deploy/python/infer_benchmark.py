@@ -20,10 +20,10 @@ import time
 import yaml
 import numpy as np
 
-import paddleseg.deploy.infer as infer_api
-from paddleseg.cvlibs import manager
+from paddleseg.deploy.infer import DeployConfig
 from paddleseg.utils import logger
 from paddleseg.utils.visualize import get_pseudo_color_map
+from infer import auto_tune, use_auto_tune, Predictor
 
 
 def parse_args():
@@ -128,7 +128,7 @@ def parse_args():
     return parser.parse_args()
 
 
-class PredictorBenchmark(infer_api.Predictor):
+class PredictorBenchmark(Predictor):
     def run(self, img_path):
         args = self.args
         input_names = self.predictor.get_input_names()
@@ -172,7 +172,7 @@ class PredictorBenchmark(infer_api.Predictor):
                 "type": "Resize",
                 'target_size': [args.resize_width, args.resize_height]
             })
-            transforms = infer_api.DeployConfig.load_transforms(transforms_dic)
+            transforms = DeployConfig.load_transforms(transforms_dic)
             return transforms(data)['img']
 
     def _save_imgs(self, results):
@@ -188,18 +188,18 @@ def main(args):
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
-    if infer_api.use_auto_tune(args):
+    if use_auto_tune(args):
         if args.resize_width == 0 and args.resize_height == 0:
-            infer_api.auto_tune(args, args.image_path, 1)
+            auto_tune(args, args.image_path, 1)
         else:
             img = np.random.rand(1, 3, args.resize_height,
                                  args.resize_width).astype("float32")
-            infer_api.auto_tune(args, img, 1)
+            auto_tune(args, img, 1)
 
     predictor = PredictorBenchmark(args)
     predictor.run(args.image_path)
 
-    if infer_api.use_auto_tune(args) and \
+    if use_auto_tune(args) and \
         os.path.exists(args.auto_tuned_shape_file):
         os.remove(args.auto_tuned_shape_file)
 

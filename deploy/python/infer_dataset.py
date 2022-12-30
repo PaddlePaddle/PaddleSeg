@@ -24,9 +24,10 @@ import paddle.nn.functional as F
 from paddle.inference import create_predictor
 from paddle.inference import Config as PredictConfig
 
-import paddleseg.deploy.infer as infer_api
+from paddleseg.deploy.infer import DeployConfig
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger, metrics, progbar
+from infer import auto_tune, use_auto_tune, Predictor
 
 
 def parse_args():
@@ -141,7 +142,7 @@ def get_dataset(args):
     if args.dataset_type not in comp.components_dict:
         raise RuntimeError("The dataset is not supported.")
 
-    cfg = infer_api.DeployConfig(args.cfg)
+    cfg = DeployConfig(args.cfg)
 
     if args.resize_width == 0 and args.resize_height == 0:
         transforms = cfg.transforms.transforms
@@ -155,8 +156,7 @@ def get_dataset(args):
             "type": "Resize",
             'target_size': [args.resize_width, args.resize_height]
         })
-        transforms = infer_api.DeployConfig.load_transforms(
-            transforms_dic).transforms
+        transforms = DeployConfig.load_transforms(transforms_dic).transforms
 
     kwargs = {
         'transforms': transforms,
@@ -186,11 +186,11 @@ def auto_tune(args, dataset, img_nums):
     """
     logger.info("Auto tune the dynamic shape for GPU TRT.")
 
-    assert infer_api.use_auto_tune(args)
+    assert use_auto_tune(args)
 
     num = min(len(dataset), img_nums)
 
-    cfg = infer_api.DeployConfig(args.cfg)
+    cfg = DeployConfig(args.cfg)
     pred_cfg = PredictConfig(cfg.model, cfg.params)
     pred_cfg.enable_use_gpu(100, 0)
     if not args.print_detail:
@@ -223,7 +223,7 @@ def auto_tune(args, dataset, img_nums):
     logger.info("Auto tune success.\n")
 
 
-class DatasetPredictor(infer_api.Predictor):
+class DatasetPredictor(Predictor):
     def __init__(self, args):
         super().__init__(args)
 
@@ -293,7 +293,7 @@ class DatasetPredictor(infer_api.Predictor):
 
 
 def main(args):
-    if infer_api.use_auto_tune(args):
+    if use_auto_tune(args):
         dataset = get_dataset(args)
         tune_img_nums = 10
         auto_tune(args, dataset, tune_img_nums)
@@ -301,7 +301,7 @@ def main(args):
     predictor = DatasetPredictor(args)
     predictor.run_dataset()
 
-    if infer_api.use_auto_tune(args) and \
+    if use_auto_tune(args) and \
         os.path.exists(args.auto_tuned_shape_file):
         os.remove(args.auto_tuned_shape_file)
 
