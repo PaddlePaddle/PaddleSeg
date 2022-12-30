@@ -46,6 +46,9 @@ class ConfigChecker(object):
         for i in range(len(self.rule_list)):
             self.apply_rule(i, cfg)
 
+    def add_rule(self, rule):
+        self.rule_list.append(rule)
+
 
 class Rule(object):
     def check_and_correct(self, cfg):
