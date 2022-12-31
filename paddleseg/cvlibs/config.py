@@ -173,25 +173,42 @@ class Config(object):
         args = self.optimizer_config
         optimizer_type = args.pop('type')
 
-        # TODO refactor optimizer to support customized setting
-        params = self.model.parameters()
-        if 'backbone_lr_mult' in args:
-            if not hasattr(self.model, 'backbone'):
-                logger.warning('The backbone_lr_mult is not effective because'
-                               ' the model does not have backbone')
+        # process custom_params
+        if "custom_params" in args:
+            custom_params = args.pop("custom_params")
+        else:
+            custom_params = []
+        if "backbone_lr_mult" in args:
+            if not hasattr(self.model, "backbone"):
+                logger.warning("The backbone_lr_mult is not effective because"
+                               " the model does not have backbone")
             else:
-                backbone_lr_mult = args.pop('backbone_lr_mult')
-                backbone_params = self.model.backbone.parameters()
-                backbone_params_id = [id(x) for x in backbone_params]
-                other_params = [
-                    x for x in params if id(x) not in backbone_params_id
-                ]
-                params = [{
-                    'params': backbone_params,
-                    'learning_rate': backbone_lr_mult
-                }, {
-                    'params': other_params
-                }]
+                custom_params.append(
+                    dict(
+                        name="backbone", lr_mult=args.pop("backbone_lr_mult")))
+
+        params_list = [[] for _ in range(len(custom_params) + 1)
+                       ]  # +1 for other parameters
+
+        for param_name, param in self.model.named_parameters():
+            for idx, setting in enumerate(custom_params):
+                target_name = setting["name"]
+                if target_name in param_name:
+                    params_list[idx].append(param)
+                    break
+            else:
+                params_list[-1].append(param)  # other parameters
+
+        # build params
+        params = []
+        for idx, setting in enumerate(custom_params):
+            lr_mult = setting.get("lr_mult", 1.0)
+            decay_mult = setting.get("decay_mult", 1.0)
+            params.append(
+                dict(
+                    learning_rate=lr_mult,
+                    weight_decay=decay_mult, ))
+        params.append(dict(params=params_list[-1]))
 
         if optimizer_type == 'sgd':
             return paddle.optimizer.Momentum(lr, parameters=params, **args)
