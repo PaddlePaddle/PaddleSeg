@@ -206,6 +206,7 @@ class Config(object):
             decay_mult = setting.get("decay_mult", 1.0)
             params.append(
                 dict(
+                    params=params_list[idx],
                     learning_rate=lr_mult,
                     weight_decay=decay_mult, ))
         params.append(dict(params=params_list[-1]))
