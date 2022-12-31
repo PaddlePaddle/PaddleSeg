@@ -197,10 +197,19 @@ class Config(object):
             return paddle.optimizer.Momentum(lr, parameters=params, **args)
         elif optimizer_type == 'adam':
             return paddle.optimizer.Adam(lr, parameters=params, **args)
-        elif optimizer_type in paddle.optimizer.__all__:
-            return getattr(paddle.optimizer, optimizer_type)(lr,
-                                                             parameters=params,
-                                                             **args)
+        else:
+            lower_types = [i.lower() for i in paddle.optimizer.__all__]
+            if optimizer_type in paddle.optimizer.__all__:
+                target_type = optimizer_type
+            if optimizer_type in lower_types:
+                optimizer_mapper = {
+                    t: m
+                    for t, m in zip(lower_types, paddle.optimizer.__all__)
+                }
+                target_type = optimizer_mapper[optimizer_type]
+            return getattr(paddle.optimizer, target_type)(lr,
+                                                          parameters=params,
+                                                          **args)
 
         raise RuntimeError('Unknown optimizer type {}.'.format(optimizer_type))
 
