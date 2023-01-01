@@ -202,8 +202,8 @@ class Config(object):
                 # filter
                 custom_params = [
                     x for x in custom_params
-                    if not isinstance(x.get("decay_mult", None), float) and
-                    not isinstance(x.get("lr_mult", None), float)
+                    if isinstance(x.get("lr_mult", None), float) or
+                    not isinstance(x.get("decay_mult"), float)
                 ]
             params_list = [[] for _ in range(len(custom_params) + 1)
                            ]  # +1 for other parameters
