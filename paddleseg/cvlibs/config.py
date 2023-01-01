@@ -181,35 +181,55 @@ class Config(object):
         if "backbone_lr_mult" in args:
             if not hasattr(self.model, "backbone"):
                 logger.warning("The backbone_lr_mult is not effective because"
-                               " the model does not have backbone")
+                               " the model does not have backbone.")
             else:
                 custom_params.append(
                     dict(
                         name="backbone", lr_mult=args.pop("backbone_lr_mult")))
 
-        params_list = [[] for _ in range(len(custom_params) + 1)
-                       ]  # +1 for other parameters
+        if len(custom_params) > 0:
+            for setting in custom_params:
+                if "lr_mult" in setting:
+                    setting["lr_mult"] = float(setting["lr_mult"])
+                if "decay_mult" in setting:
+                    setting["decay_mult"] = float(setting["decay_mult"])
 
-        for param_name, param in self.model.named_parameters():
+            base_decay = args.get("weight_decay", None)
+            if base_decay is None:
+                logger.warning(
+                    "The decay_mult is not effective because the optimizer does not set `weight_decay`."
+                )
+                # filter
+                custom_params = [
+                    x for x in custom_params
+                    if isinstance(x.get("decay_mult", None), float)
+                ]
+            params_list = [[] for _ in range(len(custom_params) + 1)
+                           ]  # +1 for other parameters
+
+            for param_name, param in self.model.named_parameters():
+                for idx, setting in enumerate(custom_params):
+                    target_name = setting["name"]
+                    if target_name in param_name:
+                        params_list[idx].append(param)
+                        break
+                else:
+                    params_list[-1].append(param)  # other parameters
+
+            # build params
+            params = []
             for idx, setting in enumerate(custom_params):
-                target_name = setting["name"]
-                if target_name in param_name:
-                    params_list[idx].append(param)
-                    break
-            else:
-                params_list[-1].append(param)  # other parameters
-
-        # build params
-        params = []
-        for idx, setting in enumerate(custom_params):
-            lr_mult = setting.get("lr_mult", 1.0)
-            decay_mult = setting.get("decay_mult", 1.0)
-            params.append(
-                dict(
+                lr_mult = setting.get("lr_mult", 1.0)
+                decay_mult = setting.get("decay_mult", 1.0)
+                param_dict = dict(
                     params=params_list[idx],
-                    learning_rate=lr_mult,
-                    weight_decay=decay_mult, ))
-        params.append(dict(params=params_list[-1]))
+                    learning_rate=lr_mult, )
+                if base_decay is not None:
+                    param_dict["weight_decay"] = base_decay * decay_mult
+                params.append(param_dict)
+            params.append(dict(params=params_list[-1]))
+        else:
+            params = self.model.parameters()
 
         if optimizer_type == 'sgd':
             return paddle.optimizer.Momentum(lr, parameters=params, **args)
