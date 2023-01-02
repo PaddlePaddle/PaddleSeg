@@ -2,7 +2,7 @@ batch_size: 4
 iters: 50000
 
 train_dataset:
-  type: AIM500
+  type: HybridDataset
   dataset_root: data/PPM-100
   train_file: train.txt
   transforms:
