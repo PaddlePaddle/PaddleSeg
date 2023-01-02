@@ -6,18 +6,10 @@ train_dataset:
   dataset_root: data/PPM-100
   train_file: train.txt
   transforms:
-    - type: LoadImages
-    - type: RandomResize
-      size: [2048, 2048]
       scale: [0.3, 1.5]
-    - type: RandomCrop
-      crop_size: [2048, 2048]
-    - type: RandomDistort
-    - type: RandomBlur
-      prob: 0.1
+    - type: RandomCropByAlpha
+      crop_size: [640, 960, 1280]
     - type: RandomHorizontalFlip
-    - type: Padding
-      target_size: [2048, 2048]
     - type: Normalize
   mode: train
 

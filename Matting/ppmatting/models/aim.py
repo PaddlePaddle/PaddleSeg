@@ -307,8 +307,8 @@ class AIM(nn.Layer):
         loss = {}
 
         # local loss computation
-        loss_local_alpha = self.loss_func_dict['local'][0](logit_dict['local'], label_dict['alpha'])
-        loss_local_laplacian = self.loss_func_dict['local'][1](logit_dict['local'], label_dict['alpha'])
+        loss_local_alpha = self.loss_func_dict['local'][0](logit_dict['local'], label_dict['alpha'], label_dict['trimap'])
+        loss_local_laplacian = self.loss_func_dict['local'][1](logit_dict['local'], label_dict['alpha'], label_dict['trimap'])
         loss_local = loss_local_alpha + loss_local_laplacian
         loss['local'] = loss_local
 
