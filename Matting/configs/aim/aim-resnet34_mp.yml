@@ -3,10 +3,9 @@ iters: 50000
 
 train_dataset:
   type: HybridDataset
-  dataset_root: data/PPM-100
+  dataset_root: /home/aistudio/data/
   train_file: train.txt
   transforms:
-      scale: [0.3, 1.5]
     - type: RandomCropByAlpha
       crop_size: [640, 960, 1280]
     - type: RandomHorizontalFlip
