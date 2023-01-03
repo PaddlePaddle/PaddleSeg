@@ -22,6 +22,7 @@ from urllib.parse import urlparse, unquote
 import yaml
 import numpy as np
 import paddle
+import cv2
 
 from paddleseg.utils import logger, seg_env, get_sys_env
 from paddleseg.utils.download import download_file_and_uncompress
