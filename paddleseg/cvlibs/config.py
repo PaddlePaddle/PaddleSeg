@@ -112,18 +112,16 @@ class Config(object):
     #################### hyper parameters
     @cached_property
     def batch_size(self) -> int:
-        return self.dic.get('batch_size', 1)
+        return self.dic.get('batch_size')
 
     @cached_property
     def iters(self) -> int:
-        iters = self.dic.get('iters', None)
-        if iters is None:
-            raise RuntimeError('No iters specified in the configuration file.')
+        iters = self.dic.get('iters')
         return iters
 
     @cached_property
     def to_static_training(self) -> bool:
-        '''Whether to use @to_static for training'''
+        # Whether to use @to_static for training
         return self.dic.get('to_static_training', False)
 
     #################### lr_scheduler and optimizer
@@ -160,17 +158,9 @@ class Config(object):
         return lr_sche
 
     @cached_property
-    def optimizer_config(self) -> dict:
-        args = self.dic.get('optimizer', {}).copy()
-        # TODO remove the default params
-        if args['type'] == 'sgd':
-            args.setdefault('momentum', 0.9)
-        return args
-
-    @cached_property
     def optimizer(self) -> paddle.optimizer.Optimizer:
         lr = self.lr_scheduler
-        args = self.optimizer_config
+        args = self.dic.get('optimizer').copy()
         optimizer_type = args.pop('type')
 
         # TODO refactor optimizer to support customized setting
@@ -214,14 +204,6 @@ class Config(object):
         return self._prepare_loss('distill_loss')
 
     def _prepare_loss(self, loss_name):
-        """
-        Parse the loss parameters and load the loss layers.
-
-        Args:
-            loss_name (str): The root name of loss in the yaml file.
-        Returns:
-            dict: A dict including the loss parameters and layers.
-        """
         args = self.dic.get(loss_name, {}).copy()
         losses = {'coef': args['coef'], "types": []}
         for loss_cfg in args['types']:
@@ -236,58 +218,39 @@ class Config(object):
 
     #################### dataset and transforms
     @cached_property
-    def train_dataset_config(self) -> Dict:
-        return self.dic.get('train_dataset', {}).copy()
+    def train_dataset(self) -> paddle.io.Dataset:
+        dataset_cfg = self.dic.get('train_dataset').copy()
+        return self.builder.create_object(dataset_cfg)
+
+    @cached_property
+    def val_dataset(self) -> paddle.io.Dataset:
+        dataset_cfg = self.dic.get('val_dataset').copy()
+        return self.builder.create_object(dataset_cfg)
+
+    @cached_property
+    def train_dataset_class(self) -> Any:
+        dataset_type = self.dic['train_dataset']['type']
+        return self.builder.load_component_class(dataset_type)
+
+    @cached_property
+    def val_dataset_class(self) -> Any:
+        dataset_type = self.dic['val_dataset']['type']
+        return self.builder.load_component_class(dataset_type)
+
+    @cached_property
+    def val_transforms(self) -> list:
+        transforms = []
+        for tf in self.dic.get('val_dataset').get('transforms', []):
+            transforms.append(self.builder.create_object(tf))
+        return transforms
 
     @cached_property
     def val_dataset_config(self) -> Dict:
         return self.dic.get('val_dataset', {}).copy()
 
     @cached_property
-    def train_dataset_class(self) -> Any:
-        dataset_type = self.train_dataset_config['type']
-        return self.builder.load_component_class(dataset_type)
-
-    @cached_property
-    def val_dataset_class(self) -> Any:
-        dataset_type = self.val_dataset_config['type']
-        return self.builder.load_component_class(dataset_type)
-
-    @cached_property
-    def train_dataset(self) -> paddle.io.Dataset:
-        _train_dataset = self.train_dataset_config
-        if not _train_dataset:
-            return None
-        return self.builder.create_object(_train_dataset)
-
-    @cached_property
-    def val_dataset(self) -> paddle.io.Dataset:
-        _val_dataset = self.val_dataset_config
-        if not _val_dataset:
-            return None
-        return self.builder.create_object(_val_dataset)
-
-    @cached_property
-    def val_transforms(self) -> list:
-        """Get val_transform from val_dataset"""
-        _val_dataset = self.val_dataset_config
-        if not _val_dataset:
-            return []
-        _transforms = _val_dataset.get('transforms', [])
-        transforms = []
-        for tf in _transforms:
-            transforms.append(self.builder.create_object(tf))
-        return transforms
-
-    #################### test and export
-    @cached_property
     def test_config(self) -> Dict:
-        return self.dic.get('test_config', {})
-
-    # TODO remove export_config
-    @cached_property
-    def export_config(self) -> Dict:
-        return self.dic.get('export', {})
+        return self.dic.get('test_config', {}).copy()
 
     #################### checker and builder
     @classmethod

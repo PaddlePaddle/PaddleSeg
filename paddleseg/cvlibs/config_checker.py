@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import copy
+from paddleseg.utils import logger
 
 
 class ConfigChecker(object):
@@ -62,10 +63,13 @@ class Rule(object):
 
 class DefaultPrimaryRule(Rule):
     def check_and_correct(self, cfg):
-        assert cfg.dic.get('model', None) is not None, \
-            'No model specified in the configuration file.'
-        assert cfg.train_dataset_config or cfg.val_dataset_config, \
-            'One of `train_dataset` or `val_dataset should be given, but there are none.'
+        items = [
+            'batch_size', 'iters', 'train_dataset', 'val_dataset', 'optimizer',
+            'lr_scheduler', 'loss', 'model'
+        ]
+        for i in items:
+            assert i in cfg.dic, \
+            'No {} specified in the configuration file.'.format(i)
 
 
 class DefaultLossRule(Rule):
@@ -94,77 +98,69 @@ class DefaultLossRule(Rule):
 
 class DefaultSyncNumClassesRule(Rule):
     def check_and_correct(self, cfg):
-        num_classes_set = set()
+        model_config = cfg.dic['model']
+        train_dataset_config = cfg.dic['train_dataset']
+        val_dataset_config = cfg.dic['val_dataset']
+        value_set = set()
+        value_name = 'num_classes'
 
-        if cfg.dic['model'].get('num_classes', None) is not None:
-            num_classes_set.add(cfg.dic['model'].get('num_classes'))
-        if cfg.train_dataset_config:
-            if hasattr(cfg.train_dataset_class, 'NUM_CLASSES'):
-                num_classes_set.add(cfg.train_dataset_class.NUM_CLASSES)
-            if 'num_classes' in cfg.train_dataset_config:
-                num_classes_set.add(cfg.train_dataset_config['num_classes'])
-        if cfg.val_dataset_config:
-            if hasattr(cfg.val_dataset_class, 'NUM_CLASSES'):
-                num_classes_set.add(cfg.val_dataset_class.NUM_CLASSES)
-            if 'num_classes' in cfg.val_dataset_config:
-                num_classes_set.add(cfg.val_dataset_config['num_classes'])
+        if value_name in model_config:
+            value_set.add(model_config[value_name])
+        if value_name in train_dataset_config:
+            value_set.add(train_dataset_config[value_name])
+        if value_name in val_dataset_config:
+            value_set.add(val_dataset_config[value_name])
+        if hasattr(cfg.train_dataset_class, 'NUM_CLASSES'):
+            value_set.add(cfg.train_dataset_class.NUM_CLASSES)
+        if hasattr(cfg.val_dataset_class, 'NUM_CLASSES'):
+            value_set.add(cfg.val_dataset_class.NUM_CLASSES)
 
-        if len(num_classes_set) == 0:
+        if len(value_set) == 0:
             raise ValueError(
                 '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
             )
-        elif len(num_classes_set) > 1:
+        elif len(value_set) > 1:
             raise ValueError(
                 '`num_classes` is not consistent: {}. Please set it consistently in model or train_dataset or val_dataset'
-                .format(num_classes_set))
+                .format(value_set))
 
-        num_classes = num_classes_set.pop()
-        cfg.dic['model']['num_classes'] = num_classes
-        if cfg.train_dataset_config and \
-            (not hasattr(cfg.train_dataset_class, 'NUM_CLASSES')):
-            cfg.dic['train_dataset']['num_classes'] = num_classes
-        if cfg.val_dataset_config and \
-            (not hasattr(cfg.val_dataset_class, 'NUM_CLASSES')):
-            cfg.dic['val_dataset']['num_classes'] = num_classes
+        model_config[value_name] = value_set.pop()
 
 
 class DefaultSyncImgChannelsRule(Rule):
     def check_and_correct(self, cfg):
-        img_channels_set = set()
-        model_cfg = cfg.dic['model']
+        model_config = cfg.dic['model']
+        train_dataset_config = cfg.dic['train_dataset']
+        val_dataset_config = cfg.dic['val_dataset']
+        value_set = set()
 
         # If the model has backbone, in_channels is the input params of backbone.
         # Otherwise, in_channels is the input params of the model.
-        if 'backbone' in model_cfg:
-            x = model_cfg['backbone'].get('in_channels', None)
+        if 'backbone' in model_config:
+            x = model_config['backbone'].get('in_channels', None)
             if x is not None:
-                img_channels_set.add(x)
-        elif model_cfg.get('in_channels', None) is not None:
-            img_channels_set.add(model_cfg.get('in_channels'))
-        if cfg.train_dataset_config and \
-            ('img_channels' in cfg.train_dataset_config):
-            img_channels_set.add(cfg.train_dataset_config['img_channels'])
-        if cfg.val_dataset_config and \
-            ('img_channels' in cfg.val_dataset_config):
-            img_channels_set.add(cfg.val_dataset_config['img_channels'])
+                value_set.add(x)
+        if 'in_channels' in model_config:
+            value_set.add(model_config['in_channels'])
+        if 'img_channels' in train_dataset_config:
+            value_set.add(train_dataset_config['img_channels'])
+        if 'img_channels' in val_dataset_config:
+            value_set.add(val_dataset_config['img_channels'])
+        if hasattr(cfg.train_dataset_class, 'IMG_CHANNELS'):
+            value_set.add(cfg.train_dataset_class.IMG_CHANNELS)
+        if hasattr(cfg.val_dataset_class, 'IMG_CHANNELS'):
+            value_set.add(cfg.val_dataset_class.IMG_CHANNELS)
 
-        if len(img_channels_set) > 1:
+        if len(value_set) > 1:
             raise ValueError(
-                '`img_channels` is not consistent: {}. Please set it consistently in model or train_dataset or val_dataset'
-                .format(img_channels_set))
+                '`in_channels` is not consistent: {}. Please set it consistently in model or train_dataset or val_dataset'
+                .format(value_set))
+        channels = 3 if len(value_set) == 0 else value_set.pop()
 
-        img_channels = 3 if len(img_channels_set) == 0 \
-            else img_channels_set.pop()
-        if 'backbone' in model_cfg:
-            cfg.dic['model']['backbone']['in_channels'] = img_channels
+        if 'backbone' in model_config:
+            model_config['backbone']['in_channels'] = channels
         else:
-            cfg.dic['model']['in_channels'] = img_channels
-        if cfg.train_dataset_config and \
-            cfg.train_dataset_config['type'] == "Dataset":
-            cfg.dic['train_dataset']['img_channels'] = img_channels
-        if cfg.val_dataset_config and \
-            cfg.val_dataset_config['type'] == "Dataset":
-            cfg.dic['val_dataset']['img_channels'] = img_channels
+            model_config['in_channels'] = channels
 
 
 class DefaultSyncIgnoreIndexRule(Rule):
@@ -178,17 +174,36 @@ class DefaultSyncIgnoreIndexRule(Rule):
                 assert loss_cfg['ignore_index'] == dataset_ignore_index, \
                     'the ignore_index in loss and train_dataset must be the same. Currently, loss ignore_index = {}, '\
                     'train_dataset ignore_index = {}'.format(loss_cfg['ignore_index'], dataset_ignore_index)
+            else:
+                loss_cfg['ignore_index'] = dataset_ignore_index
 
         loss_cfg = cfg.dic.get(self.loss_name, None)
         if loss_cfg is None:
             return
 
-        dataset_ignore_index = cfg.train_dataset.ignore_index
+        train_dataset_config = cfg.dic['train_dataset']
+        val_dataset_config = cfg.dic['val_dataset']
+        value_set = set()
+        value_name = 'ignore_index'
+
+        if value_name in train_dataset_config:
+            value_set.add(train_dataset_config[value_name])
+        if value_name in val_dataset_config:
+            value_set.add(val_dataset_config[value_name])
+        if hasattr(cfg.train_dataset_class, 'IGNORE_INDEX'):
+            value_set.add(cfg.train_dataset_class.IGNORE_INDEX)
+        if hasattr(cfg.val_dataset_class, 'IGNORE_INDEX'):
+            value_set.add(cfg.val_dataset_class.IGNORE_INDEX)
+
+        if len(value_set) > 1:
+            raise ValueError(
+                '`ignore_index` is not consistent: {}. Please set it consistently in train_dataset and val_dataset'
+                .format(value_set))
+        ignore_index = 255 if len(value_set) == 0 else value_set.pop()
+
         for loss_cfg_i in loss_cfg['types']:
             if loss_cfg_i['type'] == 'MixedLoss':
                 for loss_cfg_j in loss_cfg_i['losses']:
-                    _check_ignore_index(loss_cfg_j, dataset_ignore_index)
-                    loss_cfg_j['ignore_index'] = dataset_ignore_index
+                    _check_ignore_index(loss_cfg_j, ignore_index)
             else:
-                _check_ignore_index(loss_cfg_i, dataset_ignore_index)
-                loss_cfg_i['ignore_index'] = dataset_ignore_index
+                _check_ignore_index(loss_cfg_i, ignore_index)

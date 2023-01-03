@@ -25,7 +25,6 @@ from paddleseg.deploy.export import WrappedModel
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Export Inference Model.')
-
     parser.add_argument("--config", help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
@@ -36,7 +35,6 @@ def parse_args():
         help='The directory for saving the exported inference model',
         type=str,
         default='./output/inference_model')
-
     parser.add_argument(
         "--input_shape",
         nargs='+',
