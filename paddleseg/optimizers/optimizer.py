@@ -24,23 +24,61 @@ class BaseOptimizer(object):
 
     Args:
         weight_decay(float, optional): A float value as coeff of L2 regularization.
-        custom_params (dict, optional): custom_params specify different options for
+        grad_clip_cfg(dict, optional): A dict to specify grad_clip. It must have the following format: 
+            {'name': 'ClipGradByGlobalNorm', 'clip_norm': float_val},
+            {'name': 'ClipGradByNorm', 'clip_norm': float_val},
+            {'name': 'ClipGradByValue', 'max': float_val, 'min': float_val(optional)}.
+        custom_cfg(list, optional): custom_cfg specify different options for
             different parameter groups such as the learning rate and weight decay.
+            For example, [{'name': 'backbone', 'lr_mult': 0.1}, {'name': 'norm', 'weight_decay_mult': 0}]
+    
+    An example in config:
+    `
+    optimizer:
+      type: SGD
+      weight_decay: 4.0e-5
+      custom_cfg:
+        - name: backbone
+          lr_mult: 0.1
+        - name: norm
+          weight_decay_mult: 0.0
+      grad_clip_cfg:
+        name: ClipGradByValue
+        max: 1.0
+    `
     """
 
-    def __init__(self, weight_decay=None, custom_params=None):
+    def __init__(self, weight_decay=None, grad_clip_cfg=None, custom_cfg=None):
         if weight_decay is not None:
             assert isinstance(weight_decay, float), \
                 "`weight_decay` must be a float."
-        if custom_params is not None:
-            assert isinstance(custom_params, list), \
-                "`custom_params` must be a list."
-            for item in custom_params:
-                assert isinstance(item, dict), \
-                "The item of `custom_params` must be a dict"
+        if grad_clip_cfg is not None:
+            assert isinstance(grad_clip_cfg, dict), \
+                "`grad_clip_cfg` must be a dict."
+            assert 'name' in grad_clip_cfg, 'No name specified in grad_clip_cfg'
+            grad_clip_names = [
+                'ClipGradByValue', 'ClipGradByNorm', 'ClipGradByGlobalNorm'
+            ]
+            assert grad_clip_cfg['name'] in grad_clip_names, \
+                'grad_clip name should be {}'.format(grad_clip_names)
+        if custom_cfg is not None:
+            assert isinstance(custom_cfg, list), "`custom_cfg` must be a list."
+            for item in custom_cfg:
+                assert isinstance(
+                    item, dict), "The item of `custom_cfg` must be a dict"
+
         self.weight_decay = weight_decay
-        self.custom_params = custom_params
-        self.args = {'weight_decay': weight_decay}
+        self.custom_cfg = custom_cfg.copy()
+        grad_clip_cfg = grad_clip_cfg.copy()
+        grad_clip_name = grad_clip_cfg.pop('name')
+        try:
+            grad_clip = getattr(paddle.nn, grad_clip_name)(**grad_clip_cfg)
+        except Exception as e:
+            raise RuntimeError(
+                "Create grad_clip has failed. Please check grad_clip_cfg in config. "
+                f"The error message: \n{str(e)}")
+
+        self.args = {'weight_decay': weight_decay, 'grad_clip': grad_clip}
 
     def __call__(self, model, lr):
         # Create optimizer
@@ -48,15 +86,15 @@ class BaseOptimizer(object):
 
     def _model_params(self, model):
         # Collect different parameter groups
-        if self.custom_params is None or len(self.custom_params) == 0:
+        if self.custom_cfg is None or len(self.custom_cfg) == 0:
             return model.parameters()
 
-        groups_num = len(self.custom_params) + 1
+        groups_num = len(self.custom_cfg) + 1
         params_list = [[] for _ in range(groups_num)]
         for name, param in model.named_parameters():
             if param.stop_gradient:
                 continue
-            for idx, item in enumerate(self.custom_params):
+            for idx, item in enumerate(self.custom_cfg):
                 if item['name'] in name:
                     params_list[idx].append(param)
                     break
@@ -64,7 +102,7 @@ class BaseOptimizer(object):
                 params_list[-1].append(param)
 
         res = []
-        for idx, item in enumerate(self.custom_params):
+        for idx, item in enumerate(self.custom_cfg):
             lr_mult = item.get("lr_mult", 1.0)
             weight_decay_mult = item.get("weight_decay_mult", None)
             param_dict = {'params': params_list[idx], 'learning_rate': lr_mult}
@@ -75,7 +113,7 @@ class BaseOptimizer(object):
         res.append({'params': params_list[-1]})
 
         msg = 'Parameter groups for optimizer: \n'
-        for idx, item in enumerate(self.custom_params):
+        for idx, item in enumerate(self.custom_cfg):
             params_name = [p.name for p in params_list[idx]]
             item = item.copy()
             item['params_name'] = params_name
@@ -97,14 +135,16 @@ class SGD(BaseOptimizer):
     optimizer:
       type: SGD
       weight_decay: 4.0e-5
-      custom_params:
+      custom_cfg:
         - name: backbone
           lr_mult: 0.1
+        - name: norm
+          weight_decay_mult: 0.0
     `
     """
 
-    def __init__(self, weight_decay=None, custom_params=None):
-        super().__init__(weight_decay=weight_decay, custom_params=custom_params)
+    def __init__(self, weight_decay=None, grad_clip_cfg=None, custom_cfg=None):
+        super().__init__(weight_decay, grad_clip_cfg, custom_cfg)
 
     def __call__(self, model, lr):
         params = self._model_params(model)
@@ -123,8 +163,9 @@ class Momentum(BaseOptimizer):
                  momentum=0.9,
                  use_nesterov=False,
                  weight_decay=None,
-                 custom_params=None):
-        super().__init__(weight_decay=weight_decay, custom_params=custom_params)
+                 grad_clip_cfg=None,
+                 custom_cfg=None):
+        super().__init__(weight_decay, grad_clip_cfg, custom_cfg)
         self.args.update({'momentum': momentum, 'use_nesterov': use_nesterov})
 
     def __call__(self, model, lr):
@@ -145,8 +186,9 @@ class Adam(BaseOptimizer):
                  epsilon=1e-08,
                  lazy_mode=False,
                  weight_decay=None,
-                 custom_params=None):
-        super().__init__(weight_decay=weight_decay, custom_params=custom_params)
+                 grad_clip_cfg=None,
+                 custom_cfg=None):
+        super().__init__(weight_decay, grad_clip_cfg, custom_cfg)
         self.args.update({
             'beta1': beta1,
             'beta2': beta2,
@@ -173,8 +215,9 @@ class AdamW(BaseOptimizer):
                  epsilon=1e-08,
                  weight_decay=0.01,
                  lazy_mode=False,
-                 custom_params=None):
-        super().__init__(weight_decay=weight_decay, custom_params=custom_params)
+                 grad_clip_cfg=None,
+                 custom_cfg=None):
+        super().__init__(weight_decay, grad_clip_cfg, custom_cfg)
         self.args.update({
             'beta1': beta1,
             'beta2': beta2,
