@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
 import paddle
 import paddleseg
+from paddleseg.cvlibs import builder
+from paddleseg.cvlibs import config_checker as checker
 from paddleseg.utils import logger
+from paddleseg.utils.utils import CachedProperty as cached_property
 
 from . import manager
 
@@ -28,7 +30,7 @@ class Config(paddleseg.cvlibs.Config):
         to accomodate the panseg task.
     """
 
-    @property
+    @cached_property
     def optimizer_config(self):
         # Overwrite `optimizer_config()` instead of `optimizer()` for simplicity
         args = super().optimizer_config
@@ -37,11 +39,11 @@ class Config(paddleseg.cvlibs.Config):
             args['grad_clip'] = self.grad_clip
         return args
 
-    @property
+    @cached_property
     def grad_clip(self):
         if 'grad_clip' not in self.dic:
             raise RuntimeError(
-                'No `grad_clip` specified in the configuration file.')
+                'No `grad_clip` is specified in the configuration file.')
         params = self.dic.get('grad_clip')
         grad_clip_type = params.pop('type')
         if grad_clip_type not in ('ClipGradByGlobalNorm', 'ClipGradByNorm',
@@ -52,81 +54,41 @@ class Config(paddleseg.cvlibs.Config):
         grad_clip = getattr(paddle.nn, grad_clip_type)(**params)
         return grad_clip
 
-    @property
+    @cached_property
     def postprocessor(self):
-        def _set_attr_if_not_exists(pp_cfg, attr_name, default=None):
-            if attr_name not in pp_cfg:
-                attr_val = getattr(self.val_dataset, attr_name, default)
-                logger.info(
-                    f"Will use `{attr_name}={attr_val}` for postprocessing.")
-                pp_cfg[attr_name] = attr_val
-
         pp_cfg = self.dic.get('postprocessor').copy()
-        if not hasattr(self, '_postprocessor'):
-            _set_attr_if_not_exists(pp_cfg, 'num_classes', 1)
-            _set_attr_if_not_exists(pp_cfg, 'thing_ids', [])
-            _set_attr_if_not_exists(pp_cfg, 'label_divisor', 1000)
-            _set_attr_if_not_exists(pp_cfg, 'ignore_index', 255)
-            # XXX: Since PaddleSeg does not provide API to plug-in new types of 
-            # components, we have to manually create the postprocessor object here.
-            self._postprocessor = create_object(pp_cfg,
-                                                [manager.POSTPROCESSORS])
+        self._postprocessor = self.builder.create_object(pp_cfg)
         return self._postprocessor
 
-    def __str__(self):
-        # Disable anchors and aliases
-        class _NoAliasDumper(yaml.SafeDumper):
-            def ignore_aliases(self, data):
-                return True
+    @classmethod
+    def _build_default_checker(cls):
+        checker = super()._build_default_checker()
+        checker.add_rule(DefaultSyncPostprocessorRule())
+        return checker
 
-        return yaml.dump(self.dic, Dumper=_NoAliasDumper)
-
-
-def load_component_class(com_name, com_list=None):
-    """
-    This function is modified based on
-    https://github.com/PaddlePaddle/PaddleSeg/blob/7e076fa14864b5c01e1381a850e3d3863ee85581/paddleseg/cvlibs/config.py
-
-    Compared to the original version, this function supports using customized `com_list`.
-    """
-    if com_list is None:
+    @classmethod
+    def _build_default_component_builder(cls):
         com_list = [
             manager.MODELS, manager.BACKBONES, manager.DATASETS,
             manager.TRANSFORMS, manager.LOSSES, manager.POSTPROCESSORS
         ]
-
-    for com in com_list:
-        if com_name in com.components_dict:
-            return com[com_name]
-
-    raise RuntimeError("The specified component ({}) was not found.".format(
-        com_name))
+        component_builder = builder.DefaultComponentBuilder(com_list=com_list)
+        return component_builder
 
 
-def create_object(cfg, com_list=None):
-    """
-    This function is modified based on
-    https://github.com/PaddlePaddle/PaddleSeg/blob/7e076fa14864b5c01e1381a850e3d3863ee85581/paddleseg/cvlibs/config.py
+class DefaultSyncPostprocessorRule(checker.Rule):
+    def check_and_correct(self, cfg):
+        def _set_attr_if_not_exists(pp_cfg, attr_name, default=None):
+            if attr_name not in pp_cfg:
+                attr_val = getattr(cfg.val_dataset, attr_name, default)
+                logger.info(
+                    f"Will use `{attr_name}={attr_val}` for postprocessing.")
+                pp_cfg[attr_name] = attr_val
 
-    Compared to the original version, this function supports using customized `com_list`.
-    """
-    cfg = cfg.copy()
-    if 'type' not in cfg:
-        raise RuntimeError("No object information in {}.".format(cfg))
-
-    is_meta_type = lambda item: isinstance(item, dict) and 'type' in item
-    component = load_component_class(cfg.pop('type'), com_list)
-
-    params = {}
-    for key, val in cfg.items():
-        if is_meta_type(val):
-            params[key] = create_object(val, com_list)
-        elif isinstance(val, list):
-            params[key] = [
-                create_object(item, com_list) if is_meta_type(item) else item
-                for item in val
-            ]
-        else:
-            params[key] = val
-
-    return component(**params)
+        if 'postprocessor' not in cfg.dic:
+            raise RuntimeError("No `postprocessor` is specified in the configuration file.")
+        pp_cfg = cfg.dic['postprocessor']
+        _set_attr_if_not_exists(pp_cfg, 'num_classes', 1)
+        _set_attr_if_not_exists(pp_cfg, 'thing_ids', [])
+        _set_attr_if_not_exists(pp_cfg, 'label_divisor', 1000)
+        _set_attr_if_not_exists(pp_cfg, 'ignore_index', 255)

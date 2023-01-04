@@ -22,11 +22,3 @@ MODELS = ComponentManager("models")
 DATASETS = ComponentManager("datasets")
 LOSSES = ComponentManager("losses")
 POSTPROCESSORS = ComponentManager("postprocessors")
-
-# HACK: Patch `paddleseg.cvlibs.manager`
-# Since https://github.com/PaddlePaddle/PaddleSeg/pull/2806 PaddleSeg no longer 
-# provides API to modify components used by `Config` in an elegant way.
-manager.MODELS = MODELS
-manager.DATASETS = DATASETS
-manager.LOSSES = LOSSES
-manager.POSTPROCESSORS = POSTPROCESSORS

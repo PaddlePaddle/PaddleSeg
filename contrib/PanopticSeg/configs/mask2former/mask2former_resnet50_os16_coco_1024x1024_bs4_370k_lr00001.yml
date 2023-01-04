@@ -81,10 +81,9 @@ val_dataset:
 model:
   type: Mask2Former
   backbone:
-    type: ResNet50
-    stem_out_channels: 64
-    stride_in_1x1: False
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/mask2former/backbone/resnet50_d2.zip
+    type: ResNet50_vd
+    output_stride: 16
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
   num_classes: *num_classes
   backbone_indices: [1, 2, 3]
   backbone_feat_os: [4, 8, 16, 32]
