@@ -13,7 +13,7 @@ model:
   backbone_indices: [2, 3]
 
 optimizer:
-  type: sgd
+  type: SGD
 
 lr_scheduler:
   type: PolynomialDecay
