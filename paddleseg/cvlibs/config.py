@@ -126,7 +126,7 @@ class Config(object):
     @cached_property
     def lr_scheduler(self) -> paddle.optimizer.lr.LRScheduler:
         assert 'lr_scheduler' in self.dic, 'No `lr_scheduler` specified in the configuration file.'
-        params = self.dic.get('lr_scheduler')
+        params = self.dic.get('lr_scheduler').copy()
 
         use_warmup = False
         if 'warmup_iters' in params:
