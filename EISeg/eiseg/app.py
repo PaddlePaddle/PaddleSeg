@@ -2079,15 +2079,15 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if not osp.exists(
                         osp.join(os.path.dirname(savePath), "labelme")):
                     os.makedirs(osp.join(os.path.dirname(savePath), "labelme"))
-                ri = savePath.rindex('/')
+                ri = savePath.replace("\\", "/").rindex('/')
                 fileName = savePath[ri + 1:]
                 savePath = osp.join(
                     osp.join(os.path.dirname(savePath), "labelme"), fileName)
 
                 if self.origExt:
-                    jsonPath = savePath + "_labelme" + ".json"
+                    jsonPath = savePath + "_labelme.json"
                 else:
-                    jsonPath = osp.splitext(savePath)[0] + "_labelme" + ".json"
+                    jsonPath = osp.splitext(savePath)[0] + "_labelme.json"
                 open(jsonPath, "w", encoding="utf-8").write(json.dumps(labels))
 
                 label_path = osp.join(os.path.dirname(savePath), "labels.txt")
@@ -3272,7 +3272,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.labCorres.userLabDict = json.loads(f.read())
             # print("self.labCorres.userLabDict: ", self.labCorres.userLabDict)
 
-        # 将检测结果对应的标签保存为yolo、voc、coco三种格式
+    # 将检测结果对应的标签保存为yolo、voc、coco三种格式
     def save_yolo_format(self, saveAs=False, savePath=None):
         self.save_status["yolo"] = saveAs
 
@@ -3300,7 +3300,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
             if not osp.exists(osp.join(os.path.dirname(savePath), "YOLO")):
                 os.makedirs(osp.join(os.path.dirname(savePath), "YOLO"))
-            ri = savePath.rindex('/')
+            ri = savePath.replace("\\", "/").rindex('/')
             fileName = savePath[ri + 1:]
             savePath = osp.join(
                 osp.join(os.path.dirname(savePath), "YOLO"), fileName)
@@ -3347,7 +3347,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
             if not osp.exists(osp.join(os.path.dirname(savePath), "VOC")):
                 os.makedirs(osp.join(os.path.dirname(savePath), "VOC"))
-            ri = savePath.rindex('/')
+            ri = savePath.replace("\\", "/").rindex('/')
             fileName = savePath[ri + 1:]
             savePath = osp.join(
                 osp.join(os.path.dirname(savePath), "VOC"), fileName)

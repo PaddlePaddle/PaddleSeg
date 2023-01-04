@@ -14,22 +14,15 @@
 
 import argparse
 import random
-import os
-import sys
 
 import paddle
 import numpy as np
-
-__dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
+from paddleslim.dygraph.dist import Distill
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, utils
-
 from distill_utils import distill_train
 from distill_config import prepare_distill_adaptor, prepare_distill_config
-
-from paddleslim.dygraph.dist import Distill
 
 
 def parse_args():
