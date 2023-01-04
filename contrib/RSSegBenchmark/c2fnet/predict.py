@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@ import argparse
 import os
 
 import paddle
+import models
 
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger, get_image_list
-from paddleseg.core import predict
 from paddleseg.transforms import Compose
+from cvlibs import Config
+from core import predict
 
 
 def parse_args():
@@ -29,6 +31,12 @@ def parse_args():
     # params of prediction
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
+    parser.add_argument(
+        '--coase_model',
+        dest='coase_model',
+        help='Coase model path',
+        type=str,
+        default=None)
     parser.add_argument(
         '--model_path',
         dest='model_path',
@@ -159,6 +167,7 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    cfg.check_sync_info()
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -174,15 +183,14 @@ def main(args):
 
     predict(
         model,
+        cfg.coase_model,
+        args.coase_model,
         model_path=args.model_path,
         transforms=transforms,
         image_list=image_list,
         image_dir=image_dir,
         save_dir=args.save_dir,
         **test_config)
-
-    logger.warning("This `predict.py` will be removed in version 2.8, "
-                   "please use `tools/predict.py`.")
 
 
 if __name__ == '__main__':

@@ -14,21 +14,15 @@
 
 import argparse
 import random
-import os
-import sys
 
 import paddle
 import numpy as np
-
-__dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
+from paddleslim import QAT
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, utils
 from paddleseg.core import train
 from qat_config import quant_config
-
-from paddleslim import QAT
 """
 Apply quantization to segmentation model.
 NOTE: Only conv2d and linear in backbone are quantized.

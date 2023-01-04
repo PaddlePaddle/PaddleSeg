@@ -1,0 +1,11 @@
+_base_: '../_base_/potsdam.yml'
+
+model:
+  type: FCN
+  backbone:
+    type: HRNet_W18
+    align_corners: False
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+  num_classes: 6
+  pretrained: Null
+  backbone_indices: [-1]

@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ import random
 import paddle
 import numpy as np
 import cv2
+import models
 
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
-from paddleseg.core import train
+from cvlibs import Config
+from core import train
 
 
 def parse_args():
@@ -29,6 +31,12 @@ def parse_args():
     # params of training
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
+    parser.add_argument(
+        '--coase_model',
+        dest='coase_model',
+        help='Coase model path',
+        type=str,
+        default=None)
     parser.add_argument(
         '--iters',
         dest='iters',
@@ -193,6 +201,7 @@ def main(args):
         iters=args.iters,
         batch_size=args.batch_size,
         opts=args.opts)
+    cfg.check_sync_info()
 
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
@@ -233,6 +242,8 @@ def main(args):
 
     train(
         model,
+        cfg.coase_model,
+        args.coase_model,
         train_dataset,
         val_dataset=val_dataset,
         optimizer=cfg.optimizer,
@@ -251,9 +262,6 @@ def main(args):
         amp_level=args.amp_level,
         profiler_options=args.profiler_options,
         to_static_training=cfg.to_static_training)
-
-    logger.warning("This `train.py` will be removed in version 2.8, "
-                   "please use `tools/train.py`.")
 
 
 if __name__ == '__main__':

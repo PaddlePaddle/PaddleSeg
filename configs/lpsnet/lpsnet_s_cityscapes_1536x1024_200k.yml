@@ -1,0 +1,10 @@
+_base_: './lpsnet_m_cityscapes_1536x1024_200k.yml'
+
+model:
+  type: LPSNet
+  in_channels: 3
+  depths: [1, 3, 3, 10, 10]
+  channels: [8, 24, 48, 96, 96]
+  scale_ratios: [0.75, 0.25]
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/cityscapes/lpsnet_s_cityscapes_1536x1024_200k/lpsnet_s_pretrained_imagenet.zip
+  num_classes: 19

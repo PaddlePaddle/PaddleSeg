@@ -16,6 +16,7 @@ import argparse
 import os
 
 import paddle
+import backbones
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.core import evaluate
@@ -188,9 +189,6 @@ def main(args):
     test_config = get_test_config(cfg, args)
 
     evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
-
-    logger.warning("This `val.py`  will be removed in version 2.8, "
-                   "please use `tools/val.py`.")
 
 
 if __name__ == '__main__':

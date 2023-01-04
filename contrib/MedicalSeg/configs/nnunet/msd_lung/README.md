@@ -1,5 +1,5 @@
 # [Medical Segmentation Decathlon](http://medicaldecathlon.com/)
-针对96个3D肺部肿瘤数据进行训练 (包含 64 例训练 + 32 例测试)
+针对96个3D肺部肿瘤数据进行训练 (包含 64 例训练 + 32 例测试)  
 
 ## 性能
 
@@ -9,9 +9,9 @@
 | 主干网络 | 分辨率 | 学习率 | 训练轮数 | Dice |  链接 |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 |2D|512x512|0.01|30000|53.549%|[model_fold0](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold0/model.pdparams) \| [model_fold1](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold1/model.pdparams) \| [model_fold2](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold2/model.pdparams) \| [model_fold3](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold3/model.pdparams) \| [model_fold4](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold4/model.pdparams) \|  [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
-|3D lowres|80x192x160|0.01|30000|68.281%|[model_fold0](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold0/model.pdparams) \| [model_fold1](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold1/model.pdparams) \| [model_fold2](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold2/model.pdparams) \| [model_fold3](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold3/model.pdparams) \| [model_fold4](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold4/model.pdparams)   \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
 |3D fullres|80x192x160|0.01|30000|66.281% |[model](https://aistudio.baidu.com/aistudio/datasetdetail/162872)  \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
-|3D cascade|80x192x160|0.01|40000|67.996%|[model](https://aistudio.baidu.com/aistudio/datasetdetail/163284) \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
+|3D lowres|80x192x160|0.01|30000|66.646%|[model](https://bj.bcebos.com/paddleseg/paddleseg/paddleseg3d/msd_lung/3dcascadelowres/cascade_lowres_weight.zip)  \| [vdl0](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=d4f380d8f24bdbd8d1c7de55513f9d2f) \| [vdl1](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=f2c0d5eec1101ade31fc76670391e819) \| [vdl2](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=3a7bffbd7e5214666285939183c756cf) \| [vdl3](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=e6d574fd8df5bcde6254d00f63b78774) \| [vdl4](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=bf40b4e92a51de52922926ea91ca4780) |
+|3D cascade|80x192x160|0.01|40000|66.967%|[model](https://bj.bcebos.com/paddleseg/paddleseg/paddleseg3d/msd_lung/3dcascadefullres/cascade_fullres_weight.zip) \| [vdl0](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=b83dd3fdf637a674a510a92951b9e567) \| [vdl1](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=133c40a0f57127b80a92886b926c7227) \| [vdl2](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=14fd20eb6cf099efc1c2234086793756) \| [vdl3](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=1641533c178d943c38db616a6c2fe781) \| [vdl4](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=29a1109ac408588d3eacb4d20b24b16a) |
 
 # 使用示例  
 AiStudio使用示例：[MedicalSeg-nnUNet使用教程](https://aistudio.baidu.com/aistudio/projectdetail/4884907?contributionType=1)
@@ -141,11 +141,11 @@ python train.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lun
 
 第二步： 验证lowres（加上--predict_next_stage得到下一阶段的输入）
 ```commandline
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold0.yml --model_path output/cascade_lowres/fold0/iter_30000/model.pdparams --val_save_folder output/cascade_lowres_val --precision fp16 --predict_next_stage
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold1.yml --model_path output/cascade_lowres/fold1/iter_30000/model.pdparams --val_save_folder output/cascade_lowres_val --precision fp16 --predict_next_stage
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold2.yml --model_path output/cascade_lowres/fold2/iter_30000/model.pdparams --val_save_folder output/cascade_lowres_val --precision fp16 --predict_next_stage
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold3.yml --model_path output/cascade_lowres/fold3/iter_30000/model.pdparams --val_save_folder output/cascade_lowres_val --precision fp16 --predict_next_stage
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold4.yml --model_path output/cascade_lowres/fold4/iter_30000/model.pdparams --val_save_folder output/cascade_lowres_val --precision fp16 --predict_next_stage
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold0.yml --model_path output/cascade_lowres/fold0/iter_50000/model.pdparams --val_save_folder output/cascade_lowres_val --precision fp16 --predict_next_stage
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold1.yml --model_path output/cascade_lowres/fold1/iter_50000/model.pdparams --val_save_folder output/cascade_lowres_val --precision fp16 --predict_next_stage
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold2.yml --model_path output/cascade_lowres/fold2/iter_50000/model.pdparams --val_save_folder output/cascade_lowres_val --precision fp16 --predict_next_stage
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold3.yml --model_path output/cascade_lowres/fold3/iter_50000/model.pdparams --val_save_folder output/cascade_lowres_val --precision fp16 --predict_next_stage
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold4.yml --model_path output/cascade_lowres/fold4/iter_50000/model.pdparams --val_save_folder output/cascade_lowres_val --precision fp16 --predict_next_stage
 ```
 
 第三步： 训练fullres
@@ -159,11 +159,11 @@ python train.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lu
 
 第四步： 验证fullres
 ```commandline
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold0.yml --model_path output/cascade_fullres/fold0/iter_40000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold1.yml --model_path output/cascade_fullres/fold1/iter_40000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold2.yml --model_path output/cascade_fullres/fold2/iter_40000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold3.yml --model_path output/cascade_fullres/fold3/iter_40000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
-python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold4.yml --model_path output/cascade_fullres/fold4/iter_40000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold0.yml --model_path output/cascade_fullres/fold0/iter_100000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold1.yml --model_path output/cascade_fullres/fold1/iter_100000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold2.yml --model_path output/cascade_fullres/fold2/iter_100000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold3.yml --model_path output/cascade_fullres/fold3/iter_100000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
+python nnunet/single_fold_eval.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold4.yml --model_path output/cascade_fullres/fold4/iter_100000/model.pdparams --val_save_folder output/cascade_fullres_val --precision fp16
 ```
 
 # Ensemble
@@ -203,8 +203,8 @@ python nnunet/predict.py --image_folder msd_lung/Task006_Lung/imagesTs  --output
 
 Cascade UNet预测命令(cascade fullres需要cascade lowres的预测结果作为输入):
 ```commandline
-python nnunet/predict.py --image_folder msd_lung/Task006_Lung/imagesTs  --output_folder output/nnunet_predict/lowres_pred --plan_path msd_lung/preprocessed/Task006_Lung/nnUNetPlansv2.1_plans_3D.pkl --model_paths output/cascade_lowres/fold0/iter_30000/model.pdparams output/cascade_lowres/fold1/iter_30000/model.pdparams output/cascade_lowres/fold2/iter_30000/model.pdparams output/cascade_lowres/fold3/iter_30000/model.pdparams output/cascade_lowres/fold4/iter_30000/model.pdparams --postprocessing_json_path output/cascade_lowres_val/postprocessing.json --model_type cascade_lowres
-python nnunet/predict.py --image_folder msd_lung/Task006_Lung/imagesTs  --output_folder output/nnunet_predict/fullres_pred --plan_path msd_lung/preprocessed/Task006_Lung/nnUNetPlansv2.1_plans_3D.pkl --model_paths output/cascade_fullres/fold0/iter_30000/model.pdparams output/cascade_fullres/fold1/iter_30000/model.pdparams output/cascade_fullres/fold2/iter_30000/model.pdparams output/cascade_fullres/fold3/iter_30000/model.pdparams output/cascade_fullres/fold4/iter_30000/model.pdparams --postprocessing_json_path output/cascade_lowres_val/postprocessing.json --model_type cascade_fullres --save_npz --lowres_segmentations output/nnunet_predict/lowres_pred
+python nnunet/predict.py --image_folder msd_lung/Task006_Lung/imagesTs  --output_folder output/nnunet_predict/lowres_pred --plan_path msd_lung/preprocessed/Task006_Lung/nnUNetPlansv2.1_plans_3D.pkl --model_paths output/cascade_lowres/fold0/iter_50000/model.pdparams output/cascade_lowres/fold1/iter_50000/model.pdparams output/cascade_lowres/fold2/iter_50000/model.pdparams output/cascade_lowres/fold3/iter_50000/model.pdparams output/cascade_lowres/fold4/iter_50000/model.pdparams --postprocessing_json_path output/cascade_lowres_val/postprocessing.json --model_type cascade_lowres
+python nnunet/predict.py --image_folder msd_lung/Task006_Lung/imagesTs  --output_folder output/nnunet_predict/fullres_pred --plan_path msd_lung/preprocessed/Task006_Lung/nnUNetPlansv2.1_plans_3D.pkl --model_paths output/cascade_fullres/fold0/iter_100000/model.pdparams output/cascade_fullres/fold1/iter_100000/model.pdparams output/cascade_fullres/fold2/iter_100000/model.pdparams output/cascade_fullres/fold3/iter_100000/model.pdparams output/cascade_fullres/fold4/iter_100000/model.pdparams --postprocessing_json_path output/cascade_lowres_val/postprocessing.json --model_type cascade_fullres --save_npz --lowres_segmentations output/nnunet_predict/lowres_pred
 ```
 
 现在得到了2D-UNet，3D-UNet，Cascade-UNet的预测结果，预测结果的ensemble命令如下：  
@@ -245,20 +245,20 @@ python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3d_fullres_msd_l
 
 Cascade lowres导出：
 ```commandline
-python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold0.yml --save_dir output/static/cascade_lowres/fold0 --model_path output/cascade_lowres/fold0/iter_30000/model.pdparams
-python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold1.yml --save_dir output/static/cascade_lowres/fold1 --model_path output/cascade_lowres/fold1/iter_30000/model.pdparams
-python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold2.yml --save_dir output/static/cascade_lowres/fold2 --model_path output/cascade_lowres/fold2/iter_30000/model.pdparams
-python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold3.yml --save_dir output/static/cascade_lowres/fold3 --model_path output/cascade_lowres/fold3/iter_30000/model.pdparams
-python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold4.yml --save_dir output/static/cascade_lowres/fold4 --model_path output/cascade_lowres/fold4/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold0.yml --save_dir output/static/cascade_lowres/fold0 --model_path output/cascade_lowres/fold0/iter_50000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold1.yml --save_dir output/static/cascade_lowres/fold1 --model_path output/cascade_lowres/fold1/iter_50000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold2.yml --save_dir output/static/cascade_lowres/fold2 --model_path output/cascade_lowres/fold2/iter_50000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold3.yml --save_dir output/static/cascade_lowres/fold3 --model_path output/cascade_lowres/fold3/iter_50000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_lowres_msd_lung_fold4.yml --save_dir output/static/cascade_lowres/fold4 --model_path output/cascade_lowres/fold4/iter_50000/model.pdparams
 ```
 
 Cascade fullres导出：
 ```commandline
-python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold0.yml --save_dir output/static/cascade_fullres/fold0 --model_path output/cascade_fullres/fold0/iter_30000/model.pdparams
-python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold1.yml --save_dir output/static/cascade_fullres/fold1 --model_path output/cascade_fullres/fold1/iter_30000/model.pdparams
-python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold2.yml --save_dir output/static/cascade_fullres/fold2 --model_path output/cascade_fullres/fold2/iter_30000/model.pdparams
-python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold3.yml --save_dir output/static/cascade_fullres/fold3 --model_path output/cascade_fullres/fold3/iter_30000/model.pdparams
-python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold4.yml --save_dir output/static/cascade_fullres/fold4 --model_path output/cascade_fullres/fold4/iter_30000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold0.yml --save_dir output/static/cascade_fullres/fold0 --model_path output/cascade_fullres/fold0/iter_100000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold1.yml --save_dir output/static/cascade_fullres/fold1 --model_path output/cascade_fullres/fold1/iter_100000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold2.yml --save_dir output/static/cascade_fullres/fold2 --model_path output/cascade_fullres/fold2/iter_100000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold3.yml --save_dir output/static/cascade_fullres/fold3 --model_path output/cascade_fullres/fold3/iter_100000/model.pdparams
+python nnunet/export.py --config configs/nnunet/msd_lung/nnunet_3dcascade_fullres_msd_lung_fold4.yml --save_dir output/static/cascade_fullres/fold4 --model_path output/cascade_fullres/fold4/iter_100000/model.pdparams
 ```
 
 # 静态图推理

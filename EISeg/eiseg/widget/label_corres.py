@@ -20,6 +20,7 @@ from qtpy.QtWidgets import (
     QSpacerItem, QHeaderView, QPushButton, QVBoxLayout, \
     QHBoxLayout, QCheckBox, QSizePolicy, QComboBox, QMessageBox
 )
+from qtpy.QtGui import QBrush, QColor
 import json
 from eiseg import pjpath
 
@@ -174,6 +175,13 @@ class LabelCorresWidget(QWidget):
         msg.setStandardButtons(QMessageBox.Yes)
         msg.exec_()
 
+        # 更新表格背景颜色
+        for row in range(self.labelCorrespondenceTable.rowCount()):
+            for col in range(self.labelCorrespondenceTable.colorCount() - 1):
+                if self.labelCorrespondenceTable.item(row, col) is not None:
+                    self.labelCorrespondenceTable.item(
+                        row, col).setBackground(QBrush(QColor(255, 255, 255)))
+
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -206,17 +214,34 @@ class LabelCorresWidget(QWidget):
             f.write(dict_json)
 
     def _cocoFuzzyMatching(self):
+        # 先更新背景颜色
+        for row in range(self.labelCorrespondenceTable.rowCount()):
+            for col in range(self.labelCorrespondenceTable.colorCount() - 1):
+                if self.labelCorrespondenceTable.item(row, col) is not None:
+                    self.labelCorrespondenceTable.item(
+                        row, col).setBackground(QBrush(QColor(255, 255, 255)))
+
         ctext = self.cbbCOCOFind.currentText()
         self.cbbCOCOFind.clear()
         for i in range(self.classLen):
             clab = self.labelCorrespondenceTable.item(i, 0).text()
-            if str.find(clab.lower(), ctext.lower()) == 0:
+            if clab.lower().find(ctext.lower()) != -1:
                 self.cbbCOCOFind.addItem(clab)
+                for cl in range(self.labelCorrespondenceTable.columnCount() -
+                                1):
+                    self.labelCorrespondenceTable.item(
+                        i, cl).setBackground(QBrush(QColor(48, 140, 198)))
+                self.labelCorrespondenceTable.verticalScrollBar(
+                ).setSliderPosition(i)
 
     def _findCOCOByText(self):
         ctext = self.cbbCOCOFind.currentText()
         for i in range(self.classLen):
             clab = self.labelCorrespondenceTable.item(i, 0).text()
             if ctext == clab:
+                for cl in range(self.labelCorrespondenceTable.columnCount() -
+                                1):
+                    self.labelCorrespondenceTable.item(
+                        i, cl).setBackground(QBrush(QColor(48, 140, 198)))
                 self.labelCorrespondenceTable.verticalScrollBar(
                 ).setSliderPosition(i)
