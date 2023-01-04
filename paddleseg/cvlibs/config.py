@@ -116,12 +116,10 @@ class Config(object):
 
     @cached_property
     def iters(self) -> int:
-        iters = self.dic.get('iters')
-        return iters
+        return self.dic.get('iters')
 
     @cached_property
     def to_static_training(self) -> bool:
-        # Whether to use @to_static for training
         return self.dic.get('to_static_training', False)
 
     #################### lr_scheduler and optimizer
@@ -159,40 +157,17 @@ class Config(object):
 
     @cached_property
     def optimizer(self) -> paddle.optimizer.Optimizer:
-        lr = self.lr_scheduler
-        args = self.dic.get('optimizer').copy()
-        optimizer_type = args.pop('type')
-
-        # TODO refactor optimizer to support customized setting
-        params = self.model.parameters()
-        if 'backbone_lr_mult' in args:
-            if not hasattr(self.model, 'backbone'):
-                logger.warning('The backbone_lr_mult is not effective because'
-                               ' the model does not have backbone')
-            else:
-                backbone_lr_mult = args.pop('backbone_lr_mult')
-                backbone_params = self.model.backbone.parameters()
-                backbone_params_id = [id(x) for x in backbone_params]
-                other_params = [
-                    x for x in params if id(x) not in backbone_params_id
-                ]
-                params = [{
-                    'params': backbone_params,
-                    'learning_rate': backbone_lr_mult
-                }, {
-                    'params': other_params
-                }]
-
-        if optimizer_type == 'sgd':
-            return paddle.optimizer.Momentum(lr, parameters=params, **args)
-        elif optimizer_type == 'adam':
-            return paddle.optimizer.Adam(lr, parameters=params, **args)
-        elif optimizer_type in paddle.optimizer.__all__:
-            return getattr(paddle.optimizer, optimizer_type)(lr,
-                                                             parameters=params,
-                                                             **args)
-
-        raise RuntimeError('Unknown optimizer type {}.'.format(optimizer_type))
+        opt_cfg = self.dic.get('optimizer').copy()
+        # For compatibility
+        if opt_cfg['type'] == 'adam':
+            opt_cfg['type'] = 'Adam'
+        if opt_cfg['type'] == 'sgd':
+            opt_cfg['type'] = 'SGD'
+        if opt_cfg['type'] == 'SGD' and 'momentum' in opt_cfg:
+            opt_cfg['type'] = 'Momentum'
+        opt = self.builder.create_object(opt_cfg)
+        opt = opt(self.model, self.lr_scheduler)
+        return opt
 
     #################### loss
     @cached_property
@@ -280,7 +255,7 @@ class Config(object):
     def _build_default_component_builder(cls):
         com_list = [
             manager.MODELS, manager.BACKBONES, manager.DATASETS,
-            manager.TRANSFORMS, manager.LOSSES
+            manager.TRANSFORMS, manager.LOSSES, manager.OPTIMIZER
         ]
         component_builder = builder.DefaultComponentBuilder(com_list=com_list)
         return component_builder
