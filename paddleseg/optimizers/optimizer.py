@@ -84,7 +84,7 @@ class BaseOptimizer(object):
         # Create optimizer
         pass
 
-    def _model_params(self, model):
+    def _collect_params(self, model):
         # Collect different parameter groups
         if self.custom_cfg is None or len(self.custom_cfg) == 0:
             return model.parameters()
@@ -125,7 +125,7 @@ class BaseOptimizer(object):
         return res
 
 
-@manager.OPTIMIZER.add_component
+@manager.OPTIMIZERS.add_component
 class SGD(BaseOptimizer):
     """
     SGD optimizer. 
@@ -147,13 +147,13 @@ class SGD(BaseOptimizer):
         super().__init__(weight_decay, grad_clip_cfg, custom_cfg)
 
     def __call__(self, model, lr):
-        params = self._model_params(model)
+        params = self._collect_params(model)
         return paddle.optimizer.SGD(learning_rate=lr,
                                     parameters=params,
                                     **self.args)
 
 
-@manager.OPTIMIZER.add_component
+@manager.OPTIMIZERS.add_component
 class Momentum(BaseOptimizer):
     """
     Momentum optimizer. 
@@ -169,12 +169,12 @@ class Momentum(BaseOptimizer):
         self.args.update({'momentum': momentum, 'use_nesterov': use_nesterov})
 
     def __call__(self, model, lr):
-        params = self._model_params(model)
+        params = self._collect_params(model)
         return paddle.optimizer.Momentum(
             learning_rate=lr, parameters=params, **self.args)
 
 
-@manager.OPTIMIZER.add_component
+@manager.OPTIMIZERS.add_component
 class Adam(BaseOptimizer):
     """
     Adam optimizer. 
@@ -197,13 +197,13 @@ class Adam(BaseOptimizer):
         })
 
     def __call__(self, model, lr):
-        params = self._model_params(model)
+        params = self._collect_params(model)
         opt = paddle.optimizer.Adam(
             learning_rate=lr, parameters=params, **self.args)
         return opt
 
 
-@manager.OPTIMIZER.add_component
+@manager.OPTIMIZERS.add_component
 class AdamW(BaseOptimizer):
     """
     AdamW optimizer. 
@@ -226,7 +226,7 @@ class AdamW(BaseOptimizer):
         })
 
     def __call__(self, model, lr):
-        params = self._model_params(model)
+        params = self._collect_params(model)
         opt = paddle.optimizer.AdamW(
             learning_rate=lr, parameters=params, **self.args)
         return opt

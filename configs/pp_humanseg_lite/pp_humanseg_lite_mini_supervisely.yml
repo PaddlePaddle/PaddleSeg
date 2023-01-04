@@ -28,12 +28,6 @@ val_dataset:
     - type: Normalize
   mode: val
 
-export:
-  transforms:
-    - type: Resize
-      target_size: [398, 224]
-    - type: Normalize
-
 optimizer:
   type: SGD
   momentum: 0.9

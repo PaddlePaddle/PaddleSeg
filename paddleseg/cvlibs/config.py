@@ -255,7 +255,7 @@ class Config(object):
     def _build_default_component_builder(cls):
         com_list = [
             manager.MODELS, manager.BACKBONES, manager.DATASETS,
-            manager.TRANSFORMS, manager.LOSSES, manager.OPTIMIZER
+            manager.TRANSFORMS, manager.LOSSES, manager.OPTIMIZERS
         ]
         component_builder = builder.DefaultComponentBuilder(com_list=com_list)
         return component_builder
