@@ -30,6 +30,85 @@ class HybridDataset(MattingDataset):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def __getitem__(self, idx):
+        data = {}
+        data['img_name'] = fg_bg_file[0]  # using in save prediction results
+
+        fg_bg_file = self.fg_bg_list[idx]
+        fg_bg_file = fg_bg_file.split(self.separator)
+        fg_file = os.path.join(self.dataset_root, fg_bg_file[0])
+        alpha_file = fg_file.replace('/fg', '/alpha')
+        
+        fg = cv2.imread(fg_file)
+        alpha = cv2.imread(alpha_file, 0)
+        data['alpha'] = alpha
+        data['gt_fields'] = []
+
+        # line is: fg [bg] [trimap]
+        if len(fg_bg_file) >= 2:
+            bg_file = os.path.join(self.dataset_root, fg_bg_file[1])
+            bg = cv2.imread(bg_file)
+            data['img'], data['fg'], data['bg'] = self.composite(fg, alpha, bg)
+            if self.mode in ['train', 'trainval']:
+                data['gt_fields'].append('fg')
+                data['gt_fields'].append('bg')
+                data['gt_fields'].append('alpha')
+            if len(fg_bg_file) == 3 and self.get_trimap:
+                if self.mode == 'val':
+                    trimap_path = os.path.join(self.dataset_root, fg_bg_file[2])
+                    if os.path.exists(trimap_path):
+                        data['trimap'] = cv2.imread(trimap_path, 0)
+                        data['gt_fields'].append('trimap')
+                        data['ori_trimap'] = data['trimap'].copy()
+                    else:
+                        raise FileNotFoundError(
+                            'trimap is not Found: {}'.format(fg_bg_file[2]))
+        else:
+            data['img'] = fg
+            if self.mode in ['train', 'trainval']:
+                data['fg'] = fg.copy()
+                data['bg'] = fg.copy()
+                data['gt_fields'].append('fg')
+                data['gt_fields'].append('bg')
+                data['gt_fields'].append('alpha')
+
+        data['trans_info'] = []  # Record shape change information
+
+        # Generate trimap from alpha if no trimap file provided
+        if self.get_trimap:
+            if 'trimap' not in data:
+                data['trimap'] = self.gen_trimap(
+                    data['alpha'], mode=self.mode).astype('float32')
+                data['gt_fields'].append('trimap')
+                if self.mode == 'val':
+                    data['ori_trimap'] = data['trimap'].copy()
+
+        # Delete key which is not need
+        if self.key_del is not None:
+            for key in self.key_del:
+                if key in data.keys():
+                    data.pop(key)
+                if key in data['gt_fields']:
+                    data['gt_fields'].remove(key)
+        data = self.transforms(data)
+
+        # When evaluation, gt should not be transforms.
+        if self.mode == 'val':
+            data['gt_fields'].append('alpha')
+
+        data['img'] = data['img'].astype('float32')
+        for key in data.get('gt_fields', []):
+            data[key] = data[key].astype('float32')
+
+        if 'trimap' in data:
+            data['trimap'] = data['trimap'][np.newaxis, :, :]
+        if 'ori_trimap' in data:
+            data['ori_trimap'] = data['ori_trimap'][np.newaxis, :, :]
+
+        data['alpha'] = data['alpha'][np.newaxis, :, :] / 255.
+
+        return data
+
     def composite(self, fg, alpha, ori_bg):
         if self.if_rssn:
             if np.random.rand() < 0.5:

@@ -21,7 +21,6 @@ import numpy as np
 from PIL import Image
 
 import paddle
-from paddleseg.transforms import functional
 from paddleseg.cvlibs import manager
 
 import ppmatting.transforms as T
@@ -170,28 +169,3 @@ class AIM500(paddle.io.Dataset):
 
     def __len__(self):
         return len(self.fg_list)
-
-    @staticmethod
-    def gen_trimap(alpha, mode='train', eval_kernel=7):
-        if mode == 'train':
-            k_size = random.choice(range(2, 5))
-            iterations = np.random.randint(5, 15)
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
-                                               (k_size, k_size))
-            dilated = cv2.dilate(alpha, kernel, iterations=iterations)
-            eroded = cv2.erode(alpha, kernel, iterations=iterations)
-            trimap = np.zeros(alpha.shape)
-            trimap.fill(128)
-            trimap[eroded > 254.5] = 255
-            trimap[dilated < 0.5] = 0
-        else:
-            k_size = eval_kernel
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
-                                               (k_size, k_size))
-            dilated = cv2.dilate(alpha, kernel)
-            trimap = np.zeros(alpha.shape)
-            trimap.fill(128)
-            trimap[alpha >= 250] = 255
-            trimap[dilated <= 5] = 0
-
-        return trimap

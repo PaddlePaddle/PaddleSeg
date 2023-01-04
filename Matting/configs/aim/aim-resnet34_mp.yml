@@ -1,4 +1,4 @@
-batch_size: 4
+batch_size: 16
 iters: 50000
 
 train_dataset:
@@ -36,9 +36,5 @@ model:
 
 optimizer:
   type: adam
-  weight_decay: 4.0e-5
-
-lr_scheduler:
-  type: PiecewiseDecay
-  boundaries: [30000, 40000]
-  values: [0.001, 0.0001, 0.00001]
+  weight_decay: 0.0
+  learning_rate: 0.000001
