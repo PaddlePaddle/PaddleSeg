@@ -34,12 +34,6 @@ val_dataset:
       std: [0.229, 0.224, 0.225]
   mode: val
 
-export:
-  transforms:
-    - type: Normalize
-      mean: [0.485, 0.456, 0.406]
-      std: [0.229, 0.224, 0.225]
-
 model:
     type: MscaleOCRNet
     num_classes: 19
@@ -50,7 +44,7 @@ model:
     pretrained: https://paddleseg.bj.bcebos.com/dygraph/cityscapes/mscale_ocrnet_hrnetv2_psa_cityscapes_1024x2048_150k/mscale_ocrnet_pretrained_mappilary.zip
 
 optimizer:
-  type: sgd
+  type: SGD
   momentum: 0.9
   weight_decay: 5.0e-4
 

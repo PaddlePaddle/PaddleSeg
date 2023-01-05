@@ -16,7 +16,7 @@ model:
   add_lateral: True
 
 optimizer:
-  type: sgd
+  type: SGD
   weight_decay: 0.0005
 
 loss:
