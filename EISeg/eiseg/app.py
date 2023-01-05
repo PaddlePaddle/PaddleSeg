@@ -2000,7 +2000,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     cv2.imencode(ext, mask_output)[1].tofile(savePath)
                     # self.labelPaths.append(savePath)
 
-                # 4.2 保存伪彩色
+            # 4.2 保存伪彩色
             if self.save_status["pseudo_color"]:
                 pseudoPath, ext = osp.splitext(savePath)
                 pseudoPath = pseudoPath + "_pseudo" + ext
@@ -2052,17 +2052,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     version="1.1",
                     flags={},
                     shapes=[],
-                    imagePath=None,
-                    imageData=None,
-                    imageHeight=None,
-                    imageWidth=None)
-                labels["imagePath"] = self.imagePath
-                imgData = self.load_image_file(self.imagePath)
-                labels["imageData"] = base64.b64encode(imgData).decode("utf-8")
-                img = cv2.imread(self.imagePath)
-                size = img.shape
-                labels["imageHeight"] = size[0]
-                labels["imageWidth"] = size[1]
+                    imagePath=self.imagePath,
+                    imageData=base64.b64encode(
+                        self.ndarray2bytes(self.image)).decode("utf-8"),
+                    imageHeight=self.image.shape[0],
+                    imageWidth=self.image.shape[1])
+
                 for polygon in polygons:
                     l = self.controller.labelList[polygon.labelIndex - 1]
                     label = {
@@ -2203,7 +2198,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.initCoco(defaultPath)
 
         # 2.2 如果保存json格式，获取所有json文件名
-        if self.save_status["json"]:
+        if not self.save_status["coco"] and self.save_status["json"]:
             labelPaths = os.listdir(outputDir)
             labelPaths = [n for n in labelPaths if n.endswith(".json")]
             labelPaths = [osp.join(outputDir, n) for n in labelPaths]
@@ -3418,22 +3413,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.tr("请先点击新建标签或是导入标签，然后打开图像文件，即可开始手动画框标注！"))
             return False
 
-    def load_image_file(self, filename):
-        try:
-            image_pil = PIL.Image.open(filename)
-        except IOError:
-            logging.error("Failed opening image file: {}".format(filename))
-            return
-
-        with io.BytesIO() as f:
-            ext = osp.splitext(filename)[1].lower()
-            if ext in [".jpg", ".jpeg"]:
-                format = "JPEG"
-            else:
-                format = "PNG"
-            image_pil.save(f, format=format)
-            f.seek(0)
-            return f.read()
+    def ndarray2bytes(self, img_arr):
+        """ndarray的图片转换成bytes"""
+        imgByteArr = io.BytesIO()
+        Image.fromarray(img_arr).save(imgByteArr, format='PNG')
+        img_data = imgByteArr.getvalue()
+        return img_data
 
     def save_labelName_txt(self, path):
         labelName = []
