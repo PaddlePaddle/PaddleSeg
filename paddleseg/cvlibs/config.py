@@ -124,6 +124,20 @@ class Config(object):
 
     #################### lr_scheduler and optimizer
     @cached_property
+    def optimizer(self) -> paddle.optimizer.Optimizer:
+        opt_cfg = self.dic.get('optimizer').copy()
+        # For compatibility
+        if opt_cfg['type'] == 'adam':
+            opt_cfg['type'] = 'Adam'
+        if opt_cfg['type'] == 'sgd':
+            opt_cfg['type'] = 'SGD'
+        if opt_cfg['type'] == 'SGD' and 'momentum' in opt_cfg:
+            opt_cfg['type'] = 'Momentum'
+        opt = self.builder.create_object(opt_cfg)
+        opt = opt(self.model, self.lr_scheduler)
+        return opt
+
+    @cached_property
     def lr_scheduler(self) -> paddle.optimizer.lr.LRScheduler:
         assert 'lr_scheduler' in self.dic, 'No `lr_scheduler` specified in the configuration file.'
         params = self.dic.get('lr_scheduler').copy()
@@ -155,20 +169,6 @@ class Config(object):
 
         return lr_sche
 
-    @cached_property
-    def optimizer(self) -> paddle.optimizer.Optimizer:
-        opt_cfg = self.dic.get('optimizer').copy()
-        # For compatibility
-        if opt_cfg['type'] == 'adam':
-            opt_cfg['type'] = 'Adam'
-        if opt_cfg['type'] == 'sgd':
-            opt_cfg['type'] = 'SGD'
-        if opt_cfg['type'] == 'SGD' and 'momentum' in opt_cfg:
-            opt_cfg['type'] = 'Momentum'
-        opt = self.builder.create_object(opt_cfg)
-        opt = opt(self.model, self.lr_scheduler)
-        return opt
-
     #################### loss
     @cached_property
     def loss(self) -> dict:
@@ -199,6 +199,8 @@ class Config(object):
 
     @cached_property
     def val_dataset(self) -> paddle.io.Dataset:
+        assert 'val_dataset' in self.dic, \
+            'No val_dataset specified in the configuration file.'
         dataset_cfg = self.dic.get('val_dataset').copy()
         return self.builder.create_object(dataset_cfg)
 
@@ -209,14 +211,17 @@ class Config(object):
 
     @cached_property
     def val_dataset_class(self) -> Any:
+        assert 'val_dataset' in self.dic, \
+            'No val_dataset specified in the configuration file.'
         dataset_type = self.dic['val_dataset']['type']
         return self.builder.load_component_class(dataset_type)
 
     @cached_property
     def val_transforms(self) -> list:
         transforms = []
-        for tf in self.dic.get('val_dataset').get('transforms', []):
-            transforms.append(self.builder.create_object(tf))
+        if 'val_dataset' in self.dic:
+            for tf in self.dic.get('val_dataset').get('transforms', []):
+                transforms.append(self.builder.create_object(tf))
         return transforms
 
     @cached_property

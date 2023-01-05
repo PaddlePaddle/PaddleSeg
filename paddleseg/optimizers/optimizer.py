@@ -68,17 +68,19 @@ class BaseOptimizer(object):
                     item, dict), "The item of `custom_cfg` must be a dict"
 
         self.weight_decay = weight_decay
-        self.custom_cfg = custom_cfg.copy()
-        grad_clip_cfg = grad_clip_cfg.copy()
-        grad_clip_name = grad_clip_cfg.pop('name')
-        try:
-            grad_clip = getattr(paddle.nn, grad_clip_name)(**grad_clip_cfg)
-        except Exception as e:
-            raise RuntimeError(
-                "Create grad_clip has failed. Please check grad_clip_cfg in config. "
-                f"The error message: \n{str(e)}")
+        self.custom_cfg = custom_cfg
+        self.args = {'weight_decay': weight_decay}
 
-        self.args = {'weight_decay': weight_decay, 'grad_clip': grad_clip}
+        if grad_clip_cfg is not None:
+            grad_clip_cfg = grad_clip_cfg.copy()
+            grad_clip_name = grad_clip_cfg.pop('name')
+            try:
+                grad_clip = getattr(paddle.nn, grad_clip_name)(**grad_clip_cfg)
+            except Exception as e:
+                raise RuntimeError(
+                    "Create grad_clip has failed. Please check grad_clip_cfg in config. "
+                    f"The error message: \n{str(e)}")
+            self.args.update({'grad_clip': grad_clip})
 
     def __call__(self, model, lr):
         # Create optimizer

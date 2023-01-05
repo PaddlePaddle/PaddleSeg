@@ -65,8 +65,8 @@ class Rule(object):
 class DefaultPrimaryRule(Rule):
     def check_and_correct(self, cfg):
         items = [
-            'batch_size', 'iters', 'train_dataset', 'val_dataset', 'optimizer',
-            'lr_scheduler', 'loss', 'model'
+            'batch_size', 'iters', 'train_dataset', 'optimizer', 'lr_scheduler',
+            'loss', 'model'
         ]
         for i in items:
             assert i in cfg.dic, \
