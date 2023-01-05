@@ -2195,10 +2195,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             else:
                 defaultPath = osp.join(
                     osp.join(self.outputDir, "COCO"), "annotations.json")
-            print("2651dassssssss***--------------:", defaultPath)
             if osp.exists(defaultPath):
-                self.initCoco(defaultPath)
-
+                f = open(defaultPath, "a")
+                f.close()
+            self.initCoco(defaultPath)
+            
         # 2.2 如果保存json格式，获取所有json文件名
         if not self.save_status["coco"]:
             labelPaths = os.listdir(outputDir)
@@ -2437,8 +2438,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 coco_path = None
         self.coco = COCO(coco_path)
         if self.clearLabelList():
-            self.controller.labelList = util.LabelList(self.coco.dataset[
-                "categories"])
+            self.controller.labelList = util.LabelList(
+                self.coco.dataset["categories"])
             self.refreshLabelList()
 
     def toggleWidget(self, index=None, warn=True):
@@ -3186,6 +3187,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.canvas.setDetMode(False)
             self.btnParamsSelect.setEnabled(True)
             self.cheWithMask.setEnabled(True)
+            self.scene.is_draw = False
             # 加载近期模型
             self.loadRecentModelParam()
         else:
@@ -3231,7 +3233,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.scene.is_draw = True
             self.getLabelCorrespondence()
 
-        if self.listFiles.currentItem() is not None:
+        if self.listFiles.item(0) is not None:
             img_path = self.listFiles.currentItem().text().replace("\\", "/")
             self.openFolder("/".join(img_path.split("/")[:-1]))
 
