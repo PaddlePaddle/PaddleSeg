@@ -3193,8 +3193,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.isUsePreAnnotation = self.use_preannotation_or_not()  # 流程提醒
             typeButton.setDefaultAction(self.menus.toolBar[18][1])  # det
             change_docks(("model", "data", "label", "det"))
-            toolbar_list = list(range(6))
-            toolbar_list = toolbar_list.extend([11, 12, 13])
+            toolbar_list = [4, 5, 11, 12, 13]
             change_toolbar(toolbar_list)
             change_menubar((
                 (0, 7),
@@ -3232,8 +3231,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.scene.is_draw = True
             self.getLabelCorrespondence()
 
-        img_path = self.listFiles.currentItem().text().replace("\\", "/")
-        self.openFolder("/".join(img_path.split("/")[:-1]))
+        if self.listFiles.currentItem() is not None:
+            img_path = self.listFiles.currentItem().text().replace("\\", "/")
+            self.openFolder("/".join(img_path.split("/")[:-1]))
 
     def useQtWidget(self, s):
         self.settings.setValue("use_qt_widget", s)
