@@ -1590,7 +1590,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.vtkWidget.init()
             # TODO: 处理
 
-            # 如果没找到图片的reader
+        # 如果没找到图片的reader
         if image is None:
             self.warn(
                 self.tr("打开图像失败"),
@@ -1627,8 +1627,39 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.video_masks[cursur] = frame_mask
             return True
 
-        # 1. 读取json格式标签
-        if self.save_status["json"]:
+        # 1. 读取coco格式标签
+        if self.save_status["coco"]:
+            imgId = self.coco.imgNameToId.get(osp.basename(imgPath), None)
+            if imgId is None:
+                return False
+            anns = self.coco.imgToAnns[imgId]
+            for ann in anns:
+                xys = ann["segmentation"][0]
+                points = []
+                for idx in range(0, len(xys), 2):
+                    points.append([xys[idx], xys[idx + 1]])
+                labelIdx = ann["category_id"]
+                idlab = self.controller.labelList.getLabelById(labelIdx)
+                if idlab is not None:
+                    color = idlab.color
+                    poly = PolygonAnnotation(
+                        ann["category_id"],
+                        self.controller.image.shape,
+                        self.delPolygon,
+                        self.setDirty,
+                        color,
+                        color,
+                        self.opacity,
+                        ann["id"],
+                        is_rect=(not self.type_seg), )  # 可以创建rect
+                    self.scene.addItem(poly)
+                    self.scene.polygon_items.append(poly)
+                    for p in points:
+                        poly.addPointLast(QtCore.QPointF(p[0], p[1]))
+            return True
+
+        # 2. 读取json格式标签（分割模式）
+        if self.save_status["json"] and self.type_seg:
 
             def getName(path):
                 return osp.splitext(osp.basename(path))[0]
@@ -1669,37 +1700,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     poly.addPointLast(QtCore.QPointF(p[0], p[1]))
             return True
 
-        # 2. 读取coco格式标签
-        if self.save_status["coco"]:
-            imgId = self.coco.imgNameToId.get(osp.basename(imgPath), None)
-            if imgId is None:
-                return False
-            anns = self.coco.imgToAnns[imgId]
-            for ann in anns:
-                xys = ann["segmentation"][0]
-                points = []
-                for idx in range(0, len(xys), 2):
-                    points.append([xys[idx], xys[idx + 1]])
-                labelIdx = ann["category_id"]
-                idlab = self.controller.labelList.getLabelById(labelIdx)
-                if idlab is not None:
-                    color = idlab.color
-                    poly = PolygonAnnotation(
-                        ann["category_id"],
-                        self.controller.image.shape,
-                        self.delPolygon,
-                        self.setDirty,
-                        color,
-                        color,
-                        self.opacity,
-                        ann["id"],
-                        is_rect=(not self.type_seg), )  # 可以创建rect
-                    self.scene.addItem(poly)
-                    self.scene.polygon_items.append(poly)
-                    for p in points:
-                        poly.addPointLast(QtCore.QPointF(p[0], p[1]))
-            return True
-
     def turnImg(self, delta, list_click=False):
         if (self.grid is None or self.grid.curr_idx is None) or list_click:
             # 1. 检查是否有图可翻，保存标签
@@ -1715,6 +1715,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             else:
                 self.saveImage(True)
             # 2. 打开新图
+            self.delAllPolygon()
             self.loadImage(self.imagePaths[self.currIdx])
             if not self.type_seg and self.isUsePreAnnotation:
                 if not self.load_label_success:
@@ -2194,11 +2195,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             else:
                 defaultPath = osp.join(
                     osp.join(self.outputDir, "COCO"), "annotations.json")
+            print("2651dassssssss***--------------:", defaultPath)
             if osp.exists(defaultPath):
                 self.initCoco(defaultPath)
 
         # 2.2 如果保存json格式，获取所有json文件名
-        if not self.save_status["coco"] and self.save_status["json"]:
+        if not self.save_status["coco"]:
             labelPaths = os.listdir(outputDir)
             labelPaths = [n for n in labelPaths if n.endswith(".json")]
             labelPaths = [osp.join(outputDir, n) for n in labelPaths]
@@ -3172,7 +3174,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                             ac.setEnabled(True)
 
         typeButton = self.findChild(QtWidgets.QToolButton, "typeButton")
-        self.delAllPolygon()  # 切换时删除所有多边形
         if index == 0:
             self.type_seg = True
             typeButton.setDefaultAction(self.menus.toolBar[18][0])  # seg
@@ -3185,6 +3186,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.canvas.setDetMode(False)
             self.btnParamsSelect.setEnabled(True)
             self.cheWithMask.setEnabled(True)
+            # 加载近期模型
+            self.loadRecentModelParam()
         else:
             self.type_seg = False
             self.isUsePreAnnotation = self.use_preannotation_or_not()  # 流程提醒
@@ -3228,6 +3231,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.btnDrawDet.setText(self.tr("关闭画框功能"))
                 self.scene.is_draw = True
             self.getLabelCorrespondence()
+
+        img_path = self.listFiles.currentItem().text().replace("\\", "/")
+        self.openFolder("/".join(img_path.split("/")[:-1]))
 
     def useQtWidget(self, s):
         self.settings.setValue("use_qt_widget", s)
