@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import copy
 import contextlib
 import filelock
 import tempfile

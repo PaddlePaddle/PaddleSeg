@@ -36,11 +36,6 @@ class Builder(object):
         super().__init__()
         self.config = config
         self.comp_list = comp_list
-        if self.comp_list is None:
-            self.comp_list = [
-                manager.MODELS, manager.BACKBONES, manager.DATASETS,
-                manager.TRANSFORMS, manager.LOSSES, manager.OPTIMIZERS
-            ]
 
     def build_component(self, cfg):
         """
@@ -110,6 +105,11 @@ class SegBuilder(Builder):
     """
 
     def __init__(self, config, comp_list=None):
+        if comp_list is None:
+            comp_list = [
+                manager.MODELS, manager.BACKBONES, manager.DATASETS,
+                manager.TRANSFORMS, manager.LOSSES, manager.OPTIMIZERS
+            ]
         super().__init__(config, comp_list)
 
     @cached_property
@@ -223,9 +223,6 @@ class SegBuilder(Builder):
         return self._build_loss('distill_loss', loss_cfg)
 
     def _build_loss(self, loss_name, loss_cfg: dict):
-        assert 'coef' in loss_cfg and 'types' in loss_cfg, \
-            'loss_cfg ({}) must have `coef` and `types`'.format(loss_cfg)
-
         def _check_helper(loss_cfg, ignore_index):
             if 'ignore_index' not in loss_cfg:
                 loss_cfg['ignore_index'] = ignore_index
