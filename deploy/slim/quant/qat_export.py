@@ -92,7 +92,7 @@ def main(args):
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
-        transforms = cfg.export_config.get('transforms', [{
+        transforms = cfg.val_dataset_config.get('transforms', [{
             'type': 'Normalize'
         }])
         data = {
