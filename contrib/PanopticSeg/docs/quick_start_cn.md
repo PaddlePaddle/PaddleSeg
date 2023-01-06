@@ -33,15 +33,15 @@ python tools/predict.py \
 
 名称为 `demo_sem.png` 的图像从语义分割的角度可视化预测结果：
 
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo_sem.png" height="300">
+<img src="https://user-images.githubusercontent.com/21275753/210925337-797befea-b774-4d63-849b-574709f098c7.png" height="300">
 
 名称为 `demo_ins.png` 的图像从实例分割的角度可视化预测结果：
 
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo_ins.png" height="300">
+<img src="https://user-images.githubusercontent.com/21275753/210925345-773f7c81-d281-4053-9684-6e8e6ac841f9.png" height="300">
 
 名称为 `demo_pan.png` 的图像从全景分割的角度可视化预测结果：
 
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo_pan.png" height="300">
+<img src="https://user-images.githubusercontent.com/21275753/210925355-262775c2-3a9d-4c31-b45a-cef3bdebf4e0.png" height="300">
 
 关于对可视化结果的具体描述可参考[此处](full_features_cn.md#43-获取可视化结果)。
 

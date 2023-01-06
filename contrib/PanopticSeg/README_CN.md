@@ -19,9 +19,9 @@
 + **全流程**：支持从模型设计到模型部署的完整工作流，助力用户完成一站式开发工作。
 
 <p align="center">
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/teasors/teasor1.gif" height="200">
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/teasors/teasor2.gif" height="200">
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/teasors/teasor3.gif" height="200">
+<img src="https://user-images.githubusercontent.com/21275753/210925385-5021e2b6-2d73-4358-a9af-1e91cd9f008d.gif" height="200">
+<img src="https://user-images.githubusercontent.com/21275753/210925394-57848331-0bd5-4c30-9fb0-03fc2a789936.gif" height="200">
+<img src="https://user-images.githubusercontent.com/21275753/210925397-0b348fcf-b3f9-46cf-9512-b50278138658.gif" height="200">
 </p>
 
 + *以上效果展示图基于 [Cityscapes](https://www.cityscapes-dataset.com/) 和 [MS COCO](https://cocodataset.org/#home) 数据集中的图片以及使用本工具箱训练的模型所得到的推理结果。*

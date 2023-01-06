@@ -19,9 +19,9 @@ Panoptic segmentation is an image parsing task that unifies the typically distin
 + **Complete Flow**: This toolkit supports a complete worflow from model designing to model deployment. With the help of this toolkit, developers can easily complete all tasks.
 
 <p align="center">
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/teasors/teasor1.gif" height="200">
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/teasors/teasor2.gif" height="200">
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/teasors/teasor3.gif" height="200">
+<img src="https://user-images.githubusercontent.com/21275753/210925385-5021e2b6-2d73-4358-a9af-1e91cd9f008d.gif" height="200">
+<img src="https://user-images.githubusercontent.com/21275753/210925394-57848331-0bd5-4c30-9fb0-03fc2a789936.gif" height="200">
+<img src="https://user-images.githubusercontent.com/21275753/210925397-0b348fcf-b3f9-46cf-9512-b50278138658.gif" height="200">
 </p>
 
 + *The pictures above are based on images from the [Cityscapes](https://www.cityscapes-dataset.com/) and [MS COCO](https://cocodataset.org/#home) datasets and the results obtained by models trained with this toolkit.*

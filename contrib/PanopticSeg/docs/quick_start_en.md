@@ -33,15 +33,15 @@ There are three output images for each input image (with the same prefix), which
 
 The image `demo_sem.png` visualizes the network predictions from a semantic segmentation perspective:
 
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo_sem.png" height="300">
+<img src="https://user-images.githubusercontent.com/21275753/210925337-797befea-b774-4d63-849b-574709f098c7.png" height="300">
 
 The image `demo_ins.png` visualizes the network predictions from an instance segmentation perspective:
 
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo_ins.png" height="300">
+<img src="https://user-images.githubusercontent.com/21275753/210925345-773f7c81-d281-4053-9684-6e8e6ac841f9.png" height="300">
 
 The image `demo_pan.png` combines the first two images and visualizes the network predictions from a panoptic segmentation perspective:
 
-<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo_pan.png" height="300">
+<img src="https://user-images.githubusercontent.com/21275753/210925355-262775c2-3a9d-4c31-b45a-cef3bdebf4e0.png" height="300">
 
 A detailed description of can be found [here](full_features_en.md#43-get-visualization-results).
 
