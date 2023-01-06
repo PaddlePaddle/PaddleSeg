@@ -10,7 +10,7 @@
 
 ### 2.1 下载预训练模型权重与示例数据
 
-首先，请在[此链接](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/cityscapes/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr0000/model.pdparams)与[此链接](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo.png)分别下载预训练模型权重（`model.pdparams`）与示例图像（`demo.png`）。将下载的两个文件放置于本项目的根目录。
+首先，请在[此链接](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/cityscapes/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k/model.pdparams)与[此链接](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo.png)分别下载预训练模型权重（`model.pdparams`）与示例图像（`demo.png`）。将下载的两个文件放置于本项目的根目录。
 
 ### 2.2 执行预测
 
@@ -19,7 +19,7 @@
 ```shell
 mkdir -p vis
 python tools/predict.py \
-    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
+    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k.yml \
     --model_path model.pdparams \
     --image_path demo.png \
     --save_dir vis
@@ -53,11 +53,11 @@ python tools/predict.py \
 
 ### 3.2 训练模型
 
-首先确认需要使用的配置文件，如 `configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml`。所有预置的配置文件均存储在 `configs`。接着，执行如下命令：
+首先确认需要使用的配置文件，如 `configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k.yml`。所有预置的配置文件均存储在 `configs`。接着，执行如下命令：
 
 ```shell
 python tools/train.py \
-    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
+    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k.yml \
     --do_eval \
     --save_dir output
 ```
@@ -70,7 +70,7 @@ python tools/train.py \
 
 ```shell
 python tools/val.py \
-    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
+    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k.yml \
     --model_path output/best_model/model.pdparams \
     --eval_sem \
     --eval_ins

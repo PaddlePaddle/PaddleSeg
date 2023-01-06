@@ -177,7 +177,7 @@ By default we do not dump logs to files, as it is convenient to write to logs vi
 ```shell
 TAG='mask2former'
 python tools/train.py \
-    --config configs/mask2former/mask2former_resnet50_os16_coco_1024x1024_bs4_370k_lr00001.yml \
+    --config configs/mask2former/mask2former_resnet50_os16_coco_1024x1024_bs4_370k.yml \
     --log_iters 50 \
     --num_workers 4 \
     --do_eval \

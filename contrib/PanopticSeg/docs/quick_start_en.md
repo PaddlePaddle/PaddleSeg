@@ -10,7 +10,7 @@ Please follow the instructions [here](./full_features_en.md#1-installation).
 
 ### 2.1 Download Pre-trained Weights and Demo Data
 
-First, download pre-trained weights (`model.pdparams`) from [here](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/cityscapes/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr0000/model.pdparams). Then, acquire the image for demonstration (`demo.png`) [here](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo.png). Put the model weights and the image in the root directory of this project.
+First, download pre-trained weights (`model.pdparams`) from [here](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/cityscapes/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k/model.pdparams). Then, acquire the image for demonstration (`demo.png`) [here](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo.png). Put the model weights and the image in the root directory of this project.
 
 ### 2.2 Infer with Pre-trained Models
 
@@ -19,7 +19,7 @@ Execute the following instructions to make inference with the pre-trained model:
 ```shell
 mkdir -p vis
 python tools/predict.py \
-    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
+    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k.yml \
     --model_path model.pdparams \
     --image_path demo.png \
     --save_dir vis
@@ -53,11 +53,11 @@ This toolkit provides a few scripts to accommodate public panoptic segmentation 
 
 ### 3.2 Train Models
 
-First, find the model configuration file that you plan to use in `configs`, e.g. `configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml`. Then, execute the following instructions:
+First, find the model configuration file that you plan to use in `configs`, e.g. `configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k.yml`. Then, execute the following instructions:
 
 ```shell
 python tools/train.py \
-    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
+    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k.yml \
     --do_eval \
     --save_dir output
 ```
@@ -70,7 +70,7 @@ During and after training, you can find model checkpoints that store model weigh
 
 ```shell
 python tools/val.py \
-    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
+    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k.yml \
     --model_path output/best_model/model.pdparams \
     --eval_sem \
     --eval_ins
