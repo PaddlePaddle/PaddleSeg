@@ -18,7 +18,7 @@ import os
 import paddle
 import yaml
 
-from paddleseg.cvlibs import Config
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.utils import logger, utils
 from paddleseg.deploy.export import WrappedModel
 
@@ -56,13 +56,14 @@ def main(args):
     assert args.config is not None, \
         'No configuration file specified, please set --config'
     cfg = Config(args.config)
+    builder = SegBuilder(cfg)
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
 
     # save model
-    model = cfg.model
+    model = builder.model
     if args.model_path is not None:
         state_dict = paddle.load(args.model_path)
         model.set_dict(state_dict)
@@ -78,9 +79,9 @@ def main(args):
     paddle.jit.save(model, os.path.join(args.save_dir, 'model'))
 
     # save deploy.yaml
-    val_dataset_config = cfg.val_dataset_config
-    assert val_dataset_config != {}, 'No val_dataset specified in the configuration file.'
-    transforms = val_dataset_config.get('transforms', None)
+    val_dataset_cfg = cfg.val_dataset_cfg
+    assert val_dataset_cfg != {}, 'No val_dataset specified in the configuration file.'
+    transforms = val_dataset_cfg.get('transforms', None)
     output_dtype = 'int32' if args.output_op == 'argmax' else 'float32'
 
     # TODO add test config
