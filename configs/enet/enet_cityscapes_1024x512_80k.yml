@@ -21,7 +21,7 @@ model:
 
 optimizer:
   _inherited_: False
-  type: adam
+  type: Adam
   weight_decay: 0.0002
 
 lr_scheduler:
