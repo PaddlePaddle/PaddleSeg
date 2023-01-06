@@ -20,7 +20,7 @@ python setup.py install
 
 | Model | Backbone | Resolution | Training Iters | PQ | mIoU | mAP50 | Links |
 |-|-|-|-|-|-|-|-|
-|Mask2Former|ResNet50-vd|1024x1024|370k|%|%|%|[config](mask2former_resnet50_os16_coco_1024x1024_bs4_370k_lr00001.yml) \| [model]()|
+|Mask2Former|ResNet50-vd|1024x1024|370k|53.69%|63.22%|49.16%|[config](mask2former_resnet50_os16_coco_1024x1024_bs4_370k_lr00001.yml) \| [model](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/coco/mask2former_resnet50_os16_coco_1024x1024_bs4_370k_lr00001/model.pdparams)|
 
 + *The models were trained using 4 GPUs.*
 

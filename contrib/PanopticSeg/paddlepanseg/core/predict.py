@@ -106,6 +106,7 @@ def predict(model,
             pan_vis = visualize_panoptic(
                 pan_pred,
                 label_divisor=label_divisor,
+                colormap=colormap,
                 ignore_index=ignore_index)
 
             Image.fromarray(sem_vis).convert('RGB').save(

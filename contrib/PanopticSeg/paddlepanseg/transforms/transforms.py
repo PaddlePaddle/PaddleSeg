@@ -15,12 +15,12 @@
 from collections import Counter
 
 import numpy as np
-import paddle
 import paddleseg
 
 import paddlepanseg.transforms.functional as F
 from paddlepanseg.cvlibs import manager
 from paddlepanseg.cvlibs.info_dicts import InfoDict
+from paddlepanseg.utils import encode_pan_id
 from .test_transforms import trim_for_test
 
 __all__ = ['Collect', 'ConvertRGBToID', 'DecodeLabels', 'PadToDivisible']
@@ -78,11 +78,10 @@ class DecodeLabels(object):
                     ins_label[mask] = ins_id
                 # Re-encode `pan_id` using `cat_id` and tracked class instance id
                 class_id_tracker[cat_id] += 1
-                pan_id = (cat_id + 1
-                          ) * self.label_divisor + class_id_tracker[cat_id]
+                pan_id = encode_pan_id(cat_id, self.label_divisor, ins_id=class_id_tracker[cat_id])
                 pan_label[mask] = pan_id
             else:
-                pan_id = (cat_id + 1) * self.label_divisor
+                pan_id = encode_pan_id(cat_id, self.label_divisor)
                 pan_label[mask] = pan_id
             # Update annotation
             seg['id'] = pan_id
@@ -104,7 +103,6 @@ class PadToDivisible(object):
             h, w = data['img'].shape[:2]
             tar_size = self.get_target_size((w, h))
             if tar_size != (w, h):
-                data['trans_info'].append(('padding', (h, w)))
                 op = paddleseg.transforms.Padding(tar_size)
                 data = op(data)
         return data

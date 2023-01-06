@@ -1,3 +1,5 @@
+English | [简体中文](quick_start_cn.md)
+
 # Quick Start
 
 ## 1 Installation
@@ -8,13 +10,14 @@ Please follow the instructions [here](./full_features_en.md#1-installation).
 
 ### 2.1 Download Pre-trained Weights and Demo Data
 
-First, download pre-trained weights (`model.pdparams`) from [here](). Then, acquire the image for demonstration (`demo.png`) [here](). Put the model weights and the image in the root directory of this project.
+First, download pre-trained weights (`model.pdparams`) from [here](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/cityscapes/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr0000/model.pdparams). Then, acquire the image for demonstration (`demo.png`) [here](https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo.png). Put the model weights and the image in the root directory of this project.
 
 ### 2.2 Infer with Pre-trained Models
 
 Execute the following instructions to make inference with the pre-trained model:
 
 ```shell
+mkdir -p vis
 python tools/predict.py \
     --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
     --model_path model.pdparams \
@@ -28,17 +31,17 @@ Note that we have used a dynamic-graph model for inference, which is usually of 
 
 There are three output images for each input image (with the same prefix), which can be found in `vis`.
 
-The image with the suffix `_sem.png` visualizes the network predictions from a semantic segmentation perspective:
+The image `demo_sem.png` visualizes the network predictions from a semantic segmentation perspective:
 
-![](arts/demo/vis_sem.png)
+<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo_sem.png" height="300">
 
-The image with the suffix `_ins.png` visualizes the network predictions from an instance segmentation perspective:
+The image `demo_ins.png` visualizes the network predictions from an instance segmentation perspective:
 
-![](arts/demo/vis_ins.png)
+<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo_ins.png" height="300">
 
-The image with the suffix `_pan.png` combines the first two images and visualizes the network predictions from a panoptic segmentation perspective:
+The image `demo_pan.png` combines the first two images and visualizes the network predictions from a panoptic segmentation perspective:
 
-![](arts/demo/vis_pan.png)
+<img src="https://paddleseg.bj.bcebos.com/dygraph/panoptic_segmentation/tutorials/demo/demo_pan.png" height="300">
 
 A detailed description of can be found [here](full_features_en.md#43-get-visualization-results).
 
@@ -46,7 +49,7 @@ A detailed description of can be found [here](full_features_en.md#43-get-visuali
 
 ### 3.1 Prepare Datasets
 
-This toolkit provides a few scripts to accommodate public panoptic segmentation datasets in order to use them for model training. For details of use, please see the [data preparation tutorial](../tools/README.md).
+This toolkit provides a few scripts to accommodate public panoptic segmentation datasets in order to use them for model training. For details of use, please see the [data preparation tutorial](../tools/data/README.md).
 
 ### 3.2 Train Models
 

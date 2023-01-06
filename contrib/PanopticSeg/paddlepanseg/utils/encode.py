@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .visualize import visualize_semantic, visualize_instance, visualize_panoptic
-from .misc import tabulate_metrics, import_custom_op, use_custom_op
-from .encode import encode_pan_id, decode_pan_id, is_crowd
+# TODO: Make the encoding system object-oriented and configurable.
+
+_CAT_ID_OFFSET = 1
+
+
+def decode_pan_id(pan_id, label_divisor):
+    return (pan_id // label_divisor) - _CAT_ID_OFFSET, pan_id % label_divisor
+
+
+def encode_pan_id(cat_id, label_divisor, ins_id=0):
+    return (cat_id + _CAT_ID_OFFSET) * label_divisor + ins_id
+
+
+def is_crowd(pan_id, label_divisor):
+    return pan_id % label_divisor == 0

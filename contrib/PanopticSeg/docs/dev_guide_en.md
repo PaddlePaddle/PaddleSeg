@@ -1,3 +1,5 @@
+English | [简体中文](dev_guide_cn.md)
+
 # Developer's Guide
 
 This document introduces the advanced content of this toolkit and is helpful for readers who want to contribute their code.

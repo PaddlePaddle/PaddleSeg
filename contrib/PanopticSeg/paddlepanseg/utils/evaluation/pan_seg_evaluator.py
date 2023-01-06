@@ -17,6 +17,7 @@ from collections import defaultdict
 import numpy as np
 
 from paddlepanseg.cvlibs import build_info_dict
+from paddlepanseg.utils import decode_pan_id
 from .evaluator import Evaluator
 
 OFFSET = 256 * 256 * 256
@@ -135,8 +136,7 @@ class PanSegEvaluator(Evaluator):
         for label, label_cnt in zip(labels, labels_cnt):
             if label == VOID:
                 continue
-            # Given self.label_divisor==1000, in encoded pan_pred, label==1000 stands for stuff class with cat_id==0
-            cat_id = (label // self.label_divisor) - 1
+            cat_id, _ = decode_pan_id(label, self.label_divisor)
             if self.convert_id is not None:
                 cat_id = self.convert_id(cat_id)
             pred_ann.append({

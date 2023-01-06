@@ -1,3 +1,5 @@
+English | [简体中文](encoding_protocol_cn.md)
+
 # Encoding Protocol
 
 In this document, we introduce the protocol used by this toolkit to encode panoptic segmentation labels. 
@@ -10,7 +12,7 @@ For thing classes, there is:
 pan_id = (cat_id + 1) * label_divisor + ins_id
 ```
 
-where `cat_id` is the category ID (starts from 0) and `ins_id` is the instance ID (starts from 1).
+where `cat_id` is the category ID (starts from `0`) and `ins_id` is the instance ID (starts from `1`).
 
 For stuff classes, there is:
 

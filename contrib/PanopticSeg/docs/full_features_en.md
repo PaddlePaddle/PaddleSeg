@@ -1,3 +1,5 @@
+English | [简体中文](full_features_cn.md)
+
 # Full Features
 
 ## 0 Contents
@@ -15,7 +17,7 @@
 + PaddlePaddle >= 2.4.0
 + Python >= 3.7
 
-Due to the high computational cost of model training, GPU version of PaddlePaddle (with CUDA 10.2 or later) is highly recommended. See [PaddlePaddle official website](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html) for the installation tutorial.
+Due to the high computational cost of model training, GPU version of PaddlePaddle (with CUDA 10.2 or later) is highly recommended. See [PaddlePaddle official website](https://www.paddlepaddle.org.cn/en/install/quick?docurl=/documentation/docs/en/develop/install/pip/linux-pip_en.html) for the installation tutorial.
 
 ### 1.2 Download PaddleSeg
 
@@ -87,7 +89,7 @@ g = id // 256 % 256
 b = id // (256 * 256) % 256
 ```
 
-where `id` is a unique identifier for each instance/stuff region in the image. This conforms to the [MS COCO format](https://cocodataset.org/#home).
+where `id` is a unique identifier for each instance/stuff region in the image.
 
 ## 3 Writing Configuration Files
 
@@ -95,7 +97,7 @@ Like PaddleSeg, we define several components (e.g. datasets, models) following a
 
 ### 3.1 Basic Rules
 
-Since this toolkit is built on top of the PaddleSeg API, the basic rules of writing configuration files conform to PaddleSeg standard. Please read the PaddleSeg [documentation](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.7/docs/config/pre_config.md) for more details.
+Since this toolkit is built on top of the PaddleSeg API, the basic rules of writing configuration files conform to PaddleSeg standard. Please read the [PaddleSeg documentation](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.7/docs/config/pre_config.md) for more details.
 
 ### 3.2 Postprocessors
 
@@ -117,7 +119,7 @@ For all postprocessors, you can set these four attributes: `num_classes`, `thing
 
 ### 3.3 `Collect`
 
-A distinct difference between the configuration files of PaddleSeg and this toolkit is that **all** data transformations defined in this toolkit must end with `Collect`. The reason behind is that we use an [`InfoDict`]()-based pipeline for data preprocessing, where `Collect` are used to pick out the key-value pairs we require from the `InfoDict` object.
+A distinct difference between the configuration files of PaddleSeg and this toolkit is that **all** data transformations defined in this toolkit must end with `Collect`. The reason behind is that we use an [`InfoDict`](dev_guide_en.md#21-infodict)-based pipeline for data preprocessing, where `Collect` are used to pick out the key-value pairs we require from the `InfoDict` object.
 
 Generally, the following keys are necessary for model training:
 
@@ -153,7 +155,7 @@ python tools/train.py \
     --config {CONFIG_PATH}
 ```
 
-Typically, we configure some experimental parameters through setting command-line options. Note that the arguments passed from the command-line has **higher precedence** than those specified in the configuration file, which is useful when we need to *temporarily overwrite* a setting. Overall, `tools/train.py` supports command-line options very similar to the training script of PaddleSeg. You can find a full list of the command-line options by reading the PaddleSeg [documentation]() or by running:
+Typically, we configure some experimental parameters through setting command-line options. Note that the arguments passed from the command-line has **higher precedence** than those specified in the configuration file, which is useful when we need to *temporarily overwrite* a setting. Overall, `tools/train.py` supports command-line options very similar to the training script of PaddleSeg. You can find a full list of the command-line options by reading the [PaddleSeg documentation](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.7/docs/train/train.md) and by running:
 
 ```shell
 python tools/train.py --help
@@ -163,7 +165,7 @@ We list some of the most important command-line options below:
 
 + `--config`: Path of the configuration file. 
 + `--save_dir`: Directory to save the model checkpoints.
-+ `--num_workers`: Number of subprocesses used for data pre-fetching.
++ `--num_workers`: Number of subprocesses used for data prefetching.
 + `--do_eval`: To periodically evaluate the model (also known as model validation) during training.
 + `--log_iters`: Logs will be displayed at every `log_iters`.
 + `--eval_sem`: To calculate semantic segmentation metrics (e.g. mIoU) during validation.
@@ -227,10 +229,6 @@ See `python tools/predict.py --help` for a full list of command-line options.
 
 After executing the above script, the visualization results can be found in the path specified by `--save_dir`. For each input image, there are three resulting images that demonstrate the network prediction from different perspectives:
 
-+ `{PREFIX}_pan.png`: Different *base* colors are used to mark different semantic classes. For thing classes, a unique color offset is added to each instance.
-
-![](arts/demo/vis_pan.png)
-
 + `{PREFIX}_sem.png`: Color of each pixel represents the semantic class.
 
 ![](arts/demo/vis_sem.png)
@@ -238,6 +236,10 @@ After executing the above script, the visualization results can be found in the 
 + `{PREFIX}_ins.png`: Different colors in the image stand for different instances. For stuff classes, all pixels of that class are considered to belong to **one** instance.
 
 ![](arts/demo/vis_ins.png)
+
++ `{PREFIX}_pan.png`: Different *base* colors are used to mark different semantic classes. For thing classes, a unique color offset is added to each instance to distinguish different instances.
+
+![](arts/demo/vis_pan.png)
 
 ## 5 Model Deployment
 
@@ -257,7 +259,7 @@ Please refer to the [PaddleSeg documentation](https://github.com/PaddlePaddle/Pa
 
 ### 5.2 Infer Using Paddle-Inference API
 
-Run the following instructions to perform model inference based on the [Paddle-Inference](https://paddle-inference.readthedocs.io/en/master/) API:
+Run the following instructions to perform model inference based on the [Paddle-Inference](https://github.com/PaddlePaddle/Paddle) API:
 
 ```shell
 python deploy/python/infer.py \
