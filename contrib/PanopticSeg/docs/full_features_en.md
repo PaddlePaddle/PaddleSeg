@@ -62,7 +62,7 @@ If the version number of the toolkit is printed, you can verify that the install
 
 ## 2 Dataset Preparation
 
-This toolkit supports model training and evaluation on both public datasets and user-created datasets. In general, a PaddleSeg-style *file list* is required for each subset of the dataset to be used, in addition to the JSON annotations. The content of the file list follows the [PaddleSeg rules](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.7/docs/data/custom/data_prepare.md), except for the path to the panoptic labels (encoded in an RGB image) are used in place of the path to the semantic segmentation labels. 
+This toolkit supports model training and evaluation on both public datasets and user-created datasets. In general, a PaddleSeg-style *file list* is required for each subset of the dataset to be used, in addition to the JSON annotations. The content of the file list follows the [PaddleSeg rules](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.7/docs/data/custom/data_prepare.md), except for the path to the panoptic labels (encoded in an RGB image) are used in place of the path to the semantic segmentation labels.
 
 ### 2.1 Prepare Public Datasets
 
@@ -115,7 +115,7 @@ postprocessor:
   ignore_index: 255
 ```
 
-For all postprocessors, you can set these four attributes: `num_classes`, `thing_ids`, `label_divisor`, and `ignore_index`. If any of the four attributes is not configured in `postprocessor`in the configuration file, the toolkit will first try to parse the value from `val_dataset` (with the same key), before using a pre-defined default value. 
+For all postprocessors, you can set these four attributes: `num_classes`, `thing_ids`, `label_divisor`, and `ignore_index`. If any of the four attributes is not configured in `postprocessor`in the configuration file, the toolkit will first try to parse the value from `val_dataset` (with the same key), before using a pre-defined default value.
 
 ### 3.3 `Collect`
 
@@ -163,7 +163,7 @@ python tools/train.py --help
 
 We list some of the most important command-line options below:
 
-+ `--config`: Path of the configuration file. 
++ `--config`: Path of the configuration file.
 + `--save_dir`: Directory to save the model checkpoints.
 + `--num_workers`: Number of subprocesses used for data prefetching.
 + `--do_eval`: To periodically evaluate the model (also known as model validation) during training.
@@ -267,7 +267,7 @@ python deploy/python/infer.py \
     --image_path {PATH_TO_SINGLE_IMAGE_OR_FOLDER}
 ```
 
-Please note that `{DEPLOY_CONFIG_PATH}` is the path to the `deploy.yaml` file of the exported model. 
+Please note that `{DEPLOY_CONFIG_PATH}` is the path to the `deploy.yaml` file of the exported model.
 
 The output inference result is an RGB image with the pixel values:
 

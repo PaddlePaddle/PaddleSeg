@@ -86,7 +86,8 @@ class DefaultSyncPostprocessorRule(checker.Rule):
                 pp_cfg[attr_name] = attr_val
 
         if 'postprocessor' not in cfg.dic:
-            raise RuntimeError("No `postprocessor` is specified in the configuration file.")
+            raise RuntimeError(
+                "No `postprocessor` is specified in the configuration file.")
         pp_cfg = cfg.dic['postprocessor']
         _set_attr_if_not_exists(pp_cfg, 'num_classes', 1)
         _set_attr_if_not_exists(pp_cfg, 'thing_ids', [])
