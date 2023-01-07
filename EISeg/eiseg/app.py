@@ -40,6 +40,7 @@ import util
 from util import COCO
 from util import check_cn, normcase
 from util.voc import VocAnnotations
+from util.jsencoder import JSEncoder
 
 import plugin.remotesensing as rs
 from plugin.medical import med
@@ -48,7 +49,6 @@ from plugin.n2grid import RSGrids, Grids, checkOpenGrid
 from plugin.video import InferenceCore, overlay_davis
 from plugin.det import DetInfer
 
-import PIL
 import io
 import base64
 
@@ -2779,7 +2779,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         json_path = save_path.replace(".png", "_grid_saved.json")
         open(
             json_path, "w",
-            encoding="utf-8").write(json.dumps(self.grid.json_labels))
+            encoding="utf-8").write(json.dumps(self.grid.json_labels, cls=JSEncoder))
         if self.grid.__class__.__name__ == "RSGrids":
             self.image, geo_tf = self.raster.getArray()
             if geo_tf is None:
@@ -2806,7 +2806,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # -- RS Show polygon demo --
         # 刷新
         grid_row_count = self.gridTable.rowCount()
-        grid_col_count = self.gridTable.colorCount()
+        grid_col_count = self.gridTable.columnCount()
         for r in range(grid_row_count):
             for c in range(grid_col_count):
                 try:
