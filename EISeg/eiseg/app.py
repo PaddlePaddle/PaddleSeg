@@ -503,7 +503,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             tr("&EISeg-Med3D"),
             self.enterEISegMed3D,
             "enterEISegMed3D",
-            "EISegMed3D",
+            "MedicalImaging",
             tr("3D医疗交互式分割插件"), )
         set_cutout_background = action(
             tr("&设置抠图背景色"),
@@ -974,7 +974,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         # 中文路径打不开
         if check_cn(param_path):
-            self.warn(self.tr("参数路径存在中文"), self.tr("请修改参数路径为非中文路径！"))
+            self.warn(self.tr("参数路径存在无效字符"), self.tr("请修改参数路径为不含无效字符的路径！"))
             return False
 
         if not self.type_seg:
@@ -3068,7 +3068,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def on_propgation(self):
         self.finishObject()
         if self.video_images is None:
-            self.warn(self.tr("未加载视频"), self.tr("请先在加载图像按钮中加载视频"))
+            self.warn(self.tr("未加载视频"), self.tr("请先在打开图像选项中加载视频"))
             return
         if self.video.prop_net_segm is None:
             self.warn(self.tr("传播模型未加载"), self.tr("尚未加载视频传播模型，请先加载模型!"))
@@ -3241,6 +3241,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.settings.setValue("use_qt_widget", s)
 
     def checkLabel(self, labelIndex):
+        # FIXME: 标签在其他图像存在标注但当前图像不存在时可以删除
         for p in self.scene.polygon_items:
             if p.labelIndex == labelIndex:
                 return False

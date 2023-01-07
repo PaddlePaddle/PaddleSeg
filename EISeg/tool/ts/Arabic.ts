@@ -549,6 +549,11 @@
         <translation>ساعد</translation>
     </message>
     <message>
+        <location filename="../../eiseg/app.py" line="793"/>
+        <source>更多</source>
+        <translation>&#xa0;أكثر .&#xa0;</translation>
+    </message>
+    <message>
         <location filename="../../eiseg/app.py" line="686"/>
         <source>近期文件</source>
         <translation>الوثائق الأخيرة</translation>
@@ -610,13 +615,13 @@
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1010"/>
-        <source>参数路径存在中文</source>
-        <translation>المعلمة المسار موجود في الصينية</translation>
+        <source>参数路径存在无效字符</source>
+        <translation>&#xa0;صحيح حرف موجود في مسار المعلمة&#xa0;</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1010"/>
-        <source>请修改参数路径为非中文路径！</source>
-        <translation>يرجى تعديل مسار المعلمة غير الصينية المسار !</translation>
+        <source>请修改参数路径为不含无效字符的路径！</source>
+        <translation>&#xa0;يرجى تعديل مسار المعلمة إلى المسار الذي لا يحتوي على أحرف غير صالحة !&#xa0;</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3123"/>
@@ -1020,8 +1025,8 @@
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2979"/>
-        <source>请先在加载图像按钮中加载视频</source>
-        <translation>يرجى تحميل الفيديو في صورة زر التحميل</translation>
+        <source>请先在打开图像选项中加载视频</source>
+        <translation>&#xa0;يرجى تحميل الفيديو في فتح خيارات الصورة&#xa0;</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2982"/>
