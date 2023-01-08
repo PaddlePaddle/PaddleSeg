@@ -2694,47 +2694,49 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.gridTable.item(row,
                             col).setBackground(self.GRID_COLOR["overlying"])
         # if len(np.unique(self.grid.mask_grids[row][col])) == 1:
-        self.grid.mask_grids[row][col] = np.array(self.getMask())
-        # save grid label to load
-        polygons = self.scene.polygon_items
-        for polygon in polygons:
-            l = self.controller.labelList[polygon.labelIndex - 1]
-            label = {
-                "row": row,
-                "col": col,
-                "name": l.name,
-                "labelIdx": l.idx,
-                "color": l.color,
-                "points": [],
-            }
-            for p in polygon.scnenePoints:
-                label["points"].append(p)
-            self.grid.json_labels.append(label)
-        # save every blocks or not
-        if self.cheSaveEvery.isChecked():
-            _, fullflname = osp.split(self.listFiles.currentItem().text())
-            fname, _ = os.path.splitext(fullflname)
-            if self.outputDir is None:
-                if self.changeOutputDir() is False:
-                    self.cheSaveEvery.setChecked(False)
-                    return
-            save_ima_path = osp.join(
-                self.outputDir,
-                (fname + "_data_" + str(row) + "_" + str(col) + ".tif"))
-            save_lab_path = osp.join(
-                self.outputDir,
-                (fname + "_mask_" + str(row) + "_" + str(col) + ".tif"))
-            im, tf = self.raster.getGrid(row, col)
-            h, w = im.shape[:2]
-            geoinfo = edict()
-            geoinfo.xsize = w
-            geoinfo.ysize = h
-            geoinfo.dtype = self.raster.geoinfo.dtype
-            geoinfo.crs = self.raster.geoinfo.crs
-            geoinfo.geotf = tf
-            self.raster.saveMask(self.grid.mask_grids[row][col], save_lab_path,
-                                 geoinfo)  # 保存mask
-            self.raster.saveMask(im, save_ima_path, geoinfo, 3)  # 保存图像
+        mask = self.getMask()
+        if mask is not None:
+            self.grid.mask_grids[row][col] = mask
+            # save grid label to load
+            polygons = self.scene.polygon_items
+            for polygon in polygons:
+                l = self.controller.labelList[polygon.labelIndex - 1]
+                label = {
+                    "row": row,
+                    "col": col,
+                    "name": l.name,
+                    "labelIdx": l.idx,
+                    "color": l.color,
+                    "points": [],
+                }
+                for p in polygon.scnenePoints:
+                    label["points"].append(p)
+                self.grid.json_labels.append(label)
+            # save every blocks or not
+            if self.cheSaveEvery.isChecked():
+                _, fullflname = osp.split(self.listFiles.currentItem().text())
+                fname, _ = os.path.splitext(fullflname)
+                if self.outputDir is None:
+                    if self.changeOutputDir() is False:
+                        self.cheSaveEvery.setChecked(False)
+                        return
+                save_ima_path = osp.join(
+                    self.outputDir,
+                    (fname + "_data_" + str(row) + "_" + str(col) + ".tif"))
+                save_lab_path = osp.join(
+                    self.outputDir,
+                    (fname + "_mask_" + str(row) + "_" + str(col) + ".tif"))
+                im, tf = self.raster.getGrid(row, col)
+                h, w = im.shape[:2]
+                geoinfo = edict()
+                geoinfo.xsize = w
+                geoinfo.ysize = h
+                geoinfo.dtype = self.raster.geoinfo.dtype
+                geoinfo.crs = self.raster.geoinfo.crs
+                geoinfo.geotf = tf
+                self.raster.saveMask(self.grid.mask_grids[row][col], save_lab_path,
+                                    geoinfo)  # 保存mask
+                self.raster.saveMask(im, save_ima_path, geoinfo, 3)  # 保存图像
 
     def turnGrid(self, delta):
         # 切换下一个宫格
