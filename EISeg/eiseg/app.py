@@ -1147,6 +1147,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         table.setItem(idx, 3, delItem)
         self.adjustTableSize()
         self.labelListClicked(self.labelListTable.rowCount() - 1, 0)
+        self.labellist_reorder()
 
     def adjustTableSize(self):
         self.labelListTable.horizontalHeader().setDefaultSectionSize(25)
@@ -1228,12 +1229,14 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         table = self.labelListTable
         if col == 3:
             labelIdx = int(table.item(row, 0).text())
-            if self.status == self.EDITING:
+            if self.status == self.EDITING:  # 删除标签
                 if self.checkLabel(labelIdx):
                     if self.type_seg:
                         self.controller.labelList.remove(labelIdx)
                         table.removeRow(row)
-                    table.setRowHidden(row, True)  #  检测模式下使用隐藏标签的方案来替代实际删除标签
+                    else:  # 检测模式下使用隐藏标签的方案来替代实际删除标签
+                        table.setRowHidden(row, True)
+                    self.labellist_reorder()  # 序号重排
                 else:
                     self.warn(
                         self.tr("无法删除"),
@@ -3248,6 +3251,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             if p.labelIndex == labelIndex:
                 return False
         return True
+
+    def labellist_reorder(self):
+        k = 1
+        for r in range(self.labelListTable.rowCount()):
+            if not self.labelListTable.isRowHidden(r):
+                self.labelListTable.item(r, 0).setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable)
+                self.labelListTable.item(r, 0).setText(str(k))
+                self.labelListTable.item(r, 0).setFlags(
+                    self.labelListTable.item(r, 0).flags() & ~Qt.ItemIsEditable)
+                k += 1
 
     def drawBox(self):
         if self.scene.det_mode:
