@@ -39,6 +39,8 @@ class CHASEDB1(Dataset):
         mode (str, optional): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
     """
     NUM_CLASSES = 2
+    IGNORE_INDEX = 255
+    IMG_CHANNELS = 3
 
     def __init__(self,
                  dataset_root=None,
@@ -52,7 +54,7 @@ class CHASEDB1(Dataset):
         self.edge = edge
         self.file_list = list()
         self.num_classes = self.NUM_CLASSES
-        self.ignore_index = 255  # labels only have 1/0, thus ignore_index is not necessary
+        self.ignore_index = self.IGNORE_INDEX  # labels only have 1/0, thus ignore_index is not necessary
 
         if mode not in ['train', 'val', 'test']:
             raise ValueError(

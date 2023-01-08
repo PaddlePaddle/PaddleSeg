@@ -31,7 +31,7 @@ class HRNetW48Contrast(nn.Layer):
     (https://arxiv.org/abs/2101.11939).
 
     Args:
-        in_channels (int): The output dimensions of backbone.
+        bb_channels (int): The output dimensions of backbone.
         num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): Backbone network, currently support HRNet_W48.
         drop_prob (float): The probability of dropout.
@@ -42,7 +42,7 @@ class HRNetW48Contrast(nn.Layer):
     """
 
     def __init__(self,
-                 in_channels,
+                 bb_channels,
                  num_classes,
                  backbone,
                  drop_prob,
@@ -50,7 +50,7 @@ class HRNetW48Contrast(nn.Layer):
                  align_corners=False,
                  pretrained=None):
         super().__init__()
-        self.in_channels = in_channels
+        self.bb_channels = bb_channels
         self.backbone = backbone
         self.num_classes = num_classes
         self.proj_dim = proj_dim
@@ -58,16 +58,16 @@ class HRNetW48Contrast(nn.Layer):
 
         self.cls_head = nn.Sequential(
             layers.ConvBNReLU(
-                in_channels, in_channels, kernel_size=3, stride=1, padding=1),
+                bb_channels, bb_channels, kernel_size=3, stride=1, padding=1),
             nn.Dropout2D(drop_prob),
             nn.Conv2D(
-                in_channels,
+                bb_channels,
                 num_classes,
                 kernel_size=1,
                 stride=1,
                 bias_attr=False), )
         self.proj_head = ProjectionHead(
-            dim_in=in_channels, proj_dim=self.proj_dim)
+            dim_in=bb_channels, proj_dim=self.proj_dim)
 
         self.pretrained = pretrained
         self.init_weight()

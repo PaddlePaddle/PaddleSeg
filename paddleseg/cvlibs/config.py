@@ -112,25 +112,35 @@ class Config(object):
     #################### hyper parameters
     @cached_property
     def batch_size(self) -> int:
-        return self.dic.get('batch_size', 1)
+        return self.dic.get('batch_size')
 
     @cached_property
     def iters(self) -> int:
-        iters = self.dic.get('iters', None)
-        if iters is None:
-            raise RuntimeError('No iters specified in the configuration file.')
-        return iters
+        return self.dic.get('iters')
 
     @cached_property
     def to_static_training(self) -> bool:
-        '''Whether to use @to_static for training'''
         return self.dic.get('to_static_training', False)
 
     #################### lr_scheduler and optimizer
     @cached_property
+    def optimizer(self) -> paddle.optimizer.Optimizer:
+        opt_cfg = self.dic.get('optimizer').copy()
+        # For compatibility
+        if opt_cfg['type'] == 'adam':
+            opt_cfg['type'] = 'Adam'
+        if opt_cfg['type'] == 'sgd':
+            opt_cfg['type'] = 'SGD'
+        if opt_cfg['type'] == 'SGD' and 'momentum' in opt_cfg:
+            opt_cfg['type'] = 'Momentum'
+        opt = self.builder.create_object(opt_cfg)
+        opt = opt(self.model, self.lr_scheduler)
+        return opt
+
+    @cached_property
     def lr_scheduler(self) -> paddle.optimizer.lr.LRScheduler:
         assert 'lr_scheduler' in self.dic, 'No `lr_scheduler` specified in the configuration file.'
-        params = self.dic.get('lr_scheduler')
+        params = self.dic.get('lr_scheduler').copy()
 
         use_warmup = False
         if 'warmup_iters' in params:
@@ -159,51 +169,6 @@ class Config(object):
 
         return lr_sche
 
-    @cached_property
-    def optimizer_config(self) -> dict:
-        args = self.dic.get('optimizer', {}).copy()
-        # TODO remove the default params
-        if args['type'] == 'sgd':
-            args.setdefault('momentum', 0.9)
-        return args
-
-    @cached_property
-    def optimizer(self) -> paddle.optimizer.Optimizer:
-        lr = self.lr_scheduler
-        args = self.optimizer_config
-        optimizer_type = args.pop('type')
-
-        # TODO refactor optimizer to support customized setting
-        params = self.model.parameters()
-        if 'backbone_lr_mult' in args:
-            if not hasattr(self.model, 'backbone'):
-                logger.warning('The backbone_lr_mult is not effective because'
-                               ' the model does not have backbone')
-            else:
-                backbone_lr_mult = args.pop('backbone_lr_mult')
-                backbone_params = self.model.backbone.parameters()
-                backbone_params_id = [id(x) for x in backbone_params]
-                other_params = [
-                    x for x in params if id(x) not in backbone_params_id
-                ]
-                params = [{
-                    'params': backbone_params,
-                    'learning_rate': backbone_lr_mult
-                }, {
-                    'params': other_params
-                }]
-
-        if optimizer_type == 'sgd':
-            return paddle.optimizer.Momentum(lr, parameters=params, **args)
-        elif optimizer_type == 'adam':
-            return paddle.optimizer.Adam(lr, parameters=params, **args)
-        elif optimizer_type in paddle.optimizer.__all__:
-            return getattr(paddle.optimizer, optimizer_type)(lr,
-                                                             parameters=params,
-                                                             **args)
-
-        raise RuntimeError('Unknown optimizer type {}.'.format(optimizer_type))
-
     #################### loss
     @cached_property
     def loss(self) -> dict:
@@ -214,14 +179,6 @@ class Config(object):
         return self._prepare_loss('distill_loss')
 
     def _prepare_loss(self, loss_name):
-        """
-        Parse the loss parameters and load the loss layers.
-
-        Args:
-            loss_name (str): The root name of loss in the yaml file.
-        Returns:
-            dict: A dict including the loss parameters and layers.
-        """
         args = self.dic.get(loss_name, {}).copy()
         losses = {'coef': args['coef'], "types": []}
         for loss_cfg in args['types']:
@@ -236,58 +193,44 @@ class Config(object):
 
     #################### dataset and transforms
     @cached_property
-    def train_dataset_config(self) -> Dict:
-        return self.dic.get('train_dataset', {}).copy()
+    def train_dataset(self) -> paddle.io.Dataset:
+        dataset_cfg = self.dic.get('train_dataset').copy()
+        return self.builder.create_object(dataset_cfg)
+
+    @cached_property
+    def val_dataset(self) -> paddle.io.Dataset:
+        assert 'val_dataset' in self.dic, \
+            'No val_dataset specified in the configuration file.'
+        dataset_cfg = self.dic.get('val_dataset').copy()
+        return self.builder.create_object(dataset_cfg)
+
+    @cached_property
+    def train_dataset_class(self) -> Any:
+        dataset_type = self.dic['train_dataset']['type']
+        return self.builder.load_component_class(dataset_type)
+
+    @cached_property
+    def val_dataset_class(self) -> Any:
+        assert 'val_dataset' in self.dic, \
+            'No val_dataset specified in the configuration file.'
+        dataset_type = self.dic['val_dataset']['type']
+        return self.builder.load_component_class(dataset_type)
+
+    @cached_property
+    def val_transforms(self) -> list:
+        transforms = []
+        if 'val_dataset' in self.dic:
+            for tf in self.dic.get('val_dataset').get('transforms', []):
+                transforms.append(self.builder.create_object(tf))
+        return transforms
 
     @cached_property
     def val_dataset_config(self) -> Dict:
         return self.dic.get('val_dataset', {}).copy()
 
     @cached_property
-    def train_dataset_class(self) -> Any:
-        dataset_type = self.train_dataset_config['type']
-        return self.builder.load_component_class(dataset_type)
-
-    @cached_property
-    def val_dataset_class(self) -> Any:
-        dataset_type = self.val_dataset_config['type']
-        return self.builder.load_component_class(dataset_type)
-
-    @cached_property
-    def train_dataset(self) -> paddle.io.Dataset:
-        _train_dataset = self.train_dataset_config
-        if not _train_dataset:
-            return None
-        return self.builder.create_object(_train_dataset)
-
-    @cached_property
-    def val_dataset(self) -> paddle.io.Dataset:
-        _val_dataset = self.val_dataset_config
-        if not _val_dataset:
-            return None
-        return self.builder.create_object(_val_dataset)
-
-    @cached_property
-    def val_transforms(self) -> list:
-        """Get val_transform from val_dataset"""
-        _val_dataset = self.val_dataset_config
-        if not _val_dataset:
-            return []
-        _transforms = _val_dataset.get('transforms', [])
-        transforms = []
-        for tf in _transforms:
-            transforms.append(self.builder.create_object(tf))
-        return transforms
-
-    #################### test and export
-    @cached_property
     def test_config(self) -> Dict:
-        return self.dic.get('test_config', {})
-
-    # TODO remove export_config
-    @cached_property
-    def export_config(self) -> Dict:
-        return self.dic.get('export', {})
+        return self.dic.get('test_config', {}).copy()
 
     #################### checker and builder
     @classmethod
@@ -317,7 +260,7 @@ class Config(object):
     def _build_default_component_builder(cls):
         com_list = [
             manager.MODELS, manager.BACKBONES, manager.DATASETS,
-            manager.TRANSFORMS, manager.LOSSES
+            manager.TRANSFORMS, manager.LOSSES, manager.OPTIMIZERS
         ]
         component_builder = builder.DefaultComponentBuilder(com_list=com_list)
         return component_builder

@@ -29,16 +29,6 @@ val_dataset:
     - type: Normalize
       mean: [0.485, 0.456, 0.406]
       std: [0.229, 0.224, 0.225]
-  
-export:
-  transforms:
-    - type: Resize
-      target_size: [2048, 512]
-      keep_ratio: True
-      size_divisor: 32
-    - type: Normalize
-      mean: [0.485, 0.456, 0.406]
-      std: [0.229, 0.224, 0.225]
 
 optimizer:
   _inherited_: False
