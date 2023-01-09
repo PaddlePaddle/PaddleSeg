@@ -17,7 +17,7 @@ import os
 
 import paddle
 
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import manager, Config, SegBuilder
 from paddleseg.utils import get_sys_env, logger, get_image_list, utils
 from paddleseg.core import predict
 from paddleseg.transforms import Compose
@@ -118,18 +118,20 @@ def main(args):
     assert args.config is not None, \
         'No configuration file specified, please set --config'
     cfg = Config(args.config)
+    builder = SegBuilder(cfg)
     test_config = merge_test_config(cfg, args)
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
     utils.set_device(args.device)
 
-    transforms = Compose(cfg.val_transforms)
+    model = builder.model
+    transforms = Compose(builder.val_transforms)
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('The number of images: {}'.format(len(image_list)))
 
     predict(
-        cfg.model,
+        model,
         model_path=args.model_path,
         transforms=transforms,
         image_list=image_list,

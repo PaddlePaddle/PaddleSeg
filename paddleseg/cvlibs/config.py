@@ -22,10 +22,8 @@ import yaml
 import paddle
 
 from paddleseg.cvlibs import config_checker as checker
-from paddleseg.cvlibs import builder
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger, utils
-from paddleseg.utils.utils import CachedProperty as cached_property
 
 _INHERIT_KEY = '_inherited_'
 _BASE_KEY = '_base_'
@@ -33,7 +31,7 @@ _BASE_KEY = '_base_'
 
 class Config(object):
     """
-    Training configuration parsing. The only yaml/yml file is supported.
+    Configuration parsing.
 
     The following hyper-parameters are available in the config file:
         batch_size: The number of samples per gpu.
@@ -42,13 +40,12 @@ class Config(object):
             For data type, please refer to paddleseg.datasets.
             For specific transforms, please refer to paddleseg.transforms.transforms.
         val_dataset: A validation data config including type/data_root/transforms/mode.
-        optimizer: A optimizer config, but currently PaddleSeg only supports sgd with momentum in config file.
-            In addition, weight_decay could be set as a regularization.
-        learning_rate: A learning rate config. If decay is configured, learning _rate value is the starting learning rate,
-             where only poly decay is supported using the config file. In addition, decay power and end_lr are tuned experimentally.
-        loss: A loss config. Multi-loss config is available. The loss type order is consistent with the seg model outputs,
-            where the coef term indicates the weight of corresponding loss. Note that the number of coef must be the same as the number of
-            model outputs, and there could be only one loss type if using the same loss type among the outputs, otherwise the number of
+        optimizer: A optimizer config. Please refer to paddleseg.optimizers.
+        loss: A loss config. Multi-loss config is available. The loss type order is 
+            consistent with the seg model outputs, where the coef term indicates the 
+            weight of corresponding loss. Note that the number of coef must be the 
+            same as the number of model outputs, and there could be only one loss type 
+            if using the same loss type among the outputs, otherwise the number of
             loss type must be consistent with coef.
         model: A model config including type/backbone and model-dependent arguments.
             For model type, please refer to paddleseg.models.
@@ -56,37 +53,24 @@ class Config(object):
 
     Args:
         path (str) : The path of config file, supports yaml format only.
+        opts (list, optional): Use opts to update the key-value pairs of all options.
 
-    Examples:
-
-        from paddleseg.cvlibs.config import Config
-
-        # Create a cfg object with yaml file path.
-        cfg = Config(yaml_cfg_path)
-
-        # Parsing the argument when its property is used.
-        train_dataset = cfg.train_dataset
-
-        # the argument of model should be parsed after dataset,
-        # since the model builder uses some properties in dataset.
-        model = cfg.model
-        ...
     """
 
-    def __init__(self,
-                 path: str,
-                 learning_rate: Optional[float]=None,
-                 batch_size: Optional[int]=None,
-                 iters: Optional[int]=None,
-                 opts: Optional[list]=None,
-                 checker: Optional[checker.ConfigChecker]=None,
-                 component_builder: Optional[builder.ComponentBuilder]=None):
+    def __init__(
+            self,
+            path: str,
+            learning_rate: Optional[float]=None,
+            batch_size: Optional[int]=None,
+            iters: Optional[int]=None,
+            opts: Optional[list]=None,
+            checker: Optional[checker.ConfigChecker]=None, ):
         assert os.path.exists(path), \
             'Config path ({}) does not exist'.format(path)
         assert path.endswith('yml') or path.endswith('yaml'), \
             'Config file ({}) should be yaml format'.format(path)
 
-        self.dic = self.parse_from_yaml(path)
+        self.dic = self._parse_from_yaml(path)
         self.dic = self.update_config_dict(
             self.dic,
             learning_rate=learning_rate,
@@ -94,151 +78,61 @@ class Config(object):
             iters=iters,
             opts=opts)
 
-        # We have to build the component builder before doing any sanity checks
-        # This is because during a sanity check, some component objects are (possibly) 
-        # required to be constructed.
-        if component_builder is None:
-            component_builder = self._build_default_component_builder()
-        self.builder = component_builder
-
         if checker is None:
             checker = self._build_default_checker()
         checker.apply_all_rules(self)
 
-    def __str__(self) -> str:
-        # Use NoAliasDumper to avoid yml anchor 
-        return yaml.dump(self.dic, Dumper=utils.NoAliasDumper)
-
-    #################### hyper parameters
-    @cached_property
+    @property
     def batch_size(self) -> int:
         return self.dic.get('batch_size')
 
-    @cached_property
+    @property
     def iters(self) -> int:
         return self.dic.get('iters')
 
-    @cached_property
+    @property
     def to_static_training(self) -> bool:
         return self.dic.get('to_static_training', False)
 
-    #################### lr_scheduler and optimizer
-    @cached_property
-    def optimizer(self) -> paddle.optimizer.Optimizer:
-        opt_cfg = self.dic.get('optimizer').copy()
-        # For compatibility
-        if opt_cfg['type'] == 'adam':
-            opt_cfg['type'] = 'Adam'
-        if opt_cfg['type'] == 'sgd':
-            opt_cfg['type'] = 'SGD'
-        if opt_cfg['type'] == 'SGD' and 'momentum' in opt_cfg:
-            opt_cfg['type'] = 'Momentum'
-        opt = self.builder.create_object(opt_cfg)
-        opt = opt(self.model, self.lr_scheduler)
-        return opt
+    @property
+    def model_cfg(self) -> Dict:
+        return self.dic.get('model', {}).copy()
 
-    @cached_property
-    def lr_scheduler(self) -> paddle.optimizer.lr.LRScheduler:
-        assert 'lr_scheduler' in self.dic, 'No `lr_scheduler` specified in the configuration file.'
-        params = self.dic.get('lr_scheduler').copy()
+    @property
+    def loss_cfg(self) -> Dict:
+        return self.dic.get('loss', {}).copy()
 
-        use_warmup = False
-        if 'warmup_iters' in params:
-            use_warmup = True
-            warmup_iters = params.pop('warmup_iters')
-            assert 'warmup_start_lr' in params, \
-                "When use warmup, please set warmup_start_lr and warmup_iters in lr_scheduler"
-            warmup_start_lr = params.pop('warmup_start_lr')
-            end_lr = params['learning_rate']
+    @property
+    def distill_loss_cfg(self) -> Dict:
+        return self.dic.get('distill_loss', {}).copy()
 
-        lr_type = params.pop('type')
-        if lr_type == 'PolynomialDecay':
-            iters = self.iters - warmup_iters if use_warmup else self.iters
-            iters = max(iters, 1)
-            params.setdefault('decay_steps', iters)
-            params.setdefault('end_lr', 0)
-            params.setdefault('power', 0.9)
-        lr_sche = getattr(paddle.optimizer.lr, lr_type)(**params)
+    @property
+    def lr_scheduler_cfg(self) -> Dict:
+        return self.dic.get('lr_scheduler', {}).copy()
 
-        if use_warmup:
-            lr_sche = paddle.optimizer.lr.LinearWarmup(
-                learning_rate=lr_sche,
-                warmup_steps=warmup_iters,
-                start_lr=warmup_start_lr,
-                end_lr=end_lr)
+    @property
+    def optimizer_cfg(self) -> Dict:
+        return self.dic.get('optimizer', {}).copy()
 
-        return lr_sche
+    @property
+    def train_dataset_cfg(self) -> Dict:
+        return self.dic.get('train_dataset', {}).copy()
 
-    #################### loss
-    @cached_property
-    def loss(self) -> dict:
-        return self._prepare_loss('loss')
-
-    @cached_property
-    def distill_loss(self) -> dict:
-        return self._prepare_loss('distill_loss')
-
-    def _prepare_loss(self, loss_name):
-        args = self.dic.get(loss_name, {}).copy()
-        losses = {'coef': args['coef'], "types": []}
-        for loss_cfg in args['types']:
-            losses['types'].append(self.builder.create_object(loss_cfg))
-        return losses
-
-    #################### model
-    @cached_property
-    def model(self) -> paddle.nn.Layer:
-        model_cfg = self.dic.get('model').copy()
-        return self.builder.create_object(model_cfg)
-
-    #################### dataset and transforms
-    @cached_property
-    def train_dataset(self) -> paddle.io.Dataset:
-        dataset_cfg = self.dic.get('train_dataset').copy()
-        return self.builder.create_object(dataset_cfg)
-
-    @cached_property
-    def val_dataset(self) -> paddle.io.Dataset:
-        assert 'val_dataset' in self.dic, \
-            'No val_dataset specified in the configuration file.'
-        dataset_cfg = self.dic.get('val_dataset').copy()
-        return self.builder.create_object(dataset_cfg)
-
-    @cached_property
-    def train_dataset_class(self) -> Any:
-        dataset_type = self.dic['train_dataset']['type']
-        return self.builder.load_component_class(dataset_type)
-
-    @cached_property
-    def val_dataset_class(self) -> Any:
-        assert 'val_dataset' in self.dic, \
-            'No val_dataset specified in the configuration file.'
-        dataset_type = self.dic['val_dataset']['type']
-        return self.builder.load_component_class(dataset_type)
-
-    @cached_property
-    def val_transforms(self) -> list:
-        transforms = []
-        if 'val_dataset' in self.dic:
-            for tf in self.dic.get('val_dataset').get('transforms', []):
-                transforms.append(self.builder.create_object(tf))
-        return transforms
-
-    @cached_property
-    def val_dataset_config(self) -> Dict:
+    @property
+    def val_dataset_cfg(self) -> Dict:
         return self.dic.get('val_dataset', {}).copy()
 
-    @cached_property
+    # TODO merge test_config into val_dataset
+    @property
     def test_config(self) -> Dict:
         return self.dic.get('test_config', {}).copy()
 
-    #################### checker and builder
     @classmethod
     def update_config_dict(cls, dic: dict, *args, **kwargs) -> dict:
         return update_config_dict(dic, *args, **kwargs)
 
     @classmethod
-    def parse_from_yaml(cls, path: str, *args, **kwargs) -> dict:
+    def _parse_from_yaml(cls, path: str, *args, **kwargs) -> dict:
         return parse_from_yaml(path, *args, **kwargs)
 
     @classmethod
@@ -256,14 +150,9 @@ class Config(object):
 
         return checker.ConfigChecker(rules, allow_update=True)
 
-    @classmethod
-    def _build_default_component_builder(cls):
-        com_list = [
-            manager.MODELS, manager.BACKBONES, manager.DATASETS,
-            manager.TRANSFORMS, manager.LOSSES, manager.OPTIMIZERS
-        ]
-        component_builder = builder.DefaultComponentBuilder(com_list=com_list)
-        return component_builder
+    def __str__(self) -> str:
+        # Use NoAliasDumper to avoid yml anchor 
+        return yaml.dump(self.dic, Dumper=utils.NoAliasDumper)
 
 
 def parse_from_yaml(path: str):
@@ -321,7 +210,7 @@ def update_config_dict(dic: dict,
     if opts is not None:
         for item in opts:
             assert ('=' in item) and (len(item.split('=')) == 2), "--opts params should be key=value," \
-                " such as `--opts train.batch_size=1 test_config.scales=0.75,1.0,1.25`, " \
+                " such as `--opts batch_size=1 test_config.scales=0.75,1.0,1.25`, " \
                 "but got ({})".format(opts)
 
             key, value = item.split('=')
