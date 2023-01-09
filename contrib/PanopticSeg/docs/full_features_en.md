@@ -231,15 +231,15 @@ After executing the above script, the visualization results can be found in the 
 
 + `{PREFIX}_sem.png`: Color of each pixel represents the semantic class.
 
-![](arts/demo/vis_sem.png)
+<img src="https://user-images.githubusercontent.com/21275753/210925337-797befea-b774-4d63-849b-574709f098c7.png" height="300">
 
 + `{PREFIX}_ins.png`: Different colors in the image stand for different instances. For stuff classes, all pixels of that class are considered to belong to **one** instance.
 
-![](arts/demo/vis_ins.png)
+<img src="https://user-images.githubusercontent.com/21275753/210925345-773f7c81-d281-4053-9684-6e8e6ac841f9.png" height="300">
 
 + `{PREFIX}_pan.png`: Different *base* colors are used to mark different semantic classes. For thing classes, a unique color offset is added to each instance to distinguish different instances.
 
-![](arts/demo/vis_pan.png)
+<img src="https://user-images.githubusercontent.com/21275753/210925355-262775c2-3a9d-4c31-b45a-cef3bdebf4e0.png" height="300">
 
 ## 5 Model Deployment
 

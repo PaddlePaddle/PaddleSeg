@@ -69,6 +69,6 @@ PanopticSeg
 推荐基于 [MS COCO 格式](https://cocodataset.org/#home)自定义数据集，并实现一个继承自 `paddlepanseg.datasets.base_dataset.COCOStylePanopticDataset` 的数据集接口。具体实现方式如下：
 
 + 将数据集各类别的元信息存储在一个由字典组成的列表中。可以仿写 `paddlepanseg/datasets/cityscapes.py` 中的 `CITYSCAPES_CATEGORIES`。
-+ 定义一个 Python 类，继承自 `paddlepanseg.datasets.base_dataset.COCOStylePanopticDataset`。将类属性 `CATEGORY_META_INFO` 设置为上一步定义的列表。
++ 定义一个 Python 类，继承自 `paddlepanseg.datasets.base_dataset.COCOStylePanopticDataset`。将类属性 `CATEGORY_META_INFO` 设置为第一步中定义的列表，将类属性 `NUM_CLASSES` 设置为数据集包含的类别数。
 + 重写静态方法 `_get_image_id()`。该方法接受图像路径作为输入，需要返回该图像的唯一标识符。
 + 使用装饰器 `paddlepanseg.cvlibs.manager.DATASETS.add_component()` 修饰写好的类。可参考 `paddlepanseg/datasets/cityscapes.py` 中的做法。

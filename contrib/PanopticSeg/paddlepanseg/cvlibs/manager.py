@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddleseg.cvlibs.manager as manager
-from paddleseg.cvlibs.manager import ComponentManager, BACKBONES, TRANSFORMS
+from paddleseg.cvlibs.manager import ComponentManager, BACKBONES, TRANSFORMS, OPTIMIZERS
 
 # NOTE: Models, datasets, losses, and postprocessors are very different in the 
 # panoptic segmentation task, compared with the semantic segmentation task,

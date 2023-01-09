@@ -13,13 +13,11 @@
 # limitations under the License.
 
 import argparse
-import os
 
-import paddle
-from paddleseg.utils import get_sys_env, logger, get_image_list
+from paddleseg.utils import logger, get_image_list, utils
 
 from paddlepanseg.core import predict
-from paddlepanseg.cvlibs import manager, Config
+from paddlepanseg.cvlibs import Config, make_default_builder
 from paddlepanseg.transforms import constr_test_transforms
 
 
@@ -49,29 +47,19 @@ def parse_pred_args(*args, **kwargs):
 
 
 def pred_with_args(args):
-    env_info = get_sys_env()
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
-
-    paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError("No configuration file has been specified.")
-
     cfg = Config(args.cfg)
-    val_dataset = cfg.val_dataset
-    if not val_dataset:
-        raise RuntimeError(
-            "The validation dataset is not specified in the configuration file.")
+    builder = make_default_builder(cfg)
 
-    msg = "\n---------------Config Information---------------\n"
-    msg += str(cfg)
-    msg += "------------------------------------------------"
-    logger.info(msg)
+    utils.show_env_info()
+    utils.show_cfg_info(cfg)
 
-    model = cfg.model
+    model = builder.model
+    val_dataset = builder.val_dataset
     transforms = constr_test_transforms(val_dataset.transforms)
     image_list, image_dir = get_image_list(args.image_path)
-    logger.info("Number of images for prediction = {}".format(len(image_list)))
+    logger.info("Number of images for prediction = {}.".format(len(image_list)))
 
     predict(
         model,

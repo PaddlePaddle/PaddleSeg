@@ -231,15 +231,15 @@ python tools/predict.py \
 
 + `{图像名称前缀}_sem.png`：用不同颜色表示不同的语义类别。
 
-![](arts/demo/vis_sem.png)
+<img src="https://user-images.githubusercontent.com/21275753/210925337-797befea-b774-4d63-849b-574709f098c7.png" height="300">
 
 + `{图像名称前缀}_ins.png`：用不同颜色表示不同的实例。对于 stuff 类别，该类别的所有像素被当作属于**一个**实例。
 
-![](arts/demo/vis_ins.png)
+<img src="https://user-images.githubusercontent.com/21275753/210925345-773f7c81-d281-4053-9684-6e8e6ac841f9.png" height="300">
 
 + `{图像名称前缀}_pan.png`：用不同的*基准*颜色表示不同的语义类别。在此基础上，为每个实例添加颜色偏移以区分不同实例。
 
-![](arts/demo/vis_pan.png)
+<img src="https://user-images.githubusercontent.com/21275753/210925355-262775c2-3a9d-4c31-b45a-cef3bdebf4e0.png" height="300">
 
 ## 5 模型部署
 

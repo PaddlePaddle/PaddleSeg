@@ -172,6 +172,7 @@ def train(model,
                 loss_list = loss_computation(data, net_out, losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
+                optimizer.step()
 
             lr = optimizer.get_lr()
 

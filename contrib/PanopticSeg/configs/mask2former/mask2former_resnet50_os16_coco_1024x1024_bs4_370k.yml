@@ -106,11 +106,12 @@ model:
 optimizer:
   type: AdamW
   weight_decay: 0.05
-  backbone_lr_mult: 0.1
-
-grad_clip:
-  type: ClipGradByNorm
-  clip_norm: 0.01
+  custom_cfg:
+    - name: backbone
+      lr_mult: 0.1
+  grad_clip_cfg:
+    name: ClipGradByNorm
+    clip_norm: 0.01
 
 lr_scheduler:
   type: MultiStepDecay

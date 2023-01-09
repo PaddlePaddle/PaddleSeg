@@ -160,6 +160,7 @@ CITYSCAPES_CATEGORIES = [
 @manager.DATASETS.add_component
 class Cityscapes(COCOStylePanopticDataset):
     CATEGORY_META_INFO = CITYSCAPES_CATEGORIES
+    NUM_CLASSES = len(CITYSCAPES_CATEGORIES)
 
     @staticmethod
     def _get_image_id(image_path):

@@ -71,6 +71,6 @@ The recommended way of customizing your own dataset is to organize the dataset i
 Adding a new subclass of `COCOStylePanopticDataset` usually involves the following steps:
 
 + Store the meta-information of the dataset in a list of dicts. See `CITYSCAPES_CATEGORIES` in `paddlepanseg/datasets/cityscapes.py` for an example.
-+ Define a Python class that inherits from `paddlepanseg.datasets.base_dataset.COCOStylePanopticDataset`. Set the class attribute `CATEGORY_META_INFO` to the list of dicts you defined in the first step.
++ Define a Python class that inherits from `paddlepanseg.datasets.base_dataset.COCOStylePanopticDataset`. Set the class attribute `CATEGORY_META_INFO` to the list of dicts you defined in the first step, and set the class attribute `NUM_CLASSES` to the number of classes in the dataset.
 + Rewrite the static method `_get_image_id()`, which accepts the path of the image and returns a unique identifier of that image.
 + Wrap the new dataset class with the decorator `paddlepanseg.cvlibs.manager.DATASETS.add_component()`. See `paddlepanseg/datasets/cityscapes.py` for an example.

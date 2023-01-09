@@ -11,9 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from paddleseg.cvlibs import param_init
-
-from . import manager
-from .config import Config, make_default_builder
-from .info_dicts import build_info_dict

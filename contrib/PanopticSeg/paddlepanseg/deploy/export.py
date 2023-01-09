@@ -10,10 +10,18 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
 
-from paddleseg.cvlibs import param_init
+import paddle
 
-from . import manager
-from .config import Config, make_default_builder
-from .info_dicts import build_info_dict
+
+class WrappedPanSegInferModel(paddle.nn.Layer):
+    def __init__(self, net, postprocessor):
+        super().__init__()
+        self.net = net
+        self.postprocessor = postprocessor
+
+    def forward(self, x):
+        pred = self.net(x)
+        # XXX: Currently, pass an empty sample_dict to postprocessor
+        out = self.postprocessor({}, pred)
+        return [out['pan_pred']]
