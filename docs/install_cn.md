@@ -60,6 +60,7 @@ git clone https://gitee.com/paddlepaddle/PaddleSeg.git
 
 ```
 cd PaddleSeg
+pip install -r requirements.txt
 pip install -v -e .
 ```
 
