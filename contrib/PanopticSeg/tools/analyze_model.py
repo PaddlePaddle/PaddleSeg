@@ -202,7 +202,10 @@ def analyze(args):
 
     cfg = Config(args.config)
     dynamic_flops(
-        cfg.model, inputs, custom_ops=custom_ops, num_levels=args.num_levels)
+        cfg.model,
+        inputs,
+        custom_ops=custom_ops,
+        num_levels=args.num_levels)
 
 
 if __name__ == '__main__':

@@ -98,6 +98,13 @@ def parse_train_args(*args, **kwargs):
                 the batchnorm layers. Default is O1.")
     parser.add_argument(
         '--debug', help="To enable debug mode.", action='store_true')
+    parser.add_argument(
+        '--device', help="Device for training model.", 
+        default='gpu', choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
+        type=str)
+    parser.add_argument(
+        '--seed', help="Random seed.", 
+        default=None, type=int)
 
     return parser.parse_args(*args, **kwargs)
 
@@ -114,11 +121,11 @@ def train_with_args(args):
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
+    utils.set_seed(args.seed)
+    utils.set_device(args.device)
     utils.set_cv2_num_threads(args.num_workers)
 
-    # By default we use GPU devices, because training panoptic segmentation models requires a lot of
-    # calculations that CPUs cannot afford.
-    model = utils.convert_sync_batchnorm(builder.model, 'gpu')
+    model = utils.convert_sync_batchnorm(builder.model, args.device)
 
     train_dataset = builder.train_dataset
     val_dataset = builder.val_dataset if args.do_eval else None

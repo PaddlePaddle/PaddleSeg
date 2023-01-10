@@ -47,6 +47,10 @@ def parse_val_args(*args, **kwargs):
         action='store_true')
     parser.add_argument(
         '--debug', help="To enable debug mode.", action='store_true')
+    parser.add_argument(
+        '--device', help="Device for evaluating model.", 
+        default='gpu', choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
+        type=str)
 
     return parser.parse_args(*args, **kwargs)
 
@@ -59,6 +63,7 @@ def val_with_args(args):
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
+    utils.set_device(args.device)
 
     model = builder.model
     if args.model_path:

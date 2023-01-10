@@ -78,8 +78,7 @@ class DecodeLabels(object):
                     ins_label[mask] = ins_id
                 # Re-encode `pan_id` using `cat_id` and tracked class instance id
                 class_id_tracker[cat_id] += 1
-                pan_id = encode_pan_id(
-                    cat_id, self.label_divisor, ins_id=class_id_tracker[cat_id])
+                pan_id = encode_pan_id(cat_id, self.label_divisor, ins_id=class_id_tracker[cat_id])
                 pan_label[mask] = pan_id
             else:
                 pan_id = encode_pan_id(cat_id, self.label_divisor)
