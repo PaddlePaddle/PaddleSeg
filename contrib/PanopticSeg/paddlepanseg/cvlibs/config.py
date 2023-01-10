@@ -42,7 +42,7 @@ class PanSegBuilder(builder.SegBuilder):
         if comp_list is None:
             comp_list = [
                 manager.MODELS, manager.BACKBONES, manager.DATASETS,
-                manager.TRANSFORMS, manager.LOSSES, manager.OPTIMIZERS, 
+                manager.TRANSFORMS, manager.LOSSES, manager.OPTIMIZERS,
                 manager.POSTPROCESSORS
             ]
         super().__init__(config, comp_list)
@@ -58,7 +58,8 @@ class PanSegBuilder(builder.SegBuilder):
 
         pp_cfg = self.config.postprocessor_cfg
         if pp_cfg == {}:
-            raise RuntimeError("No `postprocessor` is specified in the configuration file.")
+            raise RuntimeError(
+                "No `postprocessor` is specified in the configuration file.")
         _set_attr_if_not_exists(pp_cfg, 'num_classes', 1)
         _set_attr_if_not_exists(pp_cfg, 'thing_ids', [])
         _set_attr_if_not_exists(pp_cfg, 'label_divisor', 1000)

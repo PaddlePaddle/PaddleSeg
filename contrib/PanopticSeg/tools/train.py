@@ -99,12 +99,12 @@ def parse_train_args(*args, **kwargs):
     parser.add_argument(
         '--debug', help="To enable debug mode.", action='store_true')
     parser.add_argument(
-        '--device', help="Device for training model.", 
-        default='gpu', choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
+        '--device',
+        help="Device for training model.",
+        default='gpu',
+        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
         type=str)
-    parser.add_argument(
-        '--seed', help="Random seed.", 
-        default=None, type=int)
+    parser.add_argument('--seed', help="Random seed.", default=None, type=int)
 
     return parser.parse_args(*args, **kwargs)
 

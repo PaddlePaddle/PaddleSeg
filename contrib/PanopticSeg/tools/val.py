@@ -48,8 +48,10 @@ def parse_val_args(*args, **kwargs):
     parser.add_argument(
         '--debug', help="To enable debug mode.", action='store_true')
     parser.add_argument(
-        '--device', help="Device for evaluating model.", 
-        default='gpu', choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
+        '--device',
+        help="Device for evaluating model.",
+        default='gpu',
+        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
         type=str)
 
     return parser.parse_args(*args, **kwargs)

@@ -19,7 +19,7 @@
 
 由于模型训练需要较高算力，推荐安装 GPU 版本的 PaddlePaddle（支持 CUDA 10.2 或更新的 CUDA 版本）。请访问 [PaddlePaddle 官方网站](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html) 以阅读详细的安装教程。
 
-### 1.2 下载 PaddleSeg 
+### 1.2 下载 PaddleSeg
 
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg

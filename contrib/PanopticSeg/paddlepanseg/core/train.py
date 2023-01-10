@@ -18,7 +18,8 @@ import shutil
 from collections import deque
 
 import paddle
-from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger, worker_init_fn, op_flops_funs)
+from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
+                             worker_init_fn, op_flops_funs)
 
 from paddlepanseg.core.val import evaluate
 
@@ -107,8 +108,7 @@ def train(model,
 
     if nranks > 1:
         paddle.distributed.fleet.init(is_collective=True)
-        optimizer = paddle.distributed.fleet.distributed_optimizer(
-            optimizer)
+        optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)
         ddp_model = paddle.distributed.fleet.distributed_model(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
