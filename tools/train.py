@@ -19,7 +19,7 @@ import paddle
 import numpy as np
 import cv2
 
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.utils import get_sys_env, logger, utils
 from paddleseg.core import train
 
@@ -133,6 +133,7 @@ def main(args):
         iters=args.iters,
         batch_size=args.batch_size,
         opts=args.opts)
+    builder = SegBuilder(cfg)
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
@@ -152,23 +153,21 @@ def main(args):
         for i in range(loss_len):
             cfg.dic['loss']['types'][i]['data_format'] = args.data_format
 
-    model = utils.convert_sync_batchnorm(cfg.model, args.device)
+    model = utils.convert_sync_batchnorm(builder.model, args.device)
 
-    train_dataset = cfg.train_dataset
-    assert train_dataset is not None, \
-        'The training dataset is not specified in the configuration file.'
-    assert len(train_dataset) != 0, \
-        'The length of train_dataset is 0. Please check whether the dataset is valid.'
+    train_dataset = builder.train_dataset
     # TODO refactor
     if args.repeats > 1:
         train_dataset.file_list *= args.repeats
-    val_dataset = cfg.val_dataset if args.do_eval else None
+    val_dataset = builder.val_dataset if args.do_eval else None
+    optimizer = builder.optimizer
+    loss = builder.loss
 
     train(
         model,
         train_dataset,
         val_dataset=val_dataset,
-        optimizer=cfg.optimizer,
+        optimizer=optimizer,
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
@@ -177,7 +176,7 @@ def main(args):
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
-        losses=cfg.loss,
+        losses=loss,
         keep_checkpoint_max=args.keep_checkpoint_max,
         test_config=cfg.test_config,
         precision=args.precision,
