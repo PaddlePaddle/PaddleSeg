@@ -24,14 +24,14 @@ import paddle
 from paddle.hapi.static_flops import Table
 from paddle.hapi.dynamic_flops import (count_parameters, register_hooks,
                                        count_io_info)
-from paddleseg.utils import get_sys_env, logger, op_flops_funs
+from paddleseg.utils import get_sys_env, logger, op_flops_funs, utils
 
-from paddlepanseg.cvlibs import Config
+from paddlepanseg.cvlibs import Config, make_default_builder
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Model analysis")
-    parser.add_argument('--config', help="Config file.", type=str)
+    parser.add_argument('--config', dest='cfg', help="Config file.", type=str)
     parser.add_argument(
         '--input_shape',
         nargs='+',
@@ -188,30 +188,30 @@ def dynamic_flops(model, inputs, custom_ops=None, num_levels=None):
     logger.info('\n' + tab_info)
 
 
-def analyze(args):
-    env_info = get_sys_env()
-    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
-    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
-                     ['-' * 48])
-    logger.info(info)
-
-    paddle.set_device('cpu')
-
+def analyze(args, cfg):
     custom_ops = {paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn}
     inputs = paddle.randn(args.input_shape)
 
-    cfg = Config(args.config)
+    builder = make_default_builder(cfg)
     dynamic_flops(
-        cfg.model, inputs, custom_ops=custom_ops, num_levels=args.num_levels)
+        builder.model,
+        inputs,
+        custom_ops=custom_ops,
+        num_levels=args.num_levels)
 
 
 if __name__ == '__main__':
     args = parse_args()
-    if not args.config:
-        raise RuntimeError("No configuration file has been specified.")
 
-    logger.info("config:" + args.config)
+    if not args.cfg:
+        raise RuntimeError("No configuration file has been specified.")
+    cfg = Config(args.cfg)
+
+    utils.show_env_info()
+    utils.show_cfg_info(cfg)
     logger.info("input_shape:")
     logger.info(args.input_shape)
 
-    analyze(args)
+    paddle.set_device('cpu')
+
+    analyze(args, cfg)
