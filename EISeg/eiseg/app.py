@@ -2127,7 +2127,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             if self.save_status["coco"]:
                 self.save_coco_format(saveAs=True, savePath=savePath, shape=s)
             if self.save_status["yolo"]:
-                self.save_yolo_format(saveAs=True, savePath=savePath)
+                self.save_yolo_format(saveAs=True, savePath=savePath, shape=s)
             if self.save_status["voc"]:
                 self.save_voc_format(saveAs=True, savePath=savePath, shape=s)
 
@@ -3292,7 +3292,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             # print("self.labCorres.userLabDict: ", self.labCorres.userLabDict)
 
     # 将检测结果对应的标签保存为yolo、voc、coco三种格式
-    def save_yolo_format(self, saveAs=False, savePath=None):
+    def save_yolo_format(self, saveAs=False, savePath=None, shape=None):
+        s = shape
         self.save_status["yolo"] = saveAs
 
         if self.save_status["yolo"]:
@@ -3309,10 +3310,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 for p in polygon.scnenePoints:
                     label["points"].append(p)
 
-                x = label["points"][0][0]
-                y = label["points"][0][-1]
-                w = label["points"][2][0] - label["points"][0][0]
-                h = label["points"][2][-1] - label["points"][0][-1]
+                xmin = label["points"][0][0]
+                ymin = label["points"][0][-1]
+                xmax = label["points"][2][0]
+                ymax = label["points"][2][-1]
+                img_h, img_w = s[:2]
+
+                x = (xmin + xmax) / 2 / img_w
+                y = (ymin + ymax) / 2 / img_h
+                w = (xmax - xmin) / img_w
+                h = (ymax - ymin) / img_h
                 bbox = str(x) + " " + str(y) + " " + str(w) + " " + str(h)
                 yolo_label = str(label["labelIdx"]) + " " + bbox
                 labels.append(yolo_label)
