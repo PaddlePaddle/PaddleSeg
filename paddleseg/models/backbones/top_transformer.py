@@ -544,7 +544,7 @@ class TopTransformer(nn.Layer):
                 out_indices=encoder_out_indices,
                 in_channels=in_channels,
                 lr_mult=lr_mult)
-            pretrained = 'https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip'
+            # pretrained = 'https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip'
         elif backbone == 'esnet':
             self.feat_channels = [24, 56, 120, 232]
             from .esnet import ESNet_x0_5
@@ -585,6 +585,11 @@ class TopTransformer(nn.Layer):
             from .mobilenetv3 import MobileNetV3_large_x1_0_edit_x0_75
             self.tpm = MobileNetV3_large_x1_0_edit_x0_75()
             pretrained = 'saved_model/best_model_mbv3edit075.pdparams'
+        elif backbone == 'MobileNetV3_large_x1_0_edit_x0_75_concate':
+            self.feat_channels = [32, 48, 96, 144]
+            from .mobilenetv3 import MobileNetV3_large_x1_0_edit_x0_75_concate
+            self.tpm = MobileNetV3_large_x1_0_edit_x0_75_concate()
+            pretrained = None
         else:
             raise NotImplementedError('Backbone {} is not supported.'.format(
                 backbone))
@@ -643,7 +648,7 @@ class TopTransformer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def forward(self, x):
+    def forward(self, x, mode='simple'):
         # [4, 3, 512, 512] [512,3,224,224] channels [32,64,128,160]
         outputs = self.tpm(
             x
@@ -655,8 +660,18 @@ class TopTransformer(nn.Layer):
 
         if self.injection:
             if self.injection_type == 'InjectionMultiSumallmultiallsum':
-                return self.inj_module(
-                    [outputs[i] for i in self.trans_out_indices] + [out])
+                if mode == "simple":
+                    return [
+                        self.inj_module([
+                            outputs[i] for i in self.trans_out_indices
+                        ] + [out])
+                    ]
+                else:
+                    return [
+                        outputs[1], self.inj_module([
+                            outputs[i] for i in self.trans_out_indices
+                        ] + [out])
+                    ]
             else:
                 # xx = out.split(self.feat_channels, axis=1)
                 results = []
@@ -721,6 +736,7 @@ def TopTransformer_Base(**kwargs):
         drop_path_rate=0.,
         act_layer=nn.ReLU6,
         injection=True,
+        injection_type="InjectionMultiSumallmultiallsum",
         **kwargs)
     return model
 
