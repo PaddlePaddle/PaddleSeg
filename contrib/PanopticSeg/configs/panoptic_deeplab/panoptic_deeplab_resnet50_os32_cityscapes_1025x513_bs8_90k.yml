@@ -103,7 +103,7 @@ model:
   instance_head_channels: 32
 
 optimizer:
-  type: adam
+  type: Adam
 
 lr_scheduler:
   type: PolynomialDecay

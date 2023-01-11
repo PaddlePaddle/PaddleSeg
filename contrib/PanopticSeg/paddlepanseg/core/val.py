@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from collections import OrderedDict
 
 import numpy as np
 import time
 import paddle
-import paddle.nn.functional as F
-from paddleseg.utils import TimeAverager, calculate_eta, logger, progbar
+from paddleseg.utils import TimeAverager, logger, progbar
 
 from paddlepanseg.core import infer
 from paddlepanseg.cvlibs import build_info_dict

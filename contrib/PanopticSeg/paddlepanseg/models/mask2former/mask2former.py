@@ -34,7 +34,27 @@ class Mask2Former(nn.Layer):
      (https://arxiv.org/abs/2112.01527)
 
     Args:
-        tbd
+        num_classes (int): The number of target semantic classes.
+        backbone (paddle.nn.Layer): The backbone network. Currently supports ResNet50-vd/ResNet101-vd/Xception65.
+        backbone_indices (tuple|None): The indices of backbone output feature maps to use.
+        backbone_feat_os (tuple|None): The output strides of backbone output feature maps.
+        num_queries (int): The number of queries to use in the decoder.
+        pd_num_heads (int): The number of heads of the multi-head attention modules used in the pixel decoder.
+        pd_conv_dim (int): The number of convolutional filters used for input projection in the pixel decoder.
+        pd_mask_dim (int): The number of convolutional filters used to produce mask features in the pixel decoder.
+        pd_ff_dim (int): The number of feature channels in the feed-forward networks used in the pixel decoder.
+        pd_num_layers (int): The number of basic layers used in the pixel decoder.
+        pd_common_stride (int): The base output stride of feature maps in the pixel decoder.
+        td_hidden_dim (int): The dimension of the hidden features in the transformer decoder.
+        td_num_head (int): The number of heads of the multi-head attention modules used in the transformer decoder.
+        td_ff_dim (int): The number of feature channels in the feed-forward networks used in the transformer decoder.
+        td_num_layers (int): The number of basic layers used in the transformer decoder.
+        td_pre_norm (bool): Whether or not to normalize features before the attention operation in the transformer 
+            decoder.
+        td_mask_dim (bool): The number of convolutional filters used for mask prediction in the transformer decoder.
+        td_enforce_proj (bool): Whether or not to use an additional input projection layer in the transformer decoder.
+        pretrained (str|None, optional): The path or url of pretrained model. If None, no pretrained model will be used.
+            Default: None.
     """
 
     def __init__(self,

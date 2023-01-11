@@ -15,7 +15,6 @@
 import json
 import copy
 import os
-import os.path as osp
 
 import numpy as np
 import paddle
@@ -27,16 +26,20 @@ from paddlepanseg.cvlibs import build_info_dict
 
 class PanopticDataset(paddle.io.Dataset):
     NO_COLLATION_KEYS = ('gt_fields', 'trans_info', 'image_id')
+    NUM_CLASSES = None
+    IMG_CHANNELS = 3
+    IGNORE_INDEX = 255
+    LABEL_DIVISOR = 1000
 
     def __init__(self,
                  mode,
                  dataset_root,
                  transforms,
                  file_list,
-                 label_divisor=1000,
+                 label_divisor=None,
                  thing_ids=None,
                  num_classes=None,
-                 ignore_index=255,
+                 ignore_index=None,
                  separator=' ',
                  no_collation_keys=None):
         super().__init__()
@@ -48,11 +51,9 @@ class PanopticDataset(paddle.io.Dataset):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = file_list
-        if num_classes is None:
-            num_classes = 19
-        self.num_classes = num_classes
-        self.ignore_index = ignore_index
-        self.label_divisor = label_divisor
+        self.num_classes = num_classes if num_classes is not None else self.NUM_CLASSES
+        self.ignore_index = ignore_index if ignore_index is not None else self.IGNORE_INDEX
+        self.label_divisor = label_divisor if label_divisor is not None else self.LABEL_DIVISOR
         self.thing_ids = thing_ids
         self.sep = separator
         self.no_collation_keys = set(self.NO_COLLATION_KEYS)
@@ -186,13 +187,15 @@ class COCOStylePanopticDataset(PanopticDataset):
 
     @classmethod
     def convert_id_for_eval(cls, id_):
-        if not hasattr(cls, '_id_rev_mapper'):
+        # Do NOT use `hasattr` here because we expect
+        # only the derived class to have this attribute.
+        if not '_id_rev_mapper' in cls.__dict__:
             cls._set_id_mapper()
         return cls._id_rev_mapper[id_]
 
     @classmethod
     def convert_id_for_train(cls, id_):
-        if not hasattr(cls, '_id_mapper'):
+        if not '_id_mapper' in cls.__dict__:
             cls._set_id_mapper()
         return cls._id_mapper[id_]
 

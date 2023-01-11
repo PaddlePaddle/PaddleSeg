@@ -19,6 +19,7 @@ import paddle
 import paddle.nn.functional as F
 
 from paddlepanseg.cvlibs import build_info_dict, manager
+from paddlepanseg.utils import encode_pan_id
 from paddlepanseg.postprocessors.base_pp import Postprocessor
 
 
@@ -149,7 +150,9 @@ class PanopticDeepLabPostprocessor(Postprocessor):
                 class_id_tracker[class_id] += 1
                 new_ins_id = class_id_tracker[class_id]
                 pan_seg[thing_mask] = paddle.full(
-                    [1], (class_id + 1) * self.label_divisor + new_ins_id,
+                    [1],
+                    encode_pan_id(
+                        class_id, self.label_divisor, ins_id=new_ins_id),
                     dtype='int64')
 
         # Paste stuff to unoccupied area.
@@ -163,7 +166,9 @@ class PanopticDeepLabPostprocessor(Postprocessor):
             stuff_mask = (sem_seg == class_id) & (ins_seg == 0)
             if stuff_mask.sum() >= self.stuff_area:
                 pan_seg[stuff_mask] = paddle.full(
-                    [1], (class_id + 1) * self.label_divisor, dtype='int64')
+                    [1],
+                    encode_pan_id(class_id, self.label_divisor),
+                    dtype='int64')
 
         return pan_seg
 

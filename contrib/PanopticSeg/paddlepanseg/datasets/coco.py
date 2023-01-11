@@ -824,6 +824,7 @@ COCO_CATEGORIES = [
 @manager.DATASETS.add_component
 class COCO(COCOStylePanopticDataset):
     CATEGORY_META_INFO = COCO_CATEGORIES
+    NUM_CLASSES = len(COCO_CATEGORIES)
 
     @staticmethod
     def _get_image_id(image_path):

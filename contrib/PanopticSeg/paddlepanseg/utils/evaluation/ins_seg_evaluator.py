@@ -17,6 +17,7 @@ from collections import defaultdict
 import numpy as np
 
 from paddlepanseg.cvlibs import build_info_dict
+from paddlepanseg.utils import decode_pan_id, is_crowd
 from .evaluator import Evaluator
 
 
@@ -221,8 +222,8 @@ class InsSegEvaluator(Evaluator):
     def get_instances(self, preds, gts, ignore_mask=None):
         """
         In this method, we create two dicts of list
-        - pred_instances: contains all predictions and their associated gt
-        - gtInstances:   contains all gt instances and their associated predictions
+        - pred_instances: contains all predictions and their associated gt.
+        - gtInstances:   contains all gt instances and their associated predictions.
 
         Args:
             preds (list): Prediction of image.
@@ -309,11 +310,11 @@ class InsSegEvaluator(Evaluator):
 
     def convert_pred_map(self, seg_pred, pan_pred):
         """
-        Convert the predictions with format (h*w) to the format that satisfies the AP calculation.
+        Convert the predictions with format (h*w) to the format that can be used in AP calculation.
 
         Args:
-            seg_pred (np.ndarray): the sementic segmentation map with shape C * H * W. Value is probability.
-            pan_pred (np.ndarray): panoptic predictions, void_label, stuff_id * label_divisor, thing_id * label_divisor + ins_id , ins_id >= 1.
+            seg_pred (np.ndarray): The sementic segmentation map with shape C * H * W. Value is probability.
+            pan_pred (np.ndarray): Panoptic predictions with encoded pan_ids.
             
         Returns:
             list: tuple list like: [(label, score, mask), ...]
@@ -321,9 +322,9 @@ class InsSegEvaluator(Evaluator):
         preds = []
         instance_cnt = np.unique(pan_pred)
         for i in instance_cnt:
-            label = (i // self.label_divisor) - 1
+            label, _ = decode_pan_id(i, self.label_divisor)
             # Stuff or crowded thing
-            if (label not in self.thing_ids) or (i % self.label_divisor == 0):
+            if (label not in self.thing_ids) or is_crowd(i, self.label_divisor):
                 continue
             mask = pan_pred == i
             score = np.mean(seg_pred[label][mask])
