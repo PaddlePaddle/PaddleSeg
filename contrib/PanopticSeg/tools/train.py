@@ -14,11 +14,10 @@
 
 import argparse
 
-import paddle
-from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils import logger, utils
 
 from paddlepanseg.core import train
-from paddlepanseg.cvlibs import manager, Config
+from paddlepanseg.cvlibs import Config, make_default_builder
 
 
 def parse_train_args(*args, **kwargs):
@@ -99,58 +98,47 @@ def parse_train_args(*args, **kwargs):
                 the batchnorm layers. Default is O1.")
     parser.add_argument(
         '--debug', help="To enable debug mode.", action='store_true')
+    parser.add_argument(
+        '--device',
+        help="Device for training model.",
+        default='gpu',
+        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
+        type=str)
+    parser.add_argument('--seed', help="Random seed.", default=None, type=int)
 
     return parser.parse_args(*args, **kwargs)
 
 
 def train_with_args(args):
-    env_info = get_sys_env()
-    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
-    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
-                     ['-' * 48])
-    logger.info(info)
-
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
-
-    paddle.set_device(place)
-    if not args.cfg:
+    if args.cfg is None:
         raise RuntimeError("No configuration file has been specified.")
-
     cfg = Config(
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
+    builder = make_default_builder(cfg)
 
-    train_dataset = cfg.train_dataset
-    if train_dataset is None:
-        raise RuntimeError(
-            "The training dataset is not specified in the configuration file.")
-    elif len(train_dataset) == 0:
-        raise ValueError(
-            "The length of `train_dataset` is 0. Please check if your dataset is valid."
-        )
-    val_dataset = cfg.val_dataset if args.do_eval else None
-    losses = cfg.loss
+    utils.show_env_info()
+    utils.show_cfg_info(cfg)
+    utils.set_seed(args.seed)
+    utils.set_device(args.device)
+    utils.set_cv2_num_threads(args.num_workers)
 
-    msg = "\n---------------Config Information---------------\n"
-    msg += str(cfg)
-    msg += "------------------------------------------------"
-    logger.info(msg)
+    model = utils.convert_sync_batchnorm(builder.model, args.device)
 
-    # Convert bn to sync_bn if necessary
-    if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
-        model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
-    else:
-        model = cfg.model
+    train_dataset = builder.train_dataset
+    val_dataset = builder.val_dataset if args.do_eval else None
+    losses = builder.loss
+    optimizer = builder.optimizer
+    postprocessor = builder.postprocessor
 
     try:
         train(
             model,
             train_dataset,
             val_dataset=val_dataset,
-            optimizer=cfg.optimizer,
+            optimizer=optimizer,
             save_dir=args.save_dir,
             iters=cfg.iters,
             batch_size=cfg.batch_size,
@@ -161,7 +149,7 @@ def train_with_args(args):
             use_vdl=args.use_vdl,
             losses=losses,
             keep_checkpoint_max=args.keep_checkpoint_max,
-            postprocessor=cfg.postprocessor,
+            postprocessor=postprocessor,
             eval_sem=args.eval_sem,
             eval_ins=args.eval_ins,
             precision=args.precision,

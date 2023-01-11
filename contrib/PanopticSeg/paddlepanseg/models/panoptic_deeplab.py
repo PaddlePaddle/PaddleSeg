@@ -36,20 +36,20 @@ class PanopticDeepLab(nn.Layer):
      (https://arxiv.org/abs/1911.10194)
     
     Args:
-        num_classes (int): The unique number of target classes.
-        backbone (paddle.nn.Layer): Backbone network, currently support Resnet50_vd/Resnet101_vd/Xception65.
-        backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
-           Default: [2, 1, 0, 3].
-        aspp_ratios (tuple, optional): The dilation rate using in ASSP module.
-            If output_stride=16, aspp_ratios should be set as [1, 6, 12, 18].
-            If output_stride=8, aspp_ratios should be [1, 12, 24, 36].
+        num_classes (int): The number of target semantic classes.
+        backbone (paddle.nn.Layer): The backbone network. Currently supports ResNet50-vd/ResNet101-vd/Xception65.
+        backbone_indices (tuple|None, optional): The indices of backbone output feature maps to use. 
+            Default: [2, 1, 0, 3].
+        aspp_ratios (tuple|None, optional): The dilation rate using in the ASSP module.
+            If output_stride=16, `aspp_ratios` should be set as [1, 6, 12, 18].
+            If output_stride=8, `aspp_ratios` should be [1, 12, 24, 36].
             Default: [1, 6, 12, 18].
-        aspp_out_channels (int, optional): The output channels of ASPP module. Default: 256.
-        decoder_channels (int, optional): The channels of Decoder. Default: 256.
-        low_level_channels_projects (list, opitonal). The channels of low level features to output. Defualt: None.
-        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
-            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
-        pretrained (str, optional): The path or url of pretrained model. Default: None.
+        aspp_out_channels (int, optional): The output channels of the ASPP module. Default: 256.
+        decoder_channels (int, optional): The channels of the decoder. Default: 256.
+        low_level_channels_projects (list|None, opitonal): The channels of low-level features to extract. Defualt: None.
+        align_corners (bool, optional): See `align_corners` of `paddle.nn.functional.interpolate`. Default: False.
+        pretrained (str|None, optional): The path or url of pretrained model. If None, no pretrained model will be used.
+            Default: None.
     """
 
     def __init__(self,

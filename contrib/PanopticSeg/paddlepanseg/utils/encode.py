@@ -12,9 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os.path as osp
-from . import core, cvlibs, datasets, models, postprocessors, transforms
+# TODO: Make the encoding system object-oriented and configurable.
 
-__version__ = '0.0.0'
-__custom_op_path__ = osp.abspath(
-    osp.normpath(osp.join(osp.dirname(__file__), 'models', 'ops')))
+_CAT_ID_OFFSET = 1
+
+
+def decode_pan_id(pan_id, label_divisor):
+    return (pan_id // label_divisor) - _CAT_ID_OFFSET, pan_id % label_divisor
+
+
+def encode_pan_id(cat_id, label_divisor, ins_id=0):
+    return (cat_id + _CAT_ID_OFFSET) * label_divisor + ins_id
+
+
+def is_crowd(pan_id, label_divisor):
+    return pan_id % label_divisor == 0

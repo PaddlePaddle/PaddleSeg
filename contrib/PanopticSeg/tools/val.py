@@ -14,12 +14,11 @@
 
 import argparse
 
-import paddle
 import paddleseg
-from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils import logger, utils
 
 from paddlepanseg.core import evaluate
-from paddlepanseg.cvlibs import manager, Config
+from paddlepanseg.cvlibs import Config, make_default_builder
 
 
 def parse_val_args(*args, **kwargs):
@@ -48,44 +47,38 @@ def parse_val_args(*args, **kwargs):
         action='store_true')
     parser.add_argument(
         '--debug', help="To enable debug mode.", action='store_true')
+    parser.add_argument(
+        '--device',
+        help="Device for evaluating model.",
+        default='gpu',
+        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
+        type=str)
 
     return parser.parse_args(*args, **kwargs)
 
 
 def val_with_args(args):
-    env_info = get_sys_env()
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
-
-    paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError("No configuration file has been specified.")
-
     cfg = Config(args.cfg)
-    val_dataset = cfg.val_dataset
-    if val_dataset is None:
-        raise RuntimeError(
-            "The validation dataset is not specified in the configuration file.")
-    elif len(val_dataset) == 0:
-        raise ValueError(
-            "The length of `val_dataset` is 0. Please check if your dataset is valid."
-        )
+    builder = make_default_builder(cfg)
 
-    msg = "\n---------------Config Information---------------\n"
-    msg += str(cfg)
-    msg += "------------------------------------------------"
-    logger.info(msg)
+    utils.show_env_info()
+    utils.show_cfg_info(cfg)
+    utils.set_device(args.device)
 
-    model = cfg.model
+    model = builder.model
     if args.model_path:
         paddleseg.utils.utils.load_entire_model(model, args.model_path)
         logger.info("Params are successfully loaded.")
+    val_dataset = builder.val_dataset
+    postprocessor = builder.postprocessor
 
     try:
         evaluate(
             model,
             val_dataset,
-            postprocessor=cfg.postprocessor,
+            postprocessor=postprocessor,
             num_workers=args.num_workers,
             eval_sem=args.eval_sem,
             eval_ins=args.eval_ins)

@@ -59,9 +59,7 @@ def import_custom_op(op_mod, must, op_sub_mod):
             f"Custom operator {op_mod} is not found. Please check if it is properly installed."
         )
         if not must:
-            logger.warning(
-                f"{op_sub_mod} is used instead of {op_mod}."
-            )
+            logger.warning(f"{op_sub_mod} is used instead of {op_mod}.")
             importlib.import_module(op_sub_mod)
             return mod
         else:

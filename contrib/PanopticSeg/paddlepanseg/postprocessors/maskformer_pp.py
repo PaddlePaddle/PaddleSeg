@@ -24,6 +24,7 @@ import paddle
 import paddle.nn.functional as F
 
 from paddlepanseg.cvlibs import build_info_dict, manager
+from paddlepanseg.utils import encode_pan_id
 from paddlepanseg.postprocessors.base_pp import Postprocessor
 
 
@@ -103,7 +104,8 @@ class MaskFormerPostprocessor(Postprocessor):
 
                 # Merge stuff regions
                 if not isthing:
-                    pan_pred[mask] = (pred_class + 1) * self.label_divisor
+                    pan_pred[mask] = encode_pan_id(pred_class,
+                                                   self.label_divisor)
                     if pred_class in stuff_memory_list.keys():
                         ins_id_map[mask] = stuff_memory_list[pred_class]
                         continue
@@ -112,8 +114,11 @@ class MaskFormerPostprocessor(Postprocessor):
                 else:
                     class_id_tracker[pred_class] += 1
                     pan_pred[mask] = paddle.full(
-                        [1], (pred_class + 1) * self.label_divisor +
-                        class_id_tracker[pred_class],
+                        [1],
+                        encode_pan_id(
+                            pred_class,
+                            self.label_divisor,
+                            ins_id=class_id_tracker[pred_class]),
                         dtype='int64')
 
                 current_segment_id += 1
