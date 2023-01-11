@@ -253,7 +253,7 @@ class AIM(nn.Layer):
         _, _, h, w = data['img'].shape
 
         if self.training:
-            local_sigmoid, global_sigmoid, fusion_sigmoid = self._forward(src)
+            global_sigmoid, local_sigmoid, fusion_sigmoid = self._forward(src)
             logit_dict = {
                 'local': local_sigmoid,
                 'global': global_sigmoid,

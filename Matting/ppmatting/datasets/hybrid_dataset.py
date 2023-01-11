@@ -146,7 +146,7 @@ class HybridDataset(MattingDataset):
         image = image.astype(np.uint8)
 
         if random.random()<0.5:
-            image, fg, bg = self.add_guassian_noise(image, fg, bg)
+            image, fg, bg = self.add_gaussian_noise(image, fg, bg)
 
         return image, fg, bg
     
