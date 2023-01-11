@@ -114,7 +114,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "coco": True,
             "cutout": True,
             "yolo": False,
-            "json_labelme": True
+            "json_labelme": False
         }  # 是否保存这几个格式
         self.outputDir = None  # 标签保存路径
         self.labelPaths = []  # 所有outputdir中的标签文件路径
@@ -448,11 +448,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # seg
         save_json = action(
             tr("&JSON保存"),
-            partial(self.toggleSave, "json"),
+            partial(self.toggleSave, "json_labelme"),
             "save_json",
             "SaveJson",
             tr("保存为labelme的JSON格式"),
-            checkable=False,
+            checkable=True,
             checked=self.save_status["json_labelme"], )
         # det
         save_yolo = action(

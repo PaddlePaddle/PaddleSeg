@@ -200,8 +200,8 @@
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="435"/>
-        <source>保存为JSON格式</source>
-        <translation>حفظ جسون</translation>
+        <source>保存为labelme的JSON格式</source>
+        <translation>&#xa0;شكل جسون كما labelme&#xa0;</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="461"/>
@@ -212,16 +212,6 @@
         <location filename="../../eiseg/app.py" line="443"/>
         <source>保存为COCO格式</source>
         <translation>حفظ كوكو</translation>
-    </message>
-    <message>
-        <location filename="../../eiseg/app.py" line="452"/>
-        <source>&amp;VOC保存</source>
-        <translation>&amp;شكل المركبات العضوية المتطايرة</translation>
-    </message>
-    <message>
-        <location filename="../../eiseg/app.py" line="452"/>
-        <source>保存为VOC格式</source>
-        <translation>حفظ المعلومات في شكل مضلع المركبات العضوية المتطايرة</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="461"/>

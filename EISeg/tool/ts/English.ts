@@ -200,8 +200,8 @@
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="435"/>
-        <source>保存为JSON格式</source>
-        <translation>Save polygon information as JSON format</translation>
+        <source>保存为labelme的JSON格式</source>
+        <translation>Save polygon information as JSON format for labelme</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="461"/>
@@ -212,16 +212,6 @@
         <location filename="../../eiseg/app.py" line="443"/>
         <source>保存为COCO格式</source>
         <translation>Save polygon information as COCO format</translation>
-    </message>
-    <message>
-        <location filename="../../eiseg/app.py" line="452"/>
-        <source>&amp;VOC保存</source>
-        <translation>&amp;Keep VOC Format</translation>
-    </message>
-    <message>
-        <location filename="../../eiseg/app.py" line="452"/>
-        <source>保存为VOC格式</source>
-        <translation>Save polygon information as VOC format</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="461"/>
