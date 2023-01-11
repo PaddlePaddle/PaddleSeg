@@ -38,15 +38,29 @@ def mkdirp(path):
 
 
 # 语义分割
-def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
-    """Convert the data marked by eiseg into the semantic segmentation data of paddlex.
+def Eiseg2paddlex(save_folder, 
+                  imgs_folder, 
+                  lab_folder=None, 
+                  mode="seg", 
+                  split_rate=0.9):
+    """Convert the data marked by eiseg into the semantic segmentation or detection data of paddlex.
     Args:
         save_folder (str): Data save folder.
         imgs_folder (str): Image storage folder.
         lab_folder (str, optional): Label storage folder, 
             if it is none, it will be saved in the current folder by default. Defaults to None.
+        mode (str, optional): Semantic segmentation or detection data. Defaults to "seg".
         split_rate (float, optional): Proportion of training data and validation data. Defaults to 0.9.
     """
+    def get_label_path(lab_folder, name, ext, mode):
+        if mode == "seg":
+            lab_path = osp.join(lab_folder, name.replace(ext, ".png"))
+            if not osp.exists(lab_path):
+                lab_path = osp.join(lab_folder, name)
+        else:
+            lab_path = osp.join(lab_folder, "VOC", name.replace(ext, ".xml"))
+        return lab_path
+    
     # move
     save_img_folder = osp.join(save_folder, "JPEGImages")
     save_lab_folder = osp.join(save_folder, "Annotations")
@@ -60,9 +74,7 @@ def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
         ext = "." + name.split(".")[-1]
         if ext.lower() in FORMATS:
             img_path = osp.join(imgs_folder, name)
-            lab_path = osp.join(lab_folder, name.replace(ext, ".png"))
-            if not osp.exists(lab_path):
-                lab_path = osp.join(lab_folder, name)
+            lab_path = get_label_path(lab_folder, name, ext, mode)
             save_img_path = osp.join(save_img_folder, name)
             save_lab_path = osp.join(save_lab_folder, os.path.split(lab_path)[-1])
             if osp.exists(img_path) and osp.exists(lab_path):
@@ -91,7 +103,8 @@ def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
             for idx, name in tqdm(enumerate(new_imgs_name, start=1)):
                 new_img_path = osp.join("JPEGImages", name)
                 ext = "." + name.split(".")[-1]
-                new_lab_path = osp.join("Annotations", name.replace(ext, ".png"))
+                new_lab_path = osp.join("Annotations", name.replace(
+                    ext, ".png" if mode == "seg" else ".xml"))
                 if not osp.exists(osp.join(save_folder, new_lab_path)):
                     new_lab_path = osp.join("Annotations", name)
                 new_img_path = new_img_path.replace("\\", "/")
@@ -108,6 +121,7 @@ parser = argparse.ArgumentParser(description='Save path, image path, label path 
 parser.add_argument('--save_path', '-d', help='Path to save folder, Required', required=True)
 parser.add_argument('--image_path', '-o', help='Path of image folder, Required', required=True)
 parser.add_argument('--label_path', '-l', help='Path of label folder', default=None)
+parser.add_argument('--mode', '-m', help='Mode of dataset, seg/det', default="seg")
 parser.add_argument('--split_rate', '-s', help='Proportion of training data and evaluation data', default=0.9)
 args = parser.parse_args()
 
@@ -115,5 +129,6 @@ if __name__ == "__main__":
     save_path = args.save_path
     image_path = args.image_path
     label_path = args.label_path
+    mode = args.mode
     split_rate = args.split_rate
-    Eiseg2Semantic(save_path, image_path, label_path, split_rate)
+    Eiseg2paddlex(save_path, image_path, label_path, mode, split_rate)

@@ -9,14 +9,15 @@ There are some tool scriptings in EISeg in path of `EISeg/tool`.
 After completing image anotation by EISeg，by applying `eiseg2paddlex.py` in `tool` file, yoou can quickly convert data to PaddleX format for training. Execute the following command:
 
 ```
-python eiseg2paddlex.py -d save_folder_path -o image_folder_path [-l label_folder_path] [-s split_rate]
+python eiseg2paddlex.py -d save_folder_path -o image_folder_path [-l label_folder_path] [-m mode -s split_rate]
 ```
 
 
 - `save_folder_path`: path to save PaddleX format data.
 - `image_folder_path`: path of data to be converted.
-- `label_folder_path`:  path of the label, it is not required, if it is not filled, default is "image_folder_path/label".
-- `split_rate`: The devision ratio of training set and validation set, default is 0.9.
+- `label_folder_path`:  path of the label, optional, default is "image_folder_path/label".
+- `mode`：Type of dataset, optional, default is “seg”, if this dataset is detection dataset, please use “det”.
+- `split_rate`: The devision ratio of training set and validation set, optional, default is 0.9.
 
 ![68747470733a2f2f73332e626d702e6f76682f696d67732f323032312f31302f373134633433396139633766613439622e706e67](https://user-images.githubusercontent.com/71769312/141392744-f1a27774-2714-43a2-8808-2fc14a5a6b5a.png)
 
@@ -37,11 +38,11 @@ Parameters:
 
 ## Video Cut
 
-Due to the huge amount of video data calculation, in order to prevent insufficient video memory, it is recommended to segment the video into 100 frames and label it again. You can find this script in `EISeg/tool/cut_video.py`
+Due to the huge amount of video data calculation, in order to prevent insufficient video memory, it is recommended to segment the video into 100 frames and label it again. You can find this script in `EISeg/tool/cut_video.py`.
 
 ## Convert medical slice into video
 
-3D medical annotation is based on video annotation algorithm. Therefore, before medical image annotation, medical image needs to be converted to `mp4` format and then labeled. You can find this script in `EISeg/tool/medical2video.py`
+3D medical annotation is based on video annotation algorithm. Therefore, before medical image annotation, medical image needs to be converted to `mp4` format and then labeled. You can find this script in `EISeg/tool/medical2video.py`.
 
 ## Convert json of labelme to COCO
 

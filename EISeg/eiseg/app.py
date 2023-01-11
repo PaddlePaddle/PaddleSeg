@@ -2813,8 +2813,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "save_status",
             [(k, self.save_status[k]) for k in self.save_status.keys()])
         # 如果设置了保存路径，把标签也保存下
-        if self.outputDir is not None and self.type_seg and \
-           len(self.controller.labelList) != 0:
+        if self.outputDir is not None and len(self.controller.labelList) != 0:
             self.exportLabelList(osp.join(self.outputDir, "autosave_label.txt"))
 
     def closeEvent(self, event):
