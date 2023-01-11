@@ -18,7 +18,6 @@ import os.path as osp
 import shutil
 import random
 from tqdm import tqdm
-from qtpy import QtGui
 import argparse
 
 
@@ -26,9 +25,11 @@ import argparse
 # https://github.com/PaddlePaddle/PaddleX/blob/release/2.1/docs/data/format/README.md
 
 # 支持的图像格式
-FORMATS = [".{}".format(fmt.data().decode()) 
-            for fmt in QtGui.QImageReader.supportedImageFormats()]
-FORMATS.extend([".dcm", ".tif", ".tiff"])
+FORMATS = ['.bmp', '.cur', '.gif', '.icns', '.ico', \
+           '.jpeg', '.jpg', '.pbm', '.pgm', '.png', \
+           '.ppm', '.svg', '.svgz', '.tga', '.tif', \
+           '.tiff', '.wbmp', '.webp', '.xbm', '.xpm', \
+           '.dcm']
 # print(FORMATS)
 
 def mkdirp(path):
