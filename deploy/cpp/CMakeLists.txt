@@ -7,6 +7,18 @@ option(WITH_STATIC_LIB "Compile demo with static/shared library, default use sta
 option(USE_TENSORRT "Compile demo with TensorRT."   OFF)
 option(WITH_ROCM "Compile demo with rocm." OFF)
 
+SET(PADDLE_LIB "" CACHE PATH "Location of libraries")
+SET(CUDA_LIB "" CACHE PATH "Location of libraries")
+
+if (WIN32)
+  SET(PADDLE_LIB_NAME "" CACHE STRING "libpaddle_inference")
+
+  include(cmake/yaml-cpp.cmake)
+  include_directories("${CMAKE_SOURCE_DIR}/")
+  include_directories("${CMAKE_CURRENT_BINARY_DIR}/ext/yaml-cpp/src/ext-yaml-cpp/include")
+  link_directories("${CMAKE_CURRENT_BINARY_DIR}/ext/yaml-cpp/lib")
+endif()
+
 if(NOT WITH_STATIC_LIB)
   add_definitions("-DPADDLE_WITH_SHARED_LIB")
 else()
@@ -77,37 +89,35 @@ endif()
 if(WITH_GPU)
   if(NOT WIN32)
     set(CUDA_LIB "/usr/local/cuda/lib64/" CACHE STRING "CUDA Library")
-  else()
-    if(CUDA_LIB STREQUAL "")
-      set(CUDA_LIB "C:\\Program\ Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v8.0\\lib\\x64")
-    endif()
   endif(NOT WIN32)
 endif()
 
-if (USE_TENSORRT AND WITH_GPU)
-  set(TENSORRT_ROOT "" CACHE STRING "The root directory of TensorRT library")
-  if("${TENSORRT_ROOT}" STREQUAL "")
-      message(FATAL_ERROR "The TENSORRT_ROOT is empty, you must assign it a value with CMake command. Such as: -DTENSORRT_ROOT=TENSORRT_ROOT_PATH ")
-  endif()
-  set(TENSORRT_INCLUDE_DIR ${TENSORRT_ROOT}/include)
-  set(TENSORRT_LIB_DIR ${TENSORRT_ROOT}/lib)
-  file(READ ${TENSORRT_INCLUDE_DIR}/NvInfer.h TENSORRT_VERSION_FILE_CONTENTS)
-  string(REGEX MATCH "define NV_TENSORRT_MAJOR +([0-9]+)" TENSORRT_MAJOR_VERSION
-    "${TENSORRT_VERSION_FILE_CONTENTS}")
-  if("${TENSORRT_MAJOR_VERSION}" STREQUAL "")
-    file(READ ${TENSORRT_INCLUDE_DIR}/NvInferVersion.h TENSORRT_VERSION_FILE_CONTENTS)
-    string(REGEX MATCH "define NV_TENSORRT_MAJOR +([0-9]+)" TENSORRT_MAJOR_VERSION
-      "${TENSORRT_VERSION_FILE_CONTENTS}")
-  endif()
-  if("${TENSORRT_MAJOR_VERSION}" STREQUAL "")
-    message(SEND_ERROR "Failed to detect TensorRT version.")
-  endif()
-  string(REGEX REPLACE "define NV_TENSORRT_MAJOR +([0-9]+)" "\\1"
-    TENSORRT_MAJOR_VERSION "${TENSORRT_MAJOR_VERSION}")
-  message(STATUS "Current TensorRT header is ${TENSORRT_INCLUDE_DIR}/NvInfer.h. "
-    "Current TensorRT version is v${TENSORRT_MAJOR_VERSION}. ")
-  include_directories("${TENSORRT_INCLUDE_DIR}")
-  link_directories("${TENSORRT_LIB_DIR}")
+if(NOT WIN32)
+    if (USE_TENSORRT AND WITH_GPU)
+      set(TENSORRT_ROOT "" CACHE STRING "The root directory of TensorRT library")
+      if("${TENSORRT_ROOT}" STREQUAL "")
+          message(FATAL_ERROR "The TENSORRT_ROOT is empty, you must assign it a value with CMake command. Such as: -DTENSORRT_ROOT=TENSORRT_ROOT_PATH ")
+      endif()
+      set(TENSORRT_INCLUDE_DIR ${TENSORRT_ROOT}/include)
+      set(TENSORRT_LIB_DIR ${TENSORRT_ROOT}/lib)
+      file(READ ${TENSORRT_INCLUDE_DIR}/NvInfer.h TENSORRT_VERSION_FILE_CONTENTS)
+      string(REGEX MATCH "define NV_TENSORRT_MAJOR +([0-9]+)" TENSORRT_MAJOR_VERSION
+        "${TENSORRT_VERSION_FILE_CONTENTS}")
+      if("${TENSORRT_MAJOR_VERSION}" STREQUAL "")
+        file(READ ${TENSORRT_INCLUDE_DIR}/NvInferVersion.h TENSORRT_VERSION_FILE_CONTENTS)
+        string(REGEX MATCH "define NV_TENSORRT_MAJOR +([0-9]+)" TENSORRT_MAJOR_VERSION
+          "${TENSORRT_VERSION_FILE_CONTENTS}")
+      endif()
+      if("${TENSORRT_MAJOR_VERSION}" STREQUAL "")
+        message(SEND_ERROR "Failed to detect TensorRT version.")
+      endif()
+      string(REGEX REPLACE "define NV_TENSORRT_MAJOR +([0-9]+)" "\\1"
+        TENSORRT_MAJOR_VERSION "${TENSORRT_MAJOR_VERSION}")
+      message(STATUS "Current TensorRT header is ${TENSORRT_INCLUDE_DIR}/NvInfer.h. "
+        "Current TensorRT version is v${TENSORRT_MAJOR_VERSION}. ")
+      include_directories("${TENSORRT_INCLUDE_DIR}")
+      link_directories("${TENSORRT_LIB_DIR}")
+    endif()
 endif()
 
 if(WITH_MKL)
@@ -125,9 +135,9 @@ if(WITH_MKL)
     include_directories("${MKLDNN_PATH}/include")
     if(WIN32)
       set(MKLDNN_LIB ${MKLDNN_PATH}/lib/mkldnn.lib)
-    else(WIN32)
+    else()
       set(MKLDNN_LIB ${MKLDNN_PATH}/lib/libmkldnn.so.0)
-    endif(WIN32)
+    endif()
   endif()
 else()
   set(OPENBLAS_LIB_PATH "${PADDLE_LIB_THIRD_PARTY_PATH}openblas")
@@ -140,10 +150,14 @@ else()
 endif()
 
 if(WITH_STATIC_LIB)
-  set(DEPS ${PADDLE_LIB}/paddle/lib/libpaddle_inference${CMAKE_STATIC_LIBRARY_SUFFIX})
+  if(WIN32)
+    set(DEPS ${PADDLE_LIB}/paddle/lib/${PADDLE_LIB_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
+  else()
+    set(DEPS ${PADDLE_LIB}/paddle/lib/libpaddle_inference${CMAKE_STATIC_LIBRARY_SUFFIX})
+  endif()
 else()
   if(WIN32)
-    set(DEPS ${PADDLE_LIB}/paddle/lib/paddle_inference${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set(DEPS ${PADDLE_LIB}/paddle/lib/${PADDLE_LIB_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
   else()
     set(DEPS ${PADDLE_LIB}/paddle/lib/libpaddle_inference${CMAKE_SHARED_LIBRARY_SUFFIX})
   endif()
@@ -158,8 +172,8 @@ if (NOT WIN32)
 else()
   set(DEPS ${DEPS}
       ${MATH_LIB} ${MKLDNN_LIB}
-      glog gflags_static libprotobuf xxhash cryptopp-static ${EXTERNAL_LIB})
-  set(DEPS ${DEPS} shlwapi.lib)
+      glog gflags_static libprotobuf xxhash cryptopp-static libyaml-cppmt ${EXTERNAL_LIB})
+	  set(DEPS ${DEPS} libcmt shlwapi)
 endif(NOT WIN32)
 
 if(WITH_GPU)
@@ -169,13 +183,11 @@ if(WITH_GPU)
       set(DEPS ${DEPS} ${TENSORRT_LIB_DIR}/libnvinfer_plugin${CMAKE_SHARED_LIBRARY_SUFFIX})
     endif()
     set(DEPS ${DEPS} ${CUDA_LIB}/libcudart${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(DEPS ${DEPS} ${CUDA_LIB}/libcudnn${CMAKE_SHARED_LIBRARY_SUFFIX})
   else()
-    if(USE_TENSORRT)
-      set(DEPS ${DEPS} ${TENSORRT_LIB_DIR}/nvinfer${CMAKE_STATIC_LIBRARY_SUFFIX})
-      set(DEPS ${DEPS} ${TENSORRT_LIB_DIR}/nvinfer_plugin${CMAKE_STATIC_LIBRARY_SUFFIX})
-      if(${TENSORRT_MAJOR_VERSION} GREATER_EQUAL 7)
-        set(DEPS ${DEPS} ${TENSORRT_LIB_DIR}/myelin64_1${CMAKE_STATIC_LIBRARY_SUFFIX})
-      endif()
+    if (USE_TENSORRT)
+      set(DEPS ${DEPS} ${CUDA_LIB}/nvinfer${CMAKE_STATIC_LIBRARY_SUFFIX})
+      set(DEPS ${DEPS} ${CUDA_LIB}/nvinfer_plugin${CMAKE_STATIC_LIBRARY_SUFFIX})
     endif()
     set(DEPS ${DEPS} ${CUDA_LIB}/cudart${CMAKE_STATIC_LIBRARY_SUFFIX} )
     set(DEPS ${DEPS} ${CUDA_LIB}/cublas${CMAKE_STATIC_LIBRARY_SUFFIX} )
@@ -189,49 +201,70 @@ if(WITH_ROCM)
   endif()
 endif()
 
-include_directories(/usr/local/include)
-link_directories(/usr/local/lib)
+if(NOT WIN32)
+  include_directories(/usr/local/include)
+  link_directories(/usr/local/lib)
 
-find_package(yaml-cpp REQUIRED)
-include_directories(${YAML_CPP_INCLUDE_DIRS})
-link_directories(${YAML_CPP_LIBRARIES})
-set(DEPS ${DEPS} "-lyaml-cpp")
+  find_package(yaml-cpp REQUIRED)
+  include_directories(${YAML_CPP_INCLUDE_DIRS})
+  link_directories(${YAML_CPP_LIBRARIES})
+  set(DEPS ${DEPS} "-lyaml-cpp")
 
-find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
-set(DEPS ${DEPS} ${OpenCV_LIBS})
+  find_package(OpenCV REQUIRED)
+  include_directories(${OpenCV_INCLUDE_DIRS})
+  set(DEPS ${DEPS} ${OpenCV_LIBS})
+	
+  add_executable(${DEMO_NAME} src/${DEMO_NAME}.cc)
+  target_link_libraries(${DEMO_NAME} ${DEPS})
+else()
+  include_directories("${PADDLE_LIB}/paddle/fluid/inference")
+  include_directories("${PADDLE_LIB}/paddle/include")
+  link_directories("${PADDLE_LIB}/paddle/fluid/inference")
+  
+  find_package(OpenCV REQUIRED PATHS ${OPENCV_DIR}/build/ NO_DEFAULT_PATH)
+  include_directories(${OpenCV_INCLUDE_DIRS})
+  set(DEPS ${DEPS} ${OpenCV_LIBS})
+	
+  add_executable(${DEMO_NAME} src/${DEMO_NAME}.cc)
+  ADD_DEPENDENCIES(${DEMO_NAME} ext-yaml-cpp)
+  message("DEPS:" ${DEPS})
+  target_link_libraries(${DEMO_NAME} ${DEPS})
+endif()
 
-add_executable(${DEMO_NAME} src/${DEMO_NAME}.cc)
-target_link_libraries(${DEMO_NAME} ${DEPS})
+if(WIN32 AND USE_TENSORRT)
+  SET(TENSORRT_DLL "" CACHE PATH "Location of TensorRT .dll")
+  add_custom_command(TARGET ${DEMO_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${TENSORRT_DLL}/nvinfer.dll ./nvinfer.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${TENSORRT_DLL}/nvinfer.dll ./release/nvinfer.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${TENSORRT_DLL}/nvinfer_plugin.dll ./nvinfer_plugin.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${TENSORRT_DLL}/nvinfer_plugin.dll ./release/nvinfer_plugin.dll
+  )
+endif()
 
-if(WIN32)
-  if(USE_TENSORRT)
+if(WIN32 AND WITH_MKL)
+  add_custom_command(TARGET ${DEMO_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/mklml/lib/mklml.dll ./mklml.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/mklml/lib/libiomp5md.dll ./libiomp5md.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/mkldnn/lib/mkldnn.dll ./mkldnn.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/mklml/lib/mklml.dll ./release/mklml.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/mklml/lib/libiomp5md.dll ./release/libiomp5md.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/mkldnn/lib/mkldnn.dll ./release/mkldnn.dll
+  )
+endif()
+
+if(WIN32 AND NOT WITH_MKL)
+  add_custom_command(TARGET ${DEMO_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/openblas/lib/openblas.dll ./openblas.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/openblas/lib/openblas.dll ./release/openblas.dll
+  )
+endif()
+
+if (WIN32)
     add_custom_command(TARGET ${DEMO_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${TENSORRT_LIB_DIR}/nvinfer${CMAKE_SHARED_LIBRARY_SUFFIX}
-              ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}
-            COMMAND ${CMAKE_COMMAND} -E copy ${TENSORRT_LIB_DIR}/nvinfer_plugin${CMAKE_SHARED_LIBRARY_SUFFIX}
-              ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/onnxruntime/lib/onnxruntime.dll ./onnxruntime.dll
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/paddle2onnx/lib/paddle2onnx.dll ./paddle2onnx.dll
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/onnxruntime/lib/onnxruntime.dll ./release/onnxruntime.dll
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/third_party/install/paddle2onnx/lib/paddle2onnx.dll ./release/paddle2onnx.dll
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_LIB}/paddle/lib/${PADDLE_LIB_NAME}.dll ./release/${PADDLE_LIB_NAME}.dll
     )
-    if(${TENSORRT_MAJOR_VERSION} GREATER_EQUAL 7)
-      add_custom_command(TARGET ${DEMO_NAME} POST_BUILD
-              COMMAND ${CMAKE_COMMAND} -E copy ${TENSORRT_LIB_DIR}/myelin64_1${CMAKE_SHARED_LIBRARY_SUFFIX}
-                ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-    endif()
-  endif()
-  if(WITH_MKL)
-    add_custom_command(TARGET ${DEMO_NAME} POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E copy ${MATH_LIB_PATH}/lib/mklml.dll ${CMAKE_BINARY_DIR}/Release
-          COMMAND ${CMAKE_COMMAND} -E copy ${MATH_LIB_PATH}/lib/libiomp5md.dll ${CMAKE_BINARY_DIR}/Release
-          COMMAND ${CMAKE_COMMAND} -E copy ${MKLDNN_PATH}/lib/mkldnn.dll  ${CMAKE_BINARY_DIR}/Release
-    )
-  else()
-    add_custom_command(TARGET ${DEMO_NAME} POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E copy ${OPENBLAS_LIB_PATH}/lib/openblas.dll ${CMAKE_BINARY_DIR}/Release
-    )
-  endif()
-  if(NOT WITH_STATIC_LIB)
-      add_custom_command(TARGET ${DEMO_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "${PADDLE_LIB}/paddle/lib/paddle_inference.dll" ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}
-      )
-  endif()
 endif()
