@@ -1,11 +1,10 @@
-[Chinese (Simplified)](README.md) | English
+[简体中文](README.md) | English
 
 <div align="center">
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/35907364/179460858-7dfb19b1-cabf-4f8a-9e81-eb15b6cc7d5f.png" align="middle" alt="LOGO" width = "500" />
 </p>
-
 **An Efficient Interactive Segmentation Tool based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
@@ -61,14 +60,15 @@ EISeg (Efficient Interactive Segmentation) is an efficient and intelligent inter
 <div align="center">
 <img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
 </div>
-
 ## <img src="../docs/images/teach.png" width="20"/> Tutorials
+
 * [Installation](docs/install_en.md)
 * [Image Segmentation Annotation](docs/image_en.md)
 * [Video Segmentation Annotation](docs/video_en.md)
 * [Remote Sensing Segmentation](docs/remote_sensing_en.md)
 * [Medical Treatment](docs/medical_en.md)
 * [Detection](docs/det_en.md)
+* [Tool script](docs/tools_en.md)
 
 ## <img src="../docs/images/anli.png" width="20"/> Version Updates
 - 2022.12.16  **1.1.0**： 【1】 Added the annotation ability for detection , which can be marked manually or using the detection model PicoDet-S for labeling. 【2】Detection annotation result supports various formats such as COCO, VOC and YOLO. 【3】Added LabelMe JSON format for segmentation result.
