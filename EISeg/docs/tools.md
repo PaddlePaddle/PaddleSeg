@@ -1,6 +1,22 @@
-# 脚本工具相关
+简体中文 | [English](tools_en.md)
 
-以下内容为EISeg中的相关工具使用。位置位于EISeg/tool
+# 工具脚本
+
+以下内容为EISeg中的相关工具使用。位置位于`EISeg/tool`。
+
+## EISeg PaddleX 语义分割数据集构建
+
+在使用EISeg对网络爬取的图像标注完成后，通过`tool`中的`eiseg2paddlex`，可以将EISeg标注好的数据快速转换为PaddleX的训练格式。使用以下方法：
+```
+python eiseg2paddlex.py -d save_folder_path -o image_folder_path [-l label_folder_path] [-s split_rate]
+```
+其中:
+- `save_folder_path`: 为需要保存PaddleX数据的路径，必填
+- `image_folder_path`: 为图像的路径，必填
+- `label_folder_path`: 为标签的路径，非必填，若不填则为自动保存的位置（`image_folder_path/label`）
+- `split_rate`: 训练集和验证集划分的比例，非必填，若不填则为0.9
+
+![68747470733a2f2f73332e626d702e6f76682f696d67732f323032312f31302f373134633433396139633766613439622e706e67](https://user-images.githubusercontent.com/71769312/141392744-f1a27774-2714-43a2-8808-2fc14a5a6b5a.png)
 
 ## 语义标签转实例标签
 
@@ -26,6 +42,7 @@ python semantic2instance.py -o label_path -d save_path
 3D医疗标注是基于视频标注算法来实现的，因此在医疗图像标注前，需要将医疗图像转换成`mp4`格式后再进行标注，脚本位置为`EISeg/tool/medical2video.py`
 
 ## json格式标签转换成coco格式标签
+
 EISeg在标签保存后的```label```文件夹下会生成一个```labelme```的文件夹，里面是与labelme具有相同格式的json文件和```labels.txt```文件，此时如果想把json文件转换成和labelme相同格式的coco文件，可以执行如下命令：
 
 ``` shell
