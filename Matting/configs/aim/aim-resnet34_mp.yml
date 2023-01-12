@@ -3,11 +3,11 @@ iters: 50000
 
 train_dataset:
   type: HybridDataset
-  dataset_root: /root/paddlejob/workspace/train_data/datasets/data184700/
+  dataset_root: /home/aistudio/data/data184700
   train_file: train.txt
   transforms:
     - type: RandomCropByAlpha
-      crop_size: [640, 960, 1280]
+      crop_size: [[640, 640], [960, 960], [1280, 1280]]
     - type: RandomHorizontalFlip
     - type: Normalize
       mean: [0.485, 0.456, 0.406]
@@ -43,4 +43,3 @@ lr_scheduler:
 optimizer:
   type: adam
   weight_decay: 0.0
-  learning_rate: 0.000001
