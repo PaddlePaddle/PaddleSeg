@@ -13,29 +13,19 @@
 # limitations under the License.
 
 import argparse
-import codecs
 import os
-import sys
 import time
 
 import numpy as np
-from tqdm import tqdm
 import paddle
-
 import tensorrt as trt
 import pycuda.driver as cuda
 import pycuda.autoinit
 import onnx
 import onnxruntime
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
-
-import paddleseg.transforms as T
 from paddleseg.cvlibs import Config
-from paddleseg.utils import logger, get_image_list, utils
-from paddleseg.utils.visualize import get_pseudo_color_map
-from export import SavedSegmentationNet
+from paddleseg.utils import logger, utils
 """
 Export the Paddle model to ONNX, infer the ONNX model by TRT.
 Or, load the ONNX model and infer it by TRT.
@@ -405,13 +395,11 @@ def export_load_infer(args, model=None):
     # 1. prepare
     if model is None:
         cfg = Config(args.config)
-        cfg.check_sync_info()
         model = cfg.model
     if args.model_path is not None:
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
-    #model = SavedSegmentationNet(model)  # add argmax to the last layer
     model.eval()
     if args.print_model:
         print(model)

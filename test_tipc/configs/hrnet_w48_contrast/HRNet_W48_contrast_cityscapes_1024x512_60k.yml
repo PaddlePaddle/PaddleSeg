@@ -24,6 +24,6 @@ model:
   backbone:
     type: HRNet_W48
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
-  in_channels: 720
+  bb_channels: 720
   drop_prob: 0.1
   proj_dim: 720

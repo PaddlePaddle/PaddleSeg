@@ -1,10 +1,10 @@
 # Developer Guide
 
-PaddleLabel's backend development centers around [connexion](https://github.com/spec-first/connexion). Unlike other tool that generate openapi spec based on your code, with connexion you write openapi spec first and connexion takes care of routing and integrity check based on openapi spec.
+PaddleLabel's backend development centers around [connexion](https://github.com/spec-first/connexion). Unlike other tool that generate openapi spec based on your code, with connexion you write openapi spec first and connexion takes care of routing and request body/parameter integrity check based on openapi spec.
 
-Other important dependencies are [SQLAlchemy](https://www.sqlalchemy.org/) for ORM, [marshmallow](https://marshmallow.readthedocs.io/en/stable/) for serialization and [Flask](https://flask.palletsprojects.com/en/2.0.x/).
+Other important dependencies are [SQLAlchemy](https://www.sqlalchemy.org/) for ORM, [Alembic](https://alembic.sqlalchemy.org/en/latest/) for database versioning, [marshmallow](https://marshmallow.readthedocs.io/en/stable/) for serialization and [Flask](https://flask.palletsprojects.com/en/2.0.x/).
 
-Backend defaults to using sqlite database, but as we are using sqlalchemy this can be easilly switched to PostgreSQL. Connexion also allows using multiple frameworks as backend, we will decouple sqlalchemy and marshmallow from flask to allow swithing to others in the future. As we have such plan, using any flask specific functions is discoraged. eg: you should use pplabel.api.util.abort instead of flask.abort
+Backend defaults to using sqlite database, but as we are using sqlalchemy this can be easilly switched to PostgreSQL. Connexion also allows using multiple frameworks as web server, we are in the process of decoupleing sqlalchemy and marshmallow from flask to allow swithing to others in the future. As we have such plan, using any flask specific functions is discoraged. eg: you should use pplabel.api.util.abort instead of flask.abort
 
 Useful softwares for development
 
@@ -24,7 +24,7 @@ PaddleLabel
 ├── setup.py # packaging
 ├── MANIFEST.in
 ├── requirements.txt
-├── pplabel # core code
+├── paddlelabel # core code
 │   ├── api # code that handles api calls
 │   │   ├── __init__.py
 │   │   ├── util.py
@@ -49,7 +49,7 @@ PaddleLabel
 │   │   │   ├── tag.py
 │   │   │   ├── tag_task.py
 │   │   │   └── task.py
-│   │   ├── schema # marshmallow schemas for (de)serialization
+│   │   ├── schema # marshmallow schemas for serialization
 │   │   │   ├── __init__.py
 │   │   │   ├── annotation.py
 │   │   │   ├── base.py
@@ -80,9 +80,7 @@ PaddleLabel
 │   ├── __main__.py
 │   ├── openapi.yml
 │   ├── serve.py
-└── test
-    ├── __init__.py
-    └── test_task.py
+└── dbmigration # database versioning support
 
 ```
 
@@ -91,13 +89,13 @@ PaddleLabel
 When a request arrives at backend
 
 1. connexion does integrity check on request parameters based on openapi spec
-2. connexion decides routing (ie: which function handles this request) based on openapi spec.
-3. If the request comes with a not null request_id in header, the request_id will be checked against all request_ids in the past request_id_timeout seconds. If the request_id already exists, this request will be rejected. This prevents the same action, especially create, from being executed more than once. Leave request_id blank if the request don't need such protection.
-4. path parameters are passed as parameters to the handler function, request body is available as connexion.request.json
-5. Models are de-serialized with marshmallow. Also provides integrity check
-6. Further checks are implemented as pre/post triggers for http actions. Like pre_add trigger that rejects creating label with duplicate name under a project.
-7. request is handled, data is persisted in database.
-8. returns
+1. connexion decides routing (ie: which function handles this request) based on openapi spec.
+1. If the request comes with a not null request_id in header, the request_id will be checked against all request_ids in the past request_id_timeout seconds. If the request_id already exists, this request will be rejected. This prevents the same action, especially create, from being executed more than once. Leave request_id blank if the request don't need such protection.
+1. path parameters are passed as parameters to the handler function, request body is available as connexion.request.json
+1. Models are de-serialized with marshmallow. Also provides integrity check
+1. Further checks are implemented as pre/post triggers for http actions. Like pre_add trigger that rejects creating label with duplicate name under a project.
+1. request is handled, data is persisted in database.
+1. returns
 
 ## Routing
 
@@ -138,7 +136,7 @@ Unit test is not yet implemented. For API and import/export testing see [paddlel
   - 404: an item is not found
   - 409: Conflict, normally due to failing a unique constraint
 
-## Heroku
+<!-- ## Heroku
 
 There is a heroku backend for demo purpose at https://pplabel.herokuapp.com/api. The database will be wiped after each redeploy. Redeploy is triggered under two situations:
 
@@ -150,7 +148,7 @@ git push heroku develop:main
 heroku ps:restart env
 heroku ps:restart web
 heroku logs --tail
-```
+``` -->
 
 ## Note
 

@@ -1,3 +1,5 @@
+English | [简体中文](quant_cn.md)
+
 # Model Quantization Tutorial
 
 

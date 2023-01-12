@@ -236,11 +236,7 @@ def train(model,
                     targets=targets)
                 loss = sum(loss_list)
                 loss.backward()
-                # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
-                if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
-                    optimizer.step(loss)
-                else:
-                    optimizer.step()
+                optimizer.step()
 
             lr = optimizer.get_lr()
 
@@ -250,7 +246,10 @@ def train(model,
             else:
                 lr_sche = optimizer._learning_rate
             if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
-                lr_sche.step()
+                if isinstance(lr_sche, paddle.optimizer.lr.ReduceOnPlateau):
+                    lr_sche.step(loss)
+                else:
+                    lr_sche.step()
 
             train_profiler.add_profiler_step(profiler_options)
 

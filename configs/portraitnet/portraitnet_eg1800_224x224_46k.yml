@@ -49,7 +49,7 @@ val_dataset:
   mode: val
 
 optimizer:
-  type: adam
+  type: Adam
   weight_decay: 5.0e-4
 
 lr_scheduler:
@@ -70,8 +70,6 @@ model:
   type: PortraitNet
   backbone:
     type: MobileNetV2_x1_0
-    channel_ratio: 1.0
-    min_channel: 16
     pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv2_x1_0_ssld.tar.gz
   add_edge: True
   num_classes: 2

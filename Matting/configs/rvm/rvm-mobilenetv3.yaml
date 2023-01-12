@@ -1,0 +1,18 @@
+model:
+  type: RVM
+  backbone:
+    type: MobileNetV3_large_x1_0_os16
+    out_index: [0, 2, 5]
+    return_last_conv: True
+  refiner: 'deep_guided_filter'
+  downsample_ratio: 0.25
+  pretrained: Null
+
+val_dataset:
+  transforms:
+    - type: LoadImages
+      to_rgb: True
+    - type: Normalize
+      mean: [0, 0, 0]
+      std: [1, 1, 1]
+

@@ -58,3 +58,5 @@ epoch:150
 flags:FLAGS_cudnn_exhaustive_search=1;FLAGS_eager_delete_tensor_gb=0.0;FLAGS_fraction_of_gpu_memory_to_use=0.98;FLAGS_conv_workspace_size_limit=4096
 ===========================infer_benchmark_params==========================
 random_infer_input:[{float32,[3,512,1024]}]
+===========================to_static_train_benchmark_params===========================
+to_static_train:--opts to_static_training=True

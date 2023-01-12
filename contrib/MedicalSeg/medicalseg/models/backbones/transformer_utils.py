@@ -33,7 +33,7 @@ class DropPath(nn.Layer):
     def forward(self, x):
         return self.drop_path(x, self.drop_prob, self.training)
 
-    def drop_path(x, drop_prob=0., training=False):
+    def drop_path(self, x, drop_prob=0., training=False):
         """Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks).
         the original name is misleading as 'Drop Connect' is a different form of dropout in a separate paper...
         See discussion: https://github.com/tensorflow/tpu/issues/494#issuecomment-532968956 ...

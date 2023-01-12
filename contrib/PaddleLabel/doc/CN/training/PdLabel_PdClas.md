@@ -2,7 +2,7 @@
 
 PaddleLabel 标注数据+PaddleClas 训练预测=快速完成一次花朵分类的任务
 
----
+______________________________________________________________________
 
 ## 1. 数据准备
 
@@ -228,7 +228,7 @@ python3 PaddleClas/tools/infer.py \
 
 预测的结果是：
 
-> {'class_ids': [0, 1, 2], 'scores': [0.89812, 0.09476, 0.00712], 'file_name': 'dataset/predict_demo.jpg', 'label_names': []}
+> {'class_ids': \[0, 1, 2\], 'scores': \[0.89812, 0.09476, 0.00712\], 'file_name': 'dataset/predict_demo.jpg', 'label_names': \[\]}
 > 也就是说 0 的概率最大，为 0.89812，0 对应的结果是向日葵，也就是说结果是向日葵，预测无误。
 
 ## AI Studio 第三方教程推荐
