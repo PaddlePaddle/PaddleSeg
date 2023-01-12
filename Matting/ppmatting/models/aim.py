@@ -24,6 +24,7 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 
 from ppmatting.models.losses import AlphaLoss, LaplacianLoss, CompositionLoss
+from paddleseg.models.losses import CrossEntropyLoss
 
 @manager.MODELS.add_component
 class AIM(nn.Layer):
@@ -297,7 +298,7 @@ class AIM(nn.Layer):
                 self.loss_func_dict = defaultdict(list)
                 self.loss_func_dict['local'].append(AlphaLoss())
                 self.loss_func_dict['local'].append(LaplacianLoss())
-                self.loss_func_dict['global'].append(nn.CrossEntropyLoss())
+                self.loss_func_dict['global'].append(CrossEntropyLoss())
                 self.loss_func_dict['fusion'].append(AlphaLoss())
                 self.loss_func_dict['fusion'].append(LaplacianLoss())
                 self.loss_func_dict['fusion'].append(CompositionLoss())
