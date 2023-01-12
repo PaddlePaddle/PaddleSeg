@@ -40,6 +40,7 @@ import util
 from util import COCO
 from util import check_cn, normcase
 from util.voc import VocAnnotations
+from util.jsencoder import JSEncoder
 
 import plugin.remotesensing as rs
 from plugin.medical import med
@@ -48,7 +49,6 @@ from plugin.n2grid import RSGrids, Grids, checkOpenGrid
 from plugin.video import InferenceCore, overlay_davis
 from plugin.det import DetInfer
 
-import PIL
 import io
 import base64
 
@@ -111,12 +111,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.save_status = {
             "gray_scale": True,
             "pseudo_color": True,
-            "json": False,
             "coco": True,
             "cutout": True,
             "yolo": False,
-            "voc": False,
-            "json_labelme": True
+            "json_labelme": False
         }  # 是否保存这几个格式
         self.outputDir = None  # 标签保存路径
         self.labelPaths = []  # 所有outputdir中的标签文件路径
@@ -439,14 +437,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             tr("保存为灰度图像，像素的灰度为对应类型的标签"),
             checkable=True,
             checked=self.save_status["gray_scale"], )
-        save_json = action(
-            tr("&JSON保存"),
-            partial(self.toggleSave, "json"),
-            "save_json",
-            "SaveJson",
-            tr("保存为JSON格式"),
-            checkable=True,
-            checked=self.save_status["json"], )
         save_coco = action(
             tr("&COCO保存"),
             partial(self.toggleSave, "coco"),
@@ -455,16 +445,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             tr("保存为COCO格式"),
             checkable=True,
             checked=self.save_status["coco"], )
-        # det
-        save_voc = action(
-            tr("&VOC保存"),
-            partial(self.toggleSave, "voc"),
-            "save_voc",
-            "SaveXML",
-            tr("保存为VOC格式"),
+        # seg
+        save_json = action(
+            tr("&JSON保存"),
+            partial(self.toggleSave, "json_labelme"),
+            "save_json",
+            "SaveJson",
+            tr("保存为labelme的JSON格式"),
             checkable=True,
-            checked=self.save_status["voc"], )
-        save_voc.setEnabled(False)
+            checked=self.save_status["json_labelme"], )
+        # det
         save_yolo = action(
             tr("&YOLO保存"),
             partial(self.toggleSave, "yolo"),
@@ -503,7 +493,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             tr("&EISeg-Med3D"),
             self.enterEISegMed3D,
             "enterEISegMed3D",
-            "EISegMed3D",
+            "MedicalImaging",
             tr("3D医疗交互式分割插件"), )
         set_cutout_background = action(
             tr("&设置抠图背景色"),
@@ -743,9 +733,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 set_cutout_background,
                 set_cross_color,
                 None,
-                save_json,
                 save_coco,
-                save_voc,
+                save_json,
                 save_yolo,
                 None,
                 # test
@@ -783,9 +772,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 save_pseudo,
                 save_grayscale,
                 save_cutout,
-                save_json,
                 save_coco,
-                save_voc,
+                save_json,
                 save_yolo,
                 origional_extension,
                 None,
@@ -974,7 +962,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         # 中文路径打不开
         if check_cn(param_path):
-            self.warn(self.tr("参数路径存在中文"), self.tr("请修改参数路径为非中文路径！"))
+            self.warn(self.tr("参数路径存在无效字符"), self.tr("请修改参数路径为不含无效字符的路径！"))
             return False
 
         if not self.type_seg:
@@ -1147,6 +1135,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         table.setItem(idx, 3, delItem)
         self.adjustTableSize()
         self.labelListClicked(self.labelListTable.rowCount() - 1, 0)
+        self.labellist_reorder()
 
     def adjustTableSize(self):
         self.labelListTable.horizontalHeader().setDefaultSectionSize(25)
@@ -1228,12 +1217,14 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         table = self.labelListTable
         if col == 3:
             labelIdx = int(table.item(row, 0).text())
-            if self.status == self.EDITING:
+            if self.status == self.EDITING:  # 删除标签
                 if self.checkLabel(labelIdx):
                     if self.type_seg:
                         self.controller.labelList.remove(labelIdx)
                         table.removeRow(row)
-                    table.setRowHidden(row, True)  #  检测模式下使用隐藏标签的方案来替代实际删除标签
+                    else:  # 检测模式下使用隐藏标签的方案来替代实际删除标签
+                        table.setRowHidden(row, True)
+                    self.labellist_reorder()  # 序号重排
                 else:
                     self.warn(
                         self.tr("无法删除"),
@@ -1590,7 +1581,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.vtkWidget.init()
             # TODO: 处理
 
-            # 如果没找到图片的reader
+        # 如果没找到图片的reader
         if image is None:
             self.warn(
                 self.tr("打开图像失败"),
@@ -1627,49 +1618,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.video_masks[cursur] = frame_mask
             return True
 
-        # 1. 读取json格式标签
-        if self.save_status["json"]:
-
-            def getName(path):
-                return osp.splitext(osp.basename(path))[0]
-
-            imgName = getName(imgPath)
-            labelPath = None
-            for path in self.labelPaths:
-                if not path.endswith(".json"):
-                    continue
-                if self.origExt:
-                    if getName(path) == osp.basename(imgPath):
-                        labelPath = path
-                        break
-                else:
-                    if getName(path) == imgName:
-                        labelPath = path
-                        break
-            if not labelPath:
-                return False
-
-            labels = json.loads(open(labelPath, "r").read())
-
-            for label in labels:
-                color = label["color"]
-                labelIdx = label["labelIdx"]
-                points = label["points"]
-                poly = PolygonAnnotation(
-                    labelIdx,
-                    self.controller.image.shape,
-                    self.delPolygon,
-                    self.setDirty,
-                    color,
-                    color,
-                    self.opacity, )
-                self.scene.addItem(poly)
-                self.scene.polygon_items.append(poly)
-                for p in points:
-                    poly.addPointLast(QtCore.QPointF(p[0], p[1]))
-            return True
-
-        # 2. 读取coco格式标签
+        # 只能从coco格式读取标签，分割和检测都是
         if self.save_status["coco"]:
             imgId = self.coco.imgNameToId.get(osp.basename(imgPath), None)
             if imgId is None:
@@ -1715,6 +1664,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             else:
                 self.saveImage(True)
             # 2. 打开新图
+            self.delAllPolygon()
             self.loadImage(self.imagePaths[self.currIdx])
             if not self.type_seg and self.isUsePreAnnotation:
                 if not self.load_label_success:
@@ -2000,7 +1950,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     cv2.imencode(ext, mask_output)[1].tofile(savePath)
                     # self.labelPaths.append(savePath)
 
-                # 4.2 保存伪彩色
+            # 4.2 保存伪彩色
             if self.save_status["pseudo_color"]:
                 pseudoPath, ext = osp.splitext(savePath)
                 pseudoPath = pseudoPath + "_pseudo" + ext
@@ -2023,46 +1973,19 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
                 cv2.imencode(ext, img)[1].tofile(mattingPath)
 
-            # 4.4 保存json
-            if self.save_status["json"]:
-                polygons = self.scene.polygon_items
-                labels = []
-                for polygon in polygons:
-                    l = self.controller.labelList[polygon.labelIndex - 1]
-                    label = {
-                        "name": l.name,
-                        "labelIdx": l.idx,
-                        "color": l.color,
-                        "points": [],
-                    }
-                    for p in polygon.scnenePoints:
-                        label["points"].append(p)
-                    labels.append(label)
-                if self.origExt:
-                    jsonPath = savePath + ".json"
-                else:
-                    jsonPath = osp.splitext(savePath)[0] + ".json"
-                open(jsonPath, "w", encoding="utf-8").write(json.dumps(labels))
-                self.labelPaths.append(jsonPath)
-
-            # 尝试保存labelme相同格式的json文件
+            # 4.4 保存labelme相同格式的json文件
             if self.save_status["json_labelme"]:
                 polygons = self.scene.polygon_items
                 labels = dict(
                     version="1.1",
                     flags={},
                     shapes=[],
-                    imagePath=None,
-                    imageData=None,
-                    imageHeight=None,
-                    imageWidth=None)
-                labels["imagePath"] = self.imagePath
-                imgData = self.load_image_file(self.imagePath)
-                labels["imageData"] = base64.b64encode(imgData).decode("utf-8")
-                img = cv2.imread(self.imagePath)
-                size = img.shape
-                labels["imageHeight"] = size[0]
-                labels["imageWidth"] = size[1]
+                    imagePath=self.imagePath,
+                    imageData=base64.b64encode(
+                        self.ndarray2bytes(self.image)).decode("utf-8"),
+                    imageHeight=self.image.shape[0],
+                    imageWidth=self.image.shape[1])
+
                 for polygon in polygons:
                     l = self.controller.labelList[polygon.labelIndex - 1]
                     label = {
@@ -2125,12 +2048,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     cocoPath, "w",
                     encoding="utf-8").write(json.dumps(self.coco.dataset))
         else:  # 检测保存
+            self.save_voc_format(savePath=savePath, shape=s)
             if self.save_status["coco"]:
                 self.save_coco_format(saveAs=True, savePath=savePath, shape=s)
             if self.save_status["yolo"]:
-                self.save_yolo_format(saveAs=True, savePath=savePath)
-            if self.save_status["voc"]:
-                self.save_voc_format(saveAs=True, savePath=savePath, shape=s)
+                self.save_yolo_format(saveAs=True, savePath=savePath, shape=s)
 
         self.setDirty(False)
         self.statusbar.showMessage(self.tr("标签成功保存至") + " " + savePath, 5000)
@@ -2191,8 +2113,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.settings.setValue("output_dir", outputDir)
         self.outputDir = outputDir
 
-        # 2. 加载标签
-        # 2.1 如果保存coco格式，加载coco标签
+        # 2. 加载标签，如果保存coco格式，加载coco标签
         if self.save_status["coco"]:
             if self.type_seg:
                 defaultPath = osp.join(self.outputDir, "annotations.json")
@@ -2200,25 +2121,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 defaultPath = osp.join(
                     osp.join(self.outputDir, "COCO"), "annotations.json")
             if osp.exists(defaultPath):
-                self.initCoco(defaultPath)
-
-        # 2.2 如果保存json格式，获取所有json文件名
-        if self.save_status["json"]:
-            labelPaths = os.listdir(outputDir)
-            labelPaths = [n for n in labelPaths if n.endswith(".json")]
-            labelPaths = [osp.join(outputDir, n) for n in labelPaths]
-            self.labelPaths = labelPaths
-
-            # 加载对应的标签列表
-            lab_auto_save = osp.join(self.outputDir, "autosave_label.txt")
-            if osp.exists(lab_auto_save) == False:
-                lab_auto_save = osp.join(self.outputDir,
-                                         "label/autosave_label.txt")
-            if osp.exists(lab_auto_save):
-                try:
-                    self.importLabelList(lab_auto_save)
-                except:
-                    pass
+                f = open(defaultPath, "a")
+                f.close()
+            self.initCoco(defaultPath)
         return True
 
     def maskOpacityChanged(self):
@@ -2440,8 +2345,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 coco_path = None
         self.coco = COCO(coco_path)
         if self.clearLabelList():
-            self.controller.labelList = util.LabelList(self.coco.dataset[
-                "categories"])
+            self.controller.labelList = util.LabelList(
+                self.coco.dataset["categories"])
             self.refreshLabelList()
 
     def toggleWidget(self, index=None, warn=True):
@@ -2696,47 +2601,49 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.gridTable.item(row,
                             col).setBackground(self.GRID_COLOR["overlying"])
         # if len(np.unique(self.grid.mask_grids[row][col])) == 1:
-        self.grid.mask_grids[row][col] = np.array(self.getMask())
-        # save grid label to load
-        polygons = self.scene.polygon_items
-        for polygon in polygons:
-            l = self.controller.labelList[polygon.labelIndex - 1]
-            label = {
-                "row": row,
-                "col": col,
-                "name": l.name,
-                "labelIdx": l.idx,
-                "color": l.color,
-                "points": [],
-            }
-            for p in polygon.scnenePoints:
-                label["points"].append(p)
-            self.grid.json_labels.append(label)
-        # save every blocks or not
-        if self.cheSaveEvery.isChecked():
-            _, fullflname = osp.split(self.listFiles.currentItem().text())
-            fname, _ = os.path.splitext(fullflname)
-            if self.outputDir is None:
-                if self.changeOutputDir() is False:
-                    self.cheSaveEvery.setChecked(False)
-                    return
-            save_ima_path = osp.join(
-                self.outputDir,
-                (fname + "_data_" + str(row) + "_" + str(col) + ".tif"))
-            save_lab_path = osp.join(
-                self.outputDir,
-                (fname + "_mask_" + str(row) + "_" + str(col) + ".tif"))
-            im, tf = self.raster.getGrid(row, col)
-            h, w = im.shape[:2]
-            geoinfo = edict()
-            geoinfo.xsize = w
-            geoinfo.ysize = h
-            geoinfo.dtype = self.raster.geoinfo.dtype
-            geoinfo.crs = self.raster.geoinfo.crs
-            geoinfo.geotf = tf
-            self.raster.saveMask(self.grid.mask_grids[row][col], save_lab_path,
-                                 geoinfo)  # 保存mask
-            self.raster.saveMask(im, save_ima_path, geoinfo, 3)  # 保存图像
+        mask = self.getMask()
+        if mask is not None:
+            self.grid.mask_grids[row][col] = mask
+            # save grid label to load
+            polygons = self.scene.polygon_items
+            for polygon in polygons:
+                l = self.controller.labelList[polygon.labelIndex - 1]
+                label = {
+                    "row": row,
+                    "col": col,
+                    "name": l.name,
+                    "labelIdx": l.idx,
+                    "color": l.color,
+                    "points": [],
+                }
+                for p in polygon.scnenePoints:
+                    label["points"].append(p)
+                self.grid.json_labels.append(label)
+            # save every blocks or not
+            if self.cheSaveEvery.isChecked():
+                _, fullflname = osp.split(self.listFiles.currentItem().text())
+                fname, _ = os.path.splitext(fullflname)
+                if self.outputDir is None:
+                    if self.changeOutputDir() is False:
+                        self.cheSaveEvery.setChecked(False)
+                        return
+                save_ima_path = osp.join(
+                    self.outputDir,
+                    (fname + "_data_" + str(row) + "_" + str(col) + ".tif"))
+                save_lab_path = osp.join(
+                    self.outputDir,
+                    (fname + "_mask_" + str(row) + "_" + str(col) + ".tif"))
+                im, tf = self.raster.getGrid(row, col)
+                h, w = im.shape[:2]
+                geoinfo = edict()
+                geoinfo.xsize = w
+                geoinfo.ysize = h
+                geoinfo.dtype = self.raster.geoinfo.dtype
+                geoinfo.crs = self.raster.geoinfo.crs
+                geoinfo.geotf = tf
+                self.raster.saveMask(self.grid.mask_grids[row][col], save_lab_path,
+                                    geoinfo)  # 保存mask
+                self.raster.saveMask(im, save_ima_path, geoinfo, 3)  # 保存图像
 
     def turnGrid(self, delta):
         # 切换下一个宫格
@@ -2781,7 +2688,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         json_path = save_path.replace(".png", "_grid_saved.json")
         open(
             json_path, "w",
-            encoding="utf-8").write(json.dumps(self.grid.json_labels))
+            encoding="utf-8").write(json.dumps(self.grid.json_labels, cls=JSEncoder))
         if self.grid.__class__.__name__ == "RSGrids":
             self.image, geo_tf = self.raster.getArray()
             if geo_tf is None:
@@ -2808,7 +2715,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # -- RS Show polygon demo --
         # 刷新
         grid_row_count = self.gridTable.rowCount()
-        grid_col_count = self.gridTable.colorCount()
+        grid_col_count = self.gridTable.columnCount()
         for r in range(grid_row_count):
             for c in range(grid_col_count):
                 try:
@@ -2905,9 +2812,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.settings.setValue(
             "save_status",
             [(k, self.save_status[k]) for k in self.save_status.keys()])
-        # # 如果设置了保存路径，把标签也保存下
-        # if self.outputDir is not None and len(self.controller.labelList) != 0:
-        #     self.exportLabelList(osp.join(self.outputDir, "autosave_label.txt"))
+        # 如果设置了保存路径，把标签也保存下
+        if self.outputDir is not None and len(self.controller.labelList) != 0:
+            self.exportLabelList(osp.join(self.outputDir, "autosave_label.txt"))
 
     def closeEvent(self, event):
         self.saveImage()
@@ -3070,7 +2977,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def on_propgation(self):
         self.finishObject()
         if self.video_images is None:
-            self.warn(self.tr("未加载视频"), self.tr("请先在加载图像按钮中加载视频"))
+            self.warn(self.tr("未加载视频"), self.tr("请先在打开图像选项中加载视频"))
             return
         if self.video.prop_net_segm is None:
             self.warn(self.tr("传播模型未加载"), self.tr("尚未加载视频传播模型，请先加载模型!"))
@@ -3177,31 +3084,32 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                             ac.setEnabled(True)
 
         typeButton = self.findChild(QtWidgets.QToolButton, "typeButton")
-        self.delAllPolygon()  # 切换时删除所有多边形
         if index == 0:
             self.type_seg = True
-            typeButton.setDefaultAction(self.menus.toolBar[18][0])  # seg
+            typeButton.setDefaultAction(self.menus.toolBar[17][0])  # seg
             change_docks(("model", "data", "label", "seg"))
             toolbar_list = list(range(12))
             toolbar_list = toolbar_list.extend([14, 15, 16])
             change_toolbar(toolbar_list)
-            change_menubar(((2, (9, 13, 14)), (3, 10)))
+            change_menubar(((2, (9, 12)), (3, 10)))
             self.scene.setDetMode(False)
             self.canvas.setDetMode(False)
             self.btnParamsSelect.setEnabled(True)
             self.cheWithMask.setEnabled(True)
+            self.scene.is_draw = False
+            # 加载近期模型
+            self.loadRecentModelParam()
         else:
             self.type_seg = False
             self.isUsePreAnnotation = self.use_preannotation_or_not()  # 流程提醒
-            typeButton.setDefaultAction(self.menus.toolBar[18][1])  # det
+            typeButton.setDefaultAction(self.menus.toolBar[17][1])  # det
             change_docks(("model", "data", "label", "det"))
-            toolbar_list = list(range(6))
-            toolbar_list = toolbar_list.extend([11, 12, 13])
+            toolbar_list = [4, 5, 6, 10, 12, 14]
             change_toolbar(toolbar_list)
             change_menubar((
                 (0, 7),
                 (2, tuple(
-                    [i for i in range(17) if i not in [1, 2, 9, 12, 13, 14]])),
+                    [i for i in range(18) if i not in [1, 2, 3, 9, 10, 11, 13, 14, 15, 16, 17]])),
                 (3, tuple(range(3, 10))), ))
             self.scene.setDetMode(True)
             self.canvas.setDetMode(True)
@@ -3234,14 +3142,29 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.scene.is_draw = True
             self.getLabelCorrespondence()
 
+        if self.listFiles.item(0) is not None:
+            img_path = self.listFiles.currentItem().text().replace("\\", "/")
+            self.openFolder("/".join(img_path.split("/")[:-1]))
+
     def useQtWidget(self, s):
         self.settings.setValue("use_qt_widget", s)
 
     def checkLabel(self, labelIndex):
+        # FIXME: 标签在其他图像存在标注但当前图像不存在时可以删除
         for p in self.scene.polygon_items:
             if p.labelIndex == labelIndex:
                 return False
         return True
+
+    def labellist_reorder(self):
+        k = 1
+        for r in range(self.labelListTable.rowCount()):
+            if not self.labelListTable.isRowHidden(r):
+                self.labelListTable.item(r, 0).setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable)
+                self.labelListTable.item(r, 0).setText(str(k))
+                self.labelListTable.item(r, 0).setFlags(
+                    self.labelListTable.item(r, 0).flags() & ~Qt.ItemIsEditable)
+                k += 1
 
     def drawBox(self):
         if self.scene.det_mode:
@@ -3273,7 +3196,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             # print("self.labCorres.userLabDict: ", self.labCorres.userLabDict)
 
     # 将检测结果对应的标签保存为yolo、voc、coco三种格式
-    def save_yolo_format(self, saveAs=False, savePath=None):
+    def save_yolo_format(self, saveAs=False, savePath=None, shape=None):
+        s = shape
         self.save_status["yolo"] = saveAs
 
         if self.save_status["yolo"]:
@@ -3290,10 +3214,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 for p in polygon.scnenePoints:
                     label["points"].append(p)
 
-                x = label["points"][0][0]
-                y = label["points"][0][-1]
-                w = label["points"][2][0] - label["points"][0][0]
-                h = label["points"][2][-1] - label["points"][0][-1]
+                xmin = label["points"][0][0]
+                ymin = label["points"][0][-1]
+                xmax = label["points"][2][0]
+                ymax = label["points"][2][-1]
+                img_h, img_w = s[:2]
+
+                x = (xmin + xmax) / 2 / img_w
+                y = (ymin + ymax) / 2 / img_h
+                w = (xmax - xmin) / img_w
+                h = (ymax - ymin) / img_h
                 bbox = str(x) + " " + str(y) + " " + str(w) + " " + str(h)
                 yolo_label = str(label["labelIdx"]) + " " + bbox
                 labels.append(yolo_label)
@@ -3318,51 +3248,48 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     file.write(label + '\n')
             file.close()
 
-    def save_voc_format(self, saveAs=False, savePath=None, shape=None):
+    def save_voc_format(self, savePath=None, shape=None):
         s = shape
-        self.save_status["voc"] = saveAs
+        polygons = self.scene.polygon_items
+        objects = []
+        for polygon in polygons:
+            l = self.controller.labelList[polygon.labelIndex - 1]
+            label = {
+                "name": l.name,
+                "labelIdx": l.idx,
+                "color": l.color,
+                "points": [],
+            }
+            for p in polygon.scnenePoints:
+                label["points"].append(p)
 
-        if self.save_status["voc"]:
-            polygons = self.scene.polygon_items
-            objects = []
-            for polygon in polygons:
-                l = self.controller.labelList[polygon.labelIndex - 1]
-                label = {
-                    "name": l.name,
-                    "labelIdx": l.idx,
-                    "color": l.color,
-                    "points": [],
-                }
-                for p in polygon.scnenePoints:
-                    label["points"].append(p)
+            voc_object = {
+                "name": label["name"],
+                "xmin": label["points"][0][0],
+                "ymin": label["points"][0][-1],
+                "xmax": label["points"][2][0],
+                "ymax": label["points"][2][-1],
+            }
+            objects.append(voc_object)
 
-                voc_object = {
-                    "name": label["name"],
-                    "xmin": label["points"][0][0],
-                    "ymin": label["points"][0][-1],
-                    "xmax": label["points"][2][0],
-                    "ymax": label["points"][2][-1],
-                }
-                objects.append(voc_object)
+        if not osp.exists(osp.join(os.path.dirname(savePath), "VOC")):
+            os.makedirs(osp.join(os.path.dirname(savePath), "VOC"))
+        ri = savePath.replace("\\", "/").rindex('/')
+        fileName = savePath[ri + 1:]
+        savePath = osp.join(
+            osp.join(os.path.dirname(savePath), "VOC"), fileName)
 
-            if not osp.exists(osp.join(os.path.dirname(savePath), "VOC")):
-                os.makedirs(osp.join(os.path.dirname(savePath), "VOC"))
-            ri = savePath.replace("\\", "/").rindex('/')
-            fileName = savePath[ri + 1:]
-            savePath = osp.join(
-                osp.join(os.path.dirname(savePath), "VOC"), fileName)
+        if self.origExt:
+            xmlPath = savePath + ".xml"
+        else:
+            xmlPath = osp.splitext(savePath)[0] + ".xml"
 
-            if self.origExt:
-                xmlPath = savePath + ".xml"
-            else:
-                xmlPath = osp.splitext(savePath)[0] + ".xml"
-
-            voc_anno = VocAnnotations(self.imagePath, s[1], s[0])
-            for voc_object in objects:
-                voc_anno.add_object(voc_object["name"], voc_object["xmin"],
-                                    voc_object["ymin"], voc_object["xmax"],
-                                    voc_object["ymax"])
-            voc_anno.savefile(xmlPath)
+        voc_anno = VocAnnotations(self.imagePath, s[1], s[0])
+        for voc_object in objects:
+            voc_anno.add_object(voc_object["name"], voc_object["xmin"],
+                                voc_object["ymin"], voc_object["xmax"],
+                                voc_object["ymax"])
+        voc_anno.savefile(xmlPath)
 
     def save_coco_format(self, saveAs=False, savePath=None, shape=None):
         s = shape
@@ -3418,22 +3345,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.tr("请先点击新建标签或是导入标签，然后打开图像文件，即可开始手动画框标注！"))
             return False
 
-    def load_image_file(self, filename):
-        try:
-            image_pil = PIL.Image.open(filename)
-        except IOError:
-            logging.error("Failed opening image file: {}".format(filename))
-            return
-
-        with io.BytesIO() as f:
-            ext = osp.splitext(filename)[1].lower()
-            if ext in [".jpg", ".jpeg"]:
-                format = "JPEG"
-            else:
-                format = "PNG"
-            image_pil.save(f, format=format)
-            f.seek(0)
-            return f.read()
+    def ndarray2bytes(self, img_arr):
+        """ndarray的图片转换成bytes"""
+        imgByteArr = io.BytesIO()
+        Image.fromarray(img_arr).save(imgByteArr, format='PNG')
+        img_data = imgByteArr.getvalue()
+        return img_data
 
     def save_labelName_txt(self, path):
         labelName = []
