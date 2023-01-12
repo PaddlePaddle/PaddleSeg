@@ -32,9 +32,9 @@ class HybridDataset(MattingDataset):
 
     def __getitem__(self, idx):
         data = {}
-        data['img_name'] = fg_bg_file[0]  # using in save prediction results
 
         fg_bg_file = self.fg_bg_list[idx]
+        data['img_name'] = fg_bg_file[0]  # using in save prediction results
         fg_bg_file = fg_bg_file.split(self.separator)
         fg_file = os.path.join(self.dataset_root, fg_bg_file[0])
         alpha_file = fg_file.replace('/fg', '/alpha')
