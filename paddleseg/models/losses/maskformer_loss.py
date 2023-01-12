@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -298,7 +298,10 @@ class MaskFormerLoss(nn.Layer):
             if indices_cpt == []:
                 losses = {"loss_ce": paddle.to_tensor([0.0])}
                 return losses
-        assert "pred_logits" in outputs
+
+        assert "pred_logits" in outputs, "The 'pred_logits' need to be in outputs, but only got keys: {}".format(
+            outputs.keys())
+
         src_logits = outputs["pred_logits"]
         idx = self._get_src_permutation_idx(indices)
         target_classes_o = paddle.concat(
@@ -321,7 +324,9 @@ class MaskFormerLoss(nn.Layer):
         """Compute the losses related to the masks: the focal loss and the dice loss.
         targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
         """
-        assert "pred_masks" in outputs
+        assert "pred_masks" in outputs, "The 'pred_masks' need to be in outputs, but only got keys: {}".format(
+            outputs.keys())
+
         targets_cpt, indices_cpt = [], []
         for t, indice in zip(targets, indices):
             if t['labels'].shape[0] != 0:
@@ -378,7 +383,7 @@ class MaskFormerLoss(nn.Layer):
         assert loss in loss_map, f"do you really want to compute {loss} loss?"
         return loss_map[loss](outputs, targets, indices, num_masks)
 
-    def forward(self, logits, targets_cpt, test=False):
+    def forward(self, logits, targets_cpt):
         targets = []
         for item in targets_cpt:
             paddle.cast(item['masks'], 'bool')

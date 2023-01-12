@@ -1,4 +1,4 @@
-# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2023 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,7 +46,13 @@ class BasePixelDecoder(nn.Layer):
                 self.output_convs.append(output_conv)
                 self.lateral_convs.append(None)
                 for layer in output_conv.sublayers():
-                    param_init.c2_xavier_fill(layer)
+                    if hasattr(layer, "weight"):
+                        param_init.kaiming_uniform(
+                            layer.weight,
+                            negative_slope=1,
+                            nonlinearity='leaky_relu')
+                    if getattr(layer, 'bias', None) is not None:
+                        param_init.constant_init(layer.bias, value=0)
             else:
                 lateral_norm = nn.GroupNorm(
                     num_groups=32, num_channels=conv_dim)
@@ -69,10 +75,15 @@ class BasePixelDecoder(nn.Layer):
                     act_type='relu')
                 self.lateral_convs.append(lateral_conv)
                 self.output_convs.append(output_conv)
-                for layer in lateral_conv.sublayers():
-                    param_init.c2_xavier_fill(layer)
-                for layer in output_conv.sublayers():
-                    param_init.c2_xavier_fill(layer)
+
+                for layer in output_conv.sublayers() + lateral_conv.sublayers():
+                    if hasattr(layer, "weight"):
+                        param_init.kaiming_uniform(
+                            layer.weight,
+                            negative_slope=1,
+                            nonlinearity='leaky_relu')
+                    if getattr(layer, 'bias', None) is not None:
+                        param_init.constant_init(layer.bias, value=0)
 
         self.lateral_convs = self.lateral_convs[::-1]
         self.output_convs = self.output_convs[::-1]
@@ -80,7 +91,11 @@ class BasePixelDecoder(nn.Layer):
         self.mask_features = layers.ConvNormAct(
             conv_dim, mask_dim, kernel_size=3, stride=1, padding=1)
         for layer in self.mask_features.sublayers():
-            param_init.c2_xavier_fill(layer)
+            if hasattr(layer, "weight"):
+                param_init.kaiming_uniform(
+                    layer.weight, negative_slope=1, nonlinearity='leaky_relu')
+            if getattr(layer, 'bias', None) is not None:
+                param_init.constant_init(layer.bias, value=0)
 
     def forward(self, features):
         for idx, f in enumerate(self.in_features[::-1]):
@@ -404,7 +419,7 @@ class Transformer(nn.Layer):
         tgt = paddle.zeros_like(query_embed)  # No.querry, N, hdim [100, 2, 256]
         memory = self.encoder(
             src, src_key_padding_mask=mask,
-            pos=pos_embed)  # HWxNxC 中间输出memory = src
+            pos=pos_embed)  # HWxNxC memory = src
         hs = self.decoder(
             tgt,
             memory,
@@ -427,7 +442,7 @@ class MLP(nn.Layer):
 
     def init_weight(self):
         for layer in self.layers:
-            param_init.th_linear_fill(layer)  # todo: rm it
+            param_init.th_linear_fill(layer)
 
     def forward(self, x):
         for i, layer in enumerate(self.layers):
@@ -470,7 +485,13 @@ class TransformerPredictor(nn.Layer):
 
         if in_channels != hidden_dim or enforce_input_project:
             self.input_proj = nn.Conv2D(in_channels, hidden_dim, kernel_size=1)
-            param_init.c2_xavier_fill(self.input_proj)
+            if hasattr(self.input_proj, "weight"):
+                param_init.kaiming_uniform(
+                    self.input_proj.weight,
+                    negative_slope=1,
+                    nonlinearity='leaky_relu')
+            if getattr(self.input_proj, 'bias', None) is not None:
+                param_init.constant_init(self.input_proj.bias, value=0)
         else:
             self.input_proj = nn.Sequential()
 
@@ -540,34 +561,6 @@ class MaskFormerHead(nn.Layer):
         return predictions
 
 
-def sem_seg_postprocess(result, img_size, output_height, output_width):
-    """
-    Return semantic segmentation predictions in the original resolution.
-
-    The input images are often resized when entering semantic segmentor. Moreover, in same
-    cases, they also padded inside segmentor to be divisible by maximum network stride.
-    As a result, we often need the predictions of the segmentor in a different
-    resolution from its inputs.
-
-    Args:
-        result (Tensor): semantic segmentation prediction logits. A tensor of shape (C, H, W),
-            where C is the number of classes, and H, W are the height and width of the prediction.
-        img_size (tuple): image size that segmentor is taking as input.
-        output_height, output_width: the desired output resolution.
-
-    Returns:
-        semantic segmentation prediction (Tensor): A tensor of the shape
-            (C, output_height, output_width) that contains per-pixel soft predictions.
-    """
-    result = paddle.unsqueeze(result[:, :img_size[0], :img_size[1]], axis=0)
-    result = F.interpolate(
-        result,
-        size=(output_height, output_width),
-        mode="bilinear",
-        align_corners=False)[0]
-    return result
-
-
 @manager.MODELS.add_component
 class MaskFormer(nn.Layer):
     """
@@ -627,21 +620,47 @@ class MaskFormer(nn.Layer):
 
             for mask_cls_result, mask_pred_result in zip(mask_cls_results,
                                                          mask_pred_results):
-
                 image_size = x.shape[-2:]
-
                 if self.sem_seg_postprocess_before_inference:
-                    mask_pred_result = sem_seg_postprocess(
+                    mask_pred_result = self.sem_seg_postprocess(
                         mask_pred_result, image_size, image_size[0],
                         image_size[1])
 
-                # Semantic segmentation inference
                 r = self.semantic_inference(mask_cls_result, mask_pred_result)
 
                 if not self.sem_seg_postprocess_before_inference:
-                    r = sem_seg_postprocess(r, image_size, image_size[0],
-                                            image_size[1])
+                    r = self.sem_seg_postprocess(r, image_size, image_size[0],
+                                                 image_size[1])
                 processed_results.append({"sem_seg": r})
 
             r = r[None, ...]
             return [r]
+
+    @property
+    def sem_seg_postprocess(self, result, img_size, output_height,
+                            output_width):
+        """
+        Return semantic segmentation predictions in the original resolution.
+
+        The input images are often resized when entering semantic segmentor. Moreover, in same
+        cases, they also padded inside segmentor to be divisible by maximum network stride.
+        As a result, we often need the predictions of the segmentor in a different
+        resolution from its inputs.
+
+        Args:
+            result (Tensor): semantic segmentation prediction logits. A tensor of shape (C, H, W),
+                where C is the number of classes, and H, W are the height and width of the prediction.
+            img_size (tuple): image size that segmentor is taking as input.
+            output_height, output_width: the desired output resolution.
+
+        Returns:
+            semantic segmentation prediction (Tensor): A tensor of the shape
+                (C, output_height, output_width) that contains per-pixel soft predictions.
+        """
+        result = paddle.unsqueeze(result[:, :img_size[0], :img_size[1]], axis=0)
+        result = F.interpolate(
+            result,
+            size=(output_height, output_width),
+            mode="bilinear",
+            align_corners=False)[0]
+        return result

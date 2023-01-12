@@ -166,7 +166,7 @@ class ADE20K(Dataset):
             classes = np.unique(sem_seg_gt)
             classes = classes[classes != self.ignore_index]
 
-            # To make data compat with dataloader
+            # To make data compatible with dataloader
             classes_cpt = np.array([
                 self.ignore_index
                 for i in range(self.num_classes - len(classes))
@@ -183,7 +183,7 @@ class ADE20K(Dataset):
             masks_cpt = paddle.zeros(shape=shape)
 
             if len(masks) == 0:
-                # Some image does not have annotation (all ignored)
+                # Some image does not have annotation will be all ignored
                 instances['gt_masks'] = paddle.zeros(
                     (150, sem_seg_gt.shape[-2],
                      sem_seg_gt.shape[-1]))  #150, 512, 512

@@ -189,14 +189,6 @@ def xavier_uniform(param, **kwargs):
     initializer(param, param.block)
 
 
-def c2_xavier_fill(layer):
-    if hasattr(layer, "weight"):
-        kaiming_uniform(
-            layer.weight, negative_slope=1, nonlinearity='leaky_relu')
-    if getattr(layer, 'bias', None) is not None:
-        constant_init(layer.bias, value=0)
-
-
 def th_multihead_fill(layer, qkv_same_embed_dim=True):
     def _init_param_as_combined_linear_weight(p):
         bound = math.sqrt(6 / (3 * p.shape[0] + p.shape[1]))
@@ -214,6 +206,9 @@ def th_multihead_fill(layer, qkv_same_embed_dim=True):
 
 
 def th_linear_fill(layer):
+    """
+    The default way of linear initialization.
+    """
     nn.initializer.KaimingUniform(
         negative_slope=math.sqrt(5), nonlinearity='leaky_relu')(layer.weight)
 
