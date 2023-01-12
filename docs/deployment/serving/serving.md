@@ -1,4 +1,4 @@
-English|[简体中文](serving_cn.md)
+English | [简体中文](serving_cn.md)
 # Paddle Serving deployment
 
 ## Overview

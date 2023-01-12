@@ -21,7 +21,7 @@ sys.path.append(os.path.join(LOCAL_PATH, '..'))
 
 import paddle
 import paddleseg
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger, utils
 
 manager.BACKBONES._components_dict.clear()
@@ -29,12 +29,18 @@ manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting
 from ppmatting.core import evaluate, evaluate_ml
+from ppmatting.utils import Config
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
+    parser.add_argument(
+        '--opts',
+        help='Update the key-value pairs of all options.',
+        default=None,
+        nargs='+')
     parser.add_argument(
         '--model_path',
         dest='model_path',
@@ -78,7 +84,7 @@ def main(args):
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
-    cfg = Config(args.cfg)
+    cfg = Config(args.cfg, opts=args.opts)
     val_dataset = cfg.val_dataset
     if val_dataset is None:
         raise RuntimeError(

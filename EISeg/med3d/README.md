@@ -2,7 +2,7 @@
 
 <div align="center">
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/34859558/188449455-cd4e4099-6e70-44ca-b8de-57bab04c187c.png" align="middle" width = 500" />
+  <img src="https://user-images.githubusercontent.com/34859558/197703407-8589ae8f-0c5f-4516-8dab-995c577dd8b8.png" align="middle" width = 500" />
 </p>
 
 **专注用户友好、高效、智能的3D医疗图像标注平台**  <img src="https://user-images.githubusercontent.com/34859558/188409382-467c4c45-df5f-4390-ac40-fa24149d4e16.png" width="30"/>

@@ -106,7 +106,7 @@ class DockWidget(QDockWidget):
         super().__init__(parent=parent)
         self.setObjectName(name)
         self.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
-        # 感觉不给关闭好点。可以在显示里面取消显示。有关闭的话显示里面的enable还能判断修改，累了
+        # 感觉不给关闭好点。可以在显示里面取消显示
         self.setFeatures(QDockWidget.DockWidgetMovable |
                          QDockWidget.DockWidgetFloatable)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred,

@@ -17,17 +17,13 @@ import os
 import sys
 
 import paddle
-
-__dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
+from paddleslim import QAT
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, utils
 from qat_config import quant_config
 from qat_train import skip_quant
-
-from paddleslim import QAT
 
 
 def get_test_config(cfg, args):
@@ -149,7 +145,6 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    cfg.check_sync_info()
 
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':

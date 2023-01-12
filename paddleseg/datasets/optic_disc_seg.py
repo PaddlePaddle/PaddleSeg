@@ -36,6 +36,8 @@ class OpticDiscSeg(Dataset):
         edge (bool, optional): Whether to compute edge while training. Default: False
     """
     NUM_CLASSES = 2
+    IGNORE_INDEX = 255
+    IMG_CHANNELS = 3
 
     def __init__(self,
                  dataset_root=None,
@@ -48,7 +50,7 @@ class OpticDiscSeg(Dataset):
         self.mode = mode
         self.file_list = list()
         self.num_classes = self.NUM_CLASSES
-        self.ignore_index = 255
+        self.ignore_index = self.IGNORE_INDEX
         self.edge = edge
 
         if mode not in ['train', 'val', 'test']:

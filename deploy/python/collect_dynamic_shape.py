@@ -13,20 +13,14 @@
 # limitations under the License.
 
 import argparse
-import codecs
 import os
-import sys
 
-import yaml
 import numpy as np
-from paddle.inference import create_predictor, PrecisionType
+from paddle.inference import create_predictor
 from paddle.inference import Config as PredictConfig
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
-
 from paddleseg.utils import logger, get_image_list, progbar
-from infer import DeployConfig
+from paddleseg.deploy.infer import DeployConfig
 """
 Load images and run the model, it collects and saves dynamic shapes,
 which are used in deployment with TRT.

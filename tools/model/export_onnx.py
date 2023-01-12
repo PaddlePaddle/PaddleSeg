@@ -36,7 +36,7 @@ import paddle
 import onnx
 import onnxruntime
 
-from paddleseg.cvlibs import Config
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.utils import logger, utils
 
 
@@ -80,9 +80,11 @@ def check_and_run_onnx(onnx_model_path, input_data):
 
 
 def export_onnx(args):
+    assert args.config is not None, \
+        'Please set --config path/to/yml'
     cfg = Config(args.config)
-    cfg.check_sync_info()
-    model = cfg.model
+    builder = SegBuilder(cfg)
+    model = builder.model
     if args.model_path is not None:
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')

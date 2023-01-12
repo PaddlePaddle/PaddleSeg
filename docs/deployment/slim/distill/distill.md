@@ -1,3 +1,5 @@
+English | [简体中文](distill_cn.md)
+
 # Model Distillation Tutorial
 
 # 1. Introduction
