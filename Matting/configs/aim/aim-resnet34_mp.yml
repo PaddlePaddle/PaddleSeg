@@ -36,6 +36,10 @@ model:
 #     pretrained: https://paddleseg.bj.bcebos.com/matting/models/xxxxx/model.pdparams
   pretrained: Null
 
+lr_scheduler:
+    type: PolynomialDecay
+    learning_rate: 0.000001
+
 optimizer:
   type: adam
   weight_decay: 0.0
