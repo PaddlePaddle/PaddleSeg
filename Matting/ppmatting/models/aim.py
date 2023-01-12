@@ -317,7 +317,7 @@ class AIM(nn.Layer):
         gt[gt == 0] = 0
         gt[gt == 255] = 2
         gt[gt > 2] = 1
-        gt = gt.long()
+        gt = gt.astype(paddle.float32)
         gt = gt[:, 0, :, :]
         loss_global = self.loss_func_dict['global'][0](logit_dict['global'], gt)
         loss['global'] = loss_global

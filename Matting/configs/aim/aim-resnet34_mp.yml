@@ -3,7 +3,7 @@ iters: 50000
 
 train_dataset:
   type: HybridDataset
-  dataset_root: /home/aistudio/data/
+  dataset_root: /root/paddlejob/workspace/train_data/datasets/data184700/
   train_file: train.txt
   transforms:
     - type: RandomCropByAlpha
