@@ -330,6 +330,7 @@ class AIM(nn.Layer):
         loss_fusion_comp = self.loss_func_dict['fusion'][2](logit_dict['fusion'], label_dict['alpha'], label_dict['img'], label_dict['fg'], label_dict['bg'])
 
         loss_fusion = loss_fusion_alpha + loss_fusion_comp
+        loss['fusion'] = loss_fusion
 
         loss_all = loss_global + loss_local + loss_fusion
         loss['all'] = loss_all
