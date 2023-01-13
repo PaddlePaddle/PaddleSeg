@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# This implementation refers to: https://github.com/facebookresearch/MaskFormer/tree/main/mask_former/modeling
 
 import math
 import copy
@@ -22,6 +23,111 @@ import paddle.nn.functional as F
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager, param_init
 from paddleseg.utils import utils
+
+
+@manager.MODELS.add_component
+class MaskFormer(nn.Layer):
+    """
+    The MaskFormer model implement on PaddlePaddle.
+    
+    The original article please refer to :
+    Cheng, Bowen, Alex Schwing, and Alexander Kirillov. "Per-pixel classification is not all you need for semantic segmentation." Advances in Neural Information Processing Systems 34 (2021): 17864-17875.
+    (https://github.com/facebookresearch/MaskFormer)
+
+    Args:
+        num_classes(int): The number of classes that you want the model to classify.
+        backbone(nn.Layer): The backbone module defined in the paddleseg backbones.
+        sem_seg_postprocess_before_inference(bool): If True, do result postprocess before inference. 
+        pretrained(str): The path to the pretrained model of MaskFormer.
+
+    """
+
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 sem_seg_postprocess_before_inference=False,
+                 pretrained=None):
+        super(MaskFormer, self).__init__()
+        self.num_classes = num_classes
+        self.backbone = backbone
+        self.sem_seg_postprocess_before_inference = sem_seg_postprocess_before_inference
+        self.seghead = MaskFormerHead(backbone.output_shape(), num_classes)
+        self.pretrained = pretrained
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
+    def semantic_inference(self, mask_cls, mask_pred):
+        mask_cls = F.softmax(mask_cls)[..., :-1]
+        mask_pred = F.sigmoid(mask_pred)
+        semseg = paddle.einsum("qc,qhw->chw", mask_cls, mask_pred)
+        return semseg
+
+    def forward(self, x):
+        features = self.backbone(x)
+        outputs = self.seghead(features)
+
+        if self.training:
+            return [outputs]
+        else:
+            mask_cls_results = outputs["pred_logits"]  # [2, 100, 151]
+            mask_pred_results = outputs["pred_masks"]  # [2, 100, 512, 512]
+
+            mask_pred_results = F.interpolate(
+                mask_pred_results,
+                size=(x.shape[-2], x.shape[-1]),
+                mode="bilinear",
+                align_corners=False, )
+            processed_results = []
+
+            for mask_cls_result, mask_pred_result in zip(mask_cls_results,
+                                                         mask_pred_results):
+                image_size = x.shape[-2:]
+                if self.sem_seg_postprocess_before_inference:
+                    mask_pred_result = self.sem_seg_postprocess(
+                        mask_pred_result, image_size, image_size[0],
+                        image_size[1])
+
+                r = self.semantic_inference(mask_cls_result, mask_pred_result)
+
+                if not self.sem_seg_postprocess_before_inference:
+                    r = self.sem_seg_postprocess(r, image_size, image_size[0],
+                                                 image_size[1])
+                processed_results.append({"sem_seg": r})
+
+            r = r[None, ...]
+            return [r]
+
+    @property
+    def sem_seg_postprocess(self, result, img_size, output_height,
+                            output_width):
+        """
+        Return semantic segmentation predictions in the original resolution.
+
+        The input images are often resized when entering semantic segmentor. Moreover, in same
+        cases, they also padded inside segmentor to be divisible by maximum network stride.
+        As a result, we often need the predictions of the segmentor in a different
+        resolution from its inputs.
+
+        Args:
+            result (Tensor): semantic segmentation prediction logits. A tensor of shape (C, H, W),
+                where C is the number of classes, and H, W are the height and width of the prediction.
+            img_size (tuple): image size that segmentor is taking as input.
+            output_height, output_width: the desired output resolution.
+
+        Returns:
+            semantic segmentation prediction (Tensor): A tensor of the shape
+                (C, output_height, output_width) that contains per-pixel soft predictions.
+        """
+        result = paddle.unsqueeze(result[:, :img_size[0], :img_size[1]], axis=0)
+        result = F.interpolate(
+            result,
+            size=(output_height, output_width),
+            mode="bilinear",
+            align_corners=False)[0]
+        return result
 
 
 class BasePixelDecoder(nn.Layer):
@@ -166,16 +272,25 @@ class PositionEmbeddingSine(nn.Layer):
         return pos
 
 
-class TransformerEncoderLayer(nn.Layer):
+class EncoderLayer(nn.Layer):
+    """
+    The layer to compose the transformer encoder.
+    
+    Args:
+        d_model(int): The input feature's channels.
+        nhead(int): the number of head for MHSA.
+        dim_feedforward(int): The internal channels of linear layer.
+        dropout(int): the dropout probability.
+        activation(str): the kind of activation that used.
+    """
+
     def __init__(self,
                  d_model,
                  nhead,
                  dim_feedforward=2048,
                  dropout=0.1,
-                 activation="relu",
-                 normalize_before=False):
+                 activation="relu"):
         super().__init__()
-        self.normalize_before = normalize_before
 
         self.self_attn = nn.MultiHeadAttention(d_model, nhead, dropout)
 
@@ -217,6 +332,15 @@ class TransformerEncoderLayer(nn.Layer):
 
 
 class TransformerEncoder(nn.Layer):
+    """
+    The transformer encoder.
+    
+    Args:
+        encoder_layer(nn.Layer): The base layer to compose the encoder.
+        num_layers(int): How many layers is used in the encoder.
+        norm(str): the kind of normalization that used before output.
+    """
+
     def __init__(self, encoder_layer, num_layers, norm=None):
         super().__init__()
         self.layers = nn.LayerList()
@@ -241,16 +365,25 @@ class TransformerEncoder(nn.Layer):
         return output
 
 
-class TransformerDecoderLayer(nn.Layer):
+class DecoderLayer(nn.Layer):
+    """
+    The layer to compose the transformer decoder.
+    
+    Args:
+        d_model(int): The input feature's channels.
+        nhead(int): the number of head for MHSA.
+        dim_feedforward(int): The internal channels of linear layer.
+        dropout(int): the dropout probability.
+        activation(str): the kind of activation that used.
+    """
+
     def __init__(self,
                  d_model,
                  nhead,
                  dim_feedforward=2048,
                  dropout=0.1,
-                 activation="relu",
-                 normalize_before=False):
+                 activation="relu"):
         super().__init__()
-        self.normalize_before = normalize_before
 
         self.self_attn = nn.MultiHeadAttention(d_model, nhead, dropout)
         self.multihead_attn = nn.MultiHeadAttention(
@@ -318,6 +451,16 @@ class TransformerDecoderLayer(nn.Layer):
 
 
 class TransformerDecoder(nn.Layer):
+    """
+    The transformer decoder.
+    
+    Args:
+        encoder_layer(nn.Layer): The base layer to compose the decoder.
+        num_layers(int): How many layers is used in the decoder.
+        norm(str): the kind of normalization that used before output.
+        return_intermediate(bool): Whether to output the intermediate feature.
+    """
+
     def __init__(self,
                  decoder_layer,
                  num_layers,
@@ -381,16 +524,14 @@ class Transformer(nn.Layer):
         self.d_model = d_model
         self.nhead = nhead
 
-        encoder_layer = TransformerEncoderLayer(d_model, nhead, dim_feedforward,
-                                                dropout, activation,
-                                                normalize_before)
+        encoder_layer = EncoderLayer(d_model, nhead, dim_feedforward, dropout,
+                                     activation)
         encoder_norm = nn.LayerNorm(d_model) if normalize_before else None
         self.encoder = TransformerEncoder(encoder_layer, num_encoder_layers,
                                           encoder_norm)
 
-        decoder_layer = TransformerDecoderLayer(d_model, nhead, dim_feedforward,
-                                                dropout, activation,
-                                                normalize_before)
+        decoder_layer = DecoderLayer(d_model, nhead, dim_feedforward, dropout,
+                                     activation)
         decoder_norm = nn.LayerNorm(d_model)
         self.decoder = TransformerDecoder(
             decoder_layer,
@@ -559,108 +700,3 @@ class MaskFormerHead(nn.Layer):
                                      mask_features)
 
         return predictions
-
-
-@manager.MODELS.add_component
-class MaskFormer(nn.Layer):
-    """
-    The MaskFormer model implement on PaddlePaddle.
-    
-    The original article please refer to :
-    Cheng, Bowen, Alex Schwing, and Alexander Kirillov. "Per-pixel classification is not all you need for semantic segmentation." Advances in Neural Information Processing Systems 34 (2021): 17864-17875.
-    (https://github.com/facebookresearch/MaskFormer)
-
-    Args:
-        num_classes(int): The number of classes that you want the model to classify.
-        backbone(nn.Layer): The backbone module defined in the paddleseg backbones.
-        sem_seg_postprocess_before_inference(bool): If True, do result postprocess before inference. 
-        pretrained(str): The path to the pretrained model of MaskFormer.
-
-    """
-
-    def __init__(self,
-                 num_classes,
-                 backbone,
-                 sem_seg_postprocess_before_inference=False,
-                 pretrained=None):
-        super(MaskFormer, self).__init__()
-        self.num_classes = num_classes
-        self.backbone = backbone
-        self.sem_seg_postprocess_before_inference = sem_seg_postprocess_before_inference
-        self.seghead = MaskFormerHead(backbone.output_shape(), num_classes)
-        self.pretrained = pretrained
-        self.init_weight()
-
-    def init_weight(self):
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
-
-    def semantic_inference(self, mask_cls, mask_pred):
-        mask_cls = F.softmax(mask_cls)[..., :-1]
-        mask_pred = F.sigmoid(mask_pred)
-        semseg = paddle.einsum("qc,qhw->chw", mask_cls, mask_pred)
-        return semseg
-
-    def forward(self, x):
-        features = self.backbone(x)
-        outputs = self.seghead(features)
-
-        if self.training:
-            return [outputs]
-        else:
-            mask_cls_results = outputs["pred_logits"]  # [2, 100, 151]
-            mask_pred_results = outputs["pred_masks"]  # [2, 100, 512, 512]
-
-            mask_pred_results = F.interpolate(
-                mask_pred_results,
-                size=(x.shape[-2], x.shape[-1]),
-                mode="bilinear",
-                align_corners=False, )
-            processed_results = []
-
-            for mask_cls_result, mask_pred_result in zip(mask_cls_results,
-                                                         mask_pred_results):
-                image_size = x.shape[-2:]
-                if self.sem_seg_postprocess_before_inference:
-                    mask_pred_result = self.sem_seg_postprocess(
-                        mask_pred_result, image_size, image_size[0],
-                        image_size[1])
-
-                r = self.semantic_inference(mask_cls_result, mask_pred_result)
-
-                if not self.sem_seg_postprocess_before_inference:
-                    r = self.sem_seg_postprocess(r, image_size, image_size[0],
-                                                 image_size[1])
-                processed_results.append({"sem_seg": r})
-
-            r = r[None, ...]
-            return [r]
-
-    @property
-    def sem_seg_postprocess(self, result, img_size, output_height,
-                            output_width):
-        """
-        Return semantic segmentation predictions in the original resolution.
-
-        The input images are often resized when entering semantic segmentor. Moreover, in same
-        cases, they also padded inside segmentor to be divisible by maximum network stride.
-        As a result, we often need the predictions of the segmentor in a different
-        resolution from its inputs.
-
-        Args:
-            result (Tensor): semantic segmentation prediction logits. A tensor of shape (C, H, W),
-                where C is the number of classes, and H, W are the height and width of the prediction.
-            img_size (tuple): image size that segmentor is taking as input.
-            output_height, output_width: the desired output resolution.
-
-        Returns:
-            semantic segmentation prediction (Tensor): A tensor of the shape
-                (C, output_height, output_width) that contains per-pixel soft predictions.
-        """
-        result = paddle.unsqueeze(result[:, :img_size[0], :img_size[1]], axis=0)
-        result = F.interpolate(
-            result,
-            size=(output_height, output_width),
-            mode="bilinear",
-            align_corners=False)[0]
-        return result

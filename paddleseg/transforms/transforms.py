@@ -245,7 +245,7 @@ class ResizeByShort:
         short_size (int): The target size of short side.
     """
 
-    def __init__(self, short_size, max_size=2048):
+    def __init__(self, short_size, max_size=1e10):
         if isinstance(short_size, list):
             short_size = random.choice(short_size)
         self.short_size = short_size

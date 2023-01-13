@@ -13,11 +13,9 @@
 # limitations under the License.
 
 import os
+
 import numpy as np
 from PIL import Image
-
-import paddle
-import paddle.nn as nn
 
 from paddleseg.datasets import Dataset
 from paddleseg.utils.download import download_file_and_uncompress
@@ -44,14 +42,7 @@ class ADE20K(Dataset):
     IGNORE_INDEX = 255
     IMG_CHANNELS = 3
 
-    def __init__(self,
-                 transforms,
-                 dataset_root=None,
-                 mode='train',
-                 edge=False,
-                 to_mask=False,
-                 size_divisibility=0,
-                 normalize=False):
+    def __init__(self, transforms, dataset_root=None, mode='train', edge=False):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
@@ -60,9 +51,6 @@ class ADE20K(Dataset):
         self.num_classes = self.NUM_CLASSES
         self.ignore_index = self.IGNORE_INDEX
         self.edge = edge
-        self.to_mask = to_mask
-        self.size_divisibility = size_divisibility
-        self.normalize = normalize
 
         if mode not in ['train', 'val']:
             raise ValueError(
@@ -106,7 +94,6 @@ class ADE20K(Dataset):
         data = {}
         data['trans_info'] = []
         image_path, label_path = self.file_list[idx]
-
         data['img'] = image_path
         data['gt_fields'] = [
         ]  # If key in gt_fields, the data[key] have transforms synchronous.
@@ -116,9 +103,10 @@ class ADE20K(Dataset):
             label = np.asarray(Image.open(label_path))
             # The class 0 is ignored. And it will equal to 255 after
             # subtracted 1, because the dtype of label is uint8.
+            label = label - 1
             label = label[np.newaxis, :, :]
-            data['label'] = label - 1
-            data['img'] = paddle.to_tensor(data['img'])
+            data['label'] = label
+            return data
         else:
             data['label'] = label_path
             data['gt_fields'].append('label')
@@ -130,78 +118,4 @@ class ADE20K(Dataset):
                 edge_mask = F.mask_to_binary_edge(
                     label, radius=2, num_classes=self.num_classes)
                 data['edge'] = edge_mask
-
-            if self.size_divisibility > 0:
-                image_size = (data['img'].shape[-2], data['img'].shape[-1])
-                padding_size = [
-                    0,
-                    self.size_divisibility - image_size[1],
-                    0,
-                    self.size_divisibility - image_size[0],
-                ]
-                data['img'] = nn.functional.pad(
-                    paddle.to_tensor(data['img']).unsqueeze(0),
-                    padding_size,
-                    value=128).squeeze(0)
-
-                if data['label'] is not None:
-                    data['label'] = nn.functional.pad(
-                        paddle.to_tensor(
-                            data['label'],
-                            dtype='int64').unsqueeze(0).unsqueeze(0),
-                        padding_size,
-                        value=self.ignore_index).squeeze(0).squeeze(0).numpy()
-
-        if self.normalize:
-            data['img'] = data['img'].cast('float32')
-            mean = paddle.to_tensor(np.array([123.675, 116.280, 103.530
-                                              ])).reshape([3, 1, 1])
-            std = paddle.to_tensor(np.array([58.395, 57.120, 57.375])).reshape(
-                [3, 1, 1])
-            data['img'] -= mean
-            data['img'] /= std
-            data['img'] = data['img'].numpy()
-
-        if self.to_mask:
-            sem_seg_gt = data['label']
-            instances = {"image_shape": data['img'].shape[1:]}
-            classes = np.unique(sem_seg_gt)
-            classes = classes[classes != self.ignore_index]
-
-            # To make data compatible with dataloader
-            classes_cpt = np.array([
-                self.ignore_index
-                for i in range(self.num_classes - len(classes))
-            ])
-            classes_cpt = np.append(classes, classes_cpt)
-            instances["gt_classes"] = paddle.to_tensor(
-                classes_cpt, dtype="int64")
-
-            masks = []
-            for cid in classes:
-                masks.append(sem_seg_gt == cid)  # [C, H, W] 
-
-            shape = [self.num_classes - len(masks)] + list(data['label'].shape)
-            masks_cpt = paddle.zeros(shape=shape)
-
-            if len(masks) == 0:
-                # Some image does not have annotation will be all ignored
-                instances['gt_masks'] = paddle.zeros(
-                    (150, sem_seg_gt.shape[-2],
-                     sem_seg_gt.shape[-1]))  #150, 512, 512
-
-            else:
-                instances['gt_masks'] = paddle.concat(
-                    [
-                        paddle.stack([
-                            paddle.cast(
-                                paddle.to_tensor(
-                                    np.ascontiguousarray(x.copy())), "float32")
-                            for x in masks
-                        ]), masks_cpt
-                    ],
-                    axis=0)
-
-            data['instances'] = instances
-
-        return data
+            return data

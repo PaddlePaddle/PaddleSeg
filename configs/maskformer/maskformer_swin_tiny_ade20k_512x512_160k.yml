@@ -1,8 +1,8 @@
-batch_size: 4
+batch_size: 2
 iters: 160000
 
 train_dataset:
-  type: ADE20K
+  type: MaskedADE20K
   dataset_root: data/ADEChallengeData2016/
   transforms: 
     - type: ResizeByShort
@@ -20,36 +20,44 @@ train_dataset:
       hue_range: 18
       hue_prob: 1.0
     - type: RandomHorizontalFlip
-  to_mask: True
-  size_divisibility: 512
-  normalize: True
-  
+    - type: Padding
+      target_size: [512, 512]
+      im_padding_value: 128
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
 
 val_dataset:
-  type: ADE20K
+  type: MaskedADE20K
   dataset_root: data/ADEChallengeData2016/
   transforms:
     - type: ResizeByShort
       short_size: 512
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
   mode: val
-  to_mask: True
-  normalize: True
 
 model:
   type: MaskFormer
   num_classes: 150
   backbone:
-    type: SwinTransformer_small_patch4_window7_224_maskformer
-  pretrained: https://bj.bcebos.com/paddleseg/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_small/pretrain/model.pdparams
+    type: SwinTransformer_tiny_patch4_window7_224_maskformer
+  pretrained: https://bj.bcebos.com/paddleseg/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_tiny/pretrain/model.pdparams
 
 optimizer:
   type: AdamW
-  backbone_lr_mult: 1.0
   weight_decay: 0.01
-
-gradient_clipper:
-  enabled: True
-  clip_value: 0.01
+  custom_cfg:
+  - name: backbone
+    lr_mult: 1.0
+  - name: norm
+    weight_decay_mult: 0.0
+  - name: relative_position_bias_table
+    weight_decay_mult: 0.0
+  grad_clip_cfg: 
+    name: ClipGradByNorm
+    clip_norm: 0.01
 
 lr_scheduler:
   type: PolynomialDecay
@@ -65,9 +73,3 @@ loss:
       num_classes: 150
       eos_coef: 0.1
   coef: [1]
-
-export:
-  transforms:
-    - type: Normalize
-      mean: [0.485, 0.456, 0.406]
-      std: [0.229, 0.224, 0.225]
