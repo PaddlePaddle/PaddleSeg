@@ -100,7 +100,6 @@ class MaskFormer(nn.Layer):
             r = r[None, ...]
             return [r]
 
-    @property
     def sem_seg_postprocess(self, result, img_size, output_height,
                             output_width):
         """
