@@ -13,15 +13,12 @@
 # limitations under the License.
 
 import argparse
-import os
-import sys
 
-import paddle
 from paddleslim import QAT
 
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.core import evaluate
-from paddleseg.utils import get_sys_env, logger, utils
+from paddleseg.utils import logger, utils
 from qat_config import quant_config
 from qat_train import skip_quant
 
@@ -128,23 +125,14 @@ def parse_args():
 
 
 def main(args):
-    env_info = get_sys_env()
-
-    if args.device == 'gpu' and env_info[
-            'Paddle compiled with cuda'] and env_info['GPUs used']:
-        place = 'gpu'
-    elif args.device == 'xpu' and paddle.is_compiled_with_xpu():
-        place = 'xpu'
-    elif args.device == 'npu' and paddle.is_compiled_with_npu():
-        place = 'npu'
-    else:
-        place = 'cpu'
-
-    paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
-
     cfg = Config(args.cfg)
+    builder = SegBuilder(cfg)
+
+    utils.show_env_info()
+    utils.show_cfg_info(cfg)
+    utils.set_device(args.device)
 
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
@@ -157,22 +145,8 @@ def main(args):
         for i in range(loss_len):
             cfg.dic['loss']['types'][i]['data_format'] = args.data_format
 
-    val_dataset = cfg.val_dataset
-    if val_dataset is None:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
-    elif len(val_dataset) == 0:
-        raise ValueError(
-            'The length of val_dataset is 0. Please check if your dataset is valid'
-        )
-
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
-
-    model = cfg.model
+    model = builder.model
+    val_dataset = builder.val_dataset
 
     skip_quant(model)
     quantizer = QAT(config=quant_config)
