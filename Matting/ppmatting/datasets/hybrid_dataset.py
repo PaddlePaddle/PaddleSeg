@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,20 +22,70 @@ import paddle
 from paddleseg.cvlibs import manager
 
 import ppmatting.transforms as T
-from ppmatting.datasets.matting_dataset import MattingDataset
 
 
 @manager.DATASETS.add_component
-class HybridDataset(MattingDataset):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+class HybridDataset(paddle.io.Dataset):
+    
+    def __init__(self,
+                 dataset_root,
+                 transforms,
+                 mode='train',
+                 train_file=None,
+                 val_file=None,
+                 get_trimap=True,
+                 separator=' ',
+                 key_del=None,
+                 if_rssn=False):
+        super().__init__()
+        self.dataset_root = dataset_root
+        self.transforms = T.Compose(transforms)
+        self.mode = mode
+        self.get_trimap = get_trimap
+        self.separator = separator
+        self.key_del = key_del
+        self.if_rssn = if_rssn
+
+        # check file
+        if mode == 'train' or mode == 'trainval':
+            if train_file is None:
+                raise ValueError(
+                    "When `mode` is 'train' or 'trainval', `train_file must be provided!"
+                )
+            if isinstance(train_file, str):
+                train_file = [train_file]
+            file_list = train_file
+
+        if mode == 'val' or mode == 'trainval':
+            if val_file is None:
+                raise ValueError(
+                    "When `mode` is 'val' or 'trainval', `val_file must be provided!"
+                )
+            if isinstance(val_file, str):
+                val_file = [val_file]
+            file_list = val_file
+
+        if mode == 'trainval':
+            file_list = train_file + val_file
+
+        # read file
+        self.fg_bg_list = []
+        for file in file_list:
+            file = os.path.join(dataset_root, file)
+            with open(file, 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    line = line.strip()
+                    self.fg_bg_list.append(line)
+        if mode != 'val':
+            random.shuffle(self.fg_bg_list)
 
     def __getitem__(self, idx):
         data = {}
 
         fg_bg_file = self.fg_bg_list[idx]
-        data['img_name'] = fg_bg_file[0]  # using in save prediction results
         fg_bg_file = fg_bg_file.split(self.separator)
+        data['img_name'] = fg_bg_file[0]  # using in save prediction results
         fg_file = os.path.join(self.dataset_root, fg_bg_file[0])
         alpha_file = fg_file.replace('/fg', '/alpha')
         
@@ -49,6 +99,7 @@ class HybridDataset(MattingDataset):
             bg_file = os.path.join(self.dataset_root, fg_bg_file[1])
             bg = cv2.imread(bg_file)
             data['img'], data['fg'], data['bg'] = self.composite(fg, alpha, bg)
+
             if self.mode in ['train', 'trainval']:
                 data['gt_fields'].append('fg')
                 data['gt_fields'].append('bg')
@@ -105,9 +156,11 @@ class HybridDataset(MattingDataset):
         if 'ori_trimap' in data:
             data['ori_trimap'] = data['ori_trimap'][np.newaxis, :, :]
 
-        data['alpha'] = data['alpha'][np.newaxis, :, :] / 255.
-
+        data['alpha'] = data['alpha'][np.newaxis, :, :] / 255
         return data
+
+    def __len__(self):
+        return len(self.fg_bg_list)
 
     def composite(self, fg, alpha, ori_bg):
         if self.if_rssn:
@@ -145,7 +198,7 @@ class HybridDataset(MattingDataset):
         image = alpha * fg + (1 - alpha) * bg
         image = image.astype(np.uint8)
 
-        if random.random()<0.5:
+        if random.random() < 0.5:
             image, fg, bg = self.add_gaussian_noise(image, fg, bg)
 
         return image, fg, bg
@@ -163,3 +216,31 @@ class HybridDataset(MattingDataset):
         noise_bg = np.uint8(bg + gauss)
 
         return noise_img, noise_fg, noise_bg
+
+    @staticmethod
+    def gen_trimap(alpha, mode='train', eval_kernel=7):
+        if mode == 'train':
+            # k_size = random.choice(range(2, 5))
+            k_size = 30
+            # iterations = np.random.randint(5, 15)
+            iterations = 1
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                               (k_size, k_size))
+            dilated = cv2.dilate(alpha, kernel, iterations=iterations)
+            eroded = cv2.erode(alpha, kernel, iterations=iterations)
+            trimap = np.zeros(alpha.shape)
+            trimap.fill(128)
+            trimap[eroded > 254.5] = 255
+            trimap[dilated < 0.5] = 0
+        else:
+            k_size = eval_kernel
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                               (k_size, k_size))
+            dilated = cv2.dilate(alpha, kernel)
+            trimap = np.zeros(alpha.shape)
+            trimap.fill(128)
+            trimap[alpha >= 250] = 255
+            trimap[dilated <= 5] = 0
+
+        return trimap
+
