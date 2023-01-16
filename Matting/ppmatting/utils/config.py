@@ -25,11 +25,25 @@ import six
 import paddleseg
 from paddleseg.utils import logger
 from paddleseg.cvlibs import config_checker as checker
+from paddleseg.utils.utils import CachedProperty as cached_property
 
 
 class Config(paddleseg.cvlibs.Config):
     @classmethod
     def _build_default_checker(cls):
         rules = []
-        rules.append(checker.DefaultPrimaryRule())
         return checker.ConfigChecker(rules, allow_update=True)
+
+
+class MatBuilder(paddleseg.cvlibs.SegBuilder):
+    """
+    This class is responsible for building components for matting. 
+    """
+
+    @cached_property
+    def model(self) -> paddle.nn.Layer:
+        model_cfg = self.config.model_cfg
+        assert model_cfg != {}, \
+            'No model specified in the configuration file.'
+        self.show_msg('model', model_cfg)
+        return self.build_component(model_cfg)
