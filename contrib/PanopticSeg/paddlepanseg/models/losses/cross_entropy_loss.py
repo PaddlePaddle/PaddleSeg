@@ -17,6 +17,7 @@ import paddleseg
 from paddlepanseg.cvlibs import manager
 from paddlepanseg.models.losses import AdaptedSegLoss
 
+
 @manager.LOSSES.add_component
 class CrossEntropyLoss(AdaptedSegLoss):
     def __init__(self, *args, ignore_index=255, **kwargs):

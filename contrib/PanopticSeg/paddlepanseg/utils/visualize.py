@@ -14,36 +14,88 @@
 
 # Reference: https://github.com/bowenc0221/panoptic-deeplab/blob/master/segmentation/utils/save_annotation.py
 
-import os
-
 import cv2
 import numpy as np
-from PIL import Image as PILImage
+
+from .encode import decode_pan_id
 
 # Refence: https://github.com/facebookresearch/detectron2/blob/master/detectron2/utils/colormap.py#L14
 _COLORS = np.array([
-    0.000, 0.447, 0.741, 0.850, 0.325, 0.098, 0.929, 0.694, 0.125, 0.494, 0.184,
-    0.556, 0.466, 0.674, 0.188, 0.301, 0.745, 0.933, 0.635, 0.078, 0.184, 0.300,
-    0.300, 0.300, 0.600, 0.600, 0.600, 1.000, 0.000, 0.000, 1.000, 0.500, 0.000,
-    0.749, 0.749, 0.000, 0.000, 1.000, 0.000, 0.000, 0.000, 1.000, 0.667, 0.000,
-    1.000, 0.333, 0.333, 0.000, 0.333, 0.667, 0.000, 0.333, 1.000, 0.000, 0.667,
-    0.333, 0.000, 0.667, 0.667, 0.000, 0.667, 1.000, 0.000, 1.000, 0.333, 0.000,
-    1.000, 0.667, 0.000, 1.000, 1.000, 0.000, 0.000, 0.333, 0.500, 0.000, 0.667,
-    0.500, 0.000, 1.000, 0.500, 0.333, 0.000, 0.500, 0.333, 0.333, 0.500, 0.333,
-    0.667, 0.500, 0.333, 1.000, 0.500, 0.667, 0.000, 0.500, 0.667, 0.333, 0.500,
-    0.667, 0.667, 0.500, 0.667, 1.000, 0.500, 1.000, 0.000, 0.500, 1.000, 0.333,
-    0.500, 1.000, 0.667, 0.500, 1.000, 1.000, 0.500, 0.000, 0.333, 1.000, 0.000,
-    0.667, 1.000, 0.000, 1.000, 1.000, 0.333, 0.000, 1.000, 0.333, 0.333, 1.000,
-    0.333, 0.667, 1.000, 0.333, 1.000, 1.000, 0.667, 0.000, 1.000, 0.667, 0.333,
-    1.000, 0.667, 0.667, 1.000, 0.667, 1.000, 1.000, 1.000, 0.000, 1.000, 1.000,
-    0.333, 1.000, 1.000, 0.667, 1.000, 0.333, 0.000, 0.000, 0.500, 0.000, 0.000,
-    0.667, 0.000, 0.000, 0.833, 0.000, 0.000, 1.000, 0.000, 0.000, 0.000, 0.167,
-    0.000, 0.000, 0.333, 0.000, 0.000, 0.500, 0.000, 0.000, 0.667, 0.000, 0.000,
-    0.833, 0.000, 0.000, 1.000, 0.000, 0.000, 0.000, 0.167, 0.000, 0.000, 0.333,
-    0.000, 0.000, 0.500, 0.000, 0.000, 0.667, 0.000, 0.000, 0.833, 0.000, 0.000,
-    1.000, 0.000, 0.000, 0.000, 0.143, 0.143, 0.143, 0.857, 0.857, 0.857, 1.000,
-    1.000, 1.000
-]).astype(np.float32).reshape(-1, 3)
+    0.000, 0.447, 0.741,
+    0.850, 0.325, 0.098,
+    0.929, 0.694, 0.125,
+    0.494, 0.184, 0.556,
+    0.466, 0.674, 0.188,
+    0.301, 0.745, 0.933,
+    0.635, 0.078, 0.184,
+    0.300, 0.300, 0.300,
+    0.600, 0.600, 0.600,
+    1.000, 0.000, 0.000,
+    1.000, 0.500, 0.000,
+    0.749, 0.749, 0.000,
+    0.000, 1.000, 0.000,
+    0.000, 0.000, 1.000,
+    0.667, 0.000, 1.000,
+    0.333, 0.333, 0.000,
+    0.333, 0.667, 0.000,
+    0.333, 1.000, 0.000,
+    0.667, 0.333, 0.000,
+    0.667, 0.667, 0.000,
+    0.667, 1.000, 0.000,
+    1.000, 0.333, 0.000,
+    1.000, 0.667, 0.000,
+    1.000, 1.000, 0.000,
+    0.000, 0.333, 0.500,
+    0.000, 0.667, 0.500,
+    0.000, 1.000, 0.500,
+    0.333, 0.000, 0.500,
+    0.333, 0.333, 0.500,
+    0.333, 0.667, 0.500,
+    0.333, 1.000, 0.500,
+    0.667, 0.000, 0.500,
+    0.667, 0.333, 0.500,
+    0.667, 0.667, 0.500,
+    0.667, 1.000, 0.500,
+    1.000, 0.000, 0.500,
+    1.000, 0.333, 0.500,
+    1.000, 0.667, 0.500,
+    1.000, 1.000, 0.500,
+    0.000, 0.333, 1.000,
+    0.000, 0.667, 1.000,
+    0.000, 1.000, 1.000,
+    0.333, 0.000, 1.000,
+    0.333, 0.333, 1.000,
+    0.333, 0.667, 1.000,
+    0.333, 1.000, 1.000,
+    0.667, 0.000, 1.000,
+    0.667, 0.333, 1.000,
+    0.667, 0.667, 1.000,
+    0.667, 1.000, 1.000,
+    1.000, 0.000, 1.000,
+    1.000, 0.333, 1.000,
+    1.000, 0.667, 1.000,
+    0.333, 0.000, 0.000,
+    0.500, 0.000, 0.000,
+    0.667, 0.000, 0.000,
+    0.833, 0.000, 0.000,
+    1.000, 0.000, 0.000,
+    0.000, 0.167, 0.000,
+    0.000, 0.333, 0.000,
+    0.000, 0.500, 0.000,
+    0.000, 0.667, 0.000,
+    0.000, 0.833, 0.000,
+    0.000, 1.000, 0.000,
+    0.000, 0.000, 0.167,
+    0.000, 0.000, 0.333,
+    0.000, 0.000, 0.500,
+    0.000, 0.000, 0.667,
+    0.000, 0.000, 0.833,
+    0.000, 0.000, 1.000,
+    0.000, 0.000, 0.000,
+    0.143, 0.143, 0.143,
+    0.857, 0.857, 0.857,
+    1.000, 1.000, 1.000
+]).astype(np.float32).reshape(-1, 3)    # yapf: disable
 
 
 def random_color(rgb=True, maximum=255):
@@ -55,7 +107,7 @@ def random_color(rgb=True, maximum=255):
         maximum (int, optional): Either 255 or 1. Default: 255.
 
     Returns:
-        ndarray: a vector of 3 numbers
+        ndarray: a vector of 3 numbers.
     """
     idx = np.random.randint(0, len(_COLORS))
     ret = _COLORS[idx] * maximum
@@ -78,7 +130,7 @@ def visualize_semantic(semantic, colormap=None, image=None, weight=0.5):
     """
     semantic = semantic.astype('uint8')
     if colormap is None:
-        colormap = _COLORS
+        colormap = _COLORS * 255
     colored_semantic = colormap[semantic]
     if image is not None:
         colored_semantic = cv2.addWeighted(image, weight, colored_semantic,
@@ -108,6 +160,8 @@ def visualize_instance(instance,
     ids = np.unique(instance)
     num_colors = len(ids)
     colormap = np.zeros((num_colors, 3), dtype=np.uint8)
+    # Make a copy to avoid in-place modification on the input
+    instance = instance.copy()
     # Maps label to continuous value
     for i in range(num_colors):
         instance[instance == ids[i]] = i
@@ -145,31 +199,33 @@ def visualize_panoptic(panoptic,
         ignore_index (int, optional): The class ID to be ignored. Default: 255.
     """
 
-    def _random_color(base, max_dist=30):
-        color = base + np.random.randint(
+    def _random_color(base, max_dist=50):
+        # TODO: Jitter in HSV color space
+        color = base.astype('int32') + np.random.randint(
             low=-max_dist, high=max_dist + 1, size=3)
+        # Return an immutable object
         return tuple(np.maximum(0, np.minimum(255, color)))
 
     colored_panoptic = np.zeros(
         (panoptic.shape[0], panoptic.shape[1], 3), dtype=np.uint8)
     if colormap is None:
-        colormap = _COLORS
+        colormap = _COLORS * 255
     taken_colors = set((0, 0, 0))
 
     for lab in np.unique(panoptic):
         mask = panoptic == lab
         # XXX: The conversion strategy is hard-coded
-        cat_id = (lab // label_divisor) - 1
+        cat_id, ins_id = decode_pan_id(lab, label_divisor)
         if cat_id != ignore_index:
             base_color = colormap[cat_id]
         else:
             continue
+        color = base_color
         if tuple(base_color) not in taken_colors:
             taken_colors.add(tuple(base_color))
-            color = base_color
-        else:
+        if ins_id > 0:
             while True:
-                # XXX: This might result in an infinite loop
+                # FIXME: This might result in an infinite loop
                 color = _random_color(base_color)
                 if color not in taken_colors:
                     taken_colors.add(color)

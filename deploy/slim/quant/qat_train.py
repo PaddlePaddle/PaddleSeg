@@ -19,9 +19,9 @@ import paddle
 import numpy as np
 from paddleslim import QAT
 
-from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, utils
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.core import train
+from paddleseg.utils import get_sys_env, logger, utils
 from qat_config import quant_config
 """
 Apply quantization to segmentation model.
@@ -137,51 +137,26 @@ def skip_quant(model):
 
 
 def main(args):
-
-    if args.seed is not None:
-        paddle.seed(args.seed)
-        np.random.seed(args.seed)
-        random.seed(args.seed)
-
-    env_info = get_sys_env()
-    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
-    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
-                     ['-' * 48])
-    logger.info(info)
-
-    if args.device == 'gpu' and env_info[
-            'Paddle compiled with cuda'] and env_info['GPUs used']:
-        place = 'gpu'
-    else:
-        place = 'cpu'
-
-    paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
-
     cfg = Config(
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
+    builder = SegBuilder(cfg)
 
-    train_dataset = cfg.train_dataset
-    if train_dataset is None:
-        raise RuntimeError(
-            'The training dataset is not specified in the configuration file.')
-    elif len(train_dataset) == 0:
-        raise ValueError(
-            'The length of train_dataset is 0. Please check if your dataset is valid'
-        )
-    val_dataset = cfg.val_dataset if args.do_eval else None
-    losses = cfg.loss
+    utils.show_env_info()
+    utils.show_cfg_info(cfg)
+    utils.set_seed(args.seed)
+    utils.set_device(args.device)
 
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
+    model = builder.model
+    train_dataset = builder.train_dataset
+    val_dataset = builder.val_dataset if args.do_eval else None
+    losses = builder.loss
+    optimizer = builder.optimizer
 
-    model = cfg.model
     if args.model_path:
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
@@ -195,7 +170,7 @@ def main(args):
         model,
         train_dataset,
         val_dataset=val_dataset,
-        optimizer=cfg.optimizer,
+        optimizer=optimizer,
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,

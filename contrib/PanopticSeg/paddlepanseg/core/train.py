@@ -18,8 +18,8 @@ import shutil
 from collections import deque
 
 import paddle
-import paddle.nn.functional as F
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
+from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
+                             worker_init_fn, op_flops_funs)
 
 from paddlepanseg.core.val import evaluate
 
@@ -93,7 +93,7 @@ def train(model,
     if not os.path.isdir(save_dir):
         if os.path.exists(save_dir):
             os.remove(save_dir)
-        os.makedirs(save_dir)
+        os.makedirs(save_dir, exist_ok=True)
 
     # use amp
     if precision == 'fp16':
@@ -107,13 +107,9 @@ def train(model,
                 save_dtype='float32')
 
     if nranks > 1:
-        # Initialize parallel environment if not done.
-        if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
-        ):
-            paddle.distributed.init_parallel_env()
-            ddp_model = paddle.DataParallel(model)
-        else:
-            ddp_model = paddle.DataParallel(model)
+        paddle.distributed.fleet.init(is_collective=True)
+        optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)
+        ddp_model = paddle.distributed.fleet.distributed_model(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
@@ -123,6 +119,7 @@ def train(model,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
         return_list=True,
+        worker_init_fn=worker_init_fn,
         collate_fn=train_dataset.collate
         if hasattr(train_dataset, 'collate') else None)
 
@@ -175,11 +172,7 @@ def train(model,
                 loss_list = loss_computation(data, net_out, losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
-                # If the optimizer is ReduceOnPlateau, pass loss to optimizer.step().
-                if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
-                    optimizer.step(loss)
-                else:
-                    optimizer.step()
+                optimizer.step()
 
             lr = optimizer.get_lr()
 
@@ -189,7 +182,10 @@ def train(model,
             else:
                 lr_sche = optimizer._learning_rate
             if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
-                lr_sche.step()
+                if isinstance(lr_sche, paddle.optimizer.lr.ReduceOnPlateau):
+                    lr_sche.step(loss)
+                else:
+                    lr_sche.step()
 
             model.clear_gradients()
             avg_loss += float(loss)
@@ -304,19 +300,13 @@ def train(model,
             batch_start = time.time()
 
     # Calculate FLOPs
-    if local_rank == 0:
-
-        def count_syncbn(m, x, y):
-            x = x[0]
-            nelements = x.numel()
-            m.total_ops += int(2 * nelements)
-
+    if local_rank == 0 and not (precision == 'fp16' and amp_level == 'O2'):
         _, c, h, w = data['img'].shape
         flops = paddle.flops(
             model, [1, c, h, w],
-            custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
+            custom_ops={paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn})
 
-    # Sleep for half a second to let dataloader release resources.
-    time.sleep(0.5)
+    # Sleep for a second to let dataloader release resources.
+    time.sleep(1)
     if use_vdl:
         log_writer.close()

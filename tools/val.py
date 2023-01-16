@@ -17,7 +17,7 @@ import os
 
 import paddle
 
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import manager, Config, SegBuilder
 from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, utils
 
@@ -119,6 +119,7 @@ def main(args):
     assert args.config is not None, \
         'No configuration file specified, please set --config'
     cfg = Config(args.config, opts=args.opts)
+    builder = SegBuilder(cfg)
     test_config = merge_test_config(cfg, args)
 
     utils.show_env_info()
@@ -137,16 +138,11 @@ def main(args):
         for i in range(loss_len):
             cfg.dic['loss']['types'][i]['data_format'] = args.data_format
 
-    model = cfg.model
+    model = builder.model
     if args.model_path:
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained weights successfully.')
-
-    val_dataset = cfg.val_dataset
-    assert val_dataset is not None, \
-        'The val_dataset is not specified in the configuration file.'
-    assert len(val_dataset) != 0, \
-        'The length of val_dataset is 0. Please check whether the dataset is valid.'
+    val_dataset = builder.val_dataset
 
     evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
 

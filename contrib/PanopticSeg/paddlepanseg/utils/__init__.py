@@ -14,3 +14,4 @@
 
 from .visualize import visualize_semantic, visualize_instance, visualize_panoptic
 from .misc import tabulate_metrics, import_custom_op, use_custom_op
+from .encode import encode_pan_id, decode_pan_id, is_crowd

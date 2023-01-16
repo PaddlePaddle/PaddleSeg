@@ -15,18 +15,15 @@
 import os
 import os.path as osp
 import argparse
-import codecs
 from ast import literal_eval
 
-import yaml
 import numpy as np
-import paddleseg.transforms as T
 from PIL import Image
 from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
 from paddleseg.utils import logger, get_image_list
+from paddleseg.deploy.infer import DeployConfig
 
-from paddlepanseg.cvlibs import manager
 from paddlepanseg.cvlibs.info_dicts import build_info_dict
 from paddlepanseg.transforms.functional import id2rgb
 
@@ -185,38 +182,6 @@ def auto_tune(args, imgs, img_nums):
             return
 
     logger.info("Auto tune succeded.\n")
-
-
-class DeployConfig:
-    def __init__(self, path):
-        with codecs.open(path, 'r', 'utf-8') as file:
-            self.dic = yaml.load(file, Loader=yaml.FullLoader)
-
-        self._transforms = self.load_transforms(self.dic['Deploy'][
-            'transforms'])
-        self._dir = osp.dirname(path)
-
-    @property
-    def transforms(self):
-        return self._transforms
-
-    @property
-    def model(self):
-        return osp.join(self._dir, self.dic['Deploy']['model'])
-
-    @property
-    def params(self):
-        return osp.join(self._dir, self.dic['Deploy']['params'])
-
-    @staticmethod
-    def load_transforms(t_list):
-        com = manager.TRANSFORMS
-        transforms = []
-        for t in t_list:
-            ctype = t.pop('type')
-            transforms.append(com[ctype](**t))
-
-        return T.Compose(transforms)
 
 
 class Predictor:

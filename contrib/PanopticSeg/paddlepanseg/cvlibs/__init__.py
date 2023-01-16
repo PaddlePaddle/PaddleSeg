@@ -15,5 +15,5 @@
 from paddleseg.cvlibs import param_init
 
 from . import manager
-from .config import Config
+from .config import Config, make_default_builder
 from .info_dicts import build_info_dict

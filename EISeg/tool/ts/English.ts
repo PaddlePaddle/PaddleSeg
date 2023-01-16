@@ -6,42 +6,42 @@
     <message>
         <location filename="../../eiseg/app.py" line="312"/>
         <source>&amp;打开图像</source>
-        <translation>&amp;Open Image</translation>
+        <translation>&amp;Open image</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="312"/>
         <source>打开一张图像进行标注</source>
-        <translation>Open an image for annotation</translation>
+        <translation>Open an image to annotate</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="318"/>
         <source>&amp;打开文件夹</source>
-        <translation>&amp;Open Dir</translation>
+        <translation>&amp;Open folder</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="318"/>
         <source>打开一个文件夹下所有的图像进行标注</source>
-        <translation>Open all images in a folder for annotation</translation>
+        <translation>Open folder to annotate</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="324"/>
         <source>&amp;改变标签保存路径</source>
-        <translation>&amp;Change Output Dir</translation>
+        <translation>&amp;Change save path</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="324"/>
         <source>改变标签保存的文件夹路径</source>
-        <translation>Change the folder where labels are saved</translation>
+        <translation>Change save folder path</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="330"/>
         <source>&amp;加载模型参数</source>
-        <translation>&amp;Load Model Parameters</translation>
+        <translation>&amp;Load model parameters</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="330"/>
         <source>加载一个模型参数</source>
-        <translation>Load a model parameter</translation>
+        <translation>Load single model parameter</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="336"/>
@@ -51,17 +51,17 @@
     <message>
         <location filename="../../eiseg/app.py" line="336"/>
         <source>保存图像标签</source>
-        <translation>Save image label</translation>
+        <translation>Save image label file</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="342"/>
         <source>&amp;另存为</source>
-        <translation>&amp;Save as</translation>
+        <translation>&amp;Save As</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="342"/>
         <source>在指定位置另存为标签</source>
-        <translation>Save as label at the specified location</translation>
+        <translation>Save as label file at the specified location</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="349"/>
@@ -71,37 +71,37 @@
     <message>
         <location filename="../../eiseg/app.py" line="349"/>
         <source>翻页同时自动保存</source>
-        <translation>ave automatically while turning image</translation>
+        <translation>Auto Save while turning image</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="357"/>
         <source>&amp;上一张</source>
-        <translation>&amp;Prev Image</translation>
+        <translation>&amp;Last image</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="357"/>
         <source>翻到上一张图片</source>
-        <translation>Filp to previous image</translation>
+        <translation>Jump to last image</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="363"/>
         <source>&amp;下一张</source>
-        <translation>&amp;Next Image</translation>
+        <translation>&amp;Next image</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="363"/>
         <source>翻到下一张图片</source>
-        <translation>Flip to the next image</translation>
+        <translation>Jump to the next image</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="369"/>
         <source>&amp;完成当前目标</source>
-        <translation>&amp;Finish Current Target</translation>
+        <translation>&amp;Finish Current</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="369"/>
         <source>完成当前目标的标注</source>
-        <translation>Finish labeling the current object</translation>
+        <translation>Finish Current annotate</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="375"/>
@@ -121,7 +121,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="381"/>
         <source>撤销一次点击</source>
-        <translation>Undo one click</translation>
+        <translation>Undo once</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="387"/>
@@ -131,7 +131,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="387"/>
         <source>重做一次点击</source>
-        <translation>Redo one click</translation>
+        <translation>Redo once</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="393"/>
@@ -141,7 +141,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="393"/>
         <source>删除当前选中的多边形</source>
-        <translation>Deletes the currently selected polygon</translation>
+        <translation>Delete selected polygon</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="399"/>
@@ -171,67 +171,57 @@
     <message>
         <location filename="../../eiseg/app.py" line="412"/>
         <source>标签和图像使用相同拓展名，用于图像中有文件名相同但拓展名不同的情况，防止标签覆盖</source>
-        <translation>The label and image use the same extension name, which is used to prevent the label from being overwritten when the file name in the image is the same but the extension name is different</translation>
+        <translation>The label file and image use the same extension name to prevent the label being overwritten by the same image file name but the different extension name</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="419"/>
         <source>&amp;伪彩色保存</source>
-        <translation>&amp;Pseudo Color Format</translation>
+        <translation>&amp;Keep Pseudo Color Format</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="419"/>
         <source>保存为伪彩色图像</source>
-        <translation>Save label in pseudo color format</translation>
+        <translation>Save label file as pseudo color format</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="427"/>
         <source>&amp;灰度保存</source>
-        <translation>&amp;Grayscale Format</translation>
+        <translation>&amp;Keep Grayscale Format</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="427"/>
         <source>保存为灰度图像，像素的灰度为对应类型的标签</source>
-        <translation>Save label in grayscale format, the value of each pixel is the id for the label category of the pixel</translation>
+        <translation>Save label file as grayscale format, the value of each pixel is the id for the label category of the pixel</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="435"/>
         <source>&amp;JSON保存</source>
-        <translation>&amp;JSON Format</translation>
+        <translation>&amp;Keep JSON Format</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="435"/>
-        <source>保存为JSON格式</source>
-        <translation>Save polygon information in JSON format</translation>
+        <source>保存为labelme的JSON格式</source>
+        <translation>Save polygon information as JSON format for labelme</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="461"/>
         <source>&amp;COCO保存</source>
-        <translation>&amp;COCO Format</translation>
+        <translation>&amp;Keep COCO Format</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="443"/>
         <source>保存为COCO格式</source>
-        <translation>Save polygon information in coco format</translation>
-    </message>
-    <message>
-        <location filename="../../eiseg/app.py" line="452"/>
-        <source>&amp;VOC保存</source>
-        <translation>&amp;VOC Format</translation>
-    </message>
-    <message>
-        <location filename="../../eiseg/app.py" line="452"/>
-        <source>保存为VOC格式</source>
-        <translation>Save polygon information in voc format</translation>
+        <translation>Save polygon information as COCO format</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="461"/>
         <source>&amp;YOLO保存</source>
-        <translation>&amp;YOLO Format</translation>
+        <translation>&amp;Keep YOLO Format</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="461"/>
         <source>保存为YOLO格式</source>
-        <translation>Save polygon information in yolo format</translation>
+        <translation>Save polygon information as YOLO format</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="471"/>
@@ -246,32 +236,32 @@
     <message>
         <location filename="../../eiseg/app.py" line="479"/>
         <source>&amp;启用宫格检测</source>
-        <translation>&amp;Enable grid detection</translation>
+        <translation>&amp;Enable block detection</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="479"/>
         <source>针对每张图片启用宫格检测</source>
-        <translation>Enable grid detection for each picture</translation>
+        <translation>Enable block detection for each image</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="487"/>
         <source>&amp;抠图保存</source>
-        <translation>&amp;Save Matting</translation>
+        <translation>&amp;Save cutout image</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="487"/>
         <source>只保留前景，背景设置为背景色</source>
-        <translation>Only keep foreground pixels, set all background pixels to background color</translation>
+        <translation>Keep foreground pixels only with specified background color</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="495"/>
         <source>&amp;设置抠图背景色</source>
-        <translation>&amp;Set matting background color</translation>
+        <translation>&amp;Set cutout background color</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="495"/>
         <source>抠图后背景像素的颜色</source>
-        <translation>The color to use for all background pixels</translation>
+        <translation>The color of background pixels</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="501"/>
@@ -281,7 +271,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="501"/>
         <source>十字丝的显示颜色</source>
-        <translation>Crosshair color display</translation>
+        <translation>The color of crosshair</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="508"/>
@@ -311,7 +301,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="520"/>
         <source>将标签列表导出成标签配置文件</source>
-        <translation>Export label list to label profile</translation>
+        <translation>Export label list as label profile</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="526"/>
@@ -336,22 +326,22 @@
     <message>
         <location filename="../../eiseg/app.py" line="538"/>
         <source>&amp;清除近期文件记录</source>
-        <translation>&amp;Clear recent file records</translation>
+        <translation>&amp;Clear files history</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="538"/>
         <source>清除近期标注文件记录</source>
-        <translation>Clear recent annotation file records</translation>
+        <translation>Clear annotated files history</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="544"/>
         <source>&amp;模型选择</source>
-        <translation>&amp;Model Selection</translation>
+        <translation>&amp;Model</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="544"/>
         <source>隐藏/展示模型选择面板</source>
-        <translation>Hide / show model selection panel</translation>
+        <translation>Hide / show model panel</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="551"/>
@@ -361,7 +351,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="551"/>
         <source>隐藏/展示数据列表面板</source>
-        <translation>Hide / show data list panel</translation>
+        <translation>Hide / show image list panel</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="558"/>
@@ -376,17 +366,17 @@
     <message>
         <location filename="../../eiseg/app.py" line="565"/>
         <source>&amp;分割设置</source>
-        <translation>&amp;Segmentation Setting</translation>
+        <translation>&amp;Segmentation Settings</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="565"/>
         <source>隐藏/展示分割设置面板</source>
-        <translation>Hide / show split settings panel</translation>
+        <translation>Hide / show segmentation settings panel</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="572"/>
         <source>&amp;遥感设置</source>
-        <translation>&amp;Remote sensing Setting</translation>
+        <translation>&amp;Remote sensing Settings</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="572"/>
@@ -396,7 +386,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="579"/>
         <source>&amp;医疗设置</source>
-        <translation>&amp;Medical Setting</translation>
+        <translation>&amp;Medical Settings</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="579"/>
@@ -406,12 +396,12 @@
     <message>
         <location filename="../../eiseg/app.py" line="586"/>
         <source>&amp;N2宫格标注</source>
-        <translation>&amp;N2 Grid Label</translation>
+        <translation>&amp;N2 Block Label</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="586"/>
         <source>隐藏/展示N^2宫格细粒度标注面板</source>
-        <translation>Hide / show n ^ 2 grid fine-grained dimension panel</translation>
+        <translation>Hide / show N ^ 2 block fine-grained dimension panel</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="593"/>
@@ -446,7 +436,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="614"/>
         <source>&amp;检测设置</source>
-        <translation>&amp;Detection Setting</translation>
+        <translation>&amp;Detection Settings</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="614"/>
@@ -466,12 +456,12 @@
     <message>
         <location filename="../../eiseg/app.py" line="628"/>
         <source>&amp;反馈问题</source>
-        <translation>&amp;Feedback issues</translation>
+        <translation>&amp;Feedback</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="628"/>
         <source>通过Github Issue反馈使用过程中遇到的问题。我们会尽快进行修复</source>
-        <translation>Feed back the problems encountered during use through GitHub issue. We will repair it as soon as possible</translation>
+        <translation>Feed back the problems encountered in use through GitHub Issue. We will repair it as soon as possible</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="634"/>
@@ -481,7 +471,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="634"/>
         <source>编辑软件快捷键</source>
-        <translation>Edit software shortcuts</translation>
+        <translation>Edit software shortcuts keys</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="640"/>
@@ -491,7 +481,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="640"/>
         <source>用于观察软件执行过程和进行debug。我们不会自动收集任何日志，可能会希望您在反馈问题时间打开此功能，帮助我们定位问题。</source>
-        <translation>It is used to observe the software execution process and debug. We don&amp;apos;t automatically collect any logs. We may want you to turn on this function when you feed back the problem to help us locate the problem.</translation>
+        <translation>Logs are used to debug and confirm software execution process. We don&amp;apos;t automatically collect any logs. We may hope you to enable this option to help us locate the problem when you feedback.</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="648"/>
@@ -511,7 +501,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="655"/>
         <source>交互式分割标注模式</source>
-        <translation>Tagging mode of interactive segmentation</translation>
+        <translation>Interactive segmentation mode</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="661"/>
@@ -521,7 +511,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="661"/>
         <source>预标注检测标注模式</source>
-        <translation>Tagging mode of pre making detection</translation>
+        <translation>Tagging mode of pre-annotation detection</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="788"/>
@@ -549,9 +539,14 @@
         <translation>Help</translation>
     </message>
     <message>
+        <location filename="../../eiseg/app.py" line="793"/>
+        <source>更多</source>
+        <translation>More</translation>
+    </message>
+    <message>
         <location filename="../../eiseg/app.py" line="686"/>
         <source>近期文件</source>
-        <translation>Recent documents</translation>
+        <translation>Recent files</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="687"/>
@@ -561,7 +556,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="689"/>
         <source>近期视频传播模型及参数</source>
-        <translation>Recent video propagation model and parameters</translation>
+        <translation>Recent video propagation models and parameters</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="691"/>
@@ -571,17 +566,17 @@
     <message>
         <location filename="../../eiseg/app.py" line="846"/>
         <source>切换语言</source>
-        <translation>Changing language</translation>
+        <translation>Change language</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="846"/>
         <source>切换语言需要重启软件才能生效</source>
-        <translation>Changing language only takes effect after restarting the app</translation>
+        <translation>Changing language requires restarting the software</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="863"/>
         <source>无近期文件</source>
-        <translation>No recent documents</translation>
+        <translation>No recent files</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="879"/>
@@ -591,12 +586,12 @@
     <message>
         <location filename="../../eiseg/app.py" line="899"/>
         <source>无近期模型记录</source>
-        <translation>No recent model parameters</translation>
+        <translation>No recent model parameters history</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="919"/>
         <source>无近期视频传播模型记录</source>
-        <translation>No recent video propagation model record</translation>
+        <translation>No recent video propagation model history</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="990"/>
@@ -610,13 +605,13 @@
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1010"/>
-        <source>参数路径存在中文</source>
-        <translation>Parameter path exists in Chinese</translation>
+        <source>参数路径存在无效字符</source>
+        <translation>Parameter load path exists invalid characters</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1010"/>
-        <source>请修改参数路径为非中文路径！</source>
-        <translation>Please change the parameter path to a non Chinese path!</translation>
+        <source>请修改参数路径为不含无效字符的路径！</source>
+        <translation>Please change the parameter load path without invalid characters!</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3123"/>
@@ -641,17 +636,17 @@
     <message>
         <location filename="../../eiseg/app.py" line="1040"/>
         <source>掩膜已关闭</source>
-        <translation>Mask closed</translation>
+        <translation>Mask disabled</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1044"/>
         <source>没有最近使用模型信息，请加载模型</source>
-        <translation>No recently used model information, please load the model</translation>
+        <translation>No recent model history, please load the model</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1052"/>
         <source>没有最近使用的视频传播模型信息，请加载模型</source>
-        <translation>No recently used video propagation model information, please load the model</translation>
+        <translation>No recent video propagation model history, please load the model</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1084"/>
@@ -666,7 +661,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="1081"/>
         <source>没有需要保存的标签</source>
-        <translation>There are no labels to save</translation>
+        <translation>No labels need to save</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1081"/>
@@ -681,7 +676,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="1097"/>
         <source>选择保存标签配置文件路径</source>
-        <translation>Select the path to save the label profile</translation>
+        <translation>Select save path of the label profile</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1142"/>
@@ -691,7 +686,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="1142"/>
         <source>请确认是否要清空标签列表</source>
-        <translation>Please confirm you want to clear the label list</translation>
+        <translation>Are you sure clear all label list?</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1218"/>
@@ -716,7 +711,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="1272"/>
         <source>确认要删除当前选中多边形标注？</source>
-        <translation>Are you sure you want to delete the currently selected polygon dimension?</translation>
+        <translation>Are you sure delete the currently selected polygon dimension?</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1339"/>
@@ -726,17 +721,17 @@
     <message>
         <location filename="../../eiseg/app.py" line="1350"/>
         <source>请在gpu电脑上进行视频标注</source>
-        <translation>Please mark the video on the GPU computer</translation>
+        <translation>Please annotate the video with GPU</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1350"/>
         <source>准备进行视频标注，由于视频标注需要一定计算，请尽量确保在gpu的电脑上进行操作!</source>
-        <translation>Prepare for video tagging. Since video tagging requires certain calculation, please try your best to ensure that the operation is carried out on the GPU computer!</translation>
+        <translation> Video annotation requires massive calculation, please make sure the operation is carried out by GPU computer!</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1376"/>
         <source>选择待标注图片文件夹</source>
-        <translation>Select the picture folder to be labeled</translation>
+        <translation>Select the image folder to be labeled</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1430"/>
@@ -761,7 +756,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="1499"/>
         <source>未打开遥感组件</source>
-        <translation>Remote sensing component not open</translation>
+        <translation>Remote sensing component not enabled</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1499"/>
@@ -796,7 +791,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="1541"/>
         <source>未启用视频组件</source>
-        <translation>Video component not open</translation>
+        <translation>Video component not enabled</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1541"/>
@@ -841,12 +836,12 @@
     <message>
         <location filename="../../eiseg/app.py" line="1800"/>
         <source>完成最后一个目标？</source>
-        <translation>Finish the last goal?</translation>
+        <translation>Finish the last item?</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1800"/>
         <source>是否完成最后一个目标的标注，不完成不会进行保存。</source>
-        <translation>Whether to complete the annotation of the last target. If not, it will not be saved.</translation>
+        <translation>Lables will not be saved before completing all the annotation, do you want to complete?.</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1820"/>
@@ -866,7 +861,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="1886"/>
         <source>文件夹已经存在</source>
-        <translation>Folder already exists</translation>
+        <translation>Folder exists</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1886"/>
@@ -891,7 +886,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="1939"/>
         <source>视频帧成功保存至</source>
-        <translation>Video frames saved to</translation>
+        <translation>Video frames successfully saved to</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2053"/>
@@ -906,12 +901,12 @@
     <message>
         <location filename="../../eiseg/app.py" line="2078"/>
         <source>选择标签文件保存路径</source>
-        <translation>Select the path to save the label file</translation>
+        <translation>Select the path to save label files</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2101"/>
         <source>选择标签保存路径</source>
-        <translation>Select the folder to save labels</translation>
+        <translation>Select the folder to save labels files</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2219"/>
@@ -931,17 +926,17 @@
     <message>
         <location filename="../../eiseg/app.py" line="2226"/>
         <source>请先在标签列表中单击点选标签</source>
-        <translation>Please click the label in the label list first</translation>
+        <translation>Please select the label in the label list first</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2370"/>
         <source>无法导入GDAL或rasterio</source>
-        <translation>Unable to import GDAL or rasterio</translation>
+        <translation>Failed to import GDAL or rasterio</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2370"/>
         <source>使用遥感工具需要安装GDAL和rasterio！</source>
-        <translation>GDAL and rasterio needs to be installed to use remote sensing tools!</translation>
+        <translation>Remote sensing tool requires GDAL and rasterio installed!</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2374"/>
@@ -951,12 +946,12 @@
     <message>
         <location filename="../../eiseg/app.py" line="2380"/>
         <source>无法导入SimpleITK</source>
-        <translation>Cannot import SimpleITK</translation>
+        <translation>Failed to import SimpleITK</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2380"/>
         <source>使用医疗工具需要安装SimpleITK！</source>
-        <translation>Simpleitk needs to be installed to use medical tools!</translation>
+        <translation>Medical tool requires SimpleITK installed!</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2384"/>
@@ -966,12 +961,12 @@
     <message>
         <location filename="../../eiseg/app.py" line="2394"/>
         <source>无法导入VTK</source>
-        <translation>Cannot import VTK</translation>
+        <translation>Fialed to import VTK</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2394"/>
         <source>使用3D显示工具需要安装VTK！</source>
-        <translation>VTK needs to be installed to use 3D display tools!</translation>
+        <translation>3D display tool requires VTK installed!</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2398"/>
@@ -981,7 +976,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="2700"/>
         <source>图像过大，已显示缩略图</source>
-        <translation>The image is too large and thumbnails are displayed</translation>
+        <translation>The image is too large, thumbnails are displayed</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2793"/>
@@ -991,17 +986,17 @@
     <message>
         <location filename="../../eiseg/app.py" line="2793"/>
         <source>图像过大，将启用宫格功能！</source>
-        <translation>If the image is too large, the grid function will be enabled!</translation>
+        <translation>If the image is too large, the block function will be enabled!</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2845"/>
         <source>功能尚在开发</source>
-        <translation>The function is still under development</translation>
+        <translation>This function is still under development</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2956"/>
         <source>图片格式无法播放</source>
-        <translation>Picture format cannot be played</translation>
+        <translation>Image format cannot be loaded</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2956"/>
@@ -1020,8 +1015,8 @@
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2979"/>
-        <source>请先在加载图像按钮中加载视频</source>
-        <translation>Please load the video in the load image button first</translation>
+        <source>请先在打开图像选项中加载视频</source>
+        <translation>Please load the video in the “Open image” menu first</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2982"/>
@@ -1031,7 +1026,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="2982"/>
         <source>尚未加载视频传播模型，请先加载模型!</source>
-        <translation>The video propagation model has not been loaded. Please load the model first!</translation>
+        <translation>The video propagation model not loaded. Please load the model first!</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2985"/>
@@ -1041,7 +1036,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="2985"/>
         <source>尚未加载视频融合模型，请先加载模型!</source>
-        <translation>Video fusion model has not been loaded, please load the model first!</translation>
+        <translation>Video fusion model not loaded, please load the model first!</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2990"/>
@@ -1066,52 +1061,52 @@
     <message>
         <location filename="../../eiseg/app.py" line="3126"/>
         <source>无检测模型可以加载</source>
-        <translation>No detection parameters to loaded</translation>
+        <translation>No detection parameter loaded</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3155"/>
         <source>开启画框功能</source>
-        <translation>Start add box</translation>
+        <translation>Enable rectangle annotation</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3157"/>
         <source>关闭画框功能</source>
-        <translation>Close add box</translation>
+        <translation>Disable rectangle annotation</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3292"/>
         <source>预标注是否启用提醒</source>
-        <translation>Whether reminder is enabled for pre marking</translation>
+        <translation>Enable notice of pre-annotation?</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3292"/>
         <source>启用预标注？</source>
-        <translation>Enable pre marking?</translation>
+        <translation>Enable pre-annotation?</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3297"/>
         <source>启用预标注流程提醒</source>
-        <translation>Remind of start pre making mode</translation>
+        <translation>Enable notice of pre-annotation process</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3297"/>
         <source>请先加载检测模型，然后点击预标注设置按钮，最后再打开图像文件！</source>
-        <translation>Please load the detection model first, then click the pre marking setting button, and finally open the image file!</translation>
+        <translation>Please load the detection model first, click the &quot;Pre-annotation settings&quot; button, then open the image file!</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3302"/>
         <source>启用手动标注流程提醒</source>
-        <translation>Remind of start manual mode</translation>
+        <translation>Enable notice of manual annotation process</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3302"/>
         <source>请先点击新建标签或是导入标签，然后打开图像文件，即可开始手动画框标注！</source>
-        <translation>Please click New Label or Import Label first, and then open the image file to start manual framing!</translation>
+        <translation>Please click &quot;Add Label&quot; or &quot;Import Label&quot; first, then open the image file to start manual annotation!</translation>
     </message>
     <message>
         <location filename="../../eiseg/widget/shortcut.py" line="55"/>
         <source>编辑快捷键</source>
-        <translation>Edit Keyboard Shortcuts</translation>
+        <translation>Edit Shortcuts Keys</translation>
     </message>
     <message>
         <location filename="../../eiseg/widget/shortcut.py" line="87"/>
@@ -1121,17 +1116,17 @@
     <message>
         <location filename="../../eiseg/widget/shortcut.py" line="110"/>
         <source>快捷键冲突</source>
-        <translation>Shortcut key conflict</translation>
+        <translation>Shortcut keys conflict</translation>
     </message>
     <message>
         <location filename="../../eiseg/widget/shortcut.py" line="111"/>
         <source>快捷键已被</source>
-        <translation>shortcut has been used by</translation>
+        <translation>Shortcut has been occupied by</translation>
     </message>
     <message>
         <location filename="../../eiseg/widget/shortcut.py" line="111"/>
         <source>使用，请设置其他快捷键或先修改</source>
-        <translation>. Please set another key sequence or modify the keyboard shotcut of</translation>
+        <translation>. Please set another shortcut key or modify the shortcut keys of</translation>
     </message>
     <message>
         <location filename="../../eiseg/widget/shortcut.py" line="111"/>
@@ -1151,7 +1146,7 @@
     <message>
         <location filename="../../eiseg/ui.py" line="119"/>
         <source>使用掩膜</source>
-        <translation>Use mask</translation>
+        <translation>Use edge mask</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="140"/>
@@ -1176,17 +1171,17 @@
     <message>
         <location filename="../../eiseg/ui.py" line="190"/>
         <source>分割阈值：</source>
-        <translation>Segmentation Threshold:</translation>
+        <translation>Segmentation threshold:</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="195"/>
         <source>标签透明度：</source>
-        <translation>Label Transparency:</translation>
+        <translation>Label transparency:</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="200"/>
         <source>点击可视化半径：</source>
-        <translation>Click Visualization Radius:</translation>
+        <translation>Mark point size:</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="444"/>
@@ -1196,17 +1191,17 @@
     <message>
         <location filename="../../eiseg/ui.py" line="216"/>
         <source>分割设置</source>
-        <translation>Segmentation Setting</translation>
+        <translation>Segmentation Settings</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="224"/>
         <source>遥感设置</source>
-        <translation>Remote sensing Setting</translation>
+        <translation>Remote-sensing Settings</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="227"/>
         <source>波段设置</source>
-        <translation>Band setting</translation>
+        <translation>Band settings</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="242"/>
@@ -1216,12 +1211,12 @@
     <message>
         <location filename="../../eiseg/ui.py" line="244"/>
         <source>建筑边界规范化</source>
-        <translation>Building boundary normalization</translation>
+        <translation>Building boundary regularization</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="247"/>
         <source>另存为shapefile</source>
-        <translation>Save extra as shapefile</translation>
+        <translation>Save As Shapefile</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="251"/>
@@ -1241,27 +1236,27 @@
     <message>
         <location filename="../../eiseg/ui.py" line="283"/>
         <source>医疗设置</source>
-        <translation>Medical Setting</translation>
+        <translation>Medical Settings</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="288"/>
         <source>宫格切换</source>
-        <translation>Palace grid switching</translation>
+        <translation>Block Switching</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="297"/>
         <source>完成宫格</source>
-        <translation>Complete the grid</translation>
+        <translation>Complete block</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="308"/>
         <source>保存每个宫格的标签</source>
-        <translation>Save labels for each grid</translation>
+        <translation>Save the label of each block</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="329"/>
         <source>视频分割设置</source>
-        <translation>Video Segmentation Setting</translation>
+        <translation>Video Segmentation Settings</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="332"/>
@@ -1311,7 +1306,7 @@
     <message>
         <location filename="../../eiseg/ui.py" line="420"/>
         <source>检测设置</source>
-        <translation>Detection setting</translation>
+        <translation>Detection Settings</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="423"/>
@@ -1321,12 +1316,12 @@
     <message>
         <location filename="../../eiseg/ui.py" line="433"/>
         <source>重推理</source>
-        <translation>Re-reasoning</translation>
+        <translation>Regenerate</translation>
     </message>
     <message>
         <location filename="../../eiseg/ui.py" line="439"/>
         <source>预标注设置</source>
-        <translation>Pre making setting</translation>
+        <translation>Pre-annotation settings</translation>
     </message>
 </context>
 </TS>

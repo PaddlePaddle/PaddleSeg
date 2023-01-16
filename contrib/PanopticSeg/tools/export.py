@@ -17,28 +17,16 @@ import os
 
 import paddle
 import yaml
-from paddleseg.utils import logger
+from paddleseg.utils import logger, utils
 
-from paddlepanseg.cvlibs import Config
-
-
-class PanSegInferNetWrapper(paddle.nn.Layer):
-    def __init__(self, net, postprocessor):
-        super().__init__()
-        self.net = net
-        self.postprocessor = postprocessor
-
-    def forward(self, x):
-        pred = self.net(x)
-        # XXX: Currently, pass an empty sample_dict to postprocessor
-        out = self.postprocessor({}, pred)
-        return [out['pan_pred']]
+from paddlepanseg.cvlibs import Config, make_default_builder
+from paddlepanseg.deploy.export import WrappedPanSegInferModel
 
 
 def parse_export_args(*args, **kwargs):
     parser = argparse.ArgumentParser(description="Model export")
     parser.add_argument(
-        '--config', help="Config file.", type=str, required=True)
+        '--config', dest='cfg', help="Config file.", type=str, required=True)
     parser.add_argument(
         '--model_path', help="Path of the model for export.", type=str)
     parser.add_argument(
@@ -57,10 +45,17 @@ def parse_export_args(*args, **kwargs):
 
 
 def export_with_args(args):
+    if args.cfg is None:
+        raise RuntimeError("No configuration file has been specified.")
+    cfg = Config(args.cfg)
+    builder = make_default_builder(cfg)
+
+    utils.show_env_info()
+    utils.show_cfg_info(cfg)
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
-    cfg = Config(args.config)
-    net = cfg.model
-    postprocessor = cfg.postprocessor
+
+    net = builder.model
+    postprocessor = builder.postprocessor
 
     if args.model_path is not None:
         para_state_dict = paddle.load(args.model_path)
@@ -72,7 +67,7 @@ def export_with_args(args):
     else:
         shape = args.input_shape
 
-    net = PanSegInferNetWrapper(net, postprocessor)
+    net = WrappedPanSegInferModel(net, postprocessor)
     net.eval()
     net = paddle.jit.to_static(
         net,
@@ -84,9 +79,7 @@ def export_with_args(args):
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
-        transforms = cfg.export_config.get('transforms', [{
-            'type': 'Normalize'
-        }])
+        transforms = cfg.export_cfg.get('transforms', [])
         data = {
             'Deploy': {
                 'model': 'model.pdmodel',

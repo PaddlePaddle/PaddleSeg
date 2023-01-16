@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddleseg.cvlibs.manager as manager
-from paddleseg.cvlibs.manager import ComponentManager, BACKBONES, TRANSFORMS
+from paddleseg.cvlibs.manager import ComponentManager, BACKBONES, TRANSFORMS, OPTIMIZERS
 
 # NOTE: Models, datasets, losses, and postprocessors are very different in the 
 # panoptic segmentation task, compared with the semantic segmentation task,
@@ -22,11 +21,3 @@ MODELS = ComponentManager("models")
 DATASETS = ComponentManager("datasets")
 LOSSES = ComponentManager("losses")
 POSTPROCESSORS = ComponentManager("postprocessors")
-
-# HACK: Patch `paddleseg.cvlibs.manager`
-# Since https://github.com/PaddlePaddle/PaddleSeg/pull/2806 PaddleSeg no longer 
-# provides API to modify components used by `Config` in an elegant way.
-manager.MODELS = MODELS
-manager.DATASETS = DATASETS
-manager.LOSSES = LOSSES
-manager.POSTPROCESSORS = POSTPROCESSORS
