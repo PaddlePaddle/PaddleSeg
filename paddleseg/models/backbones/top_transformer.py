@@ -533,7 +533,7 @@ class TopTransformer(nn.Layer):
                  injection=True,
                  lr_mult=1.0,
                  in_channels=3,
-                 backbone='top_transformer',
+                 backbone='MobileNetV3_large_x1_25_edit',
                  pretrained=None):
         super().__init__()
         print('The backbone is ', backbone)
@@ -587,6 +587,11 @@ class TopTransformer(nn.Layer):
             from .mobilenetv3 import MobileNetV3_large_x1_0_edit_x0_75
             self.tpm = MobileNetV3_large_x1_0_edit_x0_75()
             pretrained = 'saved_model/best_model_mbv3edit075.pdparams'
+        elif backbone == "MobileNetV3_large_x1_25_edit":
+            self.feat_channels = [40, 80, 160, 200]
+            from .mobilenetv3 import MobileNetV3_large_x1_25_edit
+            self.tpm = MobileNetV3_large_x1_25_edit()
+            pretrained = 'saved_model/best_model_mbv3edit125.pdparams'
         else:
             raise NotImplementedError('Backbone {} is not supported.'.format(
                 backbone))

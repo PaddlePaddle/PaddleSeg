@@ -199,7 +199,7 @@ class MobileNetV3(nn.Layer):
             num_groups=1,
             if_act=True,
             act="hardswish")
-        self.blocks = nn.Sequential(* [
+        self.blocks = nn.Sequential(*[
             ResidualUnit(
                 in_c=_make_divisible(inplanes * self.scale if i == 0 else
                                      self.cfg[i - 1][2] * self.scale),
@@ -522,6 +522,17 @@ def MobileNetV3_large_x1_25(**kwargs):
         scale=1.25,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
         out_index=OUT_INDEX["large"],
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV3_large_x1_25_edit(**kwargs):
+    model = MobileNetV3(
+        config=NET_CONFIG["large_edit"],
+        scale=1.25,
+        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
+        out_index=[2, 4, 6, 9],
         **kwargs)
     return model
 
