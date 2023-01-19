@@ -53,7 +53,10 @@ class UPerKernelHead(UPerNetHead):
         fuse_out = paddle.concat(fpn_outs, axis=1)
         feats = self.fpn_bottleneck(fuse_out)
         output = self.conv_seg(feats)
-        seg_kernels = self.conv_seg.weight.clone()
+        if self.training:
+            seg_kernels = self.conv_seg.weight.clone()
+        else:
+            seg_kernels = self.conv_seg.weight
         seg_kernels = seg_kernels[None].expand(
             [feats.shape[0], *seg_kernels.shape])
         return output, feats, seg_kernels
