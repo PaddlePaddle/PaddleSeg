@@ -22,9 +22,9 @@ from paddleseg.models import layers
 
 def SyncBatchNorm(*args, **kwargs):
     """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm2D instead"""
-    if paddle.get_device() == 'cpu' or os.environ.get(
-            'PADDLESEG_EXPORT_STAGE') or 'xpu' in paddle.get_device(
-            ) or 'npu' in paddle.get_device():
+    if (paddle.get_device() == "cpu" or
+            os.environ.get("PADDLESEG_EXPORT_STAGE") or
+            "xpu" in paddle.get_device() or "npu" in paddle.get_device()):
         return nn.BatchNorm2D(*args, **kwargs)
     elif paddle.distributed.ParallelEnv().nranks == 1:
         return nn.BatchNorm2D(*args, **kwargs)
@@ -37,17 +37,17 @@ class ConvBNReLU(nn.Layer):
                  in_channels,
                  out_channels,
                  kernel_size,
-                 padding='same',
+                 padding="same",
                  **kwargs):
         super().__init__()
 
         self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
 
-        if 'data_format' in kwargs:
-            data_format = kwargs['data_format']
+        if "data_format" in kwargs:
+            data_format = kwargs["data_format"]
         else:
-            data_format = 'NCHW'
+            data_format = "NCHW"
         self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
         self._relu = layers.Activation("relu")
 
@@ -63,7 +63,7 @@ class ConvBNAct(nn.Layer):
                  in_channels,
                  out_channels,
                  kernel_size,
-                 padding='same',
+                 padding="same",
                  act_type=None,
                  **kwargs):
         super().__init__()
@@ -71,10 +71,10 @@ class ConvBNAct(nn.Layer):
         self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
 
-        if 'data_format' in kwargs:
-            data_format = kwargs['data_format']
+        if "data_format" in kwargs:
+            data_format = kwargs["data_format"]
         else:
-            data_format = 'NCHW'
+            data_format = "NCHW"
         self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
 
         self._act_type = act_type
@@ -89,20 +89,53 @@ class ConvBNAct(nn.Layer):
         return x
 
 
+class ConvGNAct(nn.Layer):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 padding="same",
+                 num_groups=32,
+                 act_type=None,
+                 **kwargs):
+        super().__init__()
+        self._conv = nn.Conv2D(
+            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
+
+        if "data_format" in kwargs:
+            data_format = kwargs["data_format"]
+        else:
+            data_format = "NCHW"
+        self._group_norm = nn.GroupNorm(
+            num_groups,
+            out_channels,
+            data_format=data_format, )
+        self._act_type = act_type
+        if act_type is not None:
+            self._act = layers.Activation(act_type)
+
+    def forward(self, x):
+        x = self._conv(x)
+        x = self._group_norm(x)
+        if self._act_type is not None:
+            x = self._act(x)
+        return x
+
+
 class ConvBN(nn.Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
                  kernel_size,
-                 padding='same',
+                 padding="same",
                  **kwargs):
         super().__init__()
         self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
-        if 'data_format' in kwargs:
-            data_format = kwargs['data_format']
+        if "data_format" in kwargs:
+            data_format = kwargs["data_format"]
         else:
-            data_format = 'NCHW'
+            data_format = "NCHW"
         self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
 
     def forward(self, x):
@@ -136,7 +169,7 @@ class SeparableConvBNReLU(nn.Layer):
                  in_channels,
                  out_channels,
                  kernel_size,
-                 padding='same',
+                 padding="same",
                  pointwise_bias=None,
                  **kwargs):
         super().__init__()
@@ -147,17 +180,17 @@ class SeparableConvBNReLU(nn.Layer):
             padding=padding,
             groups=in_channels,
             **kwargs)
-        if 'data_format' in kwargs:
-            data_format = kwargs['data_format']
+        if "data_format" in kwargs:
+            data_format = kwargs["data_format"]
         else:
-            data_format = 'NCHW'
+            data_format = "NCHW"
         self.piontwise_conv = ConvBNReLU(
             in_channels,
             out_channels,
             kernel_size=1,
             groups=1,
             data_format=data_format,
-            bias_attr=pointwise_bias)
+            bias_attr=pointwise_bias, )
 
     def forward(self, x):
         x = self.depthwise_conv(x)
@@ -170,7 +203,7 @@ class DepthwiseConvBN(nn.Layer):
                  in_channels,
                  out_channels,
                  kernel_size,
-                 padding='same',
+                 padding="same",
                  **kwargs):
         super().__init__()
         self.depthwise_conv = ConvBN(
@@ -260,7 +293,7 @@ class JPU(nn.Layer):
             pointwise_bias=False,
             dilation=2,
             bias_attr=False,
-            stride=1)
+            stride=1, )
         self.dilation3 = SeparableConvBNReLU(
             3 * width,
             width,
@@ -269,7 +302,7 @@ class JPU(nn.Layer):
             pointwise_bias=False,
             dilation=4,
             bias_attr=False,
-            stride=1)
+            stride=1, )
         self.dilation4 = SeparableConvBNReLU(
             3 * width,
             width,
@@ -278,7 +311,7 @@ class JPU(nn.Layer):
             pointwise_bias=False,
             dilation=8,
             bias_attr=False,
-            stride=1)
+            stride=1, )
 
     def forward(self, *inputs):
         feats = [
@@ -287,17 +320,19 @@ class JPU(nn.Layer):
         ]
         size = paddle.shape(feats[-1])[2:]
         feats[-2] = F.interpolate(
-            feats[-2], size, mode='bilinear', align_corners=True)
+            feats[-2], size, mode="bilinear", align_corners=True)
         feats[-3] = F.interpolate(
-            feats[-3], size, mode='bilinear', align_corners=True)
+            feats[-3], size, mode="bilinear", align_corners=True)
 
         feat = paddle.concat(feats, axis=1)
         feat = paddle.concat(
             [
-                self.dilation1(feat), self.dilation2(feat),
-                self.dilation3(feat), self.dilation4(feat)
+                self.dilation1(feat),
+                self.dilation2(feat),
+                self.dilation3(feat),
+                self.dilation4(feat),
             ],
-            axis=1)
+            axis=1, )
 
         return inputs[0], inputs[1], inputs[2], feat
 
@@ -307,17 +342,17 @@ class ConvBNPReLU(nn.Layer):
                  in_channels,
                  out_channels,
                  kernel_size,
-                 padding='same',
+                 padding="same",
                  **kwargs):
         super().__init__()
 
         self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
 
-        if 'data_format' in kwargs:
-            data_format = kwargs['data_format']
+        if "data_format" in kwargs:
+            data_format = kwargs["data_format"]
         else:
-            data_format = 'NCHW'
+            data_format = "NCHW"
         self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
         self._prelu = layers.Activation("prelu")
 
@@ -333,17 +368,17 @@ class ConvBNLeakyReLU(nn.Layer):
                  in_channels,
                  out_channels,
                  kernel_size,
-                 padding='same',
+                 padding="same",
                  **kwargs):
         super().__init__()
 
         self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
 
-        if 'data_format' in kwargs:
-            data_format = kwargs['data_format']
+        if "data_format" in kwargs:
+            data_format = kwargs["data_format"]
         else:
-            data_format = 'NCHW'
+            data_format = "NCHW"
         self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
         self._relu = layers.Activation("leakyrelu")
 
