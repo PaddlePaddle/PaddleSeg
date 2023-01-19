@@ -107,9 +107,9 @@ def saturation(im, saturation_lower, saturation_upper):
 
 def hue(im, hue_lower, hue_upper):
     hue_delta = np.random.uniform(hue_lower, hue_upper)
-    im = np.array(im.convert("HSV"))
+    im = np.array(im.convert('HSV'))
     im[:, :, 0] = im[:, :, 0] + hue_delta
-    im = Image.fromarray(im, mode="HSV").convert("RGB")
+    im = Image.fromarray(im, mode='HSV').convert('RGB')
     return im
 
 
@@ -153,13 +153,13 @@ def onehot_to_binary_edge(mask, radius):
         np.ndarray: Edge mask with shape(H, W).
     """
     if radius < 1:
-        raise ValueError("`radius` should be greater than or equal to 1")
+        raise ValueError('`radius` should be greater than or equal to 1')
     num_classes = mask.shape[0]
 
     edge = np.zeros(mask.shape[1:])
     # pad borders
     mask = np.pad(mask, ((0, 0), (1, 1), (1, 1)),
-                  mode="constant",
+                  mode='constant',
                   constant_values=0)
     for i in range(num_classes):
         dist = distance_transform_edt(mask[i, :]) + distance_transform_edt(
