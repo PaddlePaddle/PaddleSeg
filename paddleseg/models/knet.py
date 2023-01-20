@@ -22,7 +22,7 @@ from paddleseg.models import layers
 from .upernet import UPerNetHead
 
 
-def build_kernel_generate_head(**kwargs):
+def build_kernel_generate_head(kwargs):
     head_layer = kwargs.pop('head_layer')
     return eval(head_layer)(**kwargs)
 
@@ -150,7 +150,7 @@ class KernelUpdator(nn.Layer):
         self.fc_norm = self.norm_fn(self.out_channels)
 
     def forward(self, update_feature, input_feature):
-        update_feature = paddle.flatten(update_feature, 1)
+        update_feature = update_feature.reshape([-1, self.in_channels])
         num_proposals = paddle.shape(update_feature)[0]
         # dynamic_layer works for
         # phi_1 and psi_3 in Eq.(4) and (5) of K-Net paper
@@ -414,7 +414,7 @@ class KNet(nn.Layer):
         self.enable_auxiliary_loss = enable_auxiliary_loss
         self.num_stages = num_stages
         self.kernel_update_head = nn.LayerList([
-            UPerKernelHead(**kernel_update_head_params)
+            KernelUpdateHead(**kernel_update_head_params)
             for _ in range(num_stages)
         ])
         self.kernel_generate_head = build_kernel_generate_head(
