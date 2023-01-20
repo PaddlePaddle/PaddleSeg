@@ -22,7 +22,7 @@ model:
     with_ffn: True
   num_stages: 3
   kernel_generate_head_params:
-    layer_type: UPerKernelHead
+    head_layer: UPerKernelHead
     num_classes: 150
     fpn_inplanes: [256, 512, 1024, 2048]
     channels: 256
