@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .mixed_loss import MixedLoss
 from .cross_entropy_loss import CrossEntropyLoss
 from .cross_entropy_loss import DistillCrossEntropyLoss
 from .binary_cross_entropy_loss import BCELoss

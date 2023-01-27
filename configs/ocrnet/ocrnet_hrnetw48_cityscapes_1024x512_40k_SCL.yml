@@ -23,10 +23,11 @@ lr_scheduler:
 
 loss:
   types:
-    - type: MixedLoss
-      losses:
-        - type: CrossEntropyLoss
-        - type: SemanticConnectivityLoss
-      coef: [1, 0.1]
     - type: CrossEntropyLoss
-  coef: [1, 0.4]
+    - type: SemanticConnectivityLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.1, 0.4]
+  output_index:
+    - [0]
+    - [0]
+    - [1]

@@ -59,11 +59,14 @@ lr_scheduler:
 loss:
   types:
     - type: CrossEntropyLoss
-    - type: MixedLoss
-      losses:
-        - type: RMILoss
-        - type: CrossEntropyLoss
-      coef: [1.0, 1.0]
+    - type: RMILoss
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
-  coef: [0.4, 1.0, 0.05, 0.05]
+    - type: CrossEntropyLoss
+  coef: [0.4, 1.0, 1.0, 0.05, 0.05]
+  output_index:
+    - [0]
+    - [1]
+    - [1]
+    - [2]
+    - [3]

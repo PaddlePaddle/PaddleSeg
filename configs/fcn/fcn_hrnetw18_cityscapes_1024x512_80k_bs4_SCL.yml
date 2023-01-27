@@ -18,9 +18,9 @@ batch_size: 4
 
 loss:
   types:
-    - type: MixedLoss
-      losses:
-        - type: CrossEntropyLoss
-        - type: SemanticConnectivityLoss
-      coef: [1, 0.05]
-  coef: [1]
+    - type: CrossEntropyLoss
+    - type: SemanticConnectivityLoss
+  coef: [1, 0.05]
+  output_index:
+    - [0]
+    - [0]

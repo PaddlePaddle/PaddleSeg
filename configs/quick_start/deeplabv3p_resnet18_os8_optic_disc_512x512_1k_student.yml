@@ -41,6 +41,8 @@ distill_loss:
   types:
     - type: KLLoss
   coef: [3]
+  output_index:
+    - [0, 1]
 
 model:
   type: DeepLabV3P

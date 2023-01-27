@@ -41,14 +41,13 @@ lr_scheduler:
 
 loss:
   types:
-    - type: MixedLoss
-      losses:
-        - type: CrossEntropyLoss
-        - type: LovaszHingeLoss
-      coef: [1, 0.01]
-    - type: MixedLoss
-      losses:
-        - type: CrossEntropyLoss
-        - type: LovaszHingeLoss
-      coef: [1, 0.01]
-  coef: [1, 0.4]
+    - type: CrossEntropyLoss
+    - type: LovaszHingeLoss
+    - type: CrossEntropyLoss
+    - type: LovaszHingeLoss
+  coef: [1.0, 0.01, 0.4, 0.004]
+  output_index:
+    - [0]
+    - [0]
+    - [1]
+    - [1]

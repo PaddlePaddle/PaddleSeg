@@ -16,10 +16,7 @@ model:
 
 loss:
   types:
-    - type: MixedLoss
-      losses:
-        - type: OhemCrossEntropyLoss
-          min_kept: 65000
-        - type: LovaszSoftmaxLoss
-      coef: [0.8, 0.2]
-  coef: [1]
+    - type: OhemCrossEntropyLoss
+      min_kept: 65000
+    - type: LovaszSoftmaxLoss
+  coef: [0.8, 0.2]

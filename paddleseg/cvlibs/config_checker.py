@@ -88,6 +88,13 @@ class DefaultLossRule(Rule):
                 'Loss config should contain keys of "types" and "coef"'
         len_types = len(loss_cfg['types'])
         len_coef = len(loss_cfg['coef'])
+        repeat = loss_cfg.get('repeat', None)
+
+        if repeat:
+            loss_cfg['types'] = loss_cfg['types'] * repeat
+            if len_types == len_coef:
+                loss_cfg['coef'] = loss_cfg['coef'] * repeat
+
         if len_types != len_coef:
             if len_types == 1:
                 loss_cfg['types'] = loss_cfg['types'] * len_coef

@@ -56,6 +56,7 @@ class KLLoss(nn.Layer):
         Returns:
             (Tensor): The average loss.
         """
+        logit_2 = logit_2.detach()
         if logit_1.shape != logit_2.shape:
             raise ValueError(
                 'The shape of logit_1 = {} must be the same as the shape of logit_2 = {}.'

@@ -236,13 +236,18 @@ class SegBuilder(Builder):
                     'train_dataset ignore_index = {}'.format(loss_cfg['ignore_index'], ignore_index)
 
         def _get_default_output_index(loss_cfg):
-            return [[i] for i in range(len(loss_cfg['types']))]
+            length = len(loss_cfg['types'])
+            repeat = loss_cfg.get('repeat', None)
+            item_len = length // repeat if repeat else 1
+            length *= item_len
+            return [[i // item_len] for i in range(length)]
 
         def _check_output_index(output_index):
             all_index = []
             for item in output_index:
                 all_index.extend(item)
             all_index.sort()
+            all_index = list(set(all_index))
             target = [i for i in range(max(all_index))]
             if all_index != target:
                 raise ValueError(

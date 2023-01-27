@@ -65,6 +65,11 @@ loss:
     - type: FocalLoss
     - type: KLLoss
   coef: [1, 1, 0.3, 2]
+  output_index:
+    - [0]
+    - [1]
+    - [2]
+    - [0, 1]
 
 model:
   type: PortraitNet

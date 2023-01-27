@@ -5,13 +5,14 @@ iters: 40000
 
 loss:
   types:
-    - type: MixedLoss
-      losses:
-        - type: CrossEntropyLoss
-        - type: SemanticConnectivityLoss
-      coef: [1, 0.01]
     - type: CrossEntropyLoss
-  coef: [1.0, 0.4]
+    - type: SemanticConnectivityLoss
+    - type: CrossEntropyLoss
+  coef: [1.0, 0.01, 0.4]
+  output_index:
+    - [0]
+    - [0]
+    - [1]
 
 lr_scheduler:
   type: PolynomialDecay
