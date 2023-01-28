@@ -1,9 +1,10 @@
-简体中文
-# PaddleSeg Windows部署（C++）
+简体中文 | [English]()
+
+# Paddle Inference Windows部署（C++）
 
 ## 1. 说明
 
-本文档介绍使用Paddle Inference的C++接口在Windows 10部署分割模型的示例，主要步骤包括：
+本文档介绍使用Paddle Inference的C++接口在Windows 10部署语义分割模型的示例，主要步骤包括：
 * 准备环境
 * 准备模型和图片
 * 编译、执行
@@ -13,23 +14,27 @@
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
 ## 2. 准备环境
-### 2.1 前置条件
+
+### 2.1 准备基础环境
+
+请大家执行准备基础环境，要求如下：
 * Visual Studio 2019 (根据Paddle预测库所使用的VS版本选择，请参考 [Visual Studio 不同版本二进制兼容性](https://docs.microsoft.com/zh-cn/cpp/porting/binary-compat-2015-2017?view=vs-2019) )
 * CUDA / CUDNN / TensorRT（仅在使用GPU版本的预测库时需要）
 * CMake 3.0+ [CMake下载](https://cmake.org/download/)
 
-**推理环境及所需要的准备的库：**
+下面所有示例以工作目录为`D:\projects`进行演示。
 
-|   环境    |          库          |
+### 2.2 准备 CUDA/CUDNN/TensorRT 环境
+
+分割模型部署的硬件，和需要准备的库，对应如下表。
+
+|   部署硬件 |          库     |
 |:-------:|:-------------------:|
 |   CPU   |          -          |
 |   GPU   |     CUDA/CUDNN      |
 | GPU_TRT | CUDA/CUDNN/TensorRT |
 
-PaddlePaddle C++ 预测库针对不同的CPU和CUDA版本提供了不同的预编译版本，您可以根据提供的预编译预测库选择合适的CUDA/CUDNN/TensorRT，本文档以CUDA=11.6，CUDNN=8.4.1.5，TensorRT=8.4.1.5为例进行部署，[C++预测库下载链接](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html#windows)。
-
-### 2.2 准备 CUDA/CUDNN/TensorRT 环境
-本小节的内容只针对使用GPU进行推理的用户，使用CPU推理的用户可以跳过本小节。  
+使用GPU进行推理的用户需要参考如下说明准备CUDA和CUDNN，使用CPU推理的用户可以跳过。  
 
 CUDA安装请参考：[官方教程](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#verify-you-have-cuda-enabled-system)  
 CUDA的默认安装路径为C:\Program Files\NVIDIA GPU Computing Toolkit，将C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\Vx.y\bin添加到环境变量中。
@@ -37,14 +42,15 @@ CUDA的默认安装路径为C:\Program Files\NVIDIA GPU Computing Toolkit，将C
 CUDNN安装请参考：[官方教程](https://docs.nvidia.com/deeplearning/cudnn/install-guide/#install-windows)  
 将cudnn的bin、include、lib文件夹内的文件复制到C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\Vx.y的bin、include、lib文件夹。（Vx.y中的x.y表示cuda版本）  
 
-如果使用TensorRT，请参考以下内容:  
-TensorRT安装请参考：[官方教程](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-zip)  
+如果在CUDA下使用TensorRT进行推理加速，还需要准备TensorRT，具体请参考：[官方教程](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-zip)  
 将安装目录lib文件夹的dll文件复制到C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\Vx.y\bin。
 
 ### 2.3 准备Paddle Inference C++预测库
-PaddlePaddle C++ 预测库针对不同的CPU和CUDA版本提供了不同的预编译版本，根据自己的环境选择合适的预编译库：[C++预测库下载链接](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html#windows) 。
+PaddlePaddle C++ 预测库针对不同的CPU和CUDA版本提供了不同的预编译版本，大家根据自己的环境选择合适的预编译库：[C++预测库下载链接](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html#windows) 。
 
 如果提供的预编译库不满足需求，可以自己编译Paddle Inference C++预测库，参考[文档](https://www.paddlepaddle.org.cn/inference/v2.3/user_guides/source_compile.html) ，此处不再赘述。
+
+本文档以CUDA=11.6，CUDNN=8.4.1.5，TensorRT=8.4.1.5为例进行介绍。
 
 Paddle Inference目录结构：
 ```shell
@@ -56,7 +62,7 @@ paddle_inference
 ```
 
 ### 2.4 安装OpenCV
-本示例使用OpenCV读取图片，所以需要安装OpenCV，在实际部署中，大家视需要安装。
+本示例使用OpenCV读取图片，所以需要安装OpenCV。在其他的项目中，大家视需要安装。
 
 1. 在OpenCV官网下载适用于Windows平台的4.6.0版本， [下载地址](https://sourceforge.net/projects/opencvlibrary/files/4.6.0/opencv-4.6.0-vc14_vc15.exe/download)  
 2. 运行下载的可执行文件，将OpenCV解压至指定目录，如`D:\projects\opencv`
@@ -68,7 +74,8 @@ paddle_inference
 
 ## 3. 准备模型和图片
 
-在`PaddleSeg/deploy/cpp/`目录下载[测试模型](https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz) 。如果需要测试其他模型，请参考[文档](../../model_export.md)导出预测模型。
+大家可以下载准备好的[预测模型](https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz)到本地，用于后续测试。
+如果需要测试其他模型，请参考[文档](../../model_export.md)导出预测模型。
 
 预测模型文件格式如下。
 ```shell
@@ -85,27 +92,30 @@ pp_liteseg_infer_model
 std::vector<int32_t> out_data(out_num);
 ```
 
-下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png) 用于后续测试。
+下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png) 到本地，用于后续测试。
 
 ## 4. 编译
-编译时如果命令的路径中包含空格可能出现错误，因此将C:\Program Files\NVIDIA GPU Computing Toolkit目录下的CUDA文件夹复制到D:\projects，整体目录结构如下：
+
+工程整体目录结构如下：
 ```shell
-projects
+D:\projects
   ├── CUDA
   ├── opencv
   ├── paddle_inference
   └── PaddleSeg
 ```
 
+（注意，编译时如果命令的路径中包含空格可能出现错误，因此将C:\Program Files\NVIDIA GPU Computing Toolkit目录下的CUDA文件夹复制到D:\projects） 测试使用软链是否ok
+
 ### 4.1 使用CMake生成项目文件
 
-编译参数的含义说明如下（带`*`表示仅在使用**GPU版本**预测库时指定，带`#`表示仅在使用**TensorRT**时指定）：
+编译参数的含义说明如下，其中带`*`表示仅在使用**GPU版本**预测库时指定，带`#`表示仅在使用**TensorRT**时指定。
 
 | 参数名              | 含义                                  |
 |------------------|-------------------------------------|
-| *USE_TENSORRT    | 是否使用TensorRT，默认为OFF；                |
-| *CUDA_LIB        | CUDA的库路径；                           |
 | *WITH_GPU        | 是否使用GPU，默认为OFF；                     |
+| *CUDA_LIB        | CUDA的库路径；                           |
+| *USE_TENSORRT    | 是否使用TensorRT，默认为OFF；                |
 | #TENSORRT_DLL    | TensorRT的.dll文件存放路径；                |
 | WITH_MKL         | 是否使用MKL，默认为ON，表示使用MKL，若设为OFF，则表示使用Openblas； |
 | CMAKE_BUILD_TYPE | 指定编译时使用Release或Debug；               |
