@@ -29,7 +29,7 @@ fi
 # MODE be 'js_infer'
 MODE=$1
 # js_infer MODE , load model file and convert model to js_infer
-if [ ${MODE} != "js_infer" ];then
+if [ ${MODE} != "js_infer" ]; then
     echo "Please change mode to 'js_infer'"
     exit
 fi
@@ -39,6 +39,12 @@ fi
 saved_model_name=pphumanseg_lite
 # model_path
 model_path=test_tipc/web/models/
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r test_tipc/requirements.txt
+# Install current version of PaddleSeg
+pip install .
 
 rm -rf $model_path
 echo ${model_path}${saved_model_name}
@@ -73,7 +79,7 @@ npm install @paddlejs-models/humanseg@latest
 echo -e "\033[32m The latest humanseg sdk installed completely.!~ \033[0m"
 
 # install dependencies
-if [ `npm list --dept 0 | grep puppeteer | wc -l` -ne 0 ] && [ `npm list --dept 0 | grep jest | wc -l` -ne 0 ];then
+if [ `npm list --dept 0 | grep puppeteer | wc -l` -ne 0 ] && [ `npm list --dept 0 | grep jest | wc -l` -ne 0 ]; then
     echo -e "\033[32m Dependencies have installed \033[0m"
 else
     echo -e "\033[33m Installing dependencies ... \033[0m"

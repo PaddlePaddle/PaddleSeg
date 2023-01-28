@@ -32,7 +32,7 @@ function func_sed_params(){
     value=${array[1]}
     # [Bobholamovic] This if block results in --batch_size=benchmark in the second 
     # test_train_inference_python.sh call, so I comment it out.
-    # if [[ $value =~ 'benchmark_train' ]];then
+    # if [[ $value =~ 'benchmark_train' ]]; then
     #     IFS='='
     #     _val=(${value})
     #     param_value="${_val[0]}=${param_value}"
@@ -140,14 +140,14 @@ for params in ${extra_args[*]}; do
 done
 
 # if params
-if  [ ! -n "$PARAMS" ] ;then
+if  [ ! -n "$PARAMS" ] ; then
     # PARAMS input is not a word.
     IFS="|"
     batch_size_list=(${batch_size})
     fp_items_list=(${fp_items})
     device_num_list=(N1C1 N1C8)
     run_mode="DP"
-elif [[ ${PARAMS} = "dynamicTostatic" ]] ;then
+elif [[ ${PARAMS} = "dynamicTostatic" ]] ; then
     IFS="|"
     model_type=$PARAMS
     batch_size_list=(${batch_size})
@@ -167,7 +167,7 @@ else
     device_num=${params_list[4]}
     IFS=";"
 
-    if [ ${precision} = "null" ];then
+    if [ ${precision} = "null" ]; then
         precision="fp32"
     fi
 
@@ -179,7 +179,7 @@ fi
 # for log name
 to_static=""
 # parse "to_static" options and modify trainer into "to_static_trainer"
-if [[ ${model_type} = "dynamicTostatic" ]];then
+if [[ ${model_type} = "dynamicTostatic" ]]; then
     to_static="d2sT_"
     sed -i 's/trainer:norm_train/trainer:to_static_train/g' $FILENAME
 fi
@@ -194,7 +194,7 @@ for batch_size in ${batch_size_list[*]}; do
             func_sed_params "$FILENAME" "${line_epoch}" "$MODE=$epoch"
             gpu_id=$(set_gpu_id $device_num)
 
-            if [ ${#gpu_id} -le 1 ];then
+            if [ ${#gpu_id} -le 1 ]; then
                 log_path="$SAVE_LOG/profiling_log"
                 mkdir -p $log_path
                 log_name="${repo_name}_${model_name}_bs${batch_size}_${precision}_${run_mode}_${device_num}_${to_static}profiling"
