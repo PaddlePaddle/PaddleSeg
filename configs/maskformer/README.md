@@ -11,7 +11,8 @@
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |Maskformer-tiny|SwinTransformer|512x512|160000|47.93|-|-|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_tiny/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_tiny/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=fd734e48cac51de1f6a04624567caed9)|
+|Maskformer-small|SwinTransformer|512x512|160000|50.4|-|-|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_small/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_small/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=a5809bed3685e61680b84c4b5a88148c)|
 
-* Maskformer support different backbone including tiny, small, base and large. Due to long training time, the accuracy result is not provided.
+* Maskformer support different network setting including tiny, small, base and large. The training result of base and large is not provided, but it should be consistent with the paper
 
-* Maskformer-Base and Maskformer-Large need to be evaled with multi-scale and flip by default.
+* Maskformer-Base and Maskformer-Large will be evaled with multi-scale and flip as the original codebase .
