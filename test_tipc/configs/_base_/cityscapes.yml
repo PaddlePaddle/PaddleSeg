@@ -33,7 +33,7 @@ export:
     - type: Normalize
 
 optimizer:
-  type: sgd
+  type: SGD
   momentum: 0.9
   weight_decay: 4.0e-5
 
