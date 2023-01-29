@@ -1,9 +1,7 @@
 # SegNeXt: Rethinking Convolutional Attention Design for Semantic Segmentation
 
 ## Reference
-> Meng-Hao Guo, Cheng-Ze Lu, Qibin Hou, Zheng-Ning Liu, Ming-Ming Cheng and Shi-Min Hu. "SegNeXt: Rethinking Convolutional Attention Design for Semantic Segmentation"
->
-> arXiv preprint arXiv:2207.13600 (2022).
+> Meng-Hao Guo, Cheng-Ze Lu, Qibin Hou, Zheng-Ning Liu, Ming-Ming Cheng and Shi-Min Hu. "SegNeXt: Rethinking Convolutional Attention Design for Semantic Segmentation" arXiv preprint arXiv:2207.13600 (2022).
 
 ## Performance
 

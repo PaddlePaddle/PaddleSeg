@@ -43,7 +43,7 @@ class SegNeXt(nn.Layer):
             backbone,
             decoder_cfg,
             num_classes,
-            pretrained=None, ):
+            pretrained=None):
         super().__init__()
         if not isinstance(backbone, MSCAN):
             raise TypeError(
@@ -81,12 +81,12 @@ class Hamburger(nn.Layer):
             self,
             ham_channels=512,
             num_groups=32,
-            ham_kwargs=dict(), ):
+            ham_kwargs=None):
         super().__init__()
         self.ham_in = nn.Conv2D(
             ham_channels,
             ham_channels,
-            kernel_size=1, )
+            kernel_size=1)
 
         self.ham = NMF2D(ham_kwargs)
 
@@ -95,7 +95,7 @@ class Hamburger(nn.Layer):
             ham_channels,
             kernel_size=1,
             num_groups=num_groups,
-            bias_attr=False, )
+            bias_attr=False)
 
     def forward(self, x):
         enjoy = self.ham_in(x)
@@ -112,21 +112,30 @@ class LightHamHead(nn.Layer):
     The original article refers to Zhengyang Geng, et al. "Is Attention Better Than Matrix Decomposition?"
     (https://arxiv.org/abs/2109.04553.pdf)
     Args:
-        ham_channels (int): input channels for Hamburger.
-        ham_kwargs (int): kwagrs for Ham.
+        in_channels (list[int]): The feature channels from backbone.
+        num_classes (int): The unique number of target classes.
+        channels (int, optional): The intermediate channel of LightHamHead. Default: 256.
+        dropout_rate (float, optional): The rate of dropout. Default: 0.1.
+        align_corners (bool, optional): Whether use align_corners when interpolating. Default: False.
+        ham_channels (int, optional): Input channel of Hamburger. Default: 512.
+        num_groups (int, optional): The num_groups of convolutions in LightHamHead. Default: 32.
+        ham_kwargs (dict): Keyword arguments of Hamburger module.
     """
 
     def __init__(
             self,
             in_channels,
+            num_classes,
             channels=256,
             dropout_rate=0.1,
-            num_classes=19,
             align_corners=False,
             ham_channels=512,
             num_groups=32,
-            ham_kwargs=dict(), ):
+            ham_kwargs=None):
         super().__init__()
+
+        if len(in_channels) != 3:
+            raise ValueError("The length of `in_channels` must be 3, but got {}".format(len(in_channels)))
 
         self.align_corners = align_corners
 
@@ -136,7 +145,7 @@ class LightHamHead(nn.Layer):
             kernel_size=1,
             num_groups=num_groups,
             act_type="relu",
-            bias_attr=False, )
+            bias_attr=False)
 
         self.hamburger = Hamburger(ham_channels, num_groups, ham_kwargs)
 
@@ -146,14 +155,14 @@ class LightHamHead(nn.Layer):
             kernel_size=1,
             num_groups=num_groups,
             act_type="relu",
-            bias_attr=False, )
+            bias_attr=False)
 
         self.dropout = (nn.Dropout2D(dropout_rate)
                         if dropout_rate > 0.0 else nn.Identity())
         self.conv_seg = nn.Conv2D(
             channels,
             num_classes,
-            kernel_size=1, )
+            kernel_size=1)
 
     def forward(self, inputs):
         inputs = inputs[1:]
@@ -163,7 +172,7 @@ class LightHamHead(nn.Layer):
                 level,
                 size=target_shape,
                 mode="bilinear",
-                align_corners=self.align_corners, ) for level in inputs
+                align_corners=self.align_corners) for level in inputs
         ]
 
         inputs = paddle.concat(inputs, axis=1)

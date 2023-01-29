@@ -25,11 +25,11 @@ from paddleseg.models.backbones.transformer_utils import (
     DropPath,
     ones_,
     to_2tuple,
-    zeros_, )
+    zeros_)
 from paddleseg.models.layers import SyncBatchNorm
 from paddleseg.utils import utils
 
-__all__ = ["MSCAN", "mscan_t", "mscan_s", "mscan_b", "mscan_l"]
+__all__ = ["MSCAN", "MSCAN_T", "MSCAN_S", "MSCAN_B", "MSCAN_L"]
 
 
 def get_depthwise_conv(dim, kernel_size=3):
@@ -49,7 +49,7 @@ class Mlp(nn.Layer):
             hidden_features=None,
             out_features=None,
             act_layer=nn.GELU,
-            drop=0.0, ):
+            drop=0.0):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -81,7 +81,7 @@ class StemConv(nn.Layer):
                 out_channels // 2,
                 kernel_size=3,
                 stride=2,
-                padding=1, ),
+                padding=1),
             SyncBatchNorm(out_channels // 2),
             nn.GELU(),
             nn.Conv2D(
@@ -89,8 +89,8 @@ class StemConv(nn.Layer):
                 out_channels,
                 kernel_size=3,
                 stride=2,
-                padding=1, ),
-            SyncBatchNorm(out_channels), )
+                padding=1),
+            SyncBatchNorm(out_channels))
 
     def forward(self, x):
         x = self.proj(x)
@@ -114,7 +114,7 @@ class AttentionModule(nn.Layer):
         self.dwconvs = nn.LayerList([
             nn.Sequential(
                 (f"conv{i+1}_1", get_depthwise_conv(dim, (1, k))),
-                (f"conv{i+1}_2", get_depthwise_conv(dim, (k, 1))), )
+                (f"conv{i+1}_2", get_depthwise_conv(dim, (k, 1))))
             for i, k in enumerate(kernel_sizes)
         ])
 
@@ -194,7 +194,7 @@ class Block(nn.Layer):
             in_features=dim,
             hidden_features=int(dim * mlp_ratio),
             act_layer=act_layer,
-            drop=drop, )
+            drop=drop)
 
         layer_scale_init_value = paddle.full(
             [dim, 1, 1], fill_value=1e-2, dtype="float32")
@@ -232,7 +232,7 @@ class OverlapPatchEmbed(nn.Layer):
             embed_dim,
             kernel_size=patch_size,
             stride=stride,
-            padding=(patch_size[0] // 2, patch_size[1] // 2), )
+            padding=(patch_size[0] // 2, patch_size[1] // 2))
         self.norm = SyncBatchNorm(embed_dim)
 
     def forward(self, x):
@@ -306,7 +306,7 @@ class MSCAN(nn.Layer):
                     patch_size=3,
                     stride=2,
                     in_chans=embed_dims[i - 1],
-                    embed_dim=embed_dims[i], )
+                    embed_dim=embed_dims[i])
 
             block = nn.LayerList([
                 Block(
@@ -314,7 +314,7 @@ class MSCAN(nn.Layer):
                     atten_kernel_sizes=atten_kernel_sizes,
                     mlp_ratio=mlp_ratios[i],
                     drop=drop_rate,
-                    drop_path=drop_path_rates[cur + j], )
+                    drop_path=drop_path_rates[cur + j])
                 for j in range(depths[i])
             ])
             norm = nn.LayerNorm(embed_dims[i])
@@ -362,28 +362,28 @@ class MSCAN(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-def mscan_t(**kwargs):
+def MSCAN_T(**kwargs):
     return MSCAN(**kwargs)
 
 
 @manager.BACKBONES.add_component
-def mscan_s(**kwargs):
+def MSCAN_S(**kwargs):
     return MSCAN(embed_dims=[64, 128, 320, 512], depths=[2, 2, 4, 2], **kwargs)
 
 
 @manager.BACKBONES.add_component
-def mscan_b(**kwargs):
+def MSCAN_B(**kwargs):
     return MSCAN(
         embed_dims=[64, 128, 320, 512],
         depths=[3, 3, 12, 3],
         drop_path_rate=0.1,
-        **kwargs, )
+        **kwargs)
 
 
 @manager.BACKBONES.add_component
-def mscan_l(**kwargs):
+def MSCAN_L(**kwargs):
     return MSCAN(
         embed_dims=[64, 128, 320, 512],
         depths=[3, 5, 27, 3],
         drop_path_rate=0.3,
-        **kwargs, )
+        **kwargs)

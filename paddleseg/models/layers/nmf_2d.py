@@ -12,16 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
+
+from numpy.testing import raises
 
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
 
-class _MatrixDecomposition2DBase(nn.Layer):
-    def __init__(self, args=dict()):
+class _MatrixDecomposition2DBase(nn.Layer, metaclass=ABCMeta):
+    def __init__(self, args=None):
         super().__init__()
+        if not isinstance(args, dict):
+            raise TypeError("`args` must to be dict, but got {}".format(type(args)))
 
         self.spatial = args.setdefault("SPATIAL", True)
 
