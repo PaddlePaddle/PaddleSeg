@@ -1,5 +1,6 @@
 _base_: '../_base_/cityscapes.yml'
 
+# for single gpu
 batch_size: 8 
 iters: 160000
 
@@ -52,8 +53,8 @@ lr_scheduler:
 model:
   type: SegNeXt
   backbone:
-    type: mscan_t
-    pretrained: /root/paddlejob/workspace/code/PaddleSeg/paddle_mscan_t.pdparams
+    type: MSCAN_T
+    pretrained: 
   num_classes: 19
   decoder_cfg:
     channels: 256
@@ -61,4 +62,4 @@ model:
     ham_kwargs:
       MD_R: 16
     dropout_rate: 0.1
-    align_corners: false
+    align_corners: False
