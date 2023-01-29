@@ -116,6 +116,8 @@ def parse_args():
         default='gpu',
         choices=['cpu', 'gpu'],
         type=str)
+    parser.add_argument(
+        '--opts', help='Update the key-value pairs of all options.', nargs='+')
 
     return parser.parse_args()
 
@@ -143,7 +145,8 @@ def main(args):
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
-        batch_size=args.batch_size)
+        batch_size=args.batch_size,
+        opts=args.opts)
     builder = SegBuilder(cfg)
 
     utils.show_env_info()
