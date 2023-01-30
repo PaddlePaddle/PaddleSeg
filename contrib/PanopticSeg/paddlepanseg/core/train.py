@@ -283,14 +283,6 @@ def train(model,
                             log_writer.add_scalar('Evaluate/mAP50', map50, iter)
             batch_start = time.time()
 
-    # Calculate FLOPs
-    if local_rank == 0 and not (precision == 'fp16' and amp_level == 'O2'):
-        _, c, h, w = data['img'].shape
-        model.eval()
-        flops = paddle.flops(
-            model, [1, c, h, w],
-            custom_ops={paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn})
-
     # Sleep for a second to let dataloader release resources.
     time.sleep(1)
     if use_vdl:
