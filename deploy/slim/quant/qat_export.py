@@ -15,11 +15,11 @@
 import argparse
 import os
 
-import paddle
 import yaml
+import paddle
 from paddleslim import QAT
 
-from paddleseg.cvlibs import Config
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.utils import logger, utils
 from paddleseg.deploy.export import WrappedModel
 from qat_config import quant_config
@@ -59,7 +59,9 @@ def parse_args():
 def main(args):
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     cfg = Config(args.config)
-    net = cfg.model
+    builder = SegBuilder(cfg)
+
+    net = builder.model
 
     skip_quant(net)
     quantizer = QAT(config=quant_config)
@@ -92,7 +94,7 @@ def main(args):
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
-        transforms = cfg.export_config.get('transforms', [{
+        transforms = cfg.val_dataset_cfg.get('transforms', [{
             'type': 'Normalize'
         }])
         data = {

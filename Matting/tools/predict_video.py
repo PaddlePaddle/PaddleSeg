@@ -17,6 +17,7 @@ import os
 import sys
 
 import paddle
+import paddleseg
 from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
 
@@ -28,7 +29,7 @@ manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting
 from ppmatting.core import predict_video
-from ppmatting.utils import Config
+from ppmatting.utils import Config, MatBuilder
 
 
 def parse_args():
@@ -59,28 +60,28 @@ def parse_args():
         type=eval,
         choices=[True, False],
         help='Whether to estimate foreground when predicting.')
+    parser.add_argument(
+        '--device',
+        dest='device',
+        help='Set the device type, which may be GPU, CPU or XPU.',
+        default='gpu',
+        type=str)
 
     return parser.parse_args()
 
 
 def main(args):
-    env_info = get_sys_env()
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
-
-    paddle.set_device(place)
-    if not args.cfg:
-        raise RuntimeError('No configuration file specified.')
-
+    assert args.cfg is not None, \
+        'No configuration file specified, please set --config'
     cfg = Config(args.cfg)
+    builder = MatBuilder(cfg)
 
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
+    paddleseg.utils.show_env_info()
+    paddleseg.utils.show_cfg_info(cfg)
+    paddleseg.utils.set_device(args.device)
 
-    model = cfg.model
-    transforms = ppmatting.transforms.Compose(cfg.val_transforms)
+    model = builder.model
+    transforms = ppmatting.transforms.Compose(builder.val_transforms)
 
     predict_video(
         model,

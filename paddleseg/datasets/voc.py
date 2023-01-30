@@ -37,7 +37,7 @@ class PascalVOC(Dataset):
         edge (bool, optional): Whether to compute edge while training. Default: False
     """
     NUM_CLASSES = 21
-    IGNORE_INDEX = 1001
+    IGNORE_INDEX = 255
     IMG_CHANNELS = 3
 
     def __init__(self, transforms, dataset_root=None, mode='train', edge=False):

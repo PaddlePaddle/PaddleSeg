@@ -200,8 +200,8 @@
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="435"/>
-        <source>保存为JSON格式</source>
-        <translation>حفظ جسون</translation>
+        <source>保存为labelme的JSON格式</source>
+        <translation>&#xa0;شكل جسون كما labelme&#xa0;</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="461"/>
@@ -212,16 +212,6 @@
         <location filename="../../eiseg/app.py" line="443"/>
         <source>保存为COCO格式</source>
         <translation>حفظ كوكو</translation>
-    </message>
-    <message>
-        <location filename="../../eiseg/app.py" line="452"/>
-        <source>&amp;VOC保存</source>
-        <translation>&amp;شكل المركبات العضوية المتطايرة</translation>
-    </message>
-    <message>
-        <location filename="../../eiseg/app.py" line="452"/>
-        <source>保存为VOC格式</source>
-        <translation>حفظ المعلومات في شكل مضلع المركبات العضوية المتطايرة</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="461"/>
@@ -549,6 +539,11 @@
         <translation>ساعد</translation>
     </message>
     <message>
+        <location filename="../../eiseg/app.py" line="793"/>
+        <source>更多</source>
+        <translation>أكثر .</translation>
+    </message>
+    <message>
         <location filename="../../eiseg/app.py" line="686"/>
         <source>近期文件</source>
         <translation>الوثائق الأخيرة</translation>
@@ -610,13 +605,13 @@
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1010"/>
-        <source>参数路径存在中文</source>
-        <translation>المعلمة المسار موجود في الصينية</translation>
+        <source>参数路径存在无效字符</source>
+        <translation>صحيح حرف موجود في مسار المعلمة</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="1010"/>
-        <source>请修改参数路径为非中文路径！</source>
-        <translation>يرجى تعديل مسار المعلمة غير الصينية المسار !</translation>
+        <source>请修改参数路径为不含无效字符的路径！</source>
+        <translation>يرجى تعديل مسار المعلمة إلى المسار الذي لا يحتوي على أحرف غير صالحة !</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="3123"/>
@@ -1020,8 +1015,8 @@
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2979"/>
-        <source>请先在加载图像按钮中加载视频</source>
-        <translation>يرجى تحميل الفيديو في صورة زر التحميل</translation>
+        <source>请先在打开图像选项中加载视频</source>
+        <translation>يرجى تحميل الفيديو في فتح خيارات الصورة</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="2982"/>
