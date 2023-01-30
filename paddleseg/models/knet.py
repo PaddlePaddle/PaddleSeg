@@ -60,8 +60,8 @@ class UPerKernelHead(UPerNetHead):
         if self.training:
             seg_kernels = self.conv_seg.weight.clone()
         else:
-            # tensor.clone() raise error when export static model, use tensor.detach() instead
-            # May lose little performance on Miou
+            # Since tensor.clone() raises error when exporting static model, we use tensor.detach() instead,
+            # although this may cause little performance drop in mIoU.
             seg_kernels = self.conv_seg.weight.detach()
         seg_kernels = seg_kernels[None].expand(
             [paddle.shape(feats)[0], *paddle.shape(seg_kernels)])
@@ -369,15 +369,15 @@ class KNet(nn.Layer):
     Args:
         num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): Backbone network.
-        backbone_indices (tuple, optional): Four values in the tuple indicate the indices of output of backbone.
-        kernel_update_head_params (dict, optional): The params to build KernelUpdateHead.
-        kernel_generate_head_params (dict, optional): The params to build KernelGenerateHead.
+        backbone_indices (tuple): Four values in the tuple indicate the indices of output of backbone.
+        kernel_update_head_params (dict): The params to build KernelUpdateHead.
+        kernel_generate_head_params (dict): The params to build KernelGenerateHead.
         num_stages (int, optional): The num of KernelUpdateHead. Default: 3
         channels (int, optional): The channels of intermediate layers. Default: 512.
         enable_auxiliary_loss (bool, optional): A bool value that indicates whether or not to add auxiliary loss. Default: False.
         align_corners (bool, optional): An argument of "F.interpolate". It should be set to False when the feature size is even,
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
-        dropout_prob (float): Dropout ratio for KNet model. Default: 0.1.
+        dropout_prob (float, optional): Dropout ratio for KNet model. Default: 0.1.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -395,13 +395,13 @@ class KNet(nn.Layer):
                  pretrained=None):
         super().__init__()
         assert hasattr(backbone, 'feat_channels'), \
-            "The backbone should has feat_channels."
+            "The backbone should has 'feat_channels'."
         assert len(backbone.feat_channels) >= len(backbone_indices), \
-            f"The length of input backbone_indices ({len(backbone_indices)}) should not be" \
-            f"greater than the length of feat_channels ({len(backbone.feat_channels)})."
+            f"The length of input 'backbone_indices' ({len(backbone_indices)}) should not be" \
+            f"greater than the length of 'feat_channels' ({len(backbone.feat_channels)})."
         assert len(backbone.feat_channels) > max(backbone_indices), \
-            f"The max value ({max(backbone_indices)}) of backbone_indices should be " \
-            f"less than the length of feat_channels ({len(backbone.feat_channels)})."
+            f"The maximum value ({max(backbone_indices)}) of 'backbone_indices' should be " \
+            f"less than the length of 'feat_channels' ({len(backbone.feat_channels)})."
 
         self.backbone = backbone
         self.backbone_indices = backbone_indices
