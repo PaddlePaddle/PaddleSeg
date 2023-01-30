@@ -81,7 +81,7 @@ class _LazyBindingMixin(object):
 
 
 class PanSegRunner(Runner, _LazyBindingMixin):
-    ATTRS = ('model', 'criterions', 'optimizer', 'postprocessor')
+    ATTRS = ('model', 'criteria', 'optimizer', 'postprocessor')
 
     def update_lr(self, loss):
         lr_sche = self.optimizer._learning_rate
@@ -103,9 +103,9 @@ class PanSegRunner(Runner, _LazyBindingMixin):
 
     def compute_losses(self, net_out, data):
         loss_list = []
-        for i in range(len(self.criterions['types'])):
-            loss_i = self.criterions['types'][i]
-            coef_i = self.criterions['coef'][i]
+        for i in range(len(self.criteria['types'])):
+            loss_i = self.criteria['types'][i]
+            coef_i = self.criteria['coef'][i]
             # Do a 'literal' check to find `MixedLoss` objects
             if loss_i.__class__.__name__ == 'MixedLoss':
                 mixed_loss_list = loss_i(data, net_out)

@@ -23,8 +23,8 @@ from paddlepanseg.core.runner import PanSegRunner
 @manager.RUNNERS.add_component
 class PanopticDeepLabRunner(PanSegRunner):
     def compute_losses(self, net_out, data):
-        cls_critn, center_critn, offset_critn = self.criterions['types']
-        cls_coef, center_coef, offset_coef = self.criterions['coef']
+        cls_critn, center_critn, offset_critn = self.criteria['types']
+        cls_coef, center_coef, offset_coef = self.criteria['coef']
         cls_loss = cls_critn(
             net_out['sem_out'],
             data['sem_label'],
@@ -46,6 +46,6 @@ class PanopticDeepLabRunner(PanSegRunner):
             else:
                 offset_loss = offset_loss.sum() * 0
         return [
-            cls_coef * cls_loss, center_coef * center_loss,
-            offset_coef * offset_loss
+            cls_coef * cls_loss, center_coef * center_loss, offset_coef *
+            offset_loss
         ]

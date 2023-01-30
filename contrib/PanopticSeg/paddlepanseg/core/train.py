@@ -135,9 +135,9 @@ def train(model,
         # By default build a plain `PanSegRunner`
         runner = PanSegRunner()
     if nranks > 1:
-        runner.bind(model=ddp_model, criterions=losses, optimizer=optimizer)
+        runner.bind(model=ddp_model, criteria=losses, optimizer=optimizer)
     else:
-        runner.bind(model=model, criterions=losses, optimizer=optimizer)
+        runner.bind(model=model, criteria=losses, optimizer=optimizer)
 
     # Create launcher
     launcher = AMPLauncher(
