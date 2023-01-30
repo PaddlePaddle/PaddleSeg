@@ -72,16 +72,11 @@ class TopFormer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def forward(self, x, upsample='intepolate', mode='simple'):
+    def forward(self, x, upsample='intepolate'):
         x_hw = paddle.shape(x)[2:]
         x_shape = paddle.shape(x)
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
-        x = self.decode_head(x, mode=mode)
-
-        x_copy = x
-        if mode == "with_detail":
-            x = x[1]
-
+        x = self.decode_head(x)
         if upsample == 'intepolate':
             x = F.interpolate(
                 x, x_hw, mode='bilinear', align_corners=self.align_corners)
@@ -104,10 +99,7 @@ class TopFormer(nn.Layer):
         else:
             raise NotImplementedError(upsample, "is not implemented")
 
-        if mode == "with_detail":
-            return [x, x_copy[0]]
-        else:
-            return [x]
+        return [x]
 
 
 class TopFormerHead(nn.Layer):
@@ -136,11 +128,6 @@ class TopFormerHead(nn.Layer):
         self.dropout = nn.Dropout2D(dropout_ratio)
         self.conv_seg = nn.Conv2D(
             self.last_channels, num_classes, kernel_size=1)
-
-        # self.conv = layers.ConvBNReLU(
-        #     64, 64, kernel_size=3, stride=1, padding=1)
-        # self.conv_out = nn.Conv2D(
-        #     64, 1, kernel_size=1, bias_attr=None)
 
     def _init_inputs(self, in_channels, in_index, in_transform):
         assert in_transform in [
@@ -185,18 +172,9 @@ class TopFormerHead(nn.Layer):
 
         return inputs
 
-    def forward(self, x, mode='withdetail'):
+    def forward(self, x):
         x = self._transform_inputs(x)
-
-        if mode == 'simple':
-            x = self.linear_fuse(x[0])
-            x = self.dropout(x)
-            x = self.conv_seg(x)
-        else:
-            out0 = self.conv(x[0])
-            out0 = self.conv_out(out0)
-            out1 = self.linear_fuse(x[1])
-            out1 = self.dropout(out1)
-            out1 = self.conv_seg(out1)
-            x = [out0, out1]
+        x = self.linear_fuse(x)
+        x = self.dropout(x)
+        x = self.conv_seg(x)
         return x

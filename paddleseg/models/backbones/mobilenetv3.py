@@ -564,6 +564,17 @@ def MobileNetV3_large_x1_25(**kwargs):
 
 
 @manager.BACKBONES.add_component
+def MobileNetV3_large_x1_25_edit(**kwargs):
+    model = MobileNetV3(
+        config=NET_CONFIG["large_edit"],
+        scale=1.25,
+        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
+        out_index=[2, 4, 6, 9],
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
 def MobileNetV3_large_x1_0_os8(**kwargs):
     model = MobileNetV3(
         config=NET_CONFIG["large_os8"],

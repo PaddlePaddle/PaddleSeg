@@ -65,5 +65,4 @@ model:
   backbone:
     type: TopTransformer_Base
     lr_mult: 0.1
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip
-    backbone: MobileNetV3_large_x1_0_edit_x0_75_concate
+    backbone: MobileNetV3_large_x1_25_edit

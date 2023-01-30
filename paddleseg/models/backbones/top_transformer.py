@@ -281,19 +281,21 @@ class Attention(nn.Layer):
                 self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = paddle.shape(x)  # NCHW
         H, W = x_shape[2], x_shape[3]
 
         qq = self.to_q(x).reshape(
-            [0, self.num_heads, self.key_dim, -1]).transpose([0, 1, 3, 2])
-        kk = self.to_k(x).reshape([0, self.num_heads, self.key_dim, -1])
+            [0, self.num_heads, self.key_dim, -1]).transpose(
+                [0, 1, 3, 2])  # [N , nh,  HW, dim]
+        kk = self.to_k(x).reshape(
+            [0, self.num_heads, self.key_dim, -1])  # [N , nh, dim, HW]
         vv = self.to_v(x).reshape([0, self.num_heads, self.d, -1]).transpose(
-            [0, 1, 3, 2])
+            [0, 1, 3, 2])  # [N , nh, HW, dh, ]
 
-        attn = paddle.matmul(qq, kk)
+        attn = paddle.matmul(qq, kk)  # HW2 # [N , nh, HW ,HW] scale
         attn = F.softmax(attn, axis=-1)
 
-        xx = paddle.matmul(attn, vv)
+        xx = paddle.matmul(attn, vv)  # [N , nh, HW, dh]
 
         xx = xx.transpose([0, 1, 3, 2]).reshape([0, self.dh, H, W])
         xx = self.proj(xx)
@@ -531,7 +533,7 @@ class TopTransformer(nn.Layer):
                  injection=True,
                  lr_mult=1.0,
                  in_channels=3,
-                 backbone='top_transformer',
+                 backbone='MobileNetV2',
                  pretrained=None):
         super().__init__()
         print('The backbone is ', backbone)
@@ -544,7 +546,7 @@ class TopTransformer(nn.Layer):
                 out_indices=encoder_out_indices,
                 in_channels=in_channels,
                 lr_mult=lr_mult)
-            # pretrained = 'https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip'
+            pretrained = 'https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip'
         elif backbone == 'esnet':
             self.feat_channels = [24, 56, 120, 232]
             from .esnet import ESNet_x0_5
@@ -585,11 +587,16 @@ class TopTransformer(nn.Layer):
             from .mobilenetv3 import MobileNetV3_large_x1_0_edit_x0_75
             self.tpm = MobileNetV3_large_x1_0_edit_x0_75()
             pretrained = 'saved_model/best_model_mbv3edit075.pdparams'
-        elif backbone == 'MobileNetV3_large_x1_0_edit_x0_75_concate':
-            self.feat_channels = [32, 48, 96, 144]
-            from .mobilenetv3 import MobileNetV3_large_x1_0_edit_x0_75_concate
-            self.tpm = MobileNetV3_large_x1_0_edit_x0_75_concate()
+        elif backbone == "MobileNetV3_large_x1_25_edit":
+            self.feat_channels = [40, 80, 160, 200]
+            from .mobilenetv3 import MobileNetV3_large_x1_25_edit
+            self.tpm = MobileNetV3_large_x1_25_edit()
+            pretrained = 'saved_model/best_model_mbv3edit125.pdparams'
+        elif backbone == "MobileNetV2":
+            from .mobilenetv2 import MobileNetV2_x1_0
+            self.tpm = MobileNetV2_x1_0()
             pretrained = None
+            self.injection = False
         else:
             raise NotImplementedError('Backbone {} is not supported.'.format(
                 backbone))
@@ -648,7 +655,7 @@ class TopTransformer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def forward(self, x, mode='simple'):
+    def forward(self, x):
         # [4, 3, 512, 512] [512,3,224,224] channels [32,64,128,160]
         outputs = self.tpm(
             x
@@ -660,18 +667,8 @@ class TopTransformer(nn.Layer):
 
         if self.injection:
             if self.injection_type == 'InjectionMultiSumallmultiallsum':
-                if mode == "simple":
-                    return [
-                        self.inj_module([
-                            outputs[i] for i in self.trans_out_indices
-                        ] + [out])
-                    ]
-                else:
-                    return [
-                        outputs[1], self.inj_module([
-                            outputs[i] for i in self.trans_out_indices
-                        ] + [out])
-                    ]
+                return self.inj_module(
+                    [outputs[i] for i in self.trans_out_indices] + [out])
             else:
                 # xx = out.split(self.feat_channels, axis=1)
                 results = []
