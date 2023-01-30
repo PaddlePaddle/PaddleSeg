@@ -62,18 +62,14 @@ class _LazyBindingMixin(object):
         super().__init__()
         for attr in self.ATTRS:
             setattr(self, attr, EMPTY)
-        self._bound = False
 
     def bind(self, **attrs):
-        if self._bound:
-            raise RuntimeError("One runner can only be bound once.")
         for key, val in attrs.items():
             if key not in self.ATTRS:
                 raise AttributeError
             else:
                 setattr(self, key, val)
         self._post_bind()
-        self._bound = True
 
     def _post_bind(self):
         # Do nothing

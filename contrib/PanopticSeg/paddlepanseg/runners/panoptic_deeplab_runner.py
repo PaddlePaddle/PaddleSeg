@@ -46,6 +46,6 @@ class PanopticDeepLabRunner(PanSegRunner):
             else:
                 offset_loss = offset_loss.sum() * 0
         return [
-            cls_coef * cls_loss, center_coef * center_loss, offset_coef *
-            offset_loss
+            cls_coef * cls_loss, center_coef * center_loss,
+            offset_coef * offset_loss
         ]
