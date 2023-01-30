@@ -1,4 +1,4 @@
-# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os.path as osp
-from . import core, cvlibs, datasets, models, postprocessors, transforms
+from . import core, cvlibs, datasets, models, postprocessors, runners, transforms
 
 __version__ = '0.0.0'
 __custom_op_path__ = osp.abspath(

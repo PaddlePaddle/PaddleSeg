@@ -132,6 +132,7 @@ def train_with_args(args):
     losses = builder.loss
     optimizer = builder.optimizer
     postprocessor = builder.postprocessor
+    runner = builder.runner
 
     try:
         train(
@@ -153,7 +154,8 @@ def train_with_args(args):
             eval_sem=args.eval_sem,
             eval_ins=args.eval_ins,
             precision=args.precision,
-            amp_level=args.amp_level)
+            amp_level=args.amp_level,
+            runner=runner)
     except BaseException as e:
         if args.debug:
             import traceback
