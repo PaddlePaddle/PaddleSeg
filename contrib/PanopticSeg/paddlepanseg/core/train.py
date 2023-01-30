@@ -130,10 +130,7 @@ def train(model,
         collate_fn=train_dataset.collate
         if hasattr(train_dataset, 'collate') else None)
 
-    # Build runner
-    if runner is None:
-        # By default build a plain `PanSegRunner`
-        runner = PanSegRunner()
+    # Bind components to runner
     if nranks > 1:
         runner.bind(model=ddp_model, criteria=losses, optimizer=optimizer)
     else:

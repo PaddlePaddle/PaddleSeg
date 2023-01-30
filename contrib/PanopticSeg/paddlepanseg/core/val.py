@@ -77,10 +77,7 @@ def evaluate(model,
         collate_fn=eval_dataset.collate
         if hasattr(eval_dataset, 'collate') else None)
 
-    # Build runner
-    if runner is None:
-        # By default build a plain `PanSegRunner`
-        runner = PanSegRunner()
+    # Bind components to runner
     runner.bind(model=model, postprocessor=postprocessor)
 
     # Create launcher
