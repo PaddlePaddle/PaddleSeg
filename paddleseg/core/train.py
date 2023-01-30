@@ -180,25 +180,6 @@ def train(model,
             if 'edge' in data.keys():
                 edges = data['edge'].astype('int64')
 
-            targets = None
-            if "instances" in data.keys():
-                targets = []
-                # split targets in the batch
-                for target_per_image_idx in range(batch_size):
-                    gt_masks = data['instances']['gt_masks'][
-                        target_per_image_idx, ...]
-                    padded_masks = paddle.zeros(
-                        (gt_masks.shape[0], gt_masks.shape[-2],
-                         gt_masks.shape[-1]),
-                        dtype=gt_masks.dtype)
-                    padded_masks[:, :gt_masks.shape[1], :gt_masks.shape[
-                        2]] = gt_masks
-                    targets.append({
-                        "labels": data['instances']['gt_classes'][
-                            target_per_image_idx, ...],
-                        "masks": padded_masks
-                    })
-
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':
                 images = images.transpose((0, 2, 3, 1))
 
@@ -217,7 +198,7 @@ def train(model,
                         labels=labels,
                         edges=edges,
                         losses=losses,
-                        targets=targets)
+                        targets=data.get('instances', None))
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss
@@ -233,7 +214,7 @@ def train(model,
                     labels=labels,
                     edges=edges,
                     losses=losses,
-                    targets=targets)
+                    targets=data.get('instances', None))
                 loss = sum(loss_list)
                 loss.backward()
                 optimizer.step()

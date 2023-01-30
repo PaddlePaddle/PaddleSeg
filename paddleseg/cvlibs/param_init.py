@@ -189,7 +189,19 @@ def xavier_uniform(param, **kwargs):
     initializer(param, param.block)
 
 
-def th_multihead_fill(layer, qkv_same_embed_dim=True):
+def multihead_fill(layer, qkv_same_embed_dim=True):
+    """
+    The default initialization of multi-head attention.
+
+    Example:
+        from paddleseg.cvlibs import param_init
+        import paddle.nn as nn
+        
+        self_attn = nn.MultiHeadAttention(
+            128, 8, dropout=False)
+        param_init.multihead_fill(self_attn, True)
+    """
+
     def _init_param_as_combined_linear_weight(p):
         bound = math.sqrt(6 / (3 * p.shape[0] + p.shape[1]))
         nn.initializer.Uniform(low=-bound, high=bound)(p)
@@ -208,6 +220,13 @@ def th_multihead_fill(layer, qkv_same_embed_dim=True):
 def th_linear_fill(layer):
     """
     The default way of linear initialization.
+    
+    Example:
+        from paddleseg.cvlibs import param_init
+        import paddle.nn as nn
+        
+        linear = nn.Linear(128, 128)
+        param_init.linear_fill(linear)
     """
     nn.initializer.KaimingUniform(
         negative_slope=math.sqrt(5), nonlinearity='leaky_relu')(layer.weight)

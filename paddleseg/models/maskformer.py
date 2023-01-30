@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 # This implementation refers to: https://github.com/facebookresearch/MaskFormer/tree/main/mask_former/modeling
 
 import math
@@ -309,7 +310,7 @@ class EncoderLayer(nn.Layer):
         return tensor if pos is None else tensor + pos
 
     def init_weight(self):
-        param_init.th_multihead_fill(self.self_attn, True)
+        param_init.multihead_fill(self.self_attn, True)
         param_init.th_linear_fill(self.linear1)
         param_init.th_linear_fill(self.linear2)
 
@@ -402,8 +403,8 @@ class DecoderLayer(nn.Layer):
         self.activation = nn.ReLU()
 
     def init_weight(self):
-        param_init.th_multihead_fill(self.self_attn, True)
-        param_init.th_multihead_fill(self.multihead_attn, True)
+        param_init.multihead_fill(self.self_attn, True)
+        param_init.multihead_fill(self.multihead_attn, True)
         param_init.th_linear_fill(self.linear1)
         param_init.th_linear_fill(self.linear2)
 

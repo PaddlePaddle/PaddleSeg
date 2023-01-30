@@ -12,27 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import numpy as np
 from PIL import Image
 
 import paddle
-import paddle.nn as nn
 
 from paddleseg.datasets import ADE20K
-from paddleseg.utils.download import download_file_and_uncompress
-from paddleseg.utils import seg_env
 from paddleseg.cvlibs import manager
-from paddleseg.transforms import Compose
 import paddleseg.transforms.functional as F
-
-URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
 
 
 @manager.DATASETS.add_component
 class MaskedADE20K(ADE20K):
     """
-    ADE20K dataset `http://sceneparsing.csail.mit.edu/`.
+    ADE20K dataset `http://sceneparsing.csail.mit.edu/` for Maskformer.
+    It returns an additional masked gt for each instance.
 
     Args:
         transforms (list): A list of image transformations.
@@ -70,9 +64,9 @@ class MaskedADE20K(ADE20K):
                     label, radius=2, num_classes=self.num_classes)
                 data['edge'] = edge_mask
 
-            #######################################
-            # transform the data into masked data.#
-            #######################################
+        #######################################
+        # transform the data into masked data.#
+        #######################################
         sem_seg_gt = data['label']
         instances = {"image_shape": data['img'].shape[1:]}
         classes = np.unique(sem_seg_gt)

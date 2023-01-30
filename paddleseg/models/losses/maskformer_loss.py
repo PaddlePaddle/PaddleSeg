@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 # The implementation has referred to :https://github.com/facebookresearch/MaskFormer/blob/main/mask_former/modeling/criterion.py
 
 import copy
@@ -384,7 +385,22 @@ class MaskFormerLoss(nn.Layer):
         assert loss in loss_map, f"do you really want to compute {loss} loss?"
         return loss_map[loss](outputs, targets, indices, num_masks)
 
-    def forward(self, logits, targets_cpt):
+    def forward(self, logits, targets):
+        targets_cpt = []
+        batch_size = targets['gt_masks'].shape[0]
+        # split targets in a batch
+        for target_per_image_idx in range(batch_size):
+            gt_masks = targets['gt_masks'][target_per_image_idx, ...]
+            padded_masks = paddle.zeros(
+                (gt_masks.shape[0], gt_masks.shape[-2], gt_masks.shape[-1]),
+                dtype=gt_masks.dtype)
+            padded_masks[:, :gt_masks.shape[1], :gt_masks.shape[2]] = gt_masks
+
+            targets_cpt.append({
+                "labels": targets['gt_classes'][target_per_image_idx, ...],
+                "masks": padded_masks
+            })
+
         targets = []
         for item in targets_cpt:
             paddle.cast(item['masks'], 'bool')

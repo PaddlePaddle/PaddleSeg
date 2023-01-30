@@ -243,6 +243,7 @@ class ResizeByShort:
 
     Args:
         short_size (int): The target size of short side.
+        max_size(int): The maximum length of resized image's long edge, if the resized image's long edge exceed this length, short size will be adjusted.
     """
 
     def __init__(self, short_size, max_size=1e10):
