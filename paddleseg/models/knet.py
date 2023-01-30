@@ -23,8 +23,11 @@ from .upernet import UPerNetHead
 
 
 def build_kernel_generate_head(kwargs):
+    support_heads = ['UPerKernelHead']
     head_layer = kwargs.pop('head_layer')
-    return eval(head_layer)(**kwargs)
+    assert head_layer in support_heads, f"head layer {head_layer} not supported"
+    if head_layer == 'UPerKernelHead':
+        return UPerKernelHead(**kwargs)
 
 
 class UPerKernelHead(UPerNetHead):
