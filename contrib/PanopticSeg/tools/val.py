@@ -80,10 +80,10 @@ def val_with_args(args):
             model,
             val_dataset,
             postprocessor=postprocessor,
+            runner=runner,
             num_workers=args.num_workers,
             eval_sem=args.eval_sem,
-            eval_ins=args.eval_ins,
-            runner=runner)
+            eval_ins=args.eval_ins)
     except BaseException as e:
         if args.debug:
             import traceback

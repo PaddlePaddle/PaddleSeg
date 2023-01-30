@@ -50,6 +50,8 @@ def train(model,
           train_dataset,
           losses,
           optimizer,
+          postprocessor,
+          runner,
           val_dataset=None,
           save_dir='output',
           iters=10000,
@@ -60,12 +62,10 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           keep_checkpoint_max=5,
-          postprocessor=None,
           eval_sem=False,
           eval_ins=False,
           precision='fp32',
-          amp_level='O1',
-          runner=None):
+          amp_level='O1'):
     """
     Launch training.
 
@@ -75,6 +75,8 @@ def train(model,
         losses (dict): A dict including 'types' and 'coef'. `losses['types']` is a list of loss objects, while `losses['coef']` 
             is a list of the relevant coefficients. `len(losses['coef'])` should be equal to 1 or `len(losses['types'])`.
         optimizer (paddle.optimizer.Optimizer): The optimizer used for model training.
+        postprocessor (paddlepanseg.postprocessors.Postprocessor): Used to postprocess model output in model validation.
+        runner (paddlepanseg.core.runners.PanSegRunner): Used to define how the components interact.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
         save_dir (str, optional): The directory for saving the model snapshot. Default: 'output'.
         iters (int, optional): How may iterations to train the model for. Defualt: 10000.
@@ -90,8 +92,6 @@ def train(model,
         eval_ins (bool, optional): Whether or not to calculate instance segmentation metrics during validation. Default: False.
         precision (str, optional): If `precision` is 'fp16', enable automatic mixed precision training. Default: 'fp32'.
         amp_level (str, optional): The auto mixed precision level. Choices are 'O1' and 'O2'. Default: 'O1'.
-        runner (paddlepanseg.core.runners.PanSegRunner|None, optional): The runner used to define how the components interact. 
-            If None, use a default runner. Default: None.
     """
 
     model.train()

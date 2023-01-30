@@ -140,6 +140,8 @@ def train_with_args(args):
             train_dataset,
             val_dataset=val_dataset,
             optimizer=optimizer,
+            postprocessor=postprocessor,
+            runner=runner,
             save_dir=args.save_dir,
             iters=cfg.iters,
             batch_size=cfg.batch_size,
@@ -150,12 +152,10 @@ def train_with_args(args):
             use_vdl=args.use_vdl,
             losses=losses,
             keep_checkpoint_max=args.keep_checkpoint_max,
-            postprocessor=postprocessor,
             eval_sem=args.eval_sem,
             eval_ins=args.eval_ins,
             precision=args.precision,
-            amp_level=args.amp_level,
-            runner=runner)
+            amp_level=args.amp_level)
     except BaseException as e:
         if args.debug:
             import traceback

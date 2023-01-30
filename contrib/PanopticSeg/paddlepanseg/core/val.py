@@ -45,14 +45,13 @@ def evaluate(model,
         model（nn.Layer): A panoptic segmentation model.
         eval_dataset (paddle.io.Dataset): Used to read and process validation datasets.
         postprocessor (paddlepanseg.postprocessors.Postprocessor): Used to postprocess model output.
+        runner (paddlepanseg.core.runners.PanSegRunner): Used to define how the components interact.
         num_workers (int, optional): The number of workers used by the data loader. Default: 0.
         print_detail (bool, optional): Whether or not to print detailed information about the evaluation process. Default: True.
         eval_sem (bool, optional): Whether or not to calculate semantic segmentation metrics. Default: False.
         eval_ins (bool, optional): Whether or not to calculate instance segmentation metrics. Default: False.
         precision (str, optional): If `precision` is 'fp16', enable automatic mixed precision training. Default: 'fp32'.
         amp_level (str, optional): The auto mixed precision level. Choices are 'O1' and 'O2'. Default: 'O1'.
-        runner (paddlepanseg.core.runners.PanSegRunner|None, optional): The runner used to define how the components interact. 
-            If None, use a default runner. Default: None.
     """
 
     model.eval()
