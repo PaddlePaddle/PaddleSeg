@@ -117,7 +117,7 @@ def evaluate(model,
         for iter, data in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
 
-            pp_out = launcher.infer_step(data=data, return_loss_list=True)
+            pp_out = launcher.infer_step(data=data)
 
             if eval_sem:
                 sem_evaluator.update(data, pp_out)
