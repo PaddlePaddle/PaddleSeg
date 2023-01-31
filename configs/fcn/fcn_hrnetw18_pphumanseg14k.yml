@@ -1,3 +1,5 @@
+_base_: '../_base_/runtime.yml'
+
 train_dataset:
   type: PPHumanSeg14K
   dataset_root: data/PP-HumanSeg14K

@@ -1,3 +1,4 @@
+_base_: '../_base_/runtime.yml'
 
 # img_nums = 1281121, bs=12*8, iters=13345*10, so epoch = 10
 # img_nums = 1281121, bs=10*8, iters=16014*10, so epoch = 10

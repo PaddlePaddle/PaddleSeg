@@ -1,4 +1,4 @@
-_base_: '../_base_/cityscapes_1024x1024.yml'
+_base_: ['../_base_/cityscapes_1024x1024.yml', '../_base_/runtime.yml']
 
 model:
   type: BiSeNetV2

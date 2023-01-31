@@ -1,4 +1,4 @@
-_base_: '../_base_/cityscapes_769x769_setr.yml'
+_base_: ['../_base_/cityscapes_769x769_setr.yml', '../_base_/runtime.yml']
 
 model:
   type: SegmentationTransformer
@@ -27,7 +27,7 @@ loss:
     - type: CrossEntropyLoss
   coef: [1, 0.4, 0.4, 0.4, 0.4]
 
-test_config:
+test:
     is_slide: True
     crop_size: [769, 769]
     stride: [512, 512]

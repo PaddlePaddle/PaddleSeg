@@ -16,6 +16,6 @@ train_dataset:
     - type: Normalize
   mode: train
 
-test_config:
+test:
   aug_eval: True
   scales: 1.0

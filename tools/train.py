@@ -13,153 +13,95 @@
 # limitations under the License.
 
 import argparse
-import random
-
-import paddle
-import numpy as np
-import cv2
 
 from paddleseg.cvlibs import Config, SegBuilder
-from paddleseg.utils import get_sys_env, logger, utils
+from paddleseg.utils import utils
 from paddleseg.core import train
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model training')
+    hstr = "Model training \n\n"\
+           "Example 1: Train a model with a single GPU: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0 \n"\
+           "    python tools/train.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        -o train.do_eval=True train.use_vdl=True train.save_interval=500 \\\n"\
+           "            global.num_workers=2 global.save_dir=./output \n\n"\
+           "Example 2: Train model with multiple GPUs: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0,1 \n"\
+           "    python -m paddle.distributed.launch tools/train.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        -o train.do_eval=True train.use_vdl=True train.save_interval=500 \\\n"\
+           "            global.num_workers=2 global.save_dir=./output \n\n" \
+           "Example 3: Resume training from one checkpoint: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0 \n"\
+           "    python tools/train.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        -o train.do_eval=True train.use_vdl=True train.save_interval=500 train.resume_model=output/iter_500 \\\n"\
+           "            global.num_workers=2 global.save_dir=./output/resume_training \n\n" \
+           "Use `-o` or `--opts` to overwrite key-value config items. Some common configurations are explained as follows:\n" \
+           "    global.device       Set the running device. It should be 'cpu', 'gpu', 'xpu', 'npu', or 'mlu'.\n" \
+           "    global.save_dir     Set the directory to save weights and logs.\n" \
+           "    global.num_workers  Set the number of workers to read and process images.\n" \
+           "    train.do_eval       Whether or not to enable periodical evaluation during training. It should be either True or False.\n" \
+           "    train.resume_model  Set the path of the checkpoint to resume training from.\n"
+
+    parser = argparse.ArgumentParser(
+        description=hstr, formatter_class=argparse.RawTextHelpFormatter)
 
     # Common params
-    parser.add_argument("--config", help="The path of config file.", type=str)
-    parser.add_argument(
-        '--device',
-        help='Set the device place for training model.',
-        default='gpu',
-        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
-        type=str)
-    parser.add_argument(
-        '--save_dir',
-        help='The directory for saving the model snapshot.',
-        type=str,
-        default='./output')
-    parser.add_argument(
-        '--num_workers',
-        help='Number of workers for data loader. Bigger num_workers can speed up data processing.',
-        type=int,
-        default=0)
-    parser.add_argument(
-        '--do_eval',
-        help='Whether to do evaluation in training.',
-        action='store_true')
+    parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
         '--use_vdl',
-        help='Whether to record the data to VisualDL in training.',
+        help="Whether or not to enable VisualDL during training.",
         action='store_true')
-
-    # Runntime params
-    parser.add_argument(
-        '--resume_model',
-        help='The path of the model to resume training.',
-        type=str)
-    parser.add_argument('--iters', help='Iterations in training.', type=int)
-    parser.add_argument(
-        '--batch_size', help='Mini batch size of one gpu or cpu. ', type=int)
-    parser.add_argument('--learning_rate', help='Learning rate.', type=float)
-    parser.add_argument(
-        '--save_interval',
-        help='How many iters to save a model snapshot once during training.',
-        type=int,
-        default=1000)
-    parser.add_argument(
-        '--log_iters',
-        help='Display logging information at every `log_iters`.',
-        default=10,
-        type=int)
-    parser.add_argument(
-        '--keep_checkpoint_max',
-        help='Maximum number of checkpoints to save.',
-        type=int,
-        default=5)
-
-    # Other params
-    parser.add_argument(
-        '--seed',
-        help='Set the random seed in training.',
-        default=None,
-        type=int)
-    parser.add_argument(
-        "--precision",
-        default="fp32",
-        type=str,
-        choices=["fp32", "fp16"],
-        help="Use AMP (Auto mixed precision) if precision='fp16'. If precision='fp32', the training is normal."
-    )
-    parser.add_argument(
-        "--amp_level",
-        default="O1",
-        type=str,
-        choices=["O1", "O2"],
-        help="Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, the input \
-                data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators \
-                parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel \
-                and batchnorm. Default is O1(amp).")
     parser.add_argument(
         '--profiler_options',
         type=str,
-        help='The option of train profiler. If profiler_options is not None, the train ' \
-            'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
+        help="The options for the training profiler. If `profiler_options` is not None, the ' \
+            'profiler will be enabled. Refer to `paddleseg/utils/train_profiler.py` for details."
     )
     parser.add_argument(
-        '--data_format',
-        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
-        type=str,
-        default='NCHW')
-    parser.add_argument(
-        '--repeats',
-        type=int,
-        default=1,
-        help="Repeat the samples in the dataset for `repeats` times in each epoch."
-    )
-    parser.add_argument(
-        '--opts', help='Update the key-value pairs of all options.', nargs='+')
+        '--opts',
+        help="Specify key-value pairs to update configurations.",
+        nargs='+')
 
     return parser.parse_args()
 
 
 def main(args):
     assert args.config is not None, \
-        'No configuration file specified, please set --config'
-    cfg = Config(
-        args.config,
-        learning_rate=args.learning_rate,
-        iters=args.iters,
-        batch_size=args.batch_size,
-        opts=args.opts)
+        "No configuration file has been specified. Please set `--config`."
+    cfg = Config(args.config, opts=args.opts)
+    runtime_cfg = cfg.runtime_cfg
     builder = SegBuilder(cfg)
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
-    utils.set_seed(args.seed)
-    utils.set_device(args.device)
-    utils.set_cv2_num_threads(args.num_workers)
+    utils.set_seed(runtime_cfg['seed'])
+    utils.set_device(runtime_cfg['device'])
+    utils.set_cv2_num_threads(runtime_cfg['num_workers'])
 
     # TODO refactor
     # Only support for the DeepLabv3+ model
-    if args.data_format == 'NHWC':
+    data_format = runtime_cfg['data_format']
+    if data_format == 'NHWC':
         if cfg.dic['model']['type'] != 'DeepLabV3P':
             raise ValueError(
                 'The "NHWC" data format only support the DeepLabV3P model!')
-        cfg.dic['model']['data_format'] = args.data_format
-        cfg.dic['model']['backbone']['data_format'] = args.data_format
+        cfg.dic['model']['data_format'] = data_format
+        cfg.dic['model']['backbone']['data_format'] = data_format
         loss_len = len(cfg.dic['loss']['types'])
         for i in range(loss_len):
-            cfg.dic['loss']['types'][i]['data_format'] = args.data_format
+            cfg.dic['loss']['types'][i]['data_format'] = data_format
 
-    model = utils.convert_sync_batchnorm(builder.model, args.device)
+    model = utils.convert_sync_batchnorm(builder.model, runtime_cfg['device'])
 
     train_dataset = builder.train_dataset
     # TODO refactor
-    if args.repeats > 1:
-        train_dataset.file_list *= args.repeats
-    val_dataset = builder.val_dataset if args.do_eval else None
+    if runtime_cfg['repeats'] > 1:
+        train_dataset.file_list *= runtime_cfg['repeats']
+    val_dataset = builder.val_dataset if runtime_cfg['do_eval'] else None
     optimizer = builder.optimizer
     loss = builder.loss
 
@@ -168,19 +110,19 @@ def main(args):
         train_dataset,
         val_dataset=val_dataset,
         optimizer=optimizer,
-        save_dir=args.save_dir,
+        save_dir=runtime_cfg['save_dir'],
         iters=cfg.iters,
         batch_size=cfg.batch_size,
-        resume_model=args.resume_model,
-        save_interval=args.save_interval,
-        log_iters=args.log_iters,
-        num_workers=args.num_workers,
+        resume_model=runtime_cfg['resume_model'],
+        save_interval=runtime_cfg['save_interval'],
+        log_iters=runtime_cfg['log_iters'],
+        num_workers=runtime_cfg['num_workers'],
         use_vdl=args.use_vdl,
         losses=loss,
-        keep_checkpoint_max=args.keep_checkpoint_max,
-        test_config=cfg.test_config,
-        precision=args.precision,
-        amp_level=args.amp_level,
+        keep_checkpoint_max=runtime_cfg['keep_checkpoint_max'],
+        test_config=cfg.test_cfg,
+        precision=runtime_cfg['precision'],
+        amp_level=runtime_cfg['amp_level'],
         profiler_options=args.profiler_options,
         to_static_training=cfg.to_static_training)
 

@@ -1,4 +1,4 @@
-_base_: '../_base_/ade20k.yml'
+_base_: ['../_base_/ade20k.yml', '../_base_/runtime.yml']
 
 batch_size: 2
 iters: 160000
@@ -32,7 +32,7 @@ lr_scheduler:
   learning_rate: 0.001
   end_lr: 1.0e-05
 
-test_config:
+test:
   is_slide: True
   crop_size: [512, 512]
   stride: [512, 512]

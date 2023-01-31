@@ -27,7 +27,7 @@ from qat_train import skip_quant
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model export.')
+    parser = argparse.ArgumentParser(description='Model export')
     parser.add_argument(
         "--config", help="The config file.", type=str, required=True)
     parser.add_argument(

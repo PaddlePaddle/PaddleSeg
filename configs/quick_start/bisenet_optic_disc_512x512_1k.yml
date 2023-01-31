@@ -1,3 +1,5 @@
+_base_: '../_base_/runtime.yml'
+
 batch_size: 4
 iters: 1000
 

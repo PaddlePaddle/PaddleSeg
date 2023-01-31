@@ -1,4 +1,4 @@
-_base_: '../_base_/cityscapes.yml'
+_base_: ['../_base_/cityscapes.yml', '../_base_/runtime.yml']
 
 batch_size: 4  # total: 4*4
 iters: 160000
@@ -37,7 +37,7 @@ train_dataset:
     - type: Normalize
   mode: train
 
-test_config:
+test:
   aug_eval: True
   scales: 0.5
 

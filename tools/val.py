@@ -13,130 +13,89 @@
 # limitations under the License.
 
 import argparse
-import os
 
-import paddle
-
-from paddleseg.cvlibs import manager, Config, SegBuilder
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.core import evaluate
-from paddleseg.utils import get_sys_env, logger, utils
+from paddleseg.utils import logger, utils
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model evaluation')
+    hstr = "Model evaluation \n\n"\
+           "Example 1: Evaluate the model with a single GPU: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0 \n"\
+           "    python tools/val.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \n\n"\
+           "Example 2： Evaluate the model with multiple GPUs: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0,1 \n"\
+           "    python -m paddle.distributed.launch tools/val.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \\\n"\
+           "        -o global.num_workers=2 \n\n"\
+           "Example 3: Evaluate the model with test-time data augmentation: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0 \n"\
+           "    python tools/val.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \\\n"\
+           "        -o test.is_aug=True test.scales=0.75,1.0,1.25 test.flip_horizontal=True global.num_workers=2 \n\n"\
+           "Example 4: Evaluate the model using sliding windows: \n"\
+           "    export CUDA_VISIBLE_DEVICES=0 \n"\
+           "    python tools/val.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \\\n"\
+           "        -o test.is_slide=True test.crop_size=256,256 test.stride=256,256 \n\n"\
+           "Use `-o` or `--opts` to overwrite key-value config items. Some common configurations are explained as follows:\n" \
+           "    global.device       Set the running device. It should be 'cpu', 'gpu', 'xpu', 'npu', or 'mlu'.\n" \
+           "    global.num_workers  Set the number of workers to read and process images.\n" \
+           "    test.is_aug         Whether or not to enable test-time data augmentation. It should be either True or False.\n" \
+           "    test.scales         Set the image scaling in test-time data augmentation. Invalidated when `test.is_aug` is False.\n" \
+           "    test.flip_horizontal    Whether or not to implement horizontal flip in test-time data augmentation. Invalidated when `test.is_aug` is False.\n" \
+           "    test.flip_vertical      Whether or not to implement vertical flip in test-time data augmentation. Invalidated when `test.is_aug` is False.\n" \
+           "    test.is_slide       Whether or not to use sliding windows. It should be either True or False.\n" \
+           "    test.crop_size      Set the size of sliding windows used for testing. Invalidated when `test.is_slide` is False.\n" \
+           "    test.stride         Set the stride of sliding windows used fortesting. Invalidated when `test.is_slide` is False.\n"
+
+    parser = argparse.ArgumentParser(
+        description=hstr, formatter_class=argparse.RawTextHelpFormatter)
 
     # Common params
-    parser.add_argument("--config", help="The path of config file.", type=str)
+    parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
-        help='The path of trained weights to be loaded for evaluation.',
+        help="The path of trained weights to be loaded for evaluation.",
         type=str)
-    parser.add_argument(
-        '--num_workers',
-        help='Number of workers for data loader. Bigger num_workers can speed up data processing.',
-        type=int,
-        default=0)
-    parser.add_argument(
-        '--device',
-        help='Set the device place for evaluating model.',
-        default='gpu',
-        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
-        type=str)
-
-    # Data augment params
-    parser.add_argument(
-        '--aug_eval',
-        help='Whether to use mulit-scales and flip augment for evaluation.',
-        action='store_true')
-    parser.add_argument(
-        '--scales',
-        nargs='+',
-        help='Scales for data augment.',
-        type=float,
-        default=1.0)
-    parser.add_argument(
-        '--flip_horizontal',
-        help='Whether to use flip horizontally augment.',
-        action='store_true')
-    parser.add_argument(
-        '--flip_vertical',
-        help='Whether to use flip vertically augment.',
-        action='store_true')
-
-    # Sliding window evaluation params
-    parser.add_argument(
-        '--is_slide',
-        help='Whether to evaluate images in sliding window method.',
-        action='store_true')
-    parser.add_argument(
-        '--crop_size',
-        nargs=2,
-        help='The crop size of sliding window, the first is width and the second is height.'
-        'For example, `--crop_size 512 512`',
-        type=int)
-    parser.add_argument(
-        '--stride',
-        nargs=2,
-        help='The stride of sliding window, the first is width and the second is height.'
-        'For example, `--stride 512 512`',
-        type=int)
-
-    # Other params
-    parser.add_argument(
-        '--data_format',
-        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
-        type=str,
-        default='NCHW')
-    parser.add_argument(
-        '--auc_roc',
-        help='Whether to use auc_roc metric.',
-        type=bool,
-        default=False)
     parser.add_argument(
         '--opts',
-        help='Update the key-value pairs of all options.',
+        help="Specify key-value pairs to update configurations.",
         default=None,
         nargs='+')
 
     return parser.parse_args()
 
 
-def merge_test_config(cfg, args):
-    test_config = cfg.test_config
-    if args.aug_eval:
-        test_config['aug_eval'] = args.aug_eval
-        test_config['scales'] = args.scales
-        test_config['flip_horizontal'] = args.flip_horizontal
-        test_config['flip_vertical'] = args.flip_vertical
-    if args.is_slide:
-        test_config['is_slide'] = args.is_slide
-        test_config['crop_size'] = args.crop_size
-        test_config['stride'] = args.stride
-    return test_config
-
-
 def main(args):
     assert args.config is not None, \
-        'No configuration file specified, please set --config'
+        "No configuration file has been specified. Please set `--config`."
     cfg = Config(args.config, opts=args.opts)
+    global_cfg = cfg.global_cfg
     builder = SegBuilder(cfg)
-    test_config = merge_test_config(cfg, args)
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
-    utils.set_device(args.device)
+    utils.set_device(global_cfg['device'])
 
     # TODO refactor
     # Only support for the DeepLabv3+ model
-    if args.data_format == 'NHWC':
+    data_format = global_cfg['data_format']
+    if data_format == 'NHWC':
         if cfg.dic['model']['type'] != 'DeepLabV3P':
             raise ValueError(
                 'The "NHWC" data format only support the DeepLabV3P model!')
-        cfg.dic['model']['data_format'] = args.data_format
-        cfg.dic['model']['backbone']['data_format'] = args.data_format
+        cfg.dic['model']['data_format'] = data_format
+        cfg.dic['model']['backbone']['data_format'] = data_format
         loss_len = len(cfg.dic['loss']['types'])
         for i in range(loss_len):
-            cfg.dic['loss']['types'][i]['data_format'] = args.data_format
+            cfg.dic['loss']['types'][i]['data_format'] = data_format
 
     model = builder.model
     if args.model_path:
@@ -144,7 +103,11 @@ def main(args):
         logger.info('Loaded trained weights successfully.')
     val_dataset = builder.val_dataset
 
-    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
+    evaluate(
+        model,
+        val_dataset,
+        num_workers=global_cfg['num_workers'],
+        **cfg.test_cfg)
 
 
 if __name__ == '__main__':

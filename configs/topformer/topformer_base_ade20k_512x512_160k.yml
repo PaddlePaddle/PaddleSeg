@@ -1,4 +1,4 @@
-_base_: '../_base_/ade20k.yml'
+_base_: ['../_base_/ade20k.yml', '../_base_/runtime.yml']
 
 batch_size: 4  # total batch size is 16
 iters: 160000

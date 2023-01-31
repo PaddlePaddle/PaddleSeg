@@ -24,37 +24,51 @@ from paddleseg.deploy.export import WrappedModel
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Export Inference Model.')
+    hstr = "Export model for inference \n\n"\
+           "Example 1: Export inference model with dynamic shape: \n"\
+           "    python tools/export.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \\\n"\
+           "        --save_dir output/inference_model \n\n"\
+           "Example 2, export inference model with a fix shape: \n"\
+           "    python tools/export.py \\\n"\
+           "        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \\\n"\
+           "        --model_path output/best_model/model.pdparams \\\n"\
+           "        --save_dir output/inference_model \\\n"\
+           "        --input_shape 1 3 512 512 \n\n"
+
+    parser = argparse.ArgumentParser(
+        description=hstr, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("--config", help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
-        help='The path of trained weights for exporting inference model',
+        help="The path of trained weights for exporting inference model.",
         type=str)
     parser.add_argument(
         '--save_dir',
-        help='The directory for saving the exported inference model',
+        help="The directory for saving the exported inference model.",
         type=str,
         default='./output/inference_model')
     parser.add_argument(
         "--input_shape",
         nargs='+',
-        help="Export the model with fixed input shape, e.g., `--input_shape 1 3 1024 1024`.",
+        help="Export the model with a fixed input shape, e.g., `--input_shape 1 3 1024 1024`.",
         type=int,
         default=None)
     parser.add_argument(
         '--output_op',
         choices=['argmax', 'softmax', 'none'],
         default="argmax",
-        help="Select the op to be appended to the last of inference model, default: argmax."
-        "In PaddleSeg, the output of trained model is logit (H*C*H*W). We can apply argmax and"
-        "softmax op to the logit according the actual situation.")
+        help="Select the operator to be appended to the inference model. Default: argmax. "
+        "In PaddleSeg, the output of a trained model is logits (H*C*H*W). We can apply argmax or"
+        "softmax to the logits in different practice.")
 
     return parser.parse_args()
 
 
 def main(args):
     assert args.config is not None, \
-        'No configuration file specified, please set --config'
+        "No configuration file has been specified. Please set `--config`."
     cfg = Config(args.config)
     builder = SegBuilder(cfg)
 

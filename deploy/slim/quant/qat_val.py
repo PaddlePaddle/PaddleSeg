@@ -25,7 +25,7 @@ from qat_train import skip_quant
 
 def get_test_config(cfg, args):
 
-    test_config = cfg.test_config
+    test_config = cfg.test_cfg
     if args.aug_eval:
         test_config['aug_eval'] = args.aug_eval
         test_config['scales'] = args.scales

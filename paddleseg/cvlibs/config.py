@@ -16,14 +16,12 @@ import six
 import codecs
 import os
 from ast import literal_eval
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 import yaml
-import paddle
 
 from paddleseg.cvlibs import config_checker as checker
-from paddleseg.cvlibs import manager
-from paddleseg.utils import logger, utils
+from paddleseg.utils import utils, logger
 
 _INHERIT_KEY = '_inherited_'
 _BASE_KEY = '_base_'
@@ -69,6 +67,11 @@ class Config(object):
             'Config path ({}) does not exist'.format(path)
         assert path.endswith('yml') or path.endswith('yaml'), \
             'Config file ({}) should be yaml format'.format(path)
+
+        if learning_rate or batch_size or iters:
+            logger.warning(
+                "Constructing a `Config` object with `learning_rate`, `batch_size`, or `iters` arguments is not suggested. Please specify these values in the config file."
+            )
 
         self.dic = self._parse_from_yaml(path)
         self.dic = self.update_config_dict(
@@ -122,10 +125,22 @@ class Config(object):
     def val_dataset_cfg(self) -> Dict:
         return self.dic.get('val_dataset', {}).copy()
 
-    # TODO merge test_config into val_dataset
     @property
-    def test_config(self) -> Dict:
-        return self.dic.get('test_config', {}).copy()
+    def global_cfg(self) -> Dict:
+        return self.dic.get('global', {}).copy()
+
+    @property
+    def train_cfg(self) -> Dict:
+        return self.dic.get('train', {}).copy()
+
+    @property
+    def test_cfg(self) -> Dict:
+        return self.dic.get('test', {}).copy()
+
+    @property
+    def runtime_cfg(self) -> Dict:
+        # Please note that there are not duplicate keys in these three dicts
+        return { ** self.global_cfg, ** self.train_cfg, ** self.test_cfg}
 
     @classmethod
     def update_config_dict(cls, dic: dict, *args, **kwargs) -> dict:

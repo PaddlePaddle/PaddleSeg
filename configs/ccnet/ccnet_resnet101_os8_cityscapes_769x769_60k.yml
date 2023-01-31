@@ -1,4 +1,4 @@
-_base_: '../_base_/cityscapes_769x769.yml'
+_base_: ['../_base_/cityscapes_769x769.yml', '../_base_/runtime.yml']
 
 batch_size: 2
 iters: 60000
