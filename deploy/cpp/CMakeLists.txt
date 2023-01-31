@@ -221,6 +221,7 @@ else()
   include_directories("${PADDLE_LIB}/paddle/include")
   link_directories("${PADDLE_LIB}/paddle/fluid/inference")
   
+  SET(OPENCV_DIR "" CACHE PATH "Location of libraries")
   find_package(OpenCV REQUIRED PATHS ${OPENCV_DIR}/build/ NO_DEFAULT_PATH)
   include_directories(${OpenCV_INCLUDE_DIRS})
   set(DEPS ${DEPS} ${OpenCV_LIBS})
