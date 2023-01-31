@@ -3,7 +3,7 @@ iters: 160000
 
 train_dataset:
   type: MaskedADE20K
-  dataset_root: data/ADEChallengeData2016/
+  dataset_root: test_tipc/data/ADE20k-20
   transforms: 
     - type: ResizeByShort
       short_size: [256, 307, 358, 409, 460, 512, 563, 614, 665, 716, 768, 819, 870, 921, 972, 1024]
@@ -26,7 +26,7 @@ train_dataset:
 
 val_dataset:
   type: MaskedADE20K
-  dataset_root: data/ADEChallengeData2016/
+  dataset_root: test_tipc/data/ADE20k-20
   transforms:
     - type: ResizeByShort
       short_size: 512

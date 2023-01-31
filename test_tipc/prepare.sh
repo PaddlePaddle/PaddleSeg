@@ -167,6 +167,10 @@ elif [ ${MODE} = "lite_train_lite_infer" ] || [ ${MODE} = "lite_train_whole_infe
         rm -rf ./test_tipc/data/PPM-100
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
+    elif [ ${model_name} == "maskformer" ]; then
+        rm -rf ./test_tipc/data/ADE20K-20
+        wget -nc -P  ./test_tipc/data/  https://bj.bcebos.com/paddleseg/tipc/data/ADE20k-20.zip --no-check-certificate
+        cd ./test_tipc/data/ && unzip ADE20k-20.zip && cd -
     else
         if [ ${MODE} = "whole_train_whole_infer" ];then
             rm -rf ./test_tipc/data/cityscapes

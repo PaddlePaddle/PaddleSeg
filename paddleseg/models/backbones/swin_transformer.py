@@ -743,7 +743,8 @@ class SwinTransformer_tiny_patch4_window7_224_maskformer(SwinTransformer):
 
     def forward(self, x):
         outputs = {}
-        y = super().forward(x)
+        y = super(SwinTransformer_tiny_patch4_window7_224_maskformer,
+                  self).forward(x)
         for i, k in enumerate(self._out_features):
             outputs[k] = y[i]
         return outputs
@@ -801,7 +802,8 @@ class SwinTransformer_small_patch4_window7_224_maskformer(SwinTransformer):
 
     def forward(self, x):
         outputs = {}
-        y = super().forward(x)
+        y = super(SwinTransformer_small_patch4_window7_224_maskformer,
+                  self).forward(x)
         for i, k in enumerate(self._out_features):
             outputs[k] = y[i]
         return outputs
@@ -872,7 +874,8 @@ class SwinTransformer_base_patch4_window7_384_maskformer(SwinTransformer):
 
     def forward(self, x):
         outputs = {}
-        y = super().forward(x)
+        y = super(SwinTransformer_base_patch4_window7_384_maskformer,
+                  self).forward(x)
         for i, k in enumerate(self._out_features):
             outputs[k] = y[i]
         return outputs
@@ -943,7 +946,8 @@ class SwinTransformer_large_patch4_window7_384_maskformer(SwinTransformer):
 
     def forward(self, x):
         outputs = {}
-        y = super().forward(x)
+        y = super(SwinTransformer_large_patch4_window7_384_maskformer,
+                  self).forward(x)
         for i, k in enumerate(self._out_features):
             outputs[k] = y[i]
         return outputs

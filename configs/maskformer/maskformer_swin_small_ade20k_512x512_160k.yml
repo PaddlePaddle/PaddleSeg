@@ -1,4 +1,4 @@
-_base_: 'maskformer_swin_tiny_ade20k_512x512_160k'
+_base_: 'maskformer_swin_tiny_ade20k_512x512_160k.yml'
 
 model:
   type: MaskFormer
