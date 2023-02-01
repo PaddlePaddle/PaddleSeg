@@ -10,7 +10,7 @@ train_dataset:
       min_scale_factor: 0.5
       max_scale_factor: 2.0
       scale_step_size: 0.25
-    - type: RandomCrop
+    - type: RandomPaddingCrop
       crop_size: [1024, 1024]
       category_max_ratio: 0.75
     - type: RandomHorizontalFlip

@@ -541,7 +541,7 @@ class PaddingByAspectRatio:
 
 
 @manager.TRANSFORMS.add_component
-class RandomPaddingCrop:
+class RandomPaddingarop:
     """
     Crop a sub-image from a raw image and annotation image randomly. If the target cropping size
     is larger than original image, then the bottom-right padding will be added.
@@ -550,6 +550,9 @@ class RandomPaddingCrop:
         crop_size (tuple, optional): The target cropping size. Default: (512, 512).
         im_padding_value (float, optional): The padding value of raw image. Default: 127.5.
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
+        category_max_ratio (float, optional): The maximum ratio that single category could occupy. Default: 1.0.
+        ignore_index (int, optional): Specifies a target value that is ignored. Default: 255.
+        loop_times (int, optional): Default: 10.
 
     Raises:
         TypeError: When crop_size is neither list nor tuple.
@@ -559,7 +562,10 @@ class RandomPaddingCrop:
     def __init__(self,
                  crop_size=(512, 512),
                  im_padding_value=127.5,
-                 label_padding_value=255):
+                 label_padding_value=255,
+                 category_max_ratio=1.0,
+                 ignore_index=255,
+                 loop_times=10):
         if isinstance(crop_size, list) or isinstance(crop_size, tuple):
             if len(crop_size) != 2:
                 raise ValueError(
@@ -569,62 +575,79 @@ class RandomPaddingCrop:
             raise TypeError(
                 "The type of `crop_size` is invalid. It should be list or tuple, but it is {}"
                 .format(type(crop_size)))
+        if category_max_ratio <= 0:
+            raise ValueError(
+                "The value of `category_max_ratio` must be greater than 0, but got {}".
+                format(category_max_ratio))
+        if loop_times <= 0:
+            raise ValueError(
+                "The value of `category_max_ratio` must be greater than 0, but got {}".format(loop_times))
         self.crop_size = crop_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
+        self.category_max_ratio=category_max_ratio
+        self.ignore_index=ignore_index
+        self.loop_times = loop_times if category_max_ratio else 1
 
-    def __call__(self, data):
 
-        if isinstance(self.crop_size, int):
-            crop_width = self.crop_size
-            crop_height = self.crop_size
-        else:
-            crop_width = self.crop_size[0]
-            crop_height = self.crop_size[1]
+    def _get_crop_coordinates(self, origin_size):
+        margin_h = max(origin_size[0] - self.crop_size[0], 0)
+        margin_w = max(origin_size[1] - self.crop_size[1], 0)
+        offset_h = np.random.randint(0, margin_h + 1)
+        offset_w = np.random.randint(0, margin_w + 1)
+        crop_y1, crop_y2 = offset_h, offset_h + self.crop_size[0]
+        crop_x1, crop_x2 = offset_w, offset_w + self.crop_size[1]
 
-        img_height = data['img'].shape[0]
-        img_width = data['img'].shape[1]
+        return crop_x1, crop_y1, crop_x2, crop_y2
 
-        if img_height == crop_height and img_width == crop_width:
-            return data
-        else:
-            pad_height = max(crop_height - img_height, 0)
-            pad_width = max(crop_width - img_width, 0)
-            img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
-            if (pad_height > 0 or pad_width > 0):
-                data['img'] = cv2.copyMakeBorder(
-                    data['img'],
+    def _padding(self, data): 
+        img_shape = data['img'].shape[:2]
+        pad_height = max(self.crop_size[0] - img_shape[0], 0)
+        pad_width = max(self.crop_size[1] - img_shape[1], 0)
+        img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
+        if (pad_height > 0 or pad_width > 0):
+            data['img'] = cv2.copyMakeBorder(
+                data['img'],
+                0,
+                pad_height,
+                0,
+                pad_width,
+                cv2.BORDER_CONSTANT,
+                value=(self.im_padding_value, ) * img_channels)
+            for key in data.get('gt_fields', []):
+                data[key] = cv2.copyMakeBorder(
+                    data[key],
                     0,
                     pad_height,
                     0,
                     pad_width,
                     cv2.BORDER_CONSTANT,
-                    value=(self.im_padding_value, ) * img_channels)
-                for key in data.get('gt_fields', []):
-                    data[key] = cv2.copyMakeBorder(
-                        data[key],
-                        0,
-                        pad_height,
-                        0,
-                        pad_width,
-                        cv2.BORDER_CONSTANT,
-                        value=self.label_padding_value)
-                img_height = data['img'].shape[0]
-                img_width = data['img'].shape[1]
+                    value=self.label_padding_value)
+        return data
 
-            if crop_height > 0 and crop_width > 0:
-                h_off = np.random.randint(img_height - crop_height + 1)
-                w_off = np.random.randint(img_width - crop_width + 1)
+    def __call__(self, data):
+        img_shape = data['img'].shape[:2]
+        if img_shape[0] == self.crop_size[0] and img_shape[1] == self.crop_size[1]:
+            return data
 
-                if data['img'].ndim == 2:
-                    data['img'] = data['img'][h_off:(crop_height + h_off),
-                                              w_off:(w_off + crop_width)]
-                else:
-                    data['img'] = data['img'][h_off:(crop_height + h_off),
-                                              w_off:(w_off + crop_width), :]
-                for key in data.get('gt_fields', []):
-                    data[key] = data[key][h_off:(crop_height + h_off), w_off:(
-                        w_off + crop_width)]
+        data = self._padding(data)
+        img_shape = data['img'].shape[:2]
+        crop_coordinates = self._get_crop_coordinates(img_shape)
+
+        if self.category_max_ratio < 1.0:
+            for _ in range(self.loop_times):
+                seg_temp = functional.crop(data["label"], crop_coordinates)
+                labels, cnt = np.unique(seg_temp, return_counts=True)
+                cnt = cnt[labels != self.ignore_index]
+                if len(cnt) > 1 and np.max(cnt) / np.sum(
+                        cnt) < self.category_max_ratio:
+                    break
+                crop_coordinates = self._get_crop_coordinates(img_shape)
+
+        data["img"] = functional.crop(data["img"], crop_coordinates)
+        for key in data.get("gt_fields", []):
+            data[key] = functional.crop(data[key], crop_coordinates)
+
         return data
 
 
@@ -755,77 +778,6 @@ class ScalePadding:
                 data['label'], self.target_size, interp=cv2.INTER_CUBIC)
         return data
 
-
-@manager.TRANSFORMS.add_component
-class RandomCrop:
-    """
-    Crops the given the input data randomly.
-    Args:
-        crop_size (tuple or list): Crop size. The length of the input list or tuple must be 2.
-            The first value is used for width and the second is for height.
-        category_max_ratio (float): The maximum ratio that single category could occupy. Default: 1.0.
-        ignore_index (int): Specifies a target value that is ignored. Default: 255.
-    Raises:
-        TypeError: When crop_size is neither list nor tuple.
-        ValueError: When the value of crop_size is less than zero.
-    """
-
-    def __init__(self, crop_size, category_max_ratio=1.0, ignore_index=255):
-
-        if isinstance(crop_size, (list, tuple)):
-            if len(crop_size) != 2:
-                raise ValueError(
-                    "Type of `crop_size` is list or tuple. It should include 2 elements, but it is {}".
-                    format(crop_size))
-            if crop_size[0] <= 0 or crop_size[1] <= 0:
-                raise ValueError(
-                    "The elements of `crop_size` must be greater than 0, but got {}".
-                    format(crop_size))
-        else:
-            raise TypeError(
-                "The type of `crop_size` is invalid. It should be list or tuple, but it is {}".
-                format(type(crop_size)))
-        if category_max_ratio <= 0:
-            raise ValueError(
-                "The value of `category_max_ratio` must be greater than 0, but got {}".
-                format(category_max_ratio))
-        self.crop_size = crop_size
-        self.category_max_ratio = category_max_ratio
-        self.ignore_index = ignore_index
-
-    def _get_crop_coordinates(self, origin_size):
-        margin_h = max(origin_size[0] - self.crop_size[0], 0)
-        margin_w = max(origin_size[1] - self.crop_size[1], 0)
-        offset_h = np.random.randint(0, margin_h + 1)
-        offset_w = np.random.randint(0, margin_w + 1)
-        crop_y1, crop_y2 = offset_h, offset_h + self.crop_size[0]
-        crop_x1, crop_x2 = offset_w, offset_w + self.crop_size[1]
-
-        return crop_x1, crop_y1, crop_x2, crop_y2
-
-    def __call__(self, data):
-
-        img = data["img"]
-        img_shape = img.shape[:2]
-        crop_coordinates = self._get_crop_coordinates(img_shape)
-        if self.category_max_ratio < 1.0:
-            # Repeat 10 times
-            for _ in range(10):
-                seg_temp = functional.crop(data["label"], crop_coordinates)
-                labels, cnt = np.unique(seg_temp, return_counts=True)
-                cnt = cnt[labels != self.ignore_index]
-                if len(cnt) > 1 and np.max(cnt) / np.sum(
-                        cnt) < self.category_max_ratio:
-                    break
-                crop_coordinates = self._get_crop_coordinates(img_shape)
-
-        img = functional.crop(img, crop_coordinates)
-        data["img"] = img
-
-        for key in data.get("gt_fields", []):
-            data[key] = functional.crop(data[key], crop_coordinates)
-
-        return data
 
 
 @manager.TRANSFORMS.add_component
