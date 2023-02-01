@@ -27,5 +27,5 @@ model:
   type: MaskFormer
   num_classes: 150
   backbone:
-    type: SwinTransformer_tiny_patch4_window7_224_maskformer
-  pretrained: https://bj.bcebos.com/paddleseg/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_tiny/pretrain/model.pdparams
+    type: SwinTransformer_large_patch4_window7_384_maskformer
+  pretrained: https://bj.bcebos.com/paddleseg/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_large/pretrain/model.pdparams
