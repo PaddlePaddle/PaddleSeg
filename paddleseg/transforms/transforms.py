@@ -541,7 +541,7 @@ class PaddingByAspectRatio:
 
 
 @manager.TRANSFORMS.add_component
-class RandomPaddingarop:
+class RandomPaddingCrop:
     """
     Crop a sub-image from a raw image and annotation image randomly. If the target cropping size
     is larger than original image, then the bottom-right padding will be added.
@@ -552,7 +552,7 @@ class RandomPaddingarop:
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
         category_max_ratio (float, optional): The maximum ratio that single category could occupy. Default: 1.0.
         ignore_index (int, optional): Specifies a target value that is ignored. Default: 255.
-        loop_times (int, optional): Default: 10.
+        loop_times (int, optional): The maximum loop times. Default: 10.
 
     Raises:
         TypeError: When crop_size is neither list nor tuple.
@@ -581,14 +581,14 @@ class RandomPaddingarop:
                 format(category_max_ratio))
         if loop_times <= 0:
             raise ValueError(
-                "The value of `category_max_ratio` must be greater than 0, but got {}".format(loop_times))
+                "The value of `category_max_ratio` must be greater than 0, but got {}".
+                format(loop_times))
         self.crop_size = crop_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
-        self.category_max_ratio=category_max_ratio
-        self.ignore_index=ignore_index
-        self.loop_times = loop_times if category_max_ratio else 1
-
+        self.category_max_ratio = category_max_ratio
+        self.ignore_index = ignore_index
+        self.loop_times = loop_times if category_max_ratio != 1.0 else 1
 
     def _get_crop_coordinates(self, origin_size):
         margin_h = max(origin_size[0] - self.crop_size[0], 0)
@@ -600,7 +600,7 @@ class RandomPaddingarop:
 
         return crop_x1, crop_y1, crop_x2, crop_y2
 
-    def _padding(self, data): 
+    def _padding(self, data):
         img_shape = data['img'].shape[:2]
         pad_height = max(self.crop_size[0] - img_shape[0], 0)
         pad_width = max(self.crop_size[1] - img_shape[1], 0)
@@ -627,22 +627,22 @@ class RandomPaddingarop:
 
     def __call__(self, data):
         img_shape = data['img'].shape[:2]
-        if img_shape[0] == self.crop_size[0] and img_shape[1] == self.crop_size[1]:
+        if img_shape[0] == self.crop_size[0] and img_shape[1] == self.crop_size[
+                1]:
             return data
 
         data = self._padding(data)
         img_shape = data['img'].shape[:2]
         crop_coordinates = self._get_crop_coordinates(img_shape)
 
-        if self.category_max_ratio < 1.0:
-            for _ in range(self.loop_times):
-                seg_temp = functional.crop(data["label"], crop_coordinates)
-                labels, cnt = np.unique(seg_temp, return_counts=True)
-                cnt = cnt[labels != self.ignore_index]
-                if len(cnt) > 1 and np.max(cnt) / np.sum(
-                        cnt) < self.category_max_ratio:
-                    break
-                crop_coordinates = self._get_crop_coordinates(img_shape)
+        for _ in range(self.loop_times):
+            seg_temp = functional.crop(data["label"], crop_coordinates)
+            labels, cnt = np.unique(seg_temp, return_counts=True)
+            cnt = cnt[labels != self.ignore_index]
+            if len(cnt) > 1 and np.max(cnt) / np.sum(
+                    cnt) < self.category_max_ratio:
+                break
+            crop_coordinates = self._get_crop_coordinates(img_shape)
 
         data["img"] = functional.crop(data["img"], crop_coordinates)
         for key in data.get("gt_fields", []):
@@ -777,7 +777,6 @@ class ScalePadding:
             data['label'] = functional.resize(
                 data['label'], self.target_size, interp=cv2.INTER_CUBIC)
         return data
-
 
 
 @manager.TRANSFORMS.add_component
