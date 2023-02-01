@@ -1,13 +1,12 @@
-[Chinese (Simplified)](README.md) | English
+[简体中文](README.md) | English
 
 <div align="center">
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/35907364/179460858-7dfb19b1-cabf-4f8a-9e81-eb15b6cc7d5f.png" align="middle" alt="LOGO" width = "500" />
 </p>
-
 **An Efficient Interactive Segmentation Tool based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
-  
+
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
 
 </div>
@@ -42,11 +41,11 @@
 
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> Latest Developments
+* [2022-12-16] :fire: EISeg 1.1 has been released!
+  - Added the annotation ability for detection , which can be marked manually or using the detection model PicoDet-S for labeling.
+  - Detection annotation result supports various formats such as COCO, VOC and YOLO.
+  - Added LabelMe JSON format for segmentation result.
 * [2022-09-16] :fire: The annotation model MUSCLE has been accepted by MICCAI 2022. For details, please refer to [MUSCLE](docs/MUSCLE_en.md), the model can be downloaded [here](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_resnet50_deeplab_chest_xray.zip).
-* [2022-07-20] :fire: EISeg 1.0 is released!
-  - Added  interactive video object segmentation for general scenes, this work is based on EISeg interactive segmentation model and [MiVOS](https://github.com/hkchengrex/MiVOS).
-  - Added 3D segmentation capabilities for abdominal multi-organ and CT vertebral data, and provides 3D visualization tools. For details, please refer to [3D Anotations](docs/video.md).
-
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> Introduction
 
@@ -61,16 +60,18 @@ EISeg (Efficient Interactive Segmentation) is an efficient and intelligent inter
 <div align="center">
 <img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
 </div>
-
 ## <img src="../docs/images/teach.png" width="20"/> Tutorials
+
 * [Installation](docs/install_en.md)
-* [Image Annotation](docs/image_en.md)
-* [Video Annotation](docs/video_en.md)
-* [Remote Sensing](docs/remote_sensing_en.md)
+* [Image Segmentation Annotation](docs/image_en.md)
+* [Video Segmentation Annotation](docs/video_en.md)
+* [Remote Sensing Segmentation](docs/remote_sensing_en.md)
 * [Medical Treatment](docs/medical_en.md)
+* [Detection](docs/det_en.md)
+* [Tool script](docs/tools_en.md)
 
 ## <img src="../docs/images/anli.png" width="20"/> Version Updates
-
+- 2022.12.16  **1.1.0**： 【1】 Added the annotation ability for detection , which can be marked manually or using the detection model PicoDet-S for labeling. 【2】Detection annotation result supports various formats such as COCO, VOC and YOLO. 【3】Added LabelMe JSON format for segmentation result.
 - 2022.07.20  **1.0.0**：【1】Add the ability of interactive video object segmentation. 【2】Add 3D annotation model for abdominal multi-organ【3】Added 3D annotation model for  CT vertebra.
 - 2022.04.10  **0.5.0**: 【1】Add chest_xray interactive model;【2】Add MRSpineSeg interactive model;【3】Add industrial quality inspection model;【4】Fix geo-transform / CRS error when shapefile saved.
 - 2021.12.14 **0.4.1**: 【1】Fix the bug of crashing; 【2】Newly add the post-labeling operation of remote sensing building images.

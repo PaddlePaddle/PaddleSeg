@@ -1,0 +1,14 @@
+_base_: '../deeplabv3p/deeplabv3p_resnet50_isaid_512x512_80k.yml'
+
+model:
+  type: DeepLabV3P
+  backbone:
+    type: ResNet50
+    ssl_pretrained: True
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/ssl/densecl_imgnet_epoch200.zip
+  num_classes: 16
+  backbone_indices: [0, 3]
+  aspp_ratios: [1, 12, 24, 36]
+  aspp_out_channels: 256
+  align_corners: False
+  pretrained: null

@@ -173,8 +173,8 @@ def distill_train(distill_model,
             if iter > iters:
                 break
             reader_cost_averager.record(time.time() - batch_start)
-            images = data[0]
-            labels = data[1].astype('int64')
+            images = data['img']
+            labels = data['label'].astype('int64')
             edges = None
             if len(data) == 3:
                 edges = data[2].astype('int64')

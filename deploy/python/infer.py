@@ -13,127 +13,15 @@
 # limitations under the License.
 
 import argparse
-import codecs
 import os
-import sys
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
-
-import yaml
 import numpy as np
 from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
 
-import paddleseg.transforms as T
-from paddleseg.cvlibs import manager
-from paddleseg.utils import get_sys_env, logger, get_image_list
+from paddleseg.deploy.infer import DeployConfig
+from paddleseg.utils import get_image_list, logger
 from paddleseg.utils.visualize import get_pseudo_color_map
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='Test')
-    parser.add_argument(
-        "--config",
-        dest="cfg",
-        help="The config file.",
-        default=None,
-        type=str,
-        required=True)
-    parser.add_argument(
-        '--image_path',
-        dest='image_path',
-        help='The directory or path or file list of the images to be predicted.',
-        type=str,
-        default=None,
-        required=True)
-    parser.add_argument(
-        '--batch_size',
-        dest='batch_size',
-        help='Mini batch size of one gpu or cpu.',
-        type=int,
-        default=1)
-    parser.add_argument(
-        '--save_dir',
-        dest='save_dir',
-        help='The directory for saving the predict result.',
-        type=str,
-        default='./output')
-    parser.add_argument(
-        '--device',
-        choices=['cpu', 'gpu', 'xpu', 'npu'],
-        default="gpu",
-        help="Select which device to inference, defaults to gpu.")
-
-    parser.add_argument(
-        '--use_trt',
-        default=False,
-        type=eval,
-        choices=[True, False],
-        help='Whether to use Nvidia TensorRT to accelerate prediction.')
-    parser.add_argument(
-        "--precision",
-        default="fp32",
-        type=str,
-        choices=["fp32", "fp16", "int8"],
-        help='The tensorrt precision.')
-    parser.add_argument(
-        '--min_subgraph_size',
-        default=3,
-        type=int,
-        help='The min subgraph size in tensorrt prediction.')
-    parser.add_argument(
-        '--enable_auto_tune',
-        default=False,
-        type=eval,
-        choices=[True, False],
-        help='Whether to enable tuned dynamic shape. We uses some images to collect '
-        'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
-    )
-    parser.add_argument(
-        '--auto_tuned_shape_file',
-        type=str,
-        default="auto_tune_tmp.pbtxt",
-        help='The temp file to save tuned dynamic shape.')
-
-    parser.add_argument(
-        '--cpu_threads',
-        default=10,
-        type=int,
-        help='Number of threads to predict when using cpu.')
-    parser.add_argument(
-        '--enable_mkldnn',
-        default=False,
-        type=eval,
-        choices=[True, False],
-        help='Enable to use mkldnn to speed up when using cpu.')
-
-    parser.add_argument(
-        "--benchmark",
-        type=eval,
-        default=False,
-        help="Whether to log some information about environment, model, configuration and performance."
-    )
-    parser.add_argument(
-        "--model_name",
-        default="",
-        type=str,
-        help='When `--benchmark` is True, the specified model name is displayed.'
-    )
-
-    parser.add_argument(
-        '--with_argmax',
-        dest='with_argmax',
-        help='Perform argmax operation on the predict result.',
-        action='store_true')
-    parser.add_argument(
-        '--print_detail',
-        default=True,
-        type=eval,
-        choices=[True, False],
-        help='Print GLOG information of Paddle Inference.')
-
-    return parser.parse_args()
 
 
 def use_auto_tune(args):
@@ -195,38 +83,6 @@ def auto_tune(args, imgs, img_nums):
             return
 
     logger.info("Auto tune success.\n")
-
-
-class DeployConfig:
-    def __init__(self, path):
-        with codecs.open(path, 'r', 'utf-8') as file:
-            self.dic = yaml.load(file, Loader=yaml.FullLoader)
-
-        self._transforms = self.load_transforms(self.dic['Deploy'][
-            'transforms'])
-        self._dir = os.path.dirname(path)
-
-    @property
-    def transforms(self):
-        return self._transforms
-
-    @property
-    def model(self):
-        return os.path.join(self._dir, self.dic['Deploy']['model'])
-
-    @property
-    def params(self):
-        return os.path.join(self._dir, self.dic['Deploy']['params'])
-
-    @staticmethod
-    def load_transforms(t_list):
-        com = manager.TRANSFORMS
-        transforms = []
-        for t in t_list:
-            ctype = t.pop('type')
-            transforms.append(com[ctype](**t))
-
-        return T.Compose(transforms)
 
 
 class Predictor:
@@ -408,6 +264,111 @@ class Predictor:
             basename, _ = os.path.splitext(basename)
             basename = f'{basename}.png'
             result.save(os.path.join(self.args.save_dir, basename))
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Test')
+    parser.add_argument(
+        "--config",
+        dest="cfg",
+        help="The config file.",
+        default=None,
+        type=str,
+        required=True)
+    parser.add_argument(
+        '--image_path',
+        dest='image_path',
+        help='The directory or path or file list of the images to be predicted.',
+        type=str,
+        default=None,
+        required=True)
+    parser.add_argument(
+        '--batch_size',
+        dest='batch_size',
+        help='Mini batch size of one gpu or cpu.',
+        type=int,
+        default=1)
+    parser.add_argument(
+        '--save_dir',
+        dest='save_dir',
+        help='The directory for saving the predict result.',
+        type=str,
+        default='./output')
+    parser.add_argument(
+        '--device',
+        choices=['cpu', 'gpu', 'xpu', 'npu'],
+        default="gpu",
+        help="Select which device to inference, defaults to gpu.")
+
+    parser.add_argument(
+        '--use_trt',
+        default=False,
+        type=eval,
+        choices=[True, False],
+        help='Whether to use Nvidia TensorRT to accelerate prediction.')
+    parser.add_argument(
+        "--precision",
+        default="fp32",
+        type=str,
+        choices=["fp32", "fp16", "int8"],
+        help='The tensorrt precision.')
+    parser.add_argument(
+        '--min_subgraph_size',
+        default=3,
+        type=int,
+        help='The min subgraph size in tensorrt prediction.')
+    parser.add_argument(
+        '--enable_auto_tune',
+        default=False,
+        type=eval,
+        choices=[True, False],
+        help='Whether to enable tuned dynamic shape. We uses some images to collect '
+        'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
+    )
+    parser.add_argument(
+        '--auto_tuned_shape_file',
+        type=str,
+        default="auto_tune_tmp.pbtxt",
+        help='The temp file to save tuned dynamic shape.')
+
+    parser.add_argument(
+        '--cpu_threads',
+        default=10,
+        type=int,
+        help='Number of threads to predict when using cpu.')
+    parser.add_argument(
+        '--enable_mkldnn',
+        default=False,
+        type=eval,
+        choices=[True, False],
+        help='Enable to use mkldnn to speed up when using cpu.')
+
+    parser.add_argument(
+        "--benchmark",
+        type=eval,
+        default=False,
+        help="Whether to log some information about environment, model, configuration and performance."
+    )
+    parser.add_argument(
+        "--model_name",
+        default="",
+        type=str,
+        help='When `--benchmark` is True, the specified model name is displayed.'
+    )
+
+    parser.add_argument(
+        '--with_argmax',
+        dest='with_argmax',
+        help='Perform argmax operation on the predict result.',
+        action='store_true')
+    parser.add_argument(
+        '--print_detail',
+        default=True,
+        type=eval,
+        choices=[True, False],
+        help='Print GLOG information of Paddle Inference.')
+
+    return parser.parse_args()
 
 
 def main(args):

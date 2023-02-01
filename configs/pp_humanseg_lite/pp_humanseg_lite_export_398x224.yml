@@ -4,12 +4,6 @@ model:
   align_corners: False
   num_classes: 2
 
-export:
-  transforms:
-    - type: Resize
-      target_size: [398, 224]
-    - type: Normalize
-
 val_dataset:
   type: Dataset
   dataset_root: data/mini_supervisely

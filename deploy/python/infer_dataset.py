@@ -15,25 +15,19 @@
 import argparse
 import codecs
 import os
-import sys
 
 import time
 import yaml
 import numpy as np
 import paddle
 import paddle.nn.functional as F
-
-from paddle.inference import create_predictor, PrecisionType
+from paddle.inference import create_predictor
 from paddle.inference import Config as PredictConfig
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
-
-import paddleseg
+from paddleseg.deploy.infer import DeployConfig
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger, metrics, progbar
-
-from infer import Predictor, DeployConfig, use_auto_tune
+from infer import auto_tune, use_auto_tune, Predictor
 
 
 def parse_args():

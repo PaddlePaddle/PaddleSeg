@@ -17,9 +17,10 @@ import os
 
 import numpy as np
 import shutil
-from paddleseg.cvlibs import manager, Config
 import paddle
 from paddleslim.quant import quant_post_static
+
+from paddleseg.cvlibs import Config, SegBuilder
 
 paddle.enable_static()
 
@@ -47,6 +48,8 @@ def parse_args():
         help='Number of pictures per batch',
         type=int,
         default=1)
+    parser.add_argument(
+        '--opts', help='Update the key-value pairs of all options.', nargs='+')
 
     return parser.parse_args()
 
@@ -63,16 +66,11 @@ def sample_generator(loader):
 def main(args):
     fp32_model_dir = args.model_dir
     quant_output_dir = 'quant_model'
-    cfg = Config(args.cfg)
-    val_dataset = cfg.val_dataset
-    if val_dataset is None:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
-    elif len(val_dataset) == 0:
-        raise ValueError(
-            'The length of val_dataset is 0. Please check if your dataset is valid'
-        )
+
+    cfg = Config(args.cfg, opts=args.opts)
+    builder = SegBuilder(cfg)
+
+    val_dataset = builder.val_dataset
 
     use_gpu = True
     place = paddle.CUDAPlace(0) if use_gpu else paddle.CPUPlace()
