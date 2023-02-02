@@ -44,7 +44,6 @@ class MattingDataset(paddle.io.Dataset):
         |
         |--val.txt
     See README.md for more information of dataset.
-
     Args:
         dataset_root(str): The root path of dataset.
         transforms(list):  Transforms for image.
@@ -135,14 +134,15 @@ class MattingDataset(paddle.io.Dataset):
                 data['gt_fields'].append('bg')
                 data['gt_fields'].append('alpha')
             if len(fg_bg_file) == 3 and self.get_trimap:
-                trimap_path = os.path.join(self.dataset_root, fg_bg_file[2])
-                if os.path.exists(trimap_path):
-                    data['trimap'] = trimap_path
-                    data['gt_fields'].append('trimap')
-                    data['ori_trimap'] = cv2.imread(trimap_path, 0)
-                else:
-                    raise FileNotFoundError(
-                        'trimap is not Found: {}'.format(fg_bg_file[2]))
+                if self.mode == 'val':
+                    trimap_path = os.path.join(self.dataset_root, fg_bg_file[2])
+                    if os.path.exists(trimap_path):
+                        data['trimap'] = trimap_path
+                        data['gt_fields'].append('trimap')
+                        data['ori_trimap'] = cv2.imread(trimap_path, 0)
+                    else:
+                        raise FileNotFoundError(
+                            'trimap is not Found: {}'.format(fg_bg_file[2]))
         else:
             data['img'] = fg
             if self.mode in ['train', 'trainval']:

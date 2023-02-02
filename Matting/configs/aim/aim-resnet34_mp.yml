@@ -3,7 +3,7 @@ iters: 50000
 
 train_dataset:
   type: HybridDataset
-  dataset_root: /home/aistudio/data/data184700
+  dataset_root: data/hybrid_data
   train_file: train.txt
   transforms:
     - type: RandomCropByAlpha
@@ -18,7 +18,7 @@ train_dataset:
 
 val_dataset:
   type: AIM500
-  dataset_root: /home/aistudio/data/data176745/matting_datasets
+  dataset_root: data/aim500
   val_file: val.txt
   transforms:
     - type: HybridResize

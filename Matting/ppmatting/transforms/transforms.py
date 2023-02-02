@@ -794,13 +794,13 @@ class RandomReJpeg:
 @manager.TRANSFORMS.add_component
 class HybridResize:
     """
-    Resize the image for different testing strategy.
+    Resize the image using different testing strategies.
 
     Args:
         global_ratio (float, optional): The scale ratio of global. Default: 0.25.
         local_ratio (float, optinal): The scale ratio of local.  Default: 0.5.
         max_size (list|tuple, optional): The maxiumn size of image. index 0 means height of image, and index 1 means width of image. Default: [1600, 1600].
-        if_hybrid (bool): Enable hybird test strategy. Default: False
+        if_hybrid (bool, optional): Enable hybird test strategy. Default: False
 
     Raises:
         TypeError: When max_size is neither list nor tuple.
@@ -817,7 +817,7 @@ class HybridResize:
 
         if not isinstance(global_ratio, float) and not isinstance(local_ratio, float):
             raise TypeError(
-                "Type of global_ratio or local_ratio is invalid. It should be float, now is {}, {}"
+                "Type of global_ratio or local_ratio is invalid. It should be float, but now it is {}, {}"
                 .format(type(global_ratio), type(local_ratio)))
 
         if isinstance(max_size, list) or isinstance(max_size, tuple):
@@ -827,7 +827,7 @@ class HybridResize:
                     format(max_size))
         else:
             raise TypeError(
-                "Type of max_size is invalid. It should be list or tuple, now is {}"
+                "Type of max_size is invalid. It should be list or tuple, but now it is {}"
                 .format(type(max_size)))
 
     def __call__(self, data):

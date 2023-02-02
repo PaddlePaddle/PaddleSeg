@@ -14,15 +14,14 @@
 
 from collections import defaultdict
 from typing import Callable, Optional
-import numpy as np
 
+import numpy as np
 from skimage.transform import resize
 
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
-
 from ppmatting.models.losses import AlphaLoss, LaplacianLoss, CompositionLoss
 from paddleseg.models.losses import CrossEntropyLoss
 
@@ -450,50 +449,7 @@ class BasicBlock(nn.Layer):
         return out
 
 
-class Bottleneck(nn.Layer):
-    expansion = 4
-    __constants__ = ['downsample']
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, norm_layer=None):
-        super(Bottleneck, self).__init__()
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2D
-        width = int(planes * (base_width / 64.)) * groups
-        self.conv1 = conv1x1(inplanes, width)
-        self.bn1 = norm_layer(width)
-        self.conv2 = conv3x3(width, width, stride, groups, dilation)
-        self.bn2 = norm_layer(width)
-        self.conv3 = conv1x1(width, planes * self.expansion)
-        self.bn3 = norm_layer(planes * self.expansion)
-        self.relu = nn.ReLU()
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        identity = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
-        out = self.attention(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
-        if self.downsample is not None:
-            identity = self.downsample(x)
-        out += identity
-        out = self.relu(out)
-
-        return out
-
-
 class ResNet(nn.Layer):
-
     def __init__(self, block, layers, zero_init_residual=False,
                  groups=1, width_per_group=64, replace_stride_with_dilation=None,
                  norm_layer=None):
@@ -536,20 +492,6 @@ class ResNet(nn.Layer):
 
         self.avgpool = nn.AdaptiveAvgPool2D((1, 1))
         self.fc = nn.Linear(512 * block.expansion, 1000)
-
-        # for m in self.modules():
-        #     if isinstance(m, nn.Conv2D):
-        #         nn.init.kaiming_normal_(
-        #             m.weight, mode='fan_out', nonlinearity='relu')
-        #     elif isinstance(m, (nn.BatchNorm2D, nn.GroupNorm)):
-        #         nn.init.constant_(m.weight, 1)
-        #         nn.init.constant_(m.bias, 0)
-        # if zero_init_residual:
-        #     for m in self.modules():
-        #         if isinstance(m, Bottleneck):
-        #             nn.init.constant_(m.bn3.weight, 0)
-        #         elif isinstance(m, BasicBlock):
-        #             nn.init.constant_(m.bn2.weight, 0)
 
     def _make_layer(self, block, planes, blocks, stride=1, dilate=False):
         norm_layer = self._norm_layer

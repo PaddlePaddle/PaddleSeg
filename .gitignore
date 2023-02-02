@@ -118,6 +118,3 @@ test_tipc/web/models/
 
 # EISeg
 EISeg/eiseg/config/setting.txt
-
-data
-output
