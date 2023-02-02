@@ -49,7 +49,7 @@ python -m paddle.distributed.launch tools/train.py \
        --save_dir output
 ```
 
-## 3、Resume Training：
+## 3、Resume Training
 ```shell
 python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
@@ -60,7 +60,19 @@ python tools/train.py \
        --save_dir output
 ```
 
-## 4、Visualize Training Process
+## 4、Model Finetune
+If you want to finetune from a pretrained model, you can set the `model.pretrained` keyword in config file, whose content is the URL or filepath of the pretrained model weights.
+```yaml
+model:
+  type: FCN
+  backbone:
+    type: HRNet_W18
+    pretrained: pretrained_model/hrnet_w18_ssld 
+  num_classes: 19
+  pretrained: FCN_pretrained.pdparams # URL or filepath of the pretrained model weights
+```
+
+## 5、Visualize Training Process
 
 PaddleSeg will write the data during the training process into the VisualDL file, and view the log during the training process in real time. The recorded data includes:
 1. Loss change trend.
