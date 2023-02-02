@@ -1,47 +1,62 @@
-[English](README.md) | 简体中文
+简体中文 | [English](README.md)
 
-# 医疗图像分割 MedicalSeg
-医疗图像分割是对医疗成像生成的图像进行一个逐像素/体素的分类工作，从而能将不同的器官/组织进行区分，从而广泛用于医疗诊断和治疗规划中。医疗图像分割可分为2D医疗图像分割和3D医疗图像分割。2D的医疗图像分割可以直接使用PaddleSeg，详细可以见[眼底数据分割说明](../../configs/unet/)，3D图像的分割则由 MedicalSeg 负责。
+# 3D医疗图像分割方案 MedicalSeg
 
+**目录**
 
-MedicalSeg 是一个简单易使用的全流程 3D 医学图像分割工具包，它支持从数据预处理、训练评估、再到模型部署的全套分割流程。特别的，我们还提供了数据预处理加速，在肺部数据 [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) 和椎骨数据 [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) 上的高精度模型， 对于[MSD](http://medicaldecathlon.com/)、[Promise12](https://promise12.grand-challenge.org/)、[Prostate_mri](https://liuquande.github.io/SAML/)等数据集的支持，以及基于[itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets) 的 3D 可视化[Demo](visualize.ipynb)。如图所示是基于 MedicalSeg 在 Vnet 上训练之后的可视化结果：
+* 简介
+* 最新消息
+* 技术交流
+* 3D智能标注EISeg-Med3D
+* MedicalSeg模型性能
+* 快速在肺部数据上开始
+* 完整教程
+* 在自己的数据上训练
+* 代码结构
+* TODO
+* License
+* 致谢
 
-<p align="center">
-<img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="30.6%" height="20%"><img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="40.6%" height="20%">
-<p align="left">
-    Vnet 在 COVID-19 CT scans (评估集上的 mDice 指标为 97.04%) 和 MRISpineSeg 数据集(评估集上的 16 类 mDice 指标为 89.14%) 上的分割结果
-</p>
-</p>
+## <img src="https://user-images.githubusercontent.com/34859558/190043857-bfbdaf8b-d2dc-4fff-81c7-e0aac50851f9.png" width="25"/> 简介
+
+医疗图像分割是对医疗成像生成的图像进行逐像素/体素的分类工作，进而区分不同器官/组织，在医疗诊断和治疗规划中具有广泛应用需求。
+
+通常而言，医疗图像分割可以分为2D医疗图像分割和3D医疗图像分割。对于2D医疗图像分割，大家可以直接使用PaddleSeg提供的通用语义分割能力，示例请参考[眼底数据分割](../../configs/unet/)。对于3D医疗图像分割，我们提供 MedicalSeg 方案进行专门支持。
+
+**MedicalSeg 是一个简易、强大、全流程的 3D 医学图像分割方案**，支持从数据处理、模型训练、模型评估和模型部署的全套流程。
+
+MedicalSeg 全景图如下，其主要特性包括：
+* 包含了从数据标注、训练、部署的全流程医疗影像分割流程调用接口。
+* 涵盖医疗影像3D职能标注平台EISeg-Med3D，实现标注的高效、准确、好用。
+* 支持六大前沿模型nnUNet、nnFormer、SwinUNet、TransUNet、UNETR、VNet，七大数据集，以及对应的高精度预训练模型。
 
 
 <p align="center">
 <img src="https://github.com/shiyutang/files/raw/main/meeicalsegall.png" width="70.6%" height="20%">
-<p align="center">
-    <b>MedicalSeg 全景图</b>
-</p>
 </p>
 
-## 目录结构
-0. [最新消息](##最新消息)
-1. [技术交流](##技术交流)
-2. [3D智能标注EISeg-Med3D](##3D智能标注EISeg-Med3D)
-3. [MedicalSeg模型性能](##MedicalSeg模型性能)
-4. [快速在肺部数据上开始](##快速在肺部数据上开始)
-5. [完整教程](##完整教程)
-6. [在自己的数据上训练](##在自己的数据上训练)
-7. [代码结构](##代码结构)
-8. [TODO](##TODO)
-9. [License](##License)
-10. [致谢](##致谢)
+
+MedicalSeg 模型预测可视化效果如下。
+
+<p align="center">
+<img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="30.6%" height="20%"><img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="40.6%" height="20%">
+</p>
 
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043516-eed25535-10e8-4853-8601-6bcf7ff58197.png" width="25"/> 最新消息
-- [2022-9] 新增3大前沿模型支持全流程部署应用，包含 nnformer, TransUnet 和 nnUnet，让你体会更强更精准的分割效果；新增 3D 医疗图像智能标注平台 [EISeg-Med3D](../../EISeg/med3d/README.md)，方便快捷地实现精准3D医疗图像标注。
-- [2022-4] MedicalSeg 发布0.1版本，提供了3D医疗图像分割中的数据预处理到到训练部署全流程，包含了对五个数据集的原生支持，以及椎骨和肺部上的高精度预训练模型。
+
+* [2022-11] **发布3D医疗影像分割方案MedicalSegV2**
+  * 新增3D医疗影像交互式标注工具 **[EISeg-Med3D](../../EISeg/med3d/README.md)**，方便快捷地实现精准3D医疗图像标注。
+  * 新增3个前沿3D医疗图像分割模型，**nnFormer, TransUNet, SwinUNet**，实现更精准的分割效果，而且支持全流程部署应用。
+  * 新增高精度分割方案**nnUNet-D**，涵盖数据分析、超参优化、模型构建、模型训练、模型融合等模块，而且新增模型部署的能力。
+* [2022-4] **发布3D医疗影像分割方案MedicalSegV1**
+  * 提供了3D医疗图像分割中的数据预处理到到训练部署全流程，包含了对五个数据集的原生支持，以及椎骨和肺部上的高精度预训练模型。
+
 
 ## <img src="../../docs/images/chat.png" width="25"/> 技术交流
 * 如果大家有使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
-* **欢迎大家加入PaddleSeg的微信用户群👫**（扫码填写问卷即可入群），和各界大佬交流学习，还可以**领取重磅大礼包🎁**
+* **欢迎加入PaddleSeg的微信用户群👫**（扫码填写简单问卷即可入群），大家可以**领取30G重磅学习大礼包🎁**，也可以和值班同学、各界大佬直接进行交流。
+  * 🔥 获取深度学习视频教程、图像分割论文合集
   * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
   * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
   * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
@@ -51,13 +66,17 @@ MedicalSeg 是一个简单易使用的全流程 3D 医学图像分割工具包�
 </div>
 
 ## <img src="https://user-images.githubusercontent.com/34859558/188419267-bd117697-7456-4c72-8cbe-1272264d4fe4.png" width="25"/> 3D智能标注EISeg-Med3D
-为了解决3D医疗手工标注效率低下的问题，并从数据标注开始真正全流程用AI赋能医疗，我们基于医疗软件 Slicer 搭建了[EISeg-Med3D](../../EISeg/med3d/README.md)，一个专注用户友好、高效、智能的3D医疗图像标注平台，通过在标注过程中融入3D交互式分割模型实现3D医疗数据标注的智能化高效化。主要特性如下：
+为了解决3D医疗手工标注效率低下的问题，并从数据标注开始真正全流程用AI赋能医疗，我们基于医疗软件 Slicer 搭建了[EISeg-Med3D](../../EISeg/med3d/README.md)。
+
+EISeg-Med3D是一个专注用户友好、高效、智能的3D医疗图像标注平台，通过在标注过程中融入3D交互式分割模型实现3D医疗数据标注的智能化高效化，其主要特性如下：
 
 * **高效**：每个类别只需**数次点击**直接生成3d分割结果，从此告别费时费力的手工标注。
 
 * **准确**：点击 3 点 mIOU 即可达到0.85，配合搭载机器学习算法和手动标注的标注编辑器，精度 100% 不是梦。
 
 * **便捷**：三步轻松安装；标注结果、进度自动保存；标注结果透明度调整提升标注准确度；用户友好的界面交互，让你标注省心不麻烦。
+
+EISeg-Med3D详细的使用文档，请参考[链接](../../EISeg/med3d/README.md)。
 
 <div align="center">
 <p align="center">
@@ -68,27 +87,23 @@ MedicalSeg 是一个简单易使用的全流程 3D 医学图像分割工具包�
 ------------------
 
 
-## <img src="https://user-images.githubusercontent.com/34859558/190044217-8f6befc2-7f20-473d-b356-148e06265205.png" width="25"/> MedicalSeg模型性能
+## <img src="https://user-images.githubusercontent.com/34859558/190044217-8f6befc2-7f20-473d-b356-148e06265205.png" width="25"/> MedicalSeg 高精模型库
 
 ###  1. 精度
 
-我们使用 [Vnet](https://arxiv.org/abs/1606.04797) 在 [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) 和 [MRISpineSeg](https://www.spinesegmentation-challenge.com/) 数据集上成功验证了我们的框架。以左肺/右肺为标签，我们在 COVID-19 CT scans 中达到了 97.04% 的 mDice 系数。你可以下载日志以查看结果或加载模型并自行验证:)。
+MedicalSeg支持nnUNet、nnFormer、SwinUNet、TransUNet等前沿3D医疗图像分割模型，并均在分割精度上不同程度上超越了原论文，其中复现的TransUNet精度超越原论文3.6%，在多器官数据集Synapse上达到了81.8%的mDice分割精度。
 
-#### **COVID-19 CT scans 上的分割结果**
+下面我们以表格的形式展示了我们已有的模型、预训练模型参数和精度，欢迎下载日志以查看结果或加载预训练模型用于相关数据集上的训练效果提升:)。
 
-
-| 骨干网络 | 分辨率 | 学习率 | 训练轮数 | mDice | 链接 |
+|模型| 分割对象 | 数据集 | mDice | 说明文档 | 链接 |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-|-|128x128x128|0.001|15000|97.04%|[model](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_1e-3/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_1e-3/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=9db5c1e11ebc82f9a470f01a9114bd3c)|
-|-|128x128x128|0.0003|15000|92.70%|[model](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_3e-4/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_3e-4/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=0fb90ee5a6ea8821c0d61a6857ba4614)|
-
-#### **MRISpineSeg 上的分割结果**
-
-
-| 骨干网络 | 分辨率 | 学习率 | 训练轮数 | mDice(20 classes) | Dice(16 classes) | 链接 |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|-|512x512x12|0.1|15000|74.41%| 88.17% |[model](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_1e-1/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_1e-1/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=36504064c740e28506f991815bd21cc7)|
-|-|512x512x12|0.5|15000|74.69%| 89.14% |[model](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_5e-1/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_5e-1/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=08b0f9f62ebb255cdfc93fd6bd8f2c06)|
+|[nnFormer](https://arxiv.org/abs/2109.03201)|心脏 |[ACDC](https://acdc.creatis.insa-lyon.fr/#phase/5846c3ab6a3c7735e84b67f2)|91.8%|[README](configs/acdc/README.md)|[model](https://paddleseg.bj.bcebos.com/paddleseg3d/acdc/nnformer_acdc_160_160_14_250k_4e-4/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/paddleseg3d/acdc/nnformer_acdc_160_160_14_250k_4e-4/train.log)\| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=b9a90b8aba579997a6f088b840a6e96d)|
+|[Vnet](https://arxiv.org/abs/1606.04797)|肺部|[COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans)|97.0%|[README](configs/lung_coronavirus/README.md)|[model](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_1e-3/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_1e-3/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=9db5c1e11ebc82f9a470f01a9114bd3c)|
+|[nnUNet](https://www.nature.com/articles/s41592-020-01008-z)|肺肿瘤|[MSD-Lung](http://medicaldecathlon.com/)|67.9%|[README](configs/nnunet/msd_lung/README.md)|[model](https://aistudio.baidu.com/aistudio/datasetdetail/162872)  \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
+|[Vnet](https://arxiv.org/abs/1606.04797)|椎骨|[MRISpineSeg](https://www.spinesegmentation-challenge.com/)|74.7%|[README](configs/mri_spine_seg/README.md)|[model](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_5e-1/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_5e-1/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=08b0f9f62ebb255cdfc93fd6bd8f2c06)|
+|[UNETR](https://arxiv.org/abs/2103.10504)|脑肿瘤|[MSD-brain](http://medicaldecathlon.com/)|71.8%|[README](configs/msd_brain_seg/README.md)|[model](https://bj.bcebos.com/paddleseg/paddleseg/medicalseg/msd_brain_seg/unetr_msd_brain_seg_1e-4/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg/medicalseg/msd_brain_seg/unetr_msd_brain_seg_1e-4/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=04e012eef21ea8478bdc03f9c5b1032f)|
+|[SwinUNet](https://arxiv.org/abs/2105.05537)|多器官|[Synapse](https://www.synapse.org/#!Synapse:syn3193805/files/)|82.1%|[README](configs/synapse/README.md)|[model](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/swinunet_abdomen_224_224_1_14k_5e-2/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/swinunet_abdomen_224_224_1_14k_5e-2/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=f62f69b8e9e9210c680dcfc862e3b65b) |
+|[TransUNet](https://arxiv.org/abs/2102.04306)|多器官|[Synapse](https://www.synapse.org/#!Synapse:syn3193805/files/)|81.1%|[README](configs/synapse/README.md)|[model](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/transunet_abdomen_224_224_1_14k_1e-2/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/abdomen/transunet_abdomen_224_224_1_14k_1e-2/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=d933d970394436aa6969c9c00cf8a6da)|
 
 
 ### 2. 速度
@@ -128,7 +143,7 @@ MedicalSeg 是一个简单易使用的全流程 3D 医学图像分割工具包�
    sh run-vnet.sh
    ```
 
-## <img src="https://user-images.githubusercontent.com/34859558/188439970-18e51958-61bf-4b43-a73c-a9de3eb4fc79.png" width="25"/> 完整教程
+## <img src="https://user-images.githubusercontent.com/34859558/188439970-18e51958-61bf-4b43-a73c-a9de3eb4fc79.png" width="25"/> 详细教程
 这一部分，我们将会介绍参数配置、训练、评估、部署部分的完整内容。
 
 
@@ -153,7 +168,10 @@ python tools/prepare_lung_coronavirus.py  # 以 CONVID-19 CT scans 为例。
 ```
 
 ### 3. 训练、评估
-准备好配置之后，只需要一键运行 [run-vnet.sh](../run-vnet.sh) 就可以进行训练和评估。让我们看看这个脚本中的命令是什么样子的：
+
+准备好配置之后，只需要一键运行 [run-vnet.sh](../run-vnet.sh) 就可以进行训练和评估。
+
+run-vnet.sh脚本具体内容如下。该示例使用VNet模型进行演示，也支持修改并使用上述模型库中的其他模型进行训练和评估。
 
 ```bash
 # 设置使用的单卡 GPU id

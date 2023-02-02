@@ -5,3 +5,4 @@ from .vgg import *
 from .gca_enc import *
 from .stdcnet import *
 from .resnet_mp import *
+from .mobilenetv3 import *

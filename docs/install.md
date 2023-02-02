@@ -57,6 +57,7 @@ Run the following command, install PaddleSeg from source. If you make modificati
 
 ```
 cd PaddleSeg
+pip install -r requirements.txt
 pip install -v -e .
 ```
 #### 2.2.2 Install Compiled PaddleSeg

@@ -1,4 +1,4 @@
-简体中文|[English](train_tricks.md)
+简体中文 | [English](train_tricks.md)
 
 # 模型训练技巧
 

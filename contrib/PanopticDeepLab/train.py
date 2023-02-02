@@ -133,7 +133,6 @@ def main(args):
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
-    cfg.check_sync_info()
 
     train_dataset = cfg.train_dataset
     if train_dataset is None:

@@ -35,7 +35,8 @@ model:
   bias: False
 
 optimizer:
-  type: sgd
+  type: SGD
+  momentum: 0.9
   weight_decay: 0.0005
 
 lr_scheduler:

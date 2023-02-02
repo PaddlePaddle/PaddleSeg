@@ -12,7 +12,7 @@ model:
   num_classes: 19
 
 optimizer:
-  type: sgd
+  type: SGD
   momentum: 0.9
   weight_decay: 0.00004
 

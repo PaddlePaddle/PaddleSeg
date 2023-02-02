@@ -14,7 +14,7 @@
 import os.path as osp
 
 from qtpy.QtWidgets import QWidget, QLabel, QHBoxLayout
-from qtpy.QtGui import QIcon, QMovie
+from qtpy.QtGui import QMovie
 from qtpy import QtCore
 
 from eiseg import pjpath

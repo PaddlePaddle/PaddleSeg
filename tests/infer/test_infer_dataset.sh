@@ -40,7 +40,7 @@ do
     model_name=$(basename ${config_path} .yml)
     download_path="${download_root_path}/${model_name}/model.pdparams"
     urlstatus=$(curl -s -m 5 -IL $download_path | grep 200)
-    if [ "$urlstatus" != "" ] && [[ $config_path =~ "cityscapes" ]];then
+    if [ "$urlstatus" != "" ] && [[ $config_path =~ "cityscapes" ]]; then
         configs_path[${#configs_path[@]}]=${config_path}
     fi
 done
@@ -56,7 +56,7 @@ do
 
     download_path=${download_root_path}/${model_name}/model.pdparams
     pretrained_path=${pretrained_root_path}/${model_name}.pdparams
-    if [ ! -f ${pretrained_path} ];then
+    if [ ! -f ${pretrained_path} ]; then
         echo -e "\n Download pretrained weights"
         wget ${download_path} -O ${pretrained_path}
     fi

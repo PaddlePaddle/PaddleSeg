@@ -1,0 +1,22 @@
+_base_: '../_base_/isaid_512x512.yml'
+
+model:
+  type: C2FNet
+  backbone:
+    type: HRNet_W18
+    align_corners: False
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+  num_classes: 16
+  pretrained: Null
+  backbone_indices: [-1]
+
+coase_model:
+  type: PSPNet
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  num_classes: 16
+  enable_auxiliary_loss: True
+  align_corners: False
+  pretrained: null
