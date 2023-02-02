@@ -1,6 +1,6 @@
 # Online experience
 
-Welcome to the online image matting application developed by community developers based on PP-Matting model "[Non-Code Matting](https://easyseg.cn/)".
+Welcome to the online image matting application developed by community developers based on PP-Matting model "[Non-Code Matting](https://coolseg.cn)".
 In addition to matting, the website further provides background replacement, ID photo production et al.
 
 <p align="center">

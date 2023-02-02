@@ -24,15 +24,26 @@ import six
 
 import paddleseg
 from paddleseg.utils import logger
+from paddleseg.cvlibs import config_checker as checker
+from paddleseg.utils.utils import CachedProperty as cached_property
 
 
 class Config(paddleseg.cvlibs.Config):
-    def check_sync_config(self) -> None:
-        """
-        Overload the config due to some checks is not need in matting project.
-        """
-        if self.dic.get('model', None) is None:
-            raise RuntimeError('No model specified in the configuration file.')
-        if (not self.train_dataset_config) and (not self.val_dataset_config):
-            raise ValueError('One of `train_dataset` or `val_dataset '
-                             'should be given, but there are none.')
+    @classmethod
+    def _build_default_checker(cls):
+        rules = []
+        return checker.ConfigChecker(rules, allow_update=True)
+
+
+class MatBuilder(paddleseg.cvlibs.SegBuilder):
+    """
+    This class is responsible for building components for matting. 
+    """
+
+    @cached_property
+    def model(self) -> paddle.nn.Layer:
+        model_cfg = self.config.model_cfg
+        assert model_cfg != {}, \
+            'No model specified in the configuration file.'
+        self.show_msg('model', model_cfg)
+        return self.build_component(model_cfg)

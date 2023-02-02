@@ -1,10 +1,5 @@
-import sys
 import os
-import numpy as np
 import argparse
-
-__dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../../')))
 
 from paddle_serving_client import Client
 from paddle_serving_app.reader import Sequential, File2Image, Resize, CenterCrop
