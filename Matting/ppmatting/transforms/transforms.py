@@ -794,13 +794,13 @@ class RandomReJpeg:
 @manager.TRANSFORMS.add_component
 class HybridResize:
     """
-    Resize the image using different testing strategies.
+    Resize the image using different hybrid-resolution testing strategies.
 
     Args:
-        global_ratio (float, optional): The scale ratio of global. Default: 0.25.
-        local_ratio (float, optinal): The scale ratio of local.  Default: 0.5.
+        global_ratio (float, optional): The scale ratio of global down-sampling. Default: 0.25.
+        local_ratio (float, optinal): The scale ratio of local down-sampling.  Default: 0.5.
         max_size (list|tuple, optional): The maxiumn size of image. index 0 means height of image, and index 1 means width of image. Default: [1600, 1600].
-        if_hybrid (bool, optional): Enable hybird test strategy. Default: False
+        if_hybrid (bool, optional): Enable hybrid-resolution test strategy. Default: False
 
     Raises:
         TypeError: When max_size is neither list nor tuple.
