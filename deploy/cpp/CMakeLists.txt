@@ -7,10 +7,8 @@ option(WITH_STATIC_LIB "Compile demo with static/shared library, default use sta
 option(USE_TENSORRT "Compile demo with TensorRT."   OFF)
 option(WITH_ROCM "Compile demo with rocm." OFF)
 
-SET(PADDLE_LIB "" CACHE PATH "Location of libraries")
-SET(CUDA_LIB "" CACHE PATH "Location of libraries")
-
 if (WIN32)
+  SET(PADDLE_LIB "" CACHE PATH "Location of libraries")
   SET(PADDLE_LIB_NAME "" CACHE STRING "libpaddle_inference")
 
   include(cmake/yaml-cpp.cmake)
@@ -185,6 +183,7 @@ if(WITH_GPU)
     set(DEPS ${DEPS} ${CUDA_LIB}/libcudart${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(DEPS ${DEPS} ${CUDA_LIB}/libcudnn${CMAKE_SHARED_LIBRARY_SUFFIX})
   else()
+    SET(CUDA_LIB "" CACHE PATH "Location of libraries")
     if (USE_TENSORRT)
       set(DEPS ${DEPS} ${CUDA_LIB}/nvinfer${CMAKE_STATIC_LIBRARY_SUFFIX})
       set(DEPS ${DEPS} ${CUDA_LIB}/nvinfer_plugin${CMAKE_STATIC_LIBRARY_SUFFIX})
