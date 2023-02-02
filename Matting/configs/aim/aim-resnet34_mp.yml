@@ -31,9 +31,9 @@ val_dataset:
 
 model:
   type: AIM
-#   backbone:
-#     type: ResNet34_mp
-#     pretrained: https://paddleseg.bj.bcebos.com/matting/models/xxxxx/model.pdparams
+  backbone:
+    type: ResNet34_mp
+    pretrained: https://paddleseg.bj.bcebos.com/matting/models/AIM_ResNet34_mp_pretrained/model.pdparams
   pretrained: Null
 
 lr_scheduler:

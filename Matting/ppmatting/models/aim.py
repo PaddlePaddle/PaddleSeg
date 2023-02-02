@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import Callable, Optional
 
 import numpy as np
 from skimage.transform import resize
@@ -27,35 +26,31 @@ from paddleseg.models.losses import CrossEntropyLoss
 
 @manager.MODELS.add_component
 class AIM(nn.Layer):
-    def __init__(self, pretrained=None):
+    def __init__(self, backbone, pretrained=None):
         super().__init__()
+        self.backbone = backbone
         self.loss_func_dict = None
         self.pretrained = pretrained
-        self.training = False
-        resnet = resnet34_mp()
-        ##########################
-        # Encoder part - RESNET
-        ##########################
-        self.encoder0 = nn.Sequential(
-            resnet.conv1,
-            resnet.bn1,
-            resnet.relu,
-        )
-        self.mp0 = resnet.maxpool1
-        self.encoder1 = nn.Sequential(
-            resnet.layer1
-        )
-        self.mp1 = resnet.maxpool2
-        self.encoder2 = resnet.layer2
-        self.mp2 = resnet.maxpool3
-        self.encoder3 = resnet.layer3
-        self.mp3 = resnet.maxpool4
-        self.encoder4 = resnet.layer4
-        self.mp4 = resnet.maxpool5
 
-        ##########################
-        # Decoder part - GLOBAL
-        ##########################
+        # encoder - resnet
+        self.encoder0 = nn.Sequential(
+            self.backbone.conv1,
+            self.backbone.bn1,
+            self.backbone.relu,
+        )
+        self.mp0 = self.backbone.maxpool1
+        self.encoder1 = nn.Sequential(
+            self.backbone.layer1
+        )
+        self.mp1 = self.backbone.maxpool2
+        self.encoder2 = self.backbone.layer2
+        self.mp2 = self.backbone.maxpool3
+        self.encoder3 = self.backbone.layer3
+        self.mp3 = self.backbone.maxpool4
+        self.encoder4 = self.backbone.layer4
+        self.mp4 = self.backbone.maxpool5
+
+        # decoder - global
         self.psp_module = PSPModule(512, 512, (1, 3, 5))
         self.psp4 = conv_up_psp(512, 256, 2)
         self.psp3 = conv_up_psp(512, 128, 4)
@@ -121,9 +116,7 @@ class AIM(nn.Layer):
         self.decoder0_g_se = SELayer(64)
         self.decoder_final_g = nn.Conv2D(64, 3, 3, padding=1)
 
-        ##########################
-        # Decoder part - LOCAL
-        ##########################
+        # decoder - local
         self.bridge_block = nn.Sequential(
             nn.Conv2D(512, 512, 3, dilation=2, padding=2),
             nn.BatchNorm2D(512),
@@ -185,9 +178,7 @@ class AIM(nn.Layer):
         self.decoder_final_l = nn.Conv2D(64, 1, 3, padding=1)
 
     def _forward(self, src):
-        #####################################
-        # Encoder part - MODIFIED RESNET
-        #####################################
+        # encoder - modified resnet
         e0 = self.encoder0(src)
         e0p, id0 = self.mp0(e0)
         e1p, id1 = self.mp1(e0p)
@@ -199,9 +190,7 @@ class AIM(nn.Layer):
         e4p, id4 = self.mp4(e3)
         e4 = self.encoder4(e4p)
 
-        #####################################
-        # Decoder part - GLOBAL: Semantic
-        #####################################
+        # decoder - global: semantic
         psp = self.psp_module(e4)
         d4_g = self.decoder4_g(paddle.concat((psp, e4), 1))
         d4_g = self.decoder4_g_se(d4_g)
@@ -221,9 +210,7 @@ class AIM(nn.Layer):
         d0_g = self.decoder_final_g(d0_g)
         global_sigmoid = F.sigmoid(d0_g)
 
-        #####################################
-        # Decoder part - LOCAL: Matting
-        #####################################
+        # decoder - local: matting
         bb = self.bridge_block(e4)
         d4_l = self.decoder4_l(paddle.concat((bb, e4), 1))
         d3_l = F.max_unpool2d(d4_l, id4, kernel_size=2, stride=2)
@@ -240,9 +227,7 @@ class AIM(nn.Layer):
         d0_l = self.decoder_final_l(d0_l)
         local_sigmoid = F.sigmoid(d0_l)
 
-        ##########################
-        # Fusion net - G/L
-        ##########################
+        # fusion with global and local
         fusion_sigmoid = self.fusion(
             global_sigmoid, local_sigmoid)
 
@@ -397,175 +382,6 @@ class PSPModule(nn.Layer):
             h, w), mode='bilinear') for stage in self.stages] + [feats]
         bottle = self.bottleneck(paddle.concat(priors, 1))
         return self.relu(bottle)
-
-
-class BasicBlock(nn.Layer):
-    expansion: int = 1
-
-    def __init__(
-        self,
-        inplanes: int,
-        planes: int,
-        stride: int = 1,
-        downsample: Optional[nn.Layer] = None,
-        groups: int = 1,
-        base_width: int = 64,
-        dilation: int = 1,
-        norm_layer: Optional[Callable[..., nn.Layer]] = None
-    ) -> None:
-        super(BasicBlock, self).__init__()
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2D
-        if groups != 1 or base_width != 64:
-            raise ValueError(
-                'BasicBlock only supports groups=1 and base_width=64')
-        if dilation > 1:
-            raise NotImplementedError(
-                "Dilation > 1 not supported in BasicBlock")
-
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = norm_layer(planes)
-        self.relu = nn.ReLU()
-        self.conv2 = conv3x3(planes, planes)
-        self.bn2 = norm_layer(planes)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        identity = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-
-        if self.downsample is not None:
-            identity = self.downsample(x)
-        out += identity
-        out = self.relu(out)
-
-        return out
-
-
-class ResNet(nn.Layer):
-    def __init__(self, block, layers, zero_init_residual=False,
-                 groups=1, width_per_group=64, replace_stride_with_dilation=None,
-                 norm_layer=None):
-        super(ResNet, self).__init__()
-        self.inplanes = 64
-        self.dilation = 1
-        self.groups = groups
-        self.base_width = width_per_group
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2D
-        self._norm_layer = norm_layer
-        if replace_stride_with_dilation is None:
-            replace_stride_with_dilation = [False, False, False]
-        if len(replace_stride_with_dilation) != 3:
-            raise ValueError("replace_stride_with_dilation should be None "
-                             "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
-
-        self.conv1 = nn.Conv2D(3, self.inplanes, kernel_size=7, stride=1, padding=3,
-                               bias_attr=False, weight_attr=nn.initializer.KaimingNormal())
-        self.bn1 = norm_layer(self.inplanes)
-        self.relu = nn.ReLU()
-        self.maxpool1 = nn.MaxPool2D(
-            kernel_size=3, stride=2, padding=1, return_mask=True)
-        self.maxpool2 = nn.MaxPool2D(
-            kernel_size=3, stride=2, padding=1, return_mask=True)
-        self.maxpool3 = nn.MaxPool2D(
-            kernel_size=3, stride=2, padding=1, return_mask=True)
-        self.maxpool4 = nn.MaxPool2D(
-            kernel_size=3, stride=2, padding=1, return_mask=True)
-        self.maxpool5 = nn.MaxPool2D(
-            kernel_size=3, stride=2, padding=1, return_mask=True)
-        # pdb.set_trace()
-        self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=1,
-                                       dilate=replace_stride_with_dilation[0])
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=1,
-                                       dilate=replace_stride_with_dilation[1])
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=1,
-                                       dilate=replace_stride_with_dilation[2])
-
-        self.avgpool = nn.AdaptiveAvgPool2D((1, 1))
-        self.fc = nn.Linear(512 * block.expansion, 1000)
-
-    def _make_layer(self, block, planes, blocks, stride=1, dilate=False):
-        norm_layer = self._norm_layer
-        downsample = None
-        previous_dilation = self.dilation
-        if dilate:
-            self.dilation *= stride
-            stride = 1
-        if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = nn.Sequential(
-                conv1x1(self.inplanes, planes * block.expansion, stride),
-                norm_layer(planes * block.expansion),
-            )
-
-        layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample, self.groups,
-                            self.base_width, previous_dilation, norm_layer))
-        self.inplanes = planes * block.expansion
-        for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes, groups=self.groups,
-                                base_width=self.base_width, dilation=self.dilation,
-                                norm_layer=norm_layer))
-
-        return nn.Sequential(*layers)
-
-    def _forward_impl(self, x):
-        x1 = self.conv1(x)
-        x1 = self.bn1(x1)
-        x1 = self.relu(x1)
-        x1, idx1 = self.maxpool1(x1)
-
-        x2, idx2 = self.maxpool2(x1)
-        x2 = self.layer1(x2)
-
-        x3, idx3 = self.maxpool3(x2)
-        x3 = self.layer2(x3)
-
-        x4, idx4 = self.maxpool4(x3)
-        x4 = self.layer3(x4)
-
-        x5, idx5 = self.maxpool5(x4)
-        x5 = self.layer4(x5)
-
-        x_cls = self.avgpool(x5)
-        x_cls = paddle.flatten(x_cls, 1)
-        x_cls = self.fc(x_cls)
-
-        return x_cls
-
-    def forward(self, x):
-        return self._forward_impl(x)
-
-
-def resnet34_mp(**kwargs):
-    r"""ResNet-34 model from
-    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`
-    """
-    model = ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
-    checkpoint = paddle.load("/home/aistudio/data/data178535/r34mp_paddle.pdparams")
-    model.load_dict(checkpoint)
-    return model
-
-
-def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
-    """3x3 convolution with padding"""
-    return nn.Conv2D(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=dilation, groups=groups, bias_attr=False, dilation=dilation,
-                     weight_attr=nn.initializer.KaimingNormal())
-
-
-def conv1x1(in_planes, out_planes, stride=1):
-    """1x1 convolution"""
-    return nn.Conv2D(in_planes, out_planes, kernel_size=1, stride=stride, bias_attr=False,
-    weight_attr=nn.initializer.KaimingNormal())
 
 
 def conv_up_psp(in_channels, out_channels, up_sample):

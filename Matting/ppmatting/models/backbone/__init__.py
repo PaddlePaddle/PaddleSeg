@@ -4,3 +4,4 @@ from .resnet_vd import *
 from .vgg import *
 from .gca_enc import *
 from .stdcnet import *
+from .resnet_mp import *
