@@ -82,7 +82,7 @@ class MattingDataset(paddle.io.Dataset):
         if mode == 'train' or mode == 'trainval':
             if train_file is None:
                 raise ValueError(
-                    "When `mode` is 'train' or 'trainval', `train_file must be provided!"
+                    "When `mode` is 'train' or 'trainval', `train_file` must be provided!"
                 )
             if isinstance(train_file, str):
                 train_file = [train_file]
@@ -91,7 +91,7 @@ class MattingDataset(paddle.io.Dataset):
         if mode == 'val' or mode == 'trainval':
             if val_file is None:
                 raise ValueError(
-                    "When `mode` is 'val' or 'trainval', `val_file must be provided!"
+                    "When `mode` is 'val' or 'trainval', `val_file` must be provided!"
                 )
             if isinstance(val_file, str):
                 val_file = [val_file]
