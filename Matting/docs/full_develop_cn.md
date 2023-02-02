@@ -100,48 +100,6 @@ python tools/train.py --help
 ```
 如需使用多卡，请用`python -m paddle.distributed.launch`进行启动
 
-## 微调
-如果想利用预训练模型进行微调（finetune），可以在配置文件中添加model.pretained字段，内容为预训练模型权重文件的URL地址或本地路径。下面以使用官方提供的PP-MattingV2模型进行微调为例进行说明。
-
-首先进行预训练模型的下载。
-下载[模型库](../README_CN.md/#模型库)中的预训练模型并放置于pretrained_models目录下。
-```shell
-mkdir pretrained_models && cd pretrained_models
-wget https://paddleseg.bj.bcebos.com/matting/models/ppmattingv2-stdc1-human_512.pdparams
-cd ..
-```
-然后修改配置文件中的`train_dataset.dataset_root`、`val_dataset.dataset_root`、`model.pretrained`等字段，可适当降低学习率，其余字段保持不变即可。
-```yaml
-train_dataset:
-  type: MattingDataset
-  dataset_root: path/to/your/dataset # 自定义数据集路径
-  mode: train
-
-val_dataset:
-  type: MattingDataset
-  dataset_root: path/to/your/dataset # 自定义数据集路径
-  mode: val
-
-model:
-  type: PPMattingV2
-  backbone:
-    type: STDC1
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
-  decoder_channels: [128, 96, 64, 32, 16]
-  head_channel: 8
-  dpp_output_channel: 256
-  dpp_merge_type: add
-  pretrained: pretrained_models/ppmattingv2-stdc1-human_512.pdparams # 刚刚下载的预训练模型文件
-lr_scheduler:
-  type: PolynomialDecay
-  learning_rate: 0.001  # 可适当降低学习率
-  end_lr: 0
-  power: 0.9
-  warmup_iters: 1000
-  warmup_start_lr: 1.0e-5
-```
-接下来即可参考`训练`章节内容进行模型微调训练。
-
 ## 评估
 ```shell
 export CUDA_VISIBLE_DEVICES=0

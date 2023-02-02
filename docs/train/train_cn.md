@@ -78,7 +78,7 @@ python -m paddle.distributed.launch tools/train.py \
        --save_dir output
 ```
 
-## 3、恢复训练
+## 3、恢复训练：
 
 如果训练中断，我们可以恢复训练，避免从头开始训练。
 
@@ -98,19 +98,7 @@ python tools/train.py \
 
 单卡和多卡训练都采用相同的方法设置`resume_model`输入参数，即可恢复训练。
 
-## 4、模型微调
-如果想利用预训练模型进行微调（finetune），可以在配置文件中添加`model.pretained`字段，内容为预训练模型权重文件的URL地址或本地路径。
-```yaml
-model:
-  type: FCN
-  backbone:
-    type: HRNet_W18
-    pretrained: pretrained_model/hrnet_w18_ssld 
-  num_classes: 19
-  pretrained: FCN_pretrained.pdparams # 预训练模型权重文件的URL地址或本地路径
-```
-
-## 5、训练可视化
+## 4、训练可视化
 
 为了直观显示模型的训练过程，对训练过程进行分析从而快速的得到更好的模型，飞桨提供了可视化分析工具：VisualDL。
 

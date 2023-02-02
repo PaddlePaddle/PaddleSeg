@@ -101,47 +101,6 @@ python tools/train.py --help
 ```
 If you want to use multiple GPUs，please use `python -m paddle.distributed.launch` to run.
 
-## Finetune
-If you want to finetune from a pretrained model, you can set the `model.pretrained` field in config file, whose content is the URL or filepath of the pretrained model weights.Here we use the official PP-MattingV2 pretrained model for finetuning as an example.
-
-First, download the pretrained model in [Models](../README.md/#Models) to `pretrained_models`.
-```shell
-mkdir pretrained_models && cd pretrained_models
-wget https://paddleseg.bj.bcebos.com/matting/models/ppmattingv2-stdc1-human_512.pdparams
-cd ..
-```
-Then modify the `train_dataset.dataset_root`, `val_dataset.dataset_root`, `model.pretrained` fields in the config file, meanwhile the lr is recommended to be reduced, and you can leave the rest of the config file unchanged.
-```yaml
-train_dataset:
-  type: MattingDataset
-  dataset_root: path/to/your/dataset # Path to your own dataset
-  mode: train
-
-val_dataset:
-  type: MattingDataset
-  dataset_root: path/to/your/dataset # Path to your own dataset
-  mode: val
-
-model:
-  type: PPMattingV2
-  backbone:
-    type: STDC1
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
-  decoder_channels: [128, 96, 64, 32, 16]
-  head_channel: 8
-  dpp_output_channel: 256
-  dpp_merge_type: add
-  pretrained: pretrained_models/ppmattingv2-stdc1-human_512.pdparams # The pretrained model file just downloaded
-lr_scheduler:
-  type: PolynomialDecay
-  learning_rate: 0.001  # lr is recommended to be reduced
-  end_lr: 0
-  power: 0.9
-  warmup_iters: 1000
-  warmup_start_lr: 1.0e-5
-```
-Finally, you can finetune the model with your dataset following the instructions in `Training`.
-
 ## Evaluation
 ```shell
 export CUDA_VISIBLE_DEVICES=0
