@@ -11,7 +11,7 @@ from paddleseg.models.backbones.transformer_utils import *
 
 
 class PadHelper:
-    """ "Make the size of feature map divisible by local group size."""
+    """ Make the size of feature map divisible by local group size."""
 
     def __init__(self, local_group_size=7):
         self.lgs = local_group_size
@@ -39,7 +39,7 @@ class PadHelper:
 
 
 class LocalPermuteHelper:
-    """ "Permute the feature map to gather pixels in local groups, and the reverse permutation"""
+    """ Permute the feature map to gather pixels in local groups, and the reverse permutation."""
 
     def __init__(self, local_group_size=7):
         self.lgs = local_group_size
@@ -72,7 +72,7 @@ class LocalPermuteHelper:
 
 
 class MHA_(nn.MultiHeadAttention):
-    """ "Multihead Attention with extra flags on the q/k/v and out projections."""
+    """ Multihead Attention with extra flags on the q/k/v and out projections."""
 
     # bias_k: Optional[paddle.Tensor]
     # bias_v: Optional[paddle.Tensor]
@@ -213,9 +213,7 @@ class MHA_(nn.MultiHeadAttention):
         attn_output_weights = paddle.bmm(q, k.transpose([0, 2, 1]))
         assert list(attn_output_weights.
                     shape) == [bsz * self.num_heads, tgt_len, src_len]
-        """
-        Add relative position embedding
-        """
+        """ Add relative position embedding."""
         if self.rpe and rpe:
             # NOTE: for simplicity, we assume the src_len == tgt_len == window_size**2 here
             assert (
@@ -234,9 +232,7 @@ class MHA_(nn.MultiHeadAttention):
             ]) + relative_position_bias.unsqueeze(0)
             attn_output_weights = attn_output_weights.reshape(
                 [bsz * self.num_heads, tgt_len, src_len])
-        """
-        Attention weight for the invalid region is -inf
-        """
+        """ Attention weight for the invalid region is -inf."""
         if attn_mask is not None:
             if attn_mask.dtype == paddle.bool:
                 attn_output_weights.masked_fill_(attn_mask, float("-inf"))
@@ -251,10 +247,7 @@ class MHA_(nn.MultiHeadAttention):
                 float("-inf"), )
             attn_output_weights = attn_output_weights.reshape(
                 [bsz * self.num_heads, tgt_len, src_len])
-        """
-        Reweight the attention map before softmax().
-        attn_output_weights: (b*n_head, n, hw)
-        """
+
         attn_output_weights = F.softmax(attn_output_weights, axis=-1)
         attn_output_weights = F.dropout(
             attn_output_weights, p=self.dropout, training=self.training)
@@ -281,13 +274,9 @@ class MHA_(nn.MultiHeadAttention):
 class InterlacedPoolAttention(nn.Layer):
     r""" interlaced sparse multi-head self attention (ISA) module with relative position bias.
     Args:
-        dim (int): Number of input channels.
-        window_size (tuple[int]): Window size.
+        embed_dim (int): Number of input channels.
         num_heads (int): Number of attention heads.
-        qkv_bias (bool, optional):  If True, add a learnable bias to query, key, value. Default: True
-        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set
-        attn_drop (float, optional): Dropout ratio of attention weight. Default: 0.0
-        proj_drop (float, optional): Dropout ratio of output. Default: 0.0
+        window_size (tuple[int]): Window size.
     """
 
     def __init__(self, embed_dim, num_heads, window_size=7, rpe=True, **kwargs):
@@ -344,7 +333,7 @@ class MlpDWBN(nn.Layer):
         self.act3 = act_layer()
 
     def forward(self, x, H, W):
-        if len(x.shape) == 3:
+        if x.dim() == 3:
             B, N, C = x.shape
             if N == (H * W + 1):
                 cls_tokens = x[:, 0, :]
@@ -365,7 +354,7 @@ class MlpDWBN(nn.Layer):
                 x = x_
             return x
 
-        elif len(x.shape) == 4:
+        elif x.dim() == 4:
             x = self.fc1(x)
             x = self.act1(x)
             x = self.dw3x3(x)
@@ -375,7 +364,7 @@ class MlpDWBN(nn.Layer):
             return x
 
         else:
-            raise RuntimeError("Unsupported input shape: {}".format(x.shape))
+            raise RuntimeError(f"Unsupported input shape: {x.shape}")
 
 
 class Bottleneck(nn.Layer):
