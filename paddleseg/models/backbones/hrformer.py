@@ -71,7 +71,7 @@ class LocalPermuteHelper:
         return x
 
 
-class MHA_(nn.MultiHeadAttention):
+class Attention(nn.MultiHeadAttention):
     """ Multihead Attention with extra flags on the q/k/v and out projections."""
 
     # bias_k: Optional[paddle.Tensor]
@@ -286,7 +286,7 @@ class InterlacedPoolAttention(nn.Layer):
         self.num_heads = num_heads
         self.window_size = window_size
         self.with_rpe = rpe
-        self.attn = MHA_(
+        self.attn = Attention(
             embed_dim, num_heads, rpe=rpe, window_size=window_size, **kwargs)
         self.pad_helper = PadHelper(window_size)
         self.permute_helper = LocalPermuteHelper(window_size)
