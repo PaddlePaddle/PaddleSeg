@@ -1,6 +1,4 @@
 import math
-import warnings
-from functools import partial
 
 import paddle
 import paddle.nn as nn
@@ -8,18 +6,18 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
-from paddleseg.utils import utils
+from paddleseg.utils import utils, logger
 from paddleseg.models.backbones.transformer_utils import *
 
 
-class PadBlock:
+class PadHelper:
     """ "Make the size of feature map divisible by local group size."""
 
     def __init__(self, local_group_size=7):
         self.lgs = local_group_size
         if not isinstance(self.lgs, (tuple, list)):
             self.lgs = to_2tuple(self.lgs)
-        assert len(self.lgs) == 2
+        assert len(self.lgs) == 2, "The length of self.lgs must be 2."
 
     def pad_if_needed(self, x, size):
         n, h, w, c = size
@@ -40,14 +38,14 @@ class PadBlock:
         return x
 
 
-class LocalPermuteModule:
+class LocalPermuteHelper:
     """ "Permute the feature map to gather pixels in local groups, and the reverse permutation"""
 
     def __init__(self, local_group_size=7):
         self.lgs = local_group_size
         if not isinstance(self.lgs, (tuple, list)):
             self.lgs = to_2tuple(self.lgs)
-        assert len(self.lgs) == 2
+        assert len(self.lgs) == 2, "The length of self.lgs must be 2."
 
     def permute(self, x, size):
         n, h, w, c = size
@@ -73,199 +71,20 @@ class LocalPermuteModule:
         return x
 
 
-class MultiheadAttention(nn.Layer):
-    def __init__(
-            self,
-            embed_dim,
-            num_heads,
-            dropout=0.0,
-            bias=True,
-            add_zero_attn=False,
-            kdim=None,
-            vdim=None, ):
-        super(MultiheadAttention, self).__init__()
-        self.embed_dim = embed_dim
-        self.kdim = kdim if kdim is not None else embed_dim
-        self.vdim = vdim if vdim is not None else embed_dim
-        self.num_heads = num_heads
-        self.dropout = dropout
-        self.head_dim = embed_dim // num_heads
-        assert (self.head_dim * num_heads == self.embed_dim
-                ), "embed_dim must be divisible by num_heads"
-
-        self.k_proj = nn.Linear(self.kdim, embed_dim, bias_attr=bias)
-        self.v_proj = nn.Linear(self.vdim, embed_dim, bias_attr=bias)
-        self.q_proj = nn.Linear(embed_dim, embed_dim, bias_attr=bias)
-        self.out_proj = nn.Linear(embed_dim, embed_dim)
-
-        self.in_proj_bias = None
-        self.in_proj_weight = None
-        self.bias_k = self.bias_v = None
-        self.q_proj_weight = None
-        self.k_proj_weight = None
-        self.v_proj_weight = None
-        self.add_zero_attn = add_zero_attn
-
-    def forward(self,
-                query,
-                key,
-                value,
-                key_padding_mask=None,
-                need_weights=False,
-                attn_mask=None,
-                residual_attn=None):
-
-        tgt_len, bsz, embed_dim = query.shape
-
-        assert key.shape[0] == value.shape[0] and key.shape[1] == value.shape[1]
-
-        # The number of head should be equal to the matmul between embed_dim and num_heads
-        head_dim = embed_dim // self.num_heads
-        v_head_dim = self.vdim // self.num_heads
-        assert (head_dim * self.num_heads == embed_dim
-                ), "embed_dim must be divisible by num_heads"
-
-        scaling = float(head_dim)**-0.5
-
-        q = self.q_proj(query) * scaling
-        k = self.k_proj(key)
-        v = self.v_proj(value)
-
-        if attn_mask is not None:
-            assert (
-                attn_mask.dtype == paddle.float32 or
-                attn_mask.dtype == paddle.float64 or
-                attn_mask.dtype == paddle.float16 or
-                attn_mask.dtype == paddle.uint8 or
-                attn_mask.dtype == paddle.bool
-            ), "Only float, byte, and bool types are supported for attn_mask, not {}".format(
-                attn_mask.dtype)
-            if attn_mask.dtype == paddle.uint8:
-                warnings.warn(
-                    "Byte tensor for attn_mask in nn.MultiheadAttention is deprecated. Use bool tensor instead."
-                )
-                attn_mask = attn_mask.to(paddle.bool)
-
-            # The dim of attn_mask shoule be 2 or 3
-            if attn_mask.dim() == 2:
-                attn_mask = attn_mask.unsqueeze(0)
-                if list(attn_mask.shape) != [1, query.shape[0], key.shape[0]]:
-                    raise RuntimeError(
-                        "The size of the 2D attn_mask is not correct.")
-            elif attn_mask.dim() == 3:
-                if list(attn_mask.shape) != [
-                        bsz * self.num_heads,
-                        query.shape[0],
-                        key.shape[0],
-                ]:
-                    raise RuntimeError(
-                        "The size of the 3D attn_mask is not correct.")
-            else:
-                raise RuntimeError("attn_mask's dimension {} is not supported".
-                                   format(attn_mask.dim()))
-
-        # convert ByteTensor key_padding_mask to bool
-        if key_padding_mask is not None and key_padding_mask.dtype == paddle.uint8:
-            warnings.warn(
-                "Byte tensor for key_padding_mask in nn.MultiheadAttention is deprecated. Use bool tensor instead."
-            )
-            key_padding_mask = key_padding_mask.to(paddle.bool)
-
-        q = q.reshape([tgt_len, bsz * self.num_heads, head_dim]).transpose(
-            [1, 0, 2])
-        if k is not None:
-            k = k.reshape([-1, bsz * self.num_heads, head_dim]).transpose(
-                [1, 0, 2])
-        if v is not None:
-            v = v.reshape([-1, bsz * self.num_heads, v_head_dim]).transpose(
-                [1, 0, 2])
-
-        src_len = k.shape[1]
-
-        if key_padding_mask is not None:
-            assert key_padding_mask.shape[0] == bsz
-            assert key_padding_mask.shape[1] == src_len
-
-        if self.add_zero_attn:
-            src_len += 1
-            k = paddle.concat(
-                [
-                    k, paddle.zeros(
-                        (k.shape[0], 1) + k.shape[2:], dtype=k.dtype)
-                ],
-                axis=1)
-            v = paddle.concat(
-                [
-                    v, paddle.zeros(
-                        (v.shape[0], 1) + v.shape[2:], dtype=v.dtype)
-                ],
-                axis=1)
-            if attn_mask is not None:
-                attn_mask = F.pad(attn_mask, (0, 1))
-            if key_padding_mask is not None:
-                key_padding_mask = F.pad(key_padding_mask, (0, 1))
-
-        attn_output_weights = paddle.bmm(q, k.transpose([0, 2, 1]))
-
-        assert list(attn_output_weights.
-                    shape) == [bsz * self.num_heads, tgt_len, src_len]
-        """
-        Attention weight for the invalid region is -inf
-        """
-        if attn_mask is not None:
-            if attn_mask.dtype == paddle.bool:
-                attn_output_weights.masked_fill_(attn_mask, float("-inf"))
-            else:
-                attn_output_weights += attn_mask
-
-        if key_padding_mask is not None:
-            attn_output_weights = attn_output_weights.reshape(
-                [bsz, self.num_heads, tgt_len, src_len])
-            attn_output_weights = attn_output_weights.masked_fill(
-                key_padding_mask.unsqueeze(1).unsqueeze(2),
-                float("-inf"), )
-            attn_output_weights = attn_output_weights.reshape(
-                [bsz * self.num_heads, tgt_len, src_len])
-
-        if residual_attn is not None:
-            attn_output_weights = attn_output_weights.reshape(
-                [bsz, self.num_heads, tgt_len, src_len])
-            attn_output_weights += residual_attn.unsqueeze(0)
-            attn_output_weights = attn_output_weights.reshape(
-                [bsz * self.num_heads, tgt_len, src_len])
-        """
-        Reweight the attention map before softmax().
-        attn_output_weights: (b*n_head, n, hw)
-        """
-        attn_output_weights = F.softmax(attn_output_weights, axis=-1)
-        attn_output_weights = F.dropout(
-            attn_output_weights, p=self.dropout, training=self.training)
-
-        attn_output = paddle.bmm(attn_output_weights, v)
-        assert list(
-            attn_output.shape) == [bsz * self.num_heads, tgt_len, v_head_dim]
-        attn_output = (
-            attn_output.transpose([1, 0, 2]).reshape([tgt_len, bsz, self.vdim]))
-        attn_output = F.linear(attn_output, self.out_proj.weight,
-                               self.out_proj.bias)
-
-        if need_weights:
-            # average attention weights over heads
-            attn_output_weights = attn_output_weights.reshape(
-                [bsz, self.num_heads, tgt_len, src_len])
-            return attn_output, attn_output_weights.sum(axis=1) / self.num_heads
-        else:
-            return attn_output
-
-
-class MHA_(MultiheadAttention):
+class MHA_(nn.MultiHeadAttention):
     """ "Multihead Attention with extra flags on the q/k/v and out projections."""
 
-    # bias_k: Optional[torch.Tensor]
+    # bias_k: Optional[paddle.Tensor]
     # bias_v: Optional[paddle.Tensor]
 
-    def __init__(self, *args, rpe=False, window_size=7, **kwargs):
-        super(MHA_, self).__init__(*args, **kwargs)
+    def __init__(self,
+                 *args,
+                 add_zero_attn=None,
+                 rpe=False,
+                 window_size=7,
+                 **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_zero_attn = add_zero_attn
 
         self.rpe = rpe
         if rpe:
@@ -277,7 +96,6 @@ class MHA_(MultiheadAttention):
                 shape=parameter_value.shape,
                 dtype=str(parameter_value.numpy().dtype),
                 default_initializer=nn.initializer.Assign(parameter_value))
-            # 2*Wh-1 * 2*Ww-1, nH
 
             # get pair-wise relative position index for each token inside the window
             coords_h = paddle.arange(self.window_size[0])
@@ -324,18 +142,15 @@ class MHA_(MultiheadAttention):
         v = self.v_proj(value) if do_qkv_proj else value
 
         if attn_mask is not None:
-            assert (
-                attn_mask.dtype == paddle.float32 or
-                attn_mask.dtype == paddle.float64 or
-                attn_mask.dtype == paddle.float16 or
-                attn_mask.dtype == paddle.uint8 or
-                attn_mask.dtype == paddle.bool
-            ), "Only float, byte, and bool types are supported for attn_mask, not {}".format(
-                attn_mask.dtype)
+            dtype_lst = [
+                paddle.float32, paddle.float64, paddle.float16, paddle.uint8,
+                paddle.bool
+            ]
+            assert attn_mask.dtype in dtype_lst, \
+                f"Only float, byte, and bool types are supported for attn_mask, not {attn_mask.dtype}"
             if attn_mask.dtype == paddle.uint8:
-                warnings.warn(
-                    "Byte tensor for attn_mask in nn.MultiheadAttention is deprecated. Use bool tensor instead."
-                )
+                msg = "Byte tensor for attn_mask in nn.MultiheadAttention is deprecated. Use bool tensor instead."
+                logger.warning(msg)
                 attn_mask = attn_mask.to(paddle.bool)
 
             if attn_mask.dim() == 2:
@@ -344,32 +159,30 @@ class MHA_(MultiheadAttention):
                     raise RuntimeError(
                         "The size of the 2D attn_mask is not correct.")
             elif attn_mask.dim() == 3:
-                if list(attn_mask.shape) != [
-                        bsz * self.num_heads,
-                        query.shape[0],
-                        key.shape[0],
+                if attn_mask.shape != [
+                        bsz * self.num_heads, query.shape[0], key.shape[0]
                 ]:
+
                     raise RuntimeError(
                         "The size of the 3D attn_mask is not correct.")
             else:
-                raise RuntimeError("attn_mask's dimension {} is not supported".
-                                   format(attn_mask.dim()))
+                raise RuntimeError(
+                    f"attn_mask's dimension {attn_mask.dim()} is not supported")
 
         # convert ByteTensor key_padding_mask to bool
         if key_padding_mask is not None and key_padding_mask.dtype == paddle.uint8:
-            warnings.warn(
-                "Byte tensor for key_padding_mask in nn.MultiheadAttention is deprecated. Use bool tensor instead."
-            )
+            msg = "Byte tensor for key_padding_mask in nn.MultiheadAttention is deprecated. Use bool tensor instead."
+            logger.warning(msg)
             key_padding_mask = key_padding_mask.to(paddle.bool)
 
-        q = q.reshape([tgt_len, bsz * self.num_heads, head_dim]).transpose(
-            [1, 0, 2])
+        q = q.reshape([tgt_len, bsz * self.num_heads,
+                       head_dim]).transpose([1, 0, 2])
         if k is not None:
-            k = k.reshape([-1, bsz * self.num_heads, head_dim]).transpose(
-                [1, 0, 2])
+            k = k.reshape([-1, bsz * self.num_heads,
+                           head_dim]).transpose([1, 0, 2])
         if v is not None:
-            v = v.reshape([-1, bsz * self.num_heads, v_head_dim]).transpose(
-                [1, 0, 2])
+            v = v.reshape([-1, bsz * self.num_heads,
+                           v_head_dim]).transpose([1, 0, 2])
 
         src_len = k.shape[1]
 
@@ -486,13 +299,12 @@ class InterlacedPoolAttention(nn.Layer):
         self.with_rpe = rpe
         self.attn = MHA_(
             embed_dim, num_heads, rpe=rpe, window_size=window_size, **kwargs)
-        self.pad_helper = PadBlock(window_size)
-        self.permute_helper = LocalPermuteModule(window_size)
+        self.pad_helper = PadHelper(window_size)
+        self.permute_helper = LocalPermuteHelper(window_size)
 
     def forward(self, x, H, W, **kwargs):
         B, N, C = x.shape
         x = x.reshape([B, H, W, C])
-        # attention
         # pad
         x_pad = self.pad_helper.pad_if_needed(x, x.shape)
         # permute
@@ -516,21 +328,20 @@ class MlpDWBN(nn.Layer):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        self.fc1 = nn.Conv2D(in_features, hidden_features, kernel_size=1)
+
         self.act1 = act_layer()
-        self.norm1 = nn.SyncBatchNorm(hidden_features)
-        self.dw3x3 = nn.Conv2D(
+        self.fc1 = layers.ConvBN(in_features, hidden_features, kernel_size=1)
+        self.act2 = dw_act_layer()
+        self.dw3x3 = layers.ConvBN(
             hidden_features,
             hidden_features,
             kernel_size=3,
             stride=1,
             groups=hidden_features,
-            padding=1, )
-        self.act2 = dw_act_layer()
-        self.norm2 = nn.SyncBatchNorm(hidden_features)
-        self.fc2 = nn.Conv2D(hidden_features, out_features, kernel_size=1)
+            padding=1)
+
+        self.fc2 = layers.ConvBN(hidden_features, out_features, kernel_size=1)
         self.act3 = act_layer()
-        self.norm3 = nn.SyncBatchNorm(out_features)
 
     def forward(self, x, H, W):
         if len(x.shape) == 3:
@@ -542,13 +353,10 @@ class MlpDWBN(nn.Layer):
                 x_ = x.transpose([0, 2, 1]).reshape([B, C, H, W])
 
             x_ = self.fc1(x_)
-            x_ = self.norm1(x_)
             x_ = self.act1(x_)
             x_ = self.dw3x3(x_)
-            x_ = self.norm2(x_)
             x_ = self.act2(x_)
             x_ = self.fc2(x_)
-            x_ = self.norm3(x_)
             x_ = self.act3(x_)
             x_ = x_.reshape([B, C, -1]).transpose([0, 2, 1])
             if N == (H * W + 1):
@@ -559,13 +367,10 @@ class MlpDWBN(nn.Layer):
 
         elif len(x.shape) == 4:
             x = self.fc1(x)
-            x = self.norm1(x)
             x = self.act1(x)
             x = self.dw3x3(x)
-            x = self.norm2(x)
             x = self.act2(x)
             x = self.fc2(x)
-            x = self.norm3(x)
             x = self.act3(x)
             return x
 
@@ -578,19 +383,17 @@ class Bottleneck(nn.Layer):
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(Bottleneck, self).__init__()
-        self.conv1 = nn.Conv2D(inplanes, planes, kernel_size=1, bias_attr=False)
-        self.bn1 = nn.SyncBatchNorm(planes)
-        self.conv2 = nn.Conv2D(
+        self.conv1 = layers.ConvBNReLU(
+            inplanes, planes, kernel_size=1, bias_attr=False)
+        self.conv2 = layers.ConvBNReLU(
             planes,
             planes,
             kernel_size=3,
             stride=stride,
             padding=1,
             bias_attr=False)
-        self.bn2 = nn.SyncBatchNorm(planes)
-        self.conv3 = nn.Conv2D(
+        self.conv3 = layers.ConvBN(
             planes, planes * self.expansion, kernel_size=1, bias_attr=False)
-        self.bn3 = nn.SyncBatchNorm(planes * self.expansion)
         self.relu = nn.ReLU()
         self.downsample = downsample
         self.stride = stride
@@ -599,15 +402,10 @@ class Bottleneck(nn.Layer):
         residual = x
 
         out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
 
         out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
 
         out = self.conv3(out)
-        out = self.bn3(out)
 
         if self.downsample is not None:
             residual = self.downsample(x)
@@ -692,8 +490,8 @@ class HighResolutionTransformerModule(nn.Layer):
         num_sr_ratios: the spatial reduction ratios of PVT/SRA scheme.
             - reference: ``Pyramid Vision Transformer: A Versatile Backbone for Dense Prediction without Convolutions''
         """
-        super(HighResolutionTransformerModule, self).__init__()
-        self._check_branches(num_branches, blocks, num_blocks, num_inchannels,
+        super().__init__()
+        self._check_branches(num_branches, num_blocks, num_inchannels,
                              num_channels)
 
         self.num_inchannels = num_inchannels
@@ -716,24 +514,25 @@ class HighResolutionTransformerModule(nn.Layer):
         self.num_window_sizes = num_window_sizes
         self.num_mlp_ratios = num_mlp_ratios
 
-    def _check_branches(self, num_branches, blocks, num_blocks, num_inchannels,
+    def _check_branches(self, num_branches, num_blocks, num_inchannels,
                         num_channels):
+
         if num_branches != len(num_blocks):
-            error_msg = "NUM_BRANCHES({}) <> NUM_BLOCKS({})".format(
-                num_branches, len(num_blocks))
-            # Log.error(error_msg)
+            error_msg = f"The num_branches {num_branches} is not equal\
+                to the length of num_blocks {len(num_blocks)}"
+
             raise ValueError(error_msg)
 
         if num_branches != len(num_channels):
-            error_msg = "NUM_BRANCHES({}) <> NUM_CHANNELS({})".format(
-                num_branches, len(num_channels))
-            # Log.error(error_msg)
+            error_msg = f"The num_branches {num_branches} is not equal\
+                to the length of num_channels {len(num_channels)}"
+
             raise ValueError(error_msg)
 
         if num_branches != len(num_inchannels):
-            error_msg = "NUM_BRANCHES({}) <> NUM_INCHANNELS({})".format(
-                num_branches, len(num_inchannels))
-            # Log.error(error_msg)
+            error_msg = f"The num_branches {num_branches} is not equal\
+                to the length of num_inchannels {len(num_inchannels)}"
+
             raise ValueError(error_msg)
 
     def _make_one_branch(self, branch_index, block, num_blocks, num_channels,
@@ -801,15 +600,14 @@ class HighResolutionTransformerModule(nn.Layer):
                 if j > i:
                     fuse_layer.append(
                         nn.Sequential(
-                            nn.Conv2D(
+                            layers.ConvBN(
                                 num_inchannels[j],
                                 num_inchannels[i],
                                 kernel_size=1,
                                 stride=1,
                                 bias_attr=False, ),
-                            nn.SyncBatchNorm(num_inchannels[i]),
                             nn.Upsample(
-                                scale_factor=2**(j - i), mode="nearest"), ))
+                                scale_factor=2**(j - i), mode="nearest")))
                 elif j == i:
                     fuse_layer.append(None)
                 else:
@@ -819,44 +617,38 @@ class HighResolutionTransformerModule(nn.Layer):
                             num_outchannels_conv3x3 = num_inchannels[i]
                             conv3x3s.append(
                                 nn.Sequential(
-                                    nn.Conv2D(
+                                    layers.ConvBN(
                                         num_inchannels[j],
                                         num_inchannels[j],
                                         kernel_size=3,
                                         stride=2,
                                         padding=1,
                                         groups=num_inchannels[j],
-                                        bias_attr=False, ),
-                                    nn.SyncBatchNorm(num_inchannels[j]),
-                                    nn.Conv2D(
+                                        bias_attr=False),
+                                    layers.ConvBN(
                                         num_inchannels[j],
                                         num_outchannels_conv3x3,
                                         kernel_size=1,
                                         stride=1,
-                                        bias_attr=False, ),
-                                    nn.SyncBatchNorm(num_outchannels_conv3x3),
-                                ))
+                                        bias_attr=False)))
                         else:
                             num_outchannels_conv3x3 = num_inchannels[j]
                             conv3x3s.append(
                                 nn.Sequential(
-                                    nn.Conv2D(
+                                    layers.ConvBN(
                                         num_inchannels[j],
                                         num_inchannels[j],
                                         kernel_size=3,
                                         stride=2,
                                         padding=1,
                                         groups=num_inchannels[j],
-                                        bias_attr=False, ),
-                                    nn.SyncBatchNorm(num_inchannels[j]),
-                                    nn.Conv2D(
+                                        bias_attr=False),
+                                    layers.ConvBNReLU(
                                         num_inchannels[j],
                                         num_outchannels_conv3x3,
                                         kernel_size=1,
                                         stride=1,
-                                        bias_attr=False, ),
-                                    nn.SyncBatchNorm(num_outchannels_conv3x3),
-                                    nn.ReLU(), ))
+                                        bias_attr=False)))
                     fuse_layer.append(nn.Sequential(*conv3x3s))
             fuse_layers.append(nn.LayerList(fuse_layer))
 
@@ -946,18 +738,17 @@ class HighResolutionTransformer(nn.Layer):
         self.stage4_num_mlp_ratios = stage4_num_mlp_ratios
         self.stage4_num_window_sizes = stage4_num_window_sizes
 
-        self.conv1 = nn.Conv2D(
+        self.conv1 = layers.ConvBNReLU(
             in_channels,
             64,
             kernel_size=3,
             stride=2,
             padding=1,
             bias_attr=False)
-        self.bn1 = nn.SyncBatchNorm(64)
-        self.conv2 = nn.Conv2D(
+
+        self.conv2 = layers.ConvBNReLU(
             64, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
-        self.bn2 = nn.SyncBatchNorm(64)
-        self.relu = nn.ReLU()
+
         self.feat_channels = [sum(self.stage4_num_channels)]
 
         depth_s2 = self.stage2_num_blocks[0] * self.stage2_num_modules
@@ -1050,15 +841,13 @@ class HighResolutionTransformer(nn.Layer):
                 if num_channels_cur_layer[i] != num_channels_pre_layer[i]:
                     transition_layers.append(
                         nn.Sequential(
-                            nn.Conv2D(
+                            layers.ConvBNReLU(
                                 num_channels_pre_layer[i],
                                 num_channels_cur_layer[i],
-                                3,
-                                1,
-                                1,
-                                bias_attr=False, ),
-                            nn.SyncBatchNorm(num_channels_cur_layer[i]),
-                            nn.ReLU(), ))
+                                kernel_size=3,
+                                stride=1,
+                                padding=1,
+                                bias_attr=False)))
                 else:
                     transition_layers.append(None)
             else:
@@ -1069,15 +858,13 @@ class HighResolutionTransformer(nn.Layer):
                                    if j == i - num_branches_pre else inchannels)
                     conv3x3s.append(
                         nn.Sequential(
-                            nn.Conv2D(
+                            layers.ConvBNReLU(
                                 inchannels,
                                 outchannels,
-                                3,
-                                2,
-                                1,
-                                bias_attr=False),
-                            nn.SyncBatchNorm(outchannels),
-                            nn.ReLU(), ))
+                                kernel_size=3,
+                                stride=2,
+                                padding=1,
+                                bias_attr=False)))
                 transition_layers.append(nn.Sequential(*conv3x3s))
 
         return nn.LayerList(transition_layers)
@@ -1094,17 +881,16 @@ class HighResolutionTransformer(nn.Layer):
         downsample = None
         if stride != 1 or inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2D(
+                layers.ConvBN(
                     inplanes,
                     planes * block.expansion,
                     kernel_size=1,
                     stride=stride,
-                    bias_attr=False, ),
-                nn.SyncBatchNorm(planes * block.expansion), )
-        layers = []
+                    bias_attr=False))
+        modules = []
 
         if isinstance(block, GeneralTransformerBlock):
-            layers.append(
+            modules.append(
                 block(
                     inplanes,
                     planes,
@@ -1112,13 +898,13 @@ class HighResolutionTransformer(nn.Layer):
                     window_size,
                     mlp_ratio, ))
         else:
-            layers.append(block(inplanes, planes, stride, downsample))
+            modules.append(block(inplanes, planes, stride, downsample))
 
         inplanes = planes * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(inplanes, planes))
+            modules.append(block(inplanes, planes))
 
-        return nn.Sequential(*layers)
+        return nn.Sequential(*modules)
 
     def _make_stage(self,
                     block,
@@ -1177,11 +963,7 @@ class HighResolutionTransformer(nn.Layer):
 
     def forward(self, x):
         x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
         x = self.conv2(x)
-        x = self.bn2(x)
-        x = self.relu(x)
         x = self.layer1(x)
 
         x_list = []
