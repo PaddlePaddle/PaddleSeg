@@ -83,9 +83,9 @@ class Attention(nn.MultiHeadAttention):
                  rpe=False,
                  window_size=7,
                  **kwargs):
-        super().__init__(*args, **kwargs)
-        self.add_zero_attn = add_zero_attn
+        super(Attention, self).__init__(*args, **kwargs)
 
+        self.add_zero_attn = add_zero_attn
         self.rpe = rpe
         if rpe:
             self.window_size = [window_size] * 2
@@ -149,7 +149,7 @@ class Attention(nn.MultiHeadAttention):
             assert attn_mask.dtype in dtype_lst, \
                 f"Only float, byte, and bool types are supported for attn_mask, not {attn_mask.dtype}"
             if attn_mask.dtype == paddle.uint8:
-                msg = "Byte tensor for attn_mask in nn.MultiheadAttention is deprecated. Use bool tensor instead."
+                msg = "Byte tensor for attn_mask in nn.MultiHeadAttention is deprecated. Use bool tensor instead."
                 logger.warning(msg)
                 attn_mask = attn_mask.to(paddle.bool)
 
@@ -171,7 +171,7 @@ class Attention(nn.MultiHeadAttention):
 
         # convert ByteTensor key_padding_mask to bool
         if key_padding_mask is not None and key_padding_mask.dtype == paddle.uint8:
-            msg = "Byte tensor for key_padding_mask in nn.MultiheadAttention is deprecated. Use bool tensor instead."
+            msg = "Byte tensor for key_padding_mask in nn.MultiHeadAttention is deprecated. Use bool tensor instead."
             logger.warning(msg)
             key_padding_mask = key_padding_mask.to(paddle.bool)
 
@@ -272,11 +272,12 @@ class Attention(nn.MultiHeadAttention):
 
 
 class InterlacedPoolAttention(nn.Layer):
-    r""" interlaced sparse multi-head self attention (ISA) module with relative position bias.
+    """ Interlaced sparse multi-head self attention module with relative position bias.
     Args:
         embed_dim (int): Number of input channels.
         num_heads (int): Number of attention heads.
-        window_size (tuple[int]): Window size.
+        window_size (int, optional): Window size. Default: 7.
+        rpe (bool, optional): Whether to use rpe. Default: True.
     """
 
     def __init__(self, embed_dim, num_heads, window_size=7, rpe=True, **kwargs):
@@ -314,7 +315,7 @@ class MlpDWBN(nn.Layer):
                  out_features=None,
                  act_layer=nn.GELU,
                  dw_act_layer=nn.GELU):
-        super().__init__()
+        super(MlpDWBN, self).__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
 
@@ -389,11 +390,8 @@ class Bottleneck(nn.Layer):
 
     def forward(self, x):
         residual = x
-
         out = self.conv1(x)
-
         out = self.conv2(out)
-
         out = self.conv3(out)
 
         if self.downsample is not None:
@@ -471,15 +469,8 @@ class HighResolutionTransformerModule(nn.Layer):
             num_mlp_ratios,
             multi_scale_output=True,
             drop_path=0.0, ):
-        """Based on Local-Attention & FFN-DW-BN
-        num_heads: the number of head witin each MHSA
-        num_window_sizes: the window size for the local self-attention
-        num_halo_sizes: the halo size around the local window
-            - reference: ``Scaling Local Self-Attention for Parameter Efficient Visual Backbones''
-        num_sr_ratios: the spatial reduction ratios of PVT/SRA scheme.
-            - reference: ``Pyramid Vision Transformer: A Versatile Backbone for Dense Prediction without Convolutions''
-        """
-        super().__init__()
+        super(HighResolutionTransformerModule, self).__init__()
+
         self._check_branches(num_branches, num_blocks, num_inchannels,
                              num_channels)
 
@@ -672,6 +663,42 @@ class HighResolutionTransformerModule(nn.Layer):
 
 
 class HighResolutionTransformer(nn.Layer):
+    """
+    The HRFormer implementation based on PaddlePaddle.
+
+    The original article refers to
+    Jingdong Wang, et, al. "HRNet：Deep High-Resolution Representation Learning for Visual Recognition"
+    (https://arxiv.org/pdf/1908.07919.pdf).
+
+    Args:
+        drop_patth_rate (int): The rate of Drop Path.
+        stage1_num_blocks (list): Number of blocks per module for stage1.
+        stage1_num_channels (list): Number of channels per branch for stage1.
+        stage2_num_modules (int): Number of modules for stage2.
+        stage2_num_branches (int): Number of branches for stage2.
+        stage2_num_blocks (list): Number of blocks per module for stage2.
+        stage2_num_channels (list): Number of channels per branch for stage2.
+        stage2_num_heads (list): Number of heads per multi head attetion for stage2.
+        stage2_num_mlp_ratios (list): Number of ratio of mlp per multi head attetion for stage2.
+        stage2_num_window_sizes (list): Number of window sizes for stage2.
+        stage3_num_modules (int): Number of modules for stage3.
+        stage3_num_branches (int): Number of branches for stage3.
+        stage3_num_blocks (list): Number of blocks per module for stage3.
+        stage3_num_channels (list): Number of channels per branch for stage3.
+        stage3_num_heads (list): Number of heads per multi head attetion for stage3.
+        stage3_num_mlp_ratios (list): Number of ratio of mlp per multi head attetion for stage3.
+        stage3_num_window_sizes (list): Number of window sizes for stage3.
+        stage4_num_modules (int): Number of modules for stage4.
+        stage4_num_branches (int): Number of branches for stage4.
+        stage4_num_blocks (list): Number of blocks per module for stage4.
+        stage4_num_channels (list): Number of channels per branch for stage4.
+        stage4_num_heads (list): Number of heads per multi head attetion for stage4.
+        stage4_num_mlp_ratios (list): Number of ratio of mlp per multi head attetion for stage4.
+        stage4_num_window_sizes (list): Number of window sizes for stage4.
+        in_channels (int, optional): The channels of input image. Default: 3.
+        pretrained (str, optional): The path of pretrained model. Default: None.
+    """
+
     def __init__(self,
                  drop_path_rate,
                  stage1_num_blocks,
