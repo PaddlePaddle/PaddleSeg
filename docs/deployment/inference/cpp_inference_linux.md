@@ -1,5 +1,5 @@
-English | [简体中文](cpp_inference_cn.md)
-# Paddle Inference Deployment (C++)
+English | [简体中文](cpp_inference_linux_cn.md)
+# Paddle Inference Deployment on Linux (C++)
 
 ## 1. Description
 

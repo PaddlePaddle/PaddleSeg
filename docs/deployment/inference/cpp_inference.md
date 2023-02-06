@@ -1,4 +1,4 @@
-[简体中文](cpp_inference_cn.md) | English
+English | [简体中文](cpp_inference_cn.md)
 
 # C++ prediction deployment overview
 

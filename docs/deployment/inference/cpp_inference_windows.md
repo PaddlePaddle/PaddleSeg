@@ -1,6 +1,6 @@
-[简体中文](cpp_inference_windows_cn.md) | English
+English | [简体中文](cpp_inference_windows_cn.md)
 
-# Paddle Inference Windows Deployment（C++）
+# Paddle Inference Deployment on Windows（C++）
 
 ## 1. Description
 
