@@ -64,4 +64,6 @@ model:
   backbone:
     type: SeaFormer_Base
     lr_mult: 0.1
-    pretrained: saved_model/seaformer_76.4.pdparams
+    use_AAM: False
+  head_use_dw: True
+  pretrained: saved_model/seaformer_41.2.pdparams

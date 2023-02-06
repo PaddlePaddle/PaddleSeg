@@ -442,7 +442,8 @@ class BasicLayer(nn.Layer):
 
 
 class Fusion_block(nn.Layer):
-    def __init__(self, inp, oup, embed_dim, activations=None) -> None:
+    def __init__(self, inp, oup, embed_dim, activations=None,
+                 lr_mult=1.0) -> None:
         super(Fusion_block, self).__init__()
         self.local_embedding = ConvBNAct(
             inp, embed_dim, kernel_size=1, lr_mult=lr_mult)
@@ -547,6 +548,7 @@ class SeaFormer(nn.Layer):
                  act_layer=nn.ReLU6,
                  lr_mult=1.0,
                  in_channels=3,
+                 use_AAM=True,
                  pretrained=None):
         super().__init__()
         self.channels = channels
@@ -562,8 +564,10 @@ class SeaFormer(nn.Layer):
             setattr(self, f'smb{i+1}', smb)
 
         for i in range(len(depths)):
-            # dpr = [x.item() for x in paddle.linspace(0, drop_path_rate, depths[i])] here
-            dpr = [0 for _ in paddle.linspace(0, drop_path_rate, depths[i])]
+            dpr = [
+                x.item() for x in paddle.linspace(0, drop_path_rate, depths[i])
+            ]
+            # dpr = [0 for _ in paddle.linspace(0, drop_path_rate, depths[i])]
             trans = BasicLayer(
                 block_num=depths[i],
                 embedding_dim=embed_dims[i],
@@ -578,12 +582,25 @@ class SeaFormer(nn.Layer):
                 lr_mult=lr_mult)
             setattr(self, f"trans{i+1}", trans)
 
-        self.inj_module = InjectionMultiSumallmultiallsum(
-            in_channels=[channels[-4]] + channels[-2:],
-            activations=act_layer,
-            lr_mult=lr_mult)
-        print('Using AAM')
-        self.injection_out_channels = [self.inj_module.out_channels, ] * 3
+        self.use_AAM = use_AAM
+        if self.use_AAM:
+            self.inj_module = InjectionMultiSumallmultiallsum(
+                in_channels=[channels[-4]] + channels[-2:],
+                activations=act_layer,
+                lr_mult=lr_mult)
+            print('Using AAM')
+            self.injection_out_channels = [self.inj_module.out_channels, ] * 3
+        else:
+            dims = [128, 160]
+            channels = [64, 192, 256]
+            for i in range(len(dims)):
+                fuse = Fusion_block(
+                    channels[0] if i == 0 else dims[i - 1],
+                    channels[i + 1],
+                    embed_dim=dims[i],
+                    lr_mult=lr_mult)
+                setattr(self, f"fuse{i + 1}", fuse)
+            self.injection_out_channels = [dims[i]] * 3
 
         self.pretrained = pretrained
         self.init_weight()
@@ -618,9 +635,16 @@ class SeaFormer(nn.Layer):
 
                 outputs.append(x)
 
-        output = self.inj_module(
-            outputs
-        )  # 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
+        if self.use_AAM:
+            output = self.inj_module(
+                outputs
+            )  # 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
+        else:
+            x_detail = outputs[0]
+            for i in range(2):
+                fuse = getattr(self, f'fuse{i+1}')
+                x_detail = fuse(x_detail, outputs[i + 1])
+            output = x_detail
 
         return output
 

@@ -103,14 +103,15 @@ class TopFormer(nn.Layer):
 
 
 class TopFormerHead(nn.Layer):
-    def __init__(self,
-                 num_classes,
-                 in_channels,
-                 in_index=[0, 1, 2],
-                 in_transform='multiple_select',
-                 use_dw=False,
-                 dropout_ratio=0.1,
-                 align_corners=False):
+    def __init__(
+            self,
+            num_classes,
+            in_channels,
+            in_index=[0, 1, 2],
+            in_transform='multiple_select',
+            use_dw=False,
+            dropout_ratio=0.1,  # here 
+            align_corners=False):
         super().__init__()
 
         self.in_index = in_index
