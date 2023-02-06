@@ -533,7 +533,7 @@ class TopTransformer(nn.Layer):
                  injection=True,
                  lr_mult=1.0,
                  in_channels=3,
-                 backbone='MobileNetV3_large_x1_25_edit',
+                 backbone='top_transformer',
                  pretrained=None):
         super().__init__()
         print('The backbone is ', backbone)
@@ -546,7 +546,7 @@ class TopTransformer(nn.Layer):
                 out_indices=encoder_out_indices,
                 in_channels=in_channels,
                 lr_mult=lr_mult)
-            pretrained = 'https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip'
+            pretrained = "saved_model/topformer74.9.pdparams"
         elif backbone == 'esnet':
             self.feat_channels = [24, 56, 120, 232]
             from .esnet import ESNet_x0_5

@@ -56,12 +56,12 @@ lr_scheduler:
 loss:
   types:
     - type: CrossEntropyLoss
-  coef: [1]
+  coef: [1,]
 
 model:
   type: TopFormer
   num_classes: 150
   backbone:
-    type: TopTransformer_Base
+    type: SeaFormer_Base
     lr_mult: 0.1
-    # pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip
+    pretrained: saved_model/seaformer_76.4.pdparams
