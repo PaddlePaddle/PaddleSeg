@@ -23,6 +23,7 @@ from paddleseg.cvlibs import manager
 class OhemCrossEntropyLoss(nn.Layer):
     """
     Implements the ohem cross entropy loss function.
+    只对置信度低于threshold的，最少min_kept个像素点进行损失计算和反向传播。
 
     Args:
         thresh (float, optional): The threshold of ohem. Default: 0.7.

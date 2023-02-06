@@ -27,3 +27,4 @@ from .ghostnet import *
 from .top_transformer import *
 from .uhrnet import *
 from .esnet import *
+from .seaformer import *

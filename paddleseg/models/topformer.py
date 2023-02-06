@@ -77,7 +77,6 @@ class TopFormer(nn.Layer):
         x_shape = paddle.shape(x)
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
-        upsample_rate = (x.shape[-1] / x_hw[-1]).numpy()[0]
         if upsample == 'intepolate':
             x = F.interpolate(
                 x, x_hw, mode='bilinear', align_corners=self.align_corners)
