@@ -53,4 +53,5 @@ model:
   backbone:
     type: TopTransformer_Base
     lr_mult: 0.1
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip
+    pretrained: saved_model/topformer74.9.pdparams
+    # pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip
