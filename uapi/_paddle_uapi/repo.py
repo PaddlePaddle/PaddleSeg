@@ -152,6 +152,7 @@ class BaseRepo(metaclass=abc.ABCMeta):
         comm = cfg.comm
 
         # Copy config file to cache
+        # Note that in all cases we copy the config file, even if the config file is not to be used.
         P.do_copy_file(cfg.config_file_path, self._CFG_FILE_PATH, comm=comm)
 
         # For efficiency, modify `cfg` in place
