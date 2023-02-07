@@ -76,16 +76,15 @@ class ModifyYAMLCfgVal(Primitive):
         # HACK:FIXME: Current implementation rewrites the whole file,
         # which is inefficient for large files.
         # NOTE: We assume that there are no duplicate keys in the YAML file.
-        prev_indents = None
-        all_matched = False
         with open(file_path, 'r') as f, io.StringIO() as out:
             # Match keys sequentially
-            num_keys = len(self.keys)
-            for i, key in enumerate(self.keys, 1):
-                try:
-                    line = next(f)
-                except StopIteration:
-                    break
+            keys = iter(self.keys)
+            # We need at least one key
+            key = next(keys)
+            prev_indents = None
+            all_matched = False
+            # Iterate over lines
+            for line in f:
                 if self._is_tag_literally(line):
                     # NOTE: In 'by_text' mode we ignore all tags
                     pass
@@ -99,12 +98,18 @@ class ModifyYAMLCfgVal(Primitive):
                             break
                     matched = self._match_key_literally(key, line)
                     if matched:
-                        prev_indents = num_indents
-                        if i == num_keys:
+                        try:
+                            key = next(keys)
+                        except StopIteration:
                             # All keys matched
                             line = self._update_line(line)
                             all_matched = True
+                        prev_indents = num_indents
                 out.write(line)
+                if all_matched:
+                    # Early stop
+                    break
+
             if not all_matched:
                 # TODO: More friendly error logs
                 raise RuntimeError
@@ -140,6 +145,13 @@ class ModifyYAMLCfgVal(Primitive):
         # Update value
         dict_[self.keys[-1]] = self.val
         # Overwrite the file
+        # We note that this may change the original representation of config items
+        # e.g.: 
+        # [a, b, c]
+        # => 
+        # - a
+        # - b
+        # - c
         with open(file_path, 'w') as f:
             f.write(yaml.dump(whole_dict))
 
