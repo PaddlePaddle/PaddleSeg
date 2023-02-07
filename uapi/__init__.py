@@ -13,4 +13,4 @@
 # limitations under the License.
 
 import uapi.models
-from uapi._paddle_uapi import PaddleModel
+from uapi.paddle_uapi import PaddleModel

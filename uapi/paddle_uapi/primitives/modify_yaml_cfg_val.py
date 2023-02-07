@@ -96,8 +96,7 @@ class ModifyYAMLCfgVal(Primitive):
                         # We are matching sub-keys 
                         # According to YAML rule, a sub-key should have more indents
                         if num_indents <= prev_indents:
-                            # TODO: More friendly error logs
-                            raise RuntimeError
+                            break
                     matched = self._match_key_literally(key, line)
                     if matched:
                         prev_indents = num_indents

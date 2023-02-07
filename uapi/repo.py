@@ -14,8 +14,8 @@
 
 import os
 
-from ._paddle_uapi.path import get_cache_dir
-from ._paddle_uapi.repo import BaseRepo
+from .paddle_uapi.path import get_cache_dir
+from .paddle_uapi.repo import BaseRepo
 
 
 class PaddleSeg(BaseRepo):
