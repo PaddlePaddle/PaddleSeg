@@ -562,8 +562,10 @@ class SeaFormer(nn.Layer):
             setattr(self, f'smb{i+1}', smb)
 
         for i in range(len(depths)):
-            # dpr = [x.item() for x in paddle.linspace(0, drop_path_rate, depths[i])] here
-            dpr = [0 for _ in paddle.linspace(0, drop_path_rate, depths[i])]
+            dpr = [
+                x.item() for x in paddle.linspace(0, drop_path_rate, depths[i])
+            ]
+            # dpr = [0 for _ in paddle.linspace(0, drop_path_rate, depths[i])]
             trans = BasicLayer(
                 block_num=depths[i],
                 embedding_dim=embed_dims[i],

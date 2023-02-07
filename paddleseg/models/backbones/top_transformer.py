@@ -533,7 +533,7 @@ class TopTransformer(nn.Layer):
                  injection=True,
                  lr_mult=1.0,
                  in_channels=3,
-                 backbone='MobileNetV2',
+                 backbone='top_transformer',
                  pretrained=None):
         super().__init__()
         print('The backbone is ', backbone)
@@ -625,13 +625,14 @@ class TopTransformer(nn.Layer):
             lr_mult=lr_mult)
 
         if self.injection:
+            print('Using {}'.format(self.injection_type))
+
             if injection_type == 'InjectionMultiSumallmultiallsum':
                 self.inj_module = InjectionMultiSumallmultiallsum(
                     in_channels=self.feat_channels[1:] + [self.embed_dim],
                     activations=act_layer,
                     lr_mult=lr_mult
                 )  # TODO whether injection module is also backbone? set to 0.1?
-                print('Using AAM')
             else:
                 self.SIM = nn.LayerList()
                 inj_module = SIM_BLOCK[injection_type]
@@ -733,7 +734,7 @@ def TopTransformer_Base(**kwargs):
         drop_path_rate=0.,
         act_layer=nn.ReLU6,
         injection=True,
-        injection_type="InjectionMultiSumallmultiallsum",
+        # injection_type="InjectionMultiSumallmultiallsum",
         **kwargs)
     return model
 

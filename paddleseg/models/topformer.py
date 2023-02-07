@@ -87,7 +87,7 @@ class TopFormer(nn.Layer):
                 x = F.interpolate(
                     x, x_hw, mode='bilinear', align_corners=self.align_corners)
 
-                pred = paddle.argmax(x, 1)
+                pred = paddle.argmax(x, 1)  # pred shape is -1
                 pred_retrieve = paddle.zeros(pred.shape, dtype='int32')
                 for i, val in enumerate(labelset):
                     pred_retrieve[pred == i] = labelset[i].cast('int32')
@@ -133,6 +133,7 @@ class TopFormerHead(nn.Layer):
         assert in_transform in [
             None, 'resize_concat', 'multiple_select', 'only_one'
         ]
+        print('!!The in_transform is {}'.format(in_transform))
         if in_transform is not None:
             assert len(in_channels) == len(in_index)
             if in_transform == 'resize_concat':

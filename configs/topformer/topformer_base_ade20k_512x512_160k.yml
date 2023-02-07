@@ -56,8 +56,7 @@ lr_scheduler:
 loss:
   types:
     - type: CrossEntropyLoss
-    - type: DetailAggregateLoss
-  coef: [1, 1]
+  coef: [1]
 
 model:
   type: TopFormer
