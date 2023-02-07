@@ -1,5 +1,3 @@
-import math
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -21,18 +19,29 @@ class PadHelper:
 
     def pad_if_needed(self, x, size):
         n, h, w, c = size
-        pad_h = math.ceil(h / self.lgs[0]) * self.lgs[0] - h
-        pad_w = math.ceil(w / self.lgs[1]) * self.lgs[1] - w
+        pad_h = paddle.cast(
+            paddle.ceil(h / self.lgs[0]) * self.lgs[0] - h, paddle.int32)
+        pad_w = paddle.cast(
+            paddle.ceil(w / self.lgs[1]) * self.lgs[1] - w, paddle.int32)
         if pad_h > 0 or pad_w > 0:  # center-pad the feature on H and W axes
-            return F.pad(x, (pad_w // 2, pad_w - pad_w // 2, pad_h // 2,
-                             pad_h - pad_h // 2),
+            return F.pad(x,
+                         paddle.to_tensor(
+                             [
+                                 pad_w // 2, pad_w - pad_w // 2, pad_h // 2,
+                                 pad_h - pad_h // 2
+                             ],
+                             dtype='int32').reshape([-1]),
                          data_format='NHWC')
         return x
 
     def depad_if_needed(self, x, size):
         n, h, w, c = size
-        pad_h = math.ceil(h / self.lgs[0]) * self.lgs[0] - h
-        pad_w = math.ceil(w / self.lgs[1]) * self.lgs[1] - w
+        pad_h = paddle.cast(
+            paddle.ceil(h / self.lgs[0]) * self.lgs[0] - h,
+            paddle.int32).reshape([-1])
+        pad_w = paddle.cast(
+            paddle.ceil(w / self.lgs[1]) * self.lgs[1] - w,
+            paddle.int32).reshape([-1])
         if pad_h > 0 or pad_w > 0:  # remove the center-padding on feature
             return x[:, pad_h // 2:pad_h // 2 + h, pad_w // 2:pad_w // 2 + w, :]
         return x
@@ -296,7 +305,7 @@ class InterlacedPoolAttention(nn.Layer):
         B, N, C = x.shape
         x = x.reshape([B, H, W, C])
         # pad
-        x_pad = self.pad_helper.pad_if_needed(x, x.shape)
+        x_pad = self.pad_helper.pad_if_needed(x, paddle.shape(x))
         # permute
         x_permute = self.permute_helper.permute(x_pad, x_pad.shape)
         # attention
@@ -304,7 +313,7 @@ class InterlacedPoolAttention(nn.Layer):
             x_permute, x_permute, x_permute, rpe=self.with_rpe, **kwargs)
         # reverse permutation
         out = self.permute_helper.rev_permute(out, x_pad.shape)
-        out = self.pad_helper.depad_if_needed(out, x.shape)
+        out = self.pad_helper.depad_if_needed(out, paddle.shape(x))
         return out.reshape([B, N, C])
 
 
@@ -1116,7 +1125,7 @@ def HRFormer_base_win_13(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def HRFormer_base_win_13(**kwargs):
+def HRFormer_base_win_15(**kwargs):
     arch_net = HighResolutionTransformer(
         drop_path_rate=0.2,
         stage1_num_blocks=[2],
