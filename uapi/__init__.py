@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uapi.models
-from uapi.paddle_uapi import PaddleModel
+import uapi.model_zoo
+from uapi.model import SegModel

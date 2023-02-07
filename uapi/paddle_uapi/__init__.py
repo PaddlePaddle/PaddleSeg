@@ -12,5 +12,6 @@
 # See the License for the specific language governing permissions and   
 # limitations under the License.
 
-from .config import RepoBasicConfig as Config
+from .config import Config
 from .model import PaddleModel
+from .repo import BaseRepo

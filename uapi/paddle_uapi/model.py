@@ -12,148 +12,44 @@
 # See the License for the specific language governing permissions and   
 # limitations under the License.
 
-import inspect
+import abc
 
+from .path import create_yaml_config_file
 from .register import get_registered_model_info, build_repo_from_model_info
-from .config import RepoBasicConfig
-from .utils import switch_working_dir, abspath
+from .utils import CachedProperty as cached_property
 
 
-class PaddleModel(object):
+class PaddleModel(metaclass=abc.ABCMeta):
     def __init__(self, model_name):
         self.name = model_name
-        # TODO: Extension of default config
-        self.config = RepoBasicConfig()
-
         self.model_info = get_registered_model_info(model_name)
         self.repo_instance = build_repo_from_model_info(self.model_info)
-        self.prepare_config_files()
 
-    def prepare_config_files(self):
-        # TODO:
-        pass
+    @abc.abstractmethod
+    def train(self, dataset, batch_size, epochs_iters, device, resume_path,
+              dy2st, amp, save_dir):
+        raise NotImplementedError
 
-    def train(self,
-              dataset=None,
-              batch_size=None,
-              epochs_iters=None,
-              device=None,
-              resume_path=None,
-              dy2st=None,
-              amp=None,
-              save_dir=None):
-        if device is None:
-            device = 'gpu'
-        if dy2st is None:
-            dy2st = False
-        if dataset is not None:
-            # We must use an absolute path here, 
-            # so we can run the scripts either inside or outsize the repo dir.
-            dataset = abspath(dataset)
-        if resume_path is not None:
-            resume_path = abspath(resume_path)
-        if save_dir is not None:
-            save_dir = abspath(save_dir)
-        config = self._extract_configs(self.train)
-        config = self.config.new_config(**config.dict)
-        config.model_info = self.model_info
-        config.dataset_info = self.get_dataset_info(dataset)
-        with switch_working_dir(self.repo_instance.root_path):
-            with self.repo_instance.use_config(config, 'train') as comm:
-                # Run train cmd
-                self.repo_instance.train(comm)
+    @abc.abstractmethod
+    def predict(self, weight_path, device, input_path, save_dir):
+        raise NotImplementedError
 
-    def predict(self,
-                weight_path=None,
-                device=None,
-                input_path=None,
-                save_dir=None):
-        if device is None:
-            device = 'gpu'
-        if weight_path is not None:
-            weight_path = abspath(weight_path)
-        if input_path is not None:
-            input_path = abspath(input_path)
-        if save_dir is not None:
-            save_dir = abspath(save_dir)
-        config = self._extract_configs(self.predict)
-        config = self.config.new_config(**config.dict)
-        config.model_info = self.model_info
-        with switch_working_dir(self.repo_instance.root_path):
-            with self.repo_instance.use_config(config, 'predict') as comm:
-                # Run predict cmd
-                self.repo_instance.predict(comm)
+    @abc.abstractmethod
+    def export(self, weight_path, save_dir, input_shape):
+        raise NotImplementedError
 
-    def export(self, weight_path=None, save_dir=None, input_shape=None):
-        if weight_path is not None:
-            weight_path = abspath(weight_path)
-        if save_dir is not None:
-            save_dir = abspath(save_dir)
-        config = self._extract_configs(self.export)
-        config = self.config.new_config(**config.dict)
-        config.model_info = self.model_info
-        with switch_working_dir(self.repo_instance.root_path):
-            with self.repo_instance.use_config(config, 'export') as comm:
-                # Run export cmd
-                self.repo_instance.export(comm)
+    @abc.abstractmethod
+    def infer(self, model_dir, device, input_path, save_dir):
+        raise NotImplementedError
 
-    def infer(self, model_dir=None, device=None, input_path=None,
-              save_dir=None):
-        if device is None:
-            device = 'gpu'
-        if model_dir is not None:
-            model_dir = abspath(model_dir)
-        if input_path is not None:
-            input_path = abspath(input_path)
-        if save_dir is not None:
-            save_dir = abspath(save_dir)
-        config = self._extract_configs(self.infer)
-        config = self.config.new_config(**config.dict)
-        config.model_info = self.model_info
-        with switch_working_dir(self.repo_instance.root_path):
-            with self.repo_instance.use_config(config, 'infer') as comm:
-                # Run infer cmd
-                self.repo_instance.infer(comm)
+    @abc.abstractmethod
+    def compression(self, dataset, batch_size, epochs_iters, device,
+                    weight_path, save_dir):
+        raise NotImplementedError
 
-    def compression(self,
-                    dataset=None,
-                    batch_size=None,
-                    epochs_iters=None,
-                    device=None,
-                    weight_path=None,
-                    save_dir=None):
-        if device is None:
-            device = 'gpu'
-        if dataset is not None:
-            dataset = abspath(dataset)
-        if weight_path is not None:
-            weight_path = abspath(weight_path)
-        if save_dir is not None:
-            save_dir = abspath(save_dir)
-        config = self._extract_configs(self.compression)
-        config = self.config.new_config(**config.dict)
-        config.model_info = self.model_info
-        config.dataset_info = self.get_dataset_info(dataset)
-        with switch_working_dir(self.repo_instance.root_path):
-            with self.repo_instance.use_config(config, 'compress') as comm:
-                # Run auto compression cmd
-                self.repo_instance.compression(comm)
-
-    def _extract_configs(self, bnd_method):
-        sig = inspect.signature(bnd_method)
-        config = RepoBasicConfig()
-        for name, param in sig.parameters.items():
-            if param.default is inspect.Parameter.empty:
-                # Ignore params without a default value
-                continue
-            config[name] = param.default
-        # Update config with local variables in the caller
-        curr_frame = inspect.currentframe()
-        prev_frame = curr_frame.f_back
-        for var_name, var_val in prev_frame.f_locals.items():
-            if var_name in config:
-                config[var_name] = var_val
-        return config
-
-    def get_dataset_info(self, dataset):
-        return {'dataset_root_dir': dataset}
+    @cached_property
+    def config_file_path(self):
+        cls = self.__class__
+        tag = cls.__name__.lower()
+        # Allow overwriting
+        return create_yaml_config_file(tag=tag, noclobber=False)

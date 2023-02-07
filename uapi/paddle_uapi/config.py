@@ -15,13 +15,13 @@
 import collections.abc
 from collections import OrderedDict
 
-__all__ = ['Config', 'RepoBasicConfig']
+__all__ = ['Config']
 
 
 def format_cfg(cfg, indent=0):
-    MAP_TYPES = [collections.abc.Mapping]
-    SEQ_TYPES = [list, tuple]
-    NESTED_TYPES = [*MAP_TYPES, *SEQ_TYPES]
+    MAP_TYPES = (collections.abc.Mapping, )
+    SEQ_TYPES = (list, tuple)
+    NESTED_TYPES = (*MAP_TYPES, *SEQ_TYPES)
 
     s = ' ' * indent
     if isinstance(cfg, Config):
@@ -57,7 +57,7 @@ class Config(object):
         self._dict = self._DICT_TYPE_()
         if cfg is not None:
             # Manipulate the internal `_dict` such that we avoid an extra copy
-            self._dict = self._DICT_TYPE_(cfg._dict)
+            self.reset_from_dict(cfg._dict)
 
     @property
     def dict(self):
@@ -84,9 +84,7 @@ class Config(object):
 
     def new_config(self, **kwargs):
         cfg = self.copy()
-        for k, v in kwargs.items():
-            cfg[k] = v
-        return cfg
+        cfg.update(kwargs)
 
     def copy(self):
         return type(self)(self)
@@ -94,20 +92,15 @@ class Config(object):
     def __repr__(self):
         return format_cfg(self, indent=0)
 
-    def from_file(self, file_path):
-        # TODO: Construction from file
+    def reset_from_dict(self, dict_like_obj):
+        self._dict.clear()
+        self._dict.update(dict_like_obj)
+
+    def update(self, dict_like_obj):
         raise NotImplementedError
 
-    def to_file(self, file_path):
-        # TODO: Serialization using a standard protocol
+    def load(self, config_file_path):
         raise NotImplementedError
 
-
-class RepoBasicConfig(Config):
-    def __init__(self, cfg=None):
-        super().__init__(cfg)
-        self.comm = dict()
-        self.set_val('config_file_path', None)
-
-    def set_config_file(self, file_path):
-        self.set_val('config_file_path', file_path)
+    def dump(self, config_file_path):
+        raise NotImplementedError

@@ -14,20 +14,11 @@
 
 import sys
 import abc
-import contextlib
 
-from . import primitives as P
-from .utils import run_cmd as _run_cmd, CachedProperty as cached_property, abspath
-from .path import create_yaml_config_file
+from .utils import run_cmd as _run_cmd, abspath
 
 
 class BaseRepo(metaclass=abc.ABCMeta):
-    _ARGS_COMM_KEY = 'args'
-    _CFG_FILE_COMM_KEY = 'cfg_file'
-    _DEVICE_COMM_KEY = 'device'
-    _MODEL_META_COMM_KEY = 'model_meta'
-    _DATASET_META_COMM_KEY = 'dataset_meta'
-
     def __init__(self, root_path):
         self.root_path = abspath(root_path)
 
@@ -40,38 +31,32 @@ class BaseRepo(metaclass=abc.ABCMeta):
             'pillow': 'Pillow'
         }
 
-        self.comm = None
-
     @abc.abstractmethod
     def check(self):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def train(self, comm):
+    def build_repo_config(self, config_file_path):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def predict(self, comm):
+    def train(self, config_file_path, cli_args, device):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def export(self, comm):
+    def predict(self, config_file_path, cli_args, device):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def infer(self, comm):
+    def export(self, config_file_path, cli_args, device):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def compression(self, comm):
+    def infer(self, config_file_path, cli_args, device):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _prepare_dataset(self, mode):
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def _parse_config(self, cfg, mode):
+    def compression(self, config_file_path, cli_args, device):
         raise NotImplementedError
 
     def _check_environment(self, requirement_file_list=None,
@@ -123,85 +108,25 @@ class BaseRepo(metaclass=abc.ABCMeta):
                     requir_packages.append(name)
         return requir_packages
 
-    def distributed(self, comm):
+    def distributed(self, device):
         # TODO: docstring
-        device = comm[self._DEVICE_COMM_KEY]
         python = self.python
         if device is None:
-            return python
-        dev_descs = device.split(',')
-        num_devices = len(dev_descs)
-        dev_ids = []
-        for dev_desc in dev_descs:
-            idx = dev_desc.find(':')
-            if idx != -1:
-                dev_ids.append(dev_desc[idx + 1:])
-        dev_ids = ','.join(dev_ids)
+            # By default use a GPU device
+            return python, 'gpu'
+        # According to https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/device/set_device_cn.html
+        if ':' not in device:
+            return python, device
+        else:
+            device, dev_ids = device.split(':')
+            num_devices = len(dev_ids.split(','))
         if num_devices > 1:
             python += " -m paddle.distributed.launch"
-            if len(dev_ids) > 0:
-                python += f" --gpus {dev_ids}"
-        elif len(dev_ids) == 1:
+            python += f" --gpus {dev_ids}"
+        elif num_devices == 1:
+            # TODO: Accommodate Windows system
             python = f"CUDA_VISIBLE_DEVICES={dev_ids} {python}"
-        return python
-
-    @contextlib.contextmanager
-    def use_config(self, cfg, mode):
-        self.set_config_file(cfg, mode)
-
-        comm = cfg.comm
-
-        # Copy config file to cache
-        # Note that in all cases we copy the config file, even if the config file is not to be used.
-        P.do_copy_file(cfg.config_file_path, self._CFG_FILE_PATH, comm=comm)
-
-        # For efficiency, modify `cfg` in place
-        comm[self._ARGS_COMM_KEY] = []
-        comm[self._CFG_FILE_COMM_KEY] = self._CFG_FILE_PATH
-        comm[self._MODEL_META_COMM_KEY] = cfg.model_info
-        comm[self._DATASET_META_COMM_KEY] = getattr(cfg, 'dataset_info', None)
-
-        _old_comm = self.comm
-        self.comm = comm
-        self._prepare_dataset(mode)
-        self._parse_config(cfg, mode)
-
-        try:
-            yield comm
-        finally:
-            self.comm = _old_comm
-
-    def add_cli_arg(self, arg_key, arg_val, sep=' ', comm=None):
-        if comm is None:
-            comm = self.comm
-        return P.do_append_cli_arg(
-            comm=comm,
-            key=arg_key,
-            val=arg_val,
-            sep=sep,
-            comm_key=self._ARGS_COMM_KEY)
-
-    def modify_yaml_cfg(self,
-                        cfg_desc,
-                        val,
-                        match_strategy='in_dict',
-                        yaml_loader=None,
-                        comm=None):
-        if comm is None:
-            comm = self.comm
-        return P.do_modify_yaml_cfg_val(
-            comm=comm,
-            cfg_desc=cfg_desc,
-            val=val,
-            comm_key=self._CFG_FILE_COMM_KEY,
-            match_strategy=match_strategy,
-            yaml_loader=yaml_loader)
-
-    def set_config_file(self, cfg, mode):
-        if mode in ('train', 'predict', 'export', 'infer'):
-            cfg.set_config_file(cfg.model_info['config_path'])
-        elif mode == 'compress':
-            cfg.set_config_file(cfg.model_info['auto_compression_config_path'])
+        return python, device
 
     def run_cmd(self, cmd, switch_wdir=False, **kwargs):
         if switch_wdir:
@@ -209,10 +134,3 @@ class BaseRepo(metaclass=abc.ABCMeta):
                 raise KeyError
             kwargs['wd'] = self.root_path
         return _run_cmd(cmd, **kwargs)
-
-    @cached_property
-    def _CFG_FILE_PATH(self):
-        cls = self.__class__
-        tag = cls.__name__.lower()
-        # Allow overwriting
-        return create_yaml_config_file(tag=tag, noclobber=False)
