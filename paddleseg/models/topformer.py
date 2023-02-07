@@ -72,8 +72,8 @@ class TopFormer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def forward(self, x, upsample='intepolate'):
-        x_hw = paddle.shape(x)[2:]
+    def forward(self, x, upsample='valid'):
+        x_hw = x.shape[2:]
         x_shape = paddle.shape(x)
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
@@ -107,7 +107,7 @@ class TopFormerHead(nn.Layer):
                  num_classes,
                  in_channels,
                  in_index=[0, 1, 2],
-                 in_transform='multiple_select',
+                 in_transform='only_one',
                  use_dw=False,
                  dropout_ratio=0.1,
                  align_corners=False):
