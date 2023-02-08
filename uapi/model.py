@@ -24,12 +24,6 @@ from .config import SegConfig
 class SegModel(BaseModel):
     _DUMMY_DATASET_DIR = os.path.join(get_cache_dir(), 'ppseg_dummy_dataset')
 
-    def build_repo_config(self, config_file_path=None):
-        repo_config = SegConfig()
-        if config_file_path is not None:
-            repo_config.load(config_file_path)
-        return repo_config
-
     def train(self,
               dataset,
               batch_size=None,
@@ -51,7 +45,7 @@ class SegModel(BaseModel):
 
         # Update YAML config file
         config_file_path = self.model_info['config_path']
-        repo_config = self.build_repo_config(config_file_path)
+        repo_config = SegConfig.build_from_file(config_file_path)
         repo_config.update_dataset_config(dataset)
         config_file_path = self.config_file_path
         repo_config.dump(config_file_path)
@@ -88,7 +82,7 @@ class SegModel(BaseModel):
 
         # Update YAML config file
         config_file_path = self.model_info['config_path']
-        repo_config = self.build_repo_config(config_file_path)
+        repo_config = SegConfig.build_from_file(config_file_path)
         repo_config.update_dataset_config(self._create_dummy_dataset())
         config_file_path = self.config_file_path
         repo_config.dump(config_file_path)
@@ -112,7 +106,7 @@ class SegModel(BaseModel):
 
         # Update YAML config file
         config_file_path = self.model_info['config_path']
-        repo_config = self.build_repo_config(config_file_path)
+        repo_config = SegConfig.build_from_file(config_file_path)
         repo_config.update_dataset_config(self._create_dummy_dataset())
         config_file_path = self.config_file_path
         repo_config.dump(config_file_path)
@@ -139,7 +133,7 @@ class SegModel(BaseModel):
 
         # Update YAML config file
         config_file_path = self.model_info['config_path']
-        repo_config = self.build_repo_config(config_file_path)
+        repo_config = SegConfig.build_from_file(config_file_path)
         repo_config.update_dataset_config(self._create_dummy_dataset())
         repo_config.dump(self.config_file_path)
 
@@ -168,7 +162,7 @@ class SegModel(BaseModel):
 
         # Update YAML config file
         config_file_path = self.model_info['auto_compression_config_path']
-        repo_config = self.build_repo_config(config_file_path)
+        repo_config = SegConfig.build_from_file(config_file_path)
         repo_config.update_dataset_config(dataset)
         config_file_path = self.config_file_path
         repo_config.dump(config_file_path)

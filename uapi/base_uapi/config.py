@@ -108,3 +108,9 @@ class BaseConfig(Config, metaclass=abc.ABCMeta):
 
     def dump(self, config_file_path):
         raise NotImplementedError
+
+    @classmethod
+    def build_from_file(cls, config_file_path):
+        cfg = cls()
+        cfg.load(config_file_path)
+        return cfg
