@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import yaml
 from paddleseg.utils import NoAliasDumper
 from paddleseg.cvlibs.config import parse_from_yaml, merge_config_dicts
 
-from .paddle_uapi.config import Config
+from .base_uapi import BaseConfig
 
 
-class SegConfig(Config):
+class SegConfig(BaseConfig):
     def update(self, dict_like_obj):
         dict_ = merge_config_dicts(dict_like_obj, self.dict)
         self.reset_from_dict(dict_)
@@ -33,3 +35,21 @@ class SegConfig(Config):
     def dump(self, config_file_path):
         with open(config_file_path, 'w') as f:
             yaml.dump(self.dict, f, Dumper=NoAliasDumper)
+
+    def update_dataset_config(self, dataset_root_path):
+        ds_cfg = self._make_dataset_config(dataset_root_path)
+        self.update(ds_cfg)
+
+    def _make_dataset_config(self, dataset_root_path):
+        return {
+            'train_dataset': {
+                'type': 'Dataset',
+                'dataset_root': dataset_root_path,
+                'train_path': os.path.join(dataset_root_path, 'train.txt')
+            },
+            'val_dataset': {
+                'type': 'Dataset',
+                'dataset_root': dataset_root_path,
+                'val_path': os.path.join(dataset_root_path, 'val.txt')
+            },
+        }

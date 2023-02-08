@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and   
 # limitations under the License.
 
+import abc
 import collections.abc
 from collections import OrderedDict
 
-__all__ = ['Config']
+__all__ = ['Config', 'BaseConfig']
 
 
 def format_cfg(cfg, indent=0):
@@ -96,6 +97,9 @@ class Config(object):
         self._dict.clear()
         self._dict.update(dict_like_obj)
 
+
+class BaseConfig(Config, metaclass=abc.ABCMeta):
+    @abc.abstractmethod
     def update(self, dict_like_obj):
         raise NotImplementedError
 

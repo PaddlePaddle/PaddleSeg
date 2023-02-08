@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and   
 # limitations under the License.
 
-from .paddle_uapi.repo import BaseRepo
+from .base_uapi import BaseRepo
 
 
 class PaddleSeg(BaseRepo):

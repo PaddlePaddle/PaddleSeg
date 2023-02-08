@@ -13,4 +13,4 @@
 # limitations under the License.
 
 import uapi.model_zoo
-from uapi.model import SegModel
+from uapi.model import SegModel as PaddleModel

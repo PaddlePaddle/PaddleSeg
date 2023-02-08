@@ -14,7 +14,7 @@
 
 import os.path as osp
 
-from .paddle_uapi.register import register_model_info, register_repo_info
+from .base_uapi.register import register_model_info, register_repo_info
 from .repo import PaddleSeg
 
 # XXX: Hard-code relative path of repo root dir

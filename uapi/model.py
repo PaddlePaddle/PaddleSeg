@@ -14,14 +14,14 @@
 
 import os
 
-from .paddle_uapi.path import get_cache_dir
-from .paddle_uapi.model import PaddleModel
-from .paddle_uapi.arg import CLIArgument
-from .paddle_uapi.utils import abspath
+from .base_uapi import BaseModel
+from .base_uapi.utils.path import get_cache_dir
+from .base_uapi.utils.arg import CLIArgument
+from .base_uapi.utils.misc import abspath
 from .config import SegConfig
 
 
-class SegModel(PaddleModel):
+class SegModel(BaseModel):
     _DUMMY_DATASET_DIR = os.path.join(get_cache_dir(), 'ppseg_dummy_dataset')
 
     def build_repo_config(self, config_file_path=None):
@@ -52,7 +52,7 @@ class SegModel(PaddleModel):
         # Update YAML config file
         config_file_path = self.model_info['config_path']
         repo_config = self.build_repo_config(config_file_path)
-        repo_config.update(self._make_dataset_config(dataset))
+        repo_config.update_dataset_config(dataset)
         config_file_path = self.config_file_path
         repo_config.dump(config_file_path)
 
@@ -89,6 +89,7 @@ class SegModel(PaddleModel):
         # Update YAML config file
         config_file_path = self.model_info['config_path']
         repo_config = self.build_repo_config(config_file_path)
+        repo_config.update_dataset_config(self._create_dummy_dataset())
         config_file_path = self.config_file_path
         repo_config.dump(config_file_path)
 
@@ -112,6 +113,7 @@ class SegModel(PaddleModel):
         # Update YAML config file
         config_file_path = self.model_info['config_path']
         repo_config = self.build_repo_config(config_file_path)
+        repo_config.update_dataset_config(self._create_dummy_dataset())
         config_file_path = self.config_file_path
         repo_config.dump(config_file_path)
 
@@ -138,8 +140,7 @@ class SegModel(PaddleModel):
         # Update YAML config file
         config_file_path = self.model_info['config_path']
         repo_config = self.build_repo_config(config_file_path)
-        repo_config.update(
-            self._make_dataset_config(self._create_dummy_dataset()))
+        repo_config.update_dataset_config(self._create_dummy_dataset())
         repo_config.dump(self.config_file_path)
 
         # Parse CLI arguments
@@ -168,7 +169,7 @@ class SegModel(PaddleModel):
         # Update YAML config file
         config_file_path = self.model_info['auto_compression_config_path']
         repo_config = self.build_repo_config(config_file_path)
-        repo_config.update(self._make_dataset_config(dataset))
+        repo_config.update_dataset_config(dataset)
         config_file_path = self.config_file_path
         repo_config.dump(config_file_path)
 
@@ -197,17 +198,3 @@ class SegModel(PaddleModel):
             with open(os.path.join(dir_, 'val.txt'), 'w') as f:
                 f.write('fake_val_im_path fake_val_label_path')
             return dir_
-
-    def _make_dataset_config(self, dataset_root_path):
-        return {
-            'train_dataset': {
-                'type': 'Dataset',
-                'dataset_root': dataset_root_path,
-                'train_path': os.path.join(dataset_root_path, 'train.txt')
-            },
-            'val_dataset': {
-                'type': 'Dataset',
-                'dataset_root': dataset_root_path,
-                'val_path': os.path.join(dataset_root_path, 'val.txt')
-            },
-        }

@@ -18,10 +18,10 @@ import sys
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..', '..')))
 
-from uapi import SegModel
+from uapi import PaddleModel
 
 if __name__ == '__main__':
-    model = SegModel(model_name='pphumanseg_lite')
+    model = PaddleModel(model_name='pphumanseg_lite')
 
     model.train(
         dataset='uapi/tests/data/mini_supervisely',

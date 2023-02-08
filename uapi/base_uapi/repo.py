@@ -15,7 +15,7 @@
 import sys
 import abc
 
-from .utils import run_cmd as _run_cmd, abspath
+from .utils.misc import run_cmd as _run_cmd, abspath
 
 
 class BaseRepo(metaclass=abc.ABCMeta):

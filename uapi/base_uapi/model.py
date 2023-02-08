@@ -14,20 +14,18 @@
 
 import abc
 
-from .path import create_yaml_config_file
 from .register import get_registered_model_info, build_repo_from_model_info
-from .utils import CachedProperty as cached_property
+from .utils.misc import CachedProperty as cached_property
+from .utils.path import create_yaml_config_file
 
 
-class PaddleModel(metaclass=abc.ABCMeta):
+class BaseModel(metaclass=abc.ABCMeta):
     def __init__(self, model_name):
         self.name = model_name
         self.model_info = get_registered_model_info(model_name)
+        # NOTE: We build repo instance here by extracting repo info from model info
+        # so that we don't have to overwrite the `__init__()` method of each child class.
         self.repo_instance = build_repo_from_model_info(self.model_info)
-
-    @abc.abstractmethod
-    def build_repo_config(self, config_file_path):
-        raise NotImplementedError
 
     @abc.abstractmethod
     def train(self, dataset, batch_size, epochs_iters, device, resume_path,

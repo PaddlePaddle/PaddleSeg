@@ -15,6 +15,7 @@
 import os
 import os.path as osp
 
+# TODO: Set cache directory in a global config module
 CACHE_DIR = osp.abspath(osp.join('.cache', 'paddle_uapi'))
 
 if not osp.exists(CACHE_DIR):
