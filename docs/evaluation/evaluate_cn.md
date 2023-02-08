@@ -1,14 +1,28 @@
-简体中文|[English](evaluate.md)
+简体中文 | [English](evaluate.md)
 ## 模型评估
 
-### 1.**配置化驱动**方式下评估和预测
+### 1.**配置化驱动**方式下评估
 
-#### 评估
+训练完成后，大家可以使用评估脚本`tools/val.py`来评估模型的精度，即对配置文件中的验证数据集进行测试。
 
-训练完成后，用户可以使用评估脚本val.py来评估模型效果。假设训练过程中迭代次数（iters）为1000，保存模型的间隔为500，即每迭代1000次数据集保存2次训练模型。因此一共会产生2个定期保存的模型，加上保存的最佳模型`best_model`，一共有3个模型，可以通过`model_path`指定期望评估的模型文件。
+假设训练过程中迭代次数（iters）为1000，保存模型的间隔为500，即每迭代1000次数据集保存2次训练模型。因此一共会产生2个定期保存的模型，加上保存的最佳模型`best_model`，一共有3个模型。
 
 ```
-!python val.py \
+output
+  ├── iter_500          #表示在500步保存一次模型
+    ├── model.pdparams  #模型参数
+    └── model.pdopt     #训练阶段的优化器参数
+  ├── iter_1000         #表示在1000步保存一次模型
+    ├── model.pdparams  #模型参数
+    └── model.pdopt     #训练阶段的优化器参数
+  └── best_model        #精度最高的模型权重
+    └── model.pdparams  
+```
+
+在PP-LiteSeg示例中，执行如下命令进行模型评估。其中，通过`--model_path`输入参数来指定评估的模型权重。
+
+```
+!python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams
 ```
@@ -16,7 +30,7 @@
 如果想进行多尺度翻转评估，可通过传入`--aug_eval`进行开启，然后通过`--scales`传入尺度信息， `--flip_horizontal`开启水平翻转， `flip_vertical`开启垂直翻转。使用示例如下：
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --aug_eval \
@@ -27,7 +41,7 @@ python val.py \
 如果想进行滑窗评估，可通过传入`--is_slide`进行开启， 通过`--crop_size`传入窗口大小， `--stride`传入步长。使用示例如下：
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --is_slide \
@@ -47,18 +61,16 @@ python val.py \
 
 ```
 ...
-2021-01-13 16:41:29 [INFO]    Start evaluating (total_samples=76, total_iters=76)...
-76/76 [==============================] - 2s 30ms/step - batch_cost: 0.0268 - reader cost: 1.7656e-
-2021-01-13 16:41:31 [INFO]    [EVAL] #Images=76 mIoU=0.8526 Acc=0.9942 Kappa=0.8283
-2021-01-13 16:41:31 [INFO]    [EVAL] Class IoU:
-[0.9941 0.7112]
-2021-01-13 16:41:31 [INFO]    [EVAL] Class Acc:
-[0.9959 0.8886]
+2022-06-22 11:05:55 [INFO]      [EVAL] #Images: 76 mIoU: 0.9232 Acc: 0.9970 Kappa: 0.9171 Dice: 0.9585
+2022-06-22 11:05:55 [INFO]      [EVAL] Class IoU:
+[0.997  0.8494]
+2022-06-22 11:05:55 [INFO]      [EVAL] Class Precision:
+[0.9984 0.9237]
+2022-06-22 11:05:55 [INFO]      [EVAL] Class Recall:
+[0.9986 0.9135]
 ```
 
-### 2.**API**方式下评估和预测
-
-#### 评估
+### 2.**API**方式下评估
 
 构建模型
 ```

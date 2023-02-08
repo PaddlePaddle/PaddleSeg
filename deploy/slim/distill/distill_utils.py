@@ -173,8 +173,8 @@ def distill_train(distill_model,
             if iter > iters:
                 break
             reader_cost_averager.record(time.time() - batch_start)
-            images = data[0]
-            labels = data[1].astype('int64')
+            images = data['img']
+            labels = data['label'].astype('int64')
             edges = None
             if len(data) == 3:
                 edges = data[2].astype('int64')
@@ -244,10 +244,10 @@ def distill_train(distill_model,
                 lr_sche.step()
 
             distill_model.clear_gradients()
-            avg_loss += loss.numpy()[0]
-            avg_out_loss += out_loss.numpy()[0]
-            avg_out_distill_loss += out_distill_loss.numpy()[0]
-            avg_feature_distill_loss += feature_distill_loss.numpy()[0]
+            avg_loss += float(loss)
+            avg_out_loss += float(out_loss)
+            avg_out_distill_loss += float(out_distill_loss)
+            avg_feature_distill_loss += float(feature_distill_loss)
             if not avg_out_loss_list:
                 avg_out_loss_list = [l.numpy() for l in out_loss_list]
             else:

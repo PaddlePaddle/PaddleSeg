@@ -155,10 +155,10 @@ class RMILoss(nn.Layer):
                 shape = labels_4D.shape
                 new_h, new_w = shape[2] // s, shape[3] // s
                 labels_4D = F.interpolate(
-                    labels_4D, size=(new_h, new_w), mode='nearest')
+                    labels_4D, size=[new_h, new_w], mode='nearest')
                 probs_4D = F.interpolate(
                     probs_4D,
-                    size=(new_h, new_w),
+                    size=[new_h, new_w],
                     mode='bilinear',
                     align_corners=True)
             else:

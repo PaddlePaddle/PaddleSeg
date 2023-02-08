@@ -10,3 +10,4 @@ sklearn
 filelock
 nibabel
 pydicom
+medpy

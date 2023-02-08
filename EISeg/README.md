@@ -4,7 +4,6 @@
 <p align="center">
   <img src="https://user-images.githubusercontent.com/35907364/179460858-7dfb19b1-cabf-4f8a-9e81-eb15b6cc7d5f.png" align="middle" alt="LOGO" width = "500" />
 </p>
-
 **飞桨高效交互式分割标注工具。**
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
@@ -40,10 +39,11 @@
 
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> 最新动态
+* [2022-12-16] :fire: EISeg 1.1版本发布！
+  - 新增检测标注功能，可手工标注或使用预标注模型PicoDet进行标注。
+  - 检测标注结果保存格式支持COCO, VOC及YOLO等多种格式。
+  - 分割新增LabelMe JSON保存格式。
 * [2022-09-16] :fire: EISeg使用的X光胸腔标注模型MUSCLE已经被MICCAI 2022接收，具体可参见[MUSCLE](docs/MUSCLE.md), 标注模型下载[地址](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_resnet50_deeplab_chest_xray.zip).
-* [2022-07-20] :fire: EISeg 1.0版本发布！
-  - 新增用于通用场景视频交互式分割能力，以EISeg交互式分割模型及[MiVOS](https://github.com/hkchengrex/MiVOS)算法为基础，全面提升视频标注体验。详情使用请参考[视频标注](docs/video.md)。
-  - 新增用于腹腔多器官及CT椎骨数据3D分割能力，并提供3D可视化工具，给予医疗领域3D标注新的思路。详情使用请参考[3D标注](docs/video.md)。
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> 简介
 
@@ -52,21 +52,36 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
 ![4a9ed-a91y1](https://user-images.githubusercontent.com/71769312/141130688-e1529c27-aba8-4bf7-aad8-dda49808c5c7.gif)
 
 ## <img src="../docs/images/feature.png" width="20"/> 特性
+
   * 高效的半自动标注工具，已上线多个Top标注平台
   * 覆盖遥感、医疗、视频、3D医疗等众多垂类场景
   * 多平台兼容，简单易用，支持多类别标签管理
 
+## <img src="../docs/images/chat.png" width="20"/> 技术交流
+
+* 如果您对EISeg有任何问题和建议，欢迎在[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
+* 欢迎您加入EISeg微信群，和大家交流讨论、一起共建EISeg，而且可以**领取重磅学习大礼包🎁**。
+  * 🔥 获取深度学习视频教程、图像分割论文合集
+  * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
+  * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
+  * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
+  * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
+<div align="center">
+<img src="https://user-images.githubusercontent.com/30883834/216607378-94745b74-0ca1-4d39-a817-de94385496f1.jpg"  width = "200" />  
+</div>
 ## <img src="../docs/images/teach.png" width="20"/> 使用教程
 * [安装说明](docs/install.md)
-* [图像标注](docs/image.md)
-* [视频及3D医疗标注](docs/video.md)
-* [遥感特色功能](docs/remote_sensing.md)
-* [医疗特色功能](docs/medical.md)
+* [图像分割标注](docs/image.md)
+* [视频及3D医疗分割标注](docs/video.md)
+* [遥感分割特色功能](docs/remote_sensing.md)
+* [医疗分割特色功能](docs/medical.md)
+* [图像检测标注](docs/det.md)
 * [数据处理脚本文档](docs/tools.md)
 
 
 ## <img src="../docs/images/anli.png" width="20"/> 更新历史
-- 2022.07.20  **1.0.0**：【1】新增交互式视频分割功能【2】新增腹腔多器官3D标注模型【3】新增CT椎骨3D标注模型。
+- 2022.12.16  **1.1.0**：【1】新增检测标注能力，支持手工标注或使用PicoDet模型进行预标注； 【2】检测标注结果保存格式支持COCO, VOC及YOLO等多种格式；【3】分割新增LabelMe JSON保存格式。
+- 2022.07.20  **1.0.0**：【1】新增交互式视频分割功能；【2】新增腹腔多器官3D标注模型【3】新增CT椎骨3D标注模型。
 - 2022.04.10  **0.5.0**：【1】新增chest_xray模型；【2】新增MRSpineSeg模型；【3】新增铝板质检标注模型；【4】修复保存shp时可能坐标出错。
 - 2021.11.16  **0.4.0**：【1】将动态图预测转换成静态图预测，单次点击速度提升十倍；【2】新增遥感图像标注功能，支持多光谱数据通道的选择；【3】支持大尺幅数据的切片（多宫格）处理；【4】新增医疗图像标注功能，支持读取dicom的数据格式，支持选择窗宽和窗位。
 - 2021.09.16  **0.3.0**：【1】初步完成多边形编辑功能，支持对交互标注的结果进行编辑；【2】支持中/英界面；【3】支持保存为灰度/伪彩色标签和COCO格式；【4】界面拖动更加灵活；【5】标签栏可拖动，生成mask的覆盖顺序由上往下覆盖。
@@ -87,18 +102,19 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
 如果我们的项目在学术上帮助到你，请考虑以下引用：
 
 ```latex
-@article{hao2021edgeflow,
-  title={EdgeFlow: Achieving Practical Interactive Segmentation with Edge-Guided Flow},
+@article{hao2022eiseg,
+  title={EISeg: An Efficient Interactive Segmentation Tool based on PaddlePaddle},
+  author={Hao, Yuying and Liu, Yi and Chen, Yizhou and Han, Lin and Peng, Juncai and Tang, Shiyu and Chen, Guowei and Wu, Zewu and Chen, Zeyu and Lai, Baohua},
+  journal={arXiv e-prints},
+  pages={arXiv--2210},
+  year={2022}
+}
+
+@inproceedings{hao2021edgeflow,
+  title={Edgeflow: Achieving practical interactive segmentation with edge-guided flow},
   author={Hao, Yuying and Liu, Yi and Wu, Zewu and Han, Lin and Chen, Yizhou and Chen, Guowei and Chu, Lutao and Tang, Shiyu and Yu, Zhiliang and Chen, Zeyu and others},
-  journal={arXiv preprint arXiv:2109.09406},
+  booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision},
+  pages={1551--1560},
   year={2021}
 }
 ```
-
-## <img src="../docs/images/chat.png" width="20"/> 技术交流
-
-* 如果您对EISeg有任何问题，欢迎在PaddleSeg issue下进行提问：[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* 欢迎您加入EISeg交流群，和我们一起共建EISeg。
-<div align="center">
-<img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
-</div>

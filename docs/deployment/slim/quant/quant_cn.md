@@ -1,3 +1,5 @@
+简体中文 | [English](quant.md)
+
 # 模型量化教程
 
 ## 1 概述
@@ -82,7 +84,7 @@ export CUDA_VISIBLE_DEVICES=0
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \

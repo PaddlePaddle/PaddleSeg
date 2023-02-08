@@ -126,10 +126,10 @@ print("Predict Result:", result)
 
 预测的结果是：
 
-> Predict Result: [{'category_id': 0, 'category': 'sunflower', 'score': 0.9999815}]
+> Predict Result: \[{'category_id': 0, 'category': 'sunflower', 'score': 0.9999815}\]
 > 最终结论：预测正确 ✔
 
----
+______________________________________________________________________
 
 # 二、目标检测（快速在 PaddleLabel 标注的道路标志检测数据集上展示如何应用 PaddleX 训练 YOLOv3 网络
 
@@ -262,7 +262,7 @@ pdx.det.visualize(image_path, result, threshold=0.5, save_dir='./output/yolov3_d
 
 > speedlimit 0.77 预测正确 ✔
 
----
+______________________________________________________________________
 
 # 三、图像分割（快速在 PaddleLabel 标注的狗子分割数据集上展示如何应用 PaddleX 训练 DeepLabV3 网络）
 

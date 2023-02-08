@@ -1,4 +1,4 @@
-简体中文|[English](data_prepare.md)
+简体中文 | [English](data_prepare.md)
 # 准备自定义数据集
 如果您需要使用自定义数据集进行训练，请按照以下步骤准备数据。
 
@@ -50,7 +50,7 @@
 
 使用命令如下，支持通过不同的Flags来开启特定功能。
 ```
-python tools/split_dataset_list.py <dataset_root> <images_dir_name> <labels_dir_name> ${FLAGS}
+python tools/data/split_dataset_list.py <dataset_root> <images_dir_name> <labels_dir_name> ${FLAGS}
 ```
 参数说明：
 - dataset_root: 数据集根目录
@@ -73,7 +73,7 @@ FLAGS说明：
 
 使用示例：
 ```
-python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
+python tools/data/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
 ```
 
 
@@ -82,11 +82,11 @@ python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6
 如果你只有划分好的数据集，可以通过执行以下脚本生成文件列表：
 ```
 # 生成文件列表，其分隔符为空格，图片和标签集的数据格式都为png
-python tools/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
+python tools/data/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
 ```
 ```
 # 生成文件列表，其图片和标签集的文件夹名为img和gt，训练和验证集的文件夹名为training和validation，不生成测试集列表
-python tools/create_dataset_list.py <your/dataset/dir> \
+python tools/data/create_dataset_list.py <your/dataset/dir> \
         --folder img gt --second_folder training validation
 ```
 

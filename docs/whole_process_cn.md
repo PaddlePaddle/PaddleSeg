@@ -59,18 +59,27 @@ PP-LiteSeg模型的结构如下图。更多详细介绍，请参考[链接](../c
 
 ### 3.2 配置文件详细解读
 
-PaddleSeg中，配置文件包括超参、训练数据集、验证数据集、优化器、损失函数、模型等信息。**所有的配置文件在PaddleSeg/configs文件夹下面**。
+PaddleSeg中，配置文件包括超参、训练数据集、验证数据集、优化器、损失函数、模型等信息。**所有模型在公开数据集上训练的配置文件在PaddleSeg/configs文件夹下面**。
 
 大家可以灵活修改配置文件的内容，如自定义模型使用的骨干网络、模型使用的损失函数以及关于网络结构等配置，自定义配置数据处理的策略，如改变尺寸、归一化和翻转等数据增强的策略，这些修改可以参考对应模块的代码，传入相应参数即可。
 
-以`PaddleSeg/configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml`为例，详细解读配置文件如下。
+以`PaddleSeg/configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml`为例，详细解读配置文件如下：
+* yml文件定义了超参、训练数据集、测试数据集、优化器、学习率、损失函数、模型的配置信息，PaddleSeg基于配置信息构建对应的模块，进行模型训练、评估和导出。
+* 超参主要包括batch_size和iters，前者是单卡的batch_size，后者表示训练迭代的轮数（单个batch进行一次前向和反向表示一轮）。
+* 配置信息模块中，`type`字段对应到PaddleSeg代码中的类名（Python Class Name），其他字段对应类（Python Class）中`__init__`函数的初始化参数。
+* 数据集dataset模块，支持的类在`PaddleSeg/paddleseg/datasets`目录下（使用@manager.DATASETS.add_component进行注册）。
+* 数据预处理方式transforms模块，支持的类在`PaddleSeg/paddleseg/transforms/transforms.py`文件中（使用@manager.TRANSFORMS.add_component进行注册）。
+* 优化器optimizer模块，支持Paddle提供的所有优化器类，具体参考：https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html#api
+* 学习率衰减lr_scheduler模块，支持Paddle提供的所有lr_scheduler类，具体参考：https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html#about-lr
+* 损失函数Loss模块，在`types`字段下分别定义使用的损失函数类，`coef`字段定义每个损失函数的权重。`types`字段下损失函数个数，应该等于`coef`字段数组的长度。如果所有损失函数相同，可以只定义一个损失函数。支持的损失函数类在`PaddleSeg/paddleseg/models/losses/`目录下（使用@manager.LOSSES.add_component注册）。
+* 模型Model模块，支持的model类在`PaddleSeg/paddleseg/models/`目录下（使用@manager.MODELS.add_component注册），支持的backbone类在`PaddleSeg/paddleseg/models/backbones`目录下（使用@manager.BACKBONES.add_component注册）。
 
 ```
 batch_size: 4  #设定batch_size的值即为迭代一次送入网络的图片数量，一般显卡显存越大，batch_size的值可以越大。如果使用多卡训练，总得batch size等于该batch size乘以卡数。
 iters: 1000    #模型训练迭代的轮数
 
 train_dataset:  #训练数据设置
-  type: Dataset #指定加载数据集的类
+  type: Dataset #指定加载数据集的类。数据集类的代码在`PaddleSeg/paddleseg/datasets`目录下。
   dataset_root: data/optic_disc_seg #数据集路径
   train_path: data/optic_disc_seg/train_list.txt  #数据集中用于训练的标识文件
   num_classes: 2  #指定类别个数（背景也算为一类）
@@ -90,7 +99,7 @@ train_dataset:  #训练数据设置
     - type: Normalize #对原始图像进行归一化，标注图像保持不变
 
 val_dataset:  #验证数据设置
-  type: Dataset #指定加载数据集的类
+  type: Dataset #指定加载数据集的类。数据集类的代码在`PaddleSeg/paddleseg/datasets`目录下。
   dataset_root: data/optic_disc_seg #数据集路径
   val_path: data/optic_disc_seg/val_list.txt  #数据集中用于验证的标识文件
   num_classes: 2  #指定类别个数（背景也算为一类）
@@ -140,16 +149,15 @@ model:  #模型说明
 
 ### 4.1 单卡训练
 
-准备好配置文件后，在PaddleSeg根目录下执行如下命令，使用`train.py`脚本进行单卡模型训练。
+准备好配置文件后，在PaddleSeg根目录下执行如下命令，使用`tools/train.py`脚本进行单卡模型训练。
 
 > 注意：PaddleSeg中模型训练、评估、预测、导出等命令，都要求在PaddleSeg根目录下执行。
 
 ```
-export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
+export CUDA_VISIBLE_DEVICES=0 # Linux上设置1张可用的卡
+# set CUDA_VISIBLE_DEVICES=0  # Windows上设置1张可用的卡
 
-**windows下请执行以下命令**
-**set CUDA_VISIBLE_DEVICES=0**
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --save_interval 500 \
        --do_eval \
@@ -199,7 +207,7 @@ output
 
 使用多卡训练：首先通过环境变量`CUDA_VISIBLE_DEVICES`指定使用的多张显卡，如果不设置`CUDA_VISIBLE_DEVICES`，默认使用所有显卡进行训练；然后使用`paddle.distributed.launch`启动`train.py`脚本进行训练。
 
-多卡训练的`train.py`支持的输入参数和单卡训练相同。
+多卡训练的`tools/train.py`支持的输入参数和单卡训练相同。
 
 由于Windows环境下不支持nccl，所以无法使用多卡训练。
 
@@ -207,7 +215,7 @@ output
 
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
@@ -219,14 +227,14 @@ python -m paddle.distributed.launch train.py \
 
 如果训练中断，我们可以恢复训练，避免从头开始训练。
 
-具体而言，通过给`train.py`脚本设置`resume_model`输入参数，加载中断前最近一次保存的模型信息，恢复训练。
+具体而言，通过给`tools/train.py`脚本设置`resume_model`输入参数，加载中断前最近一次保存的模型信息，恢复训练。
 
 在PP-LiteSeg示例中，总共需要训练1000轮。假如训练到750轮中断了，我们在`output`目录下，可以看到在`iter_500`文件夹中保存了第500轮的训练信息。执行如下命令，加载第500轮的训练信息恢复训练。
 
 单卡和多卡训练，都采用相同的方法设置`resume_model`输入参数，即可恢复训练。
 
 ```
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
@@ -239,7 +247,7 @@ python train.py \
 
 为了直观显示模型的训练过程，对训练过程进行分析从而快速的得到更好的模型，飞桨提供了可视化分析工具：VisualDL。
 
-当`train.py`脚本设置`use_vdl`输入参数后，PaddleSeg会将训练过程中的日志信息写入VisualDL文件，写入的日志信息包括：
+当`tools/train.py`脚本设置`use_vdl`输入参数后，PaddleSeg会将训练过程中的日志信息写入VisualDL文件，写入的日志信息包括：
 * loss
 * 学习率lr
 * 训练时间
@@ -259,12 +267,21 @@ visualdl --logdir output/
 
 ## 5. 模型评估
 
-训练完成后，大家可以使用评估脚本`val.py`来评估模型的精度，即对配置文件中的验证数据集进行测试。
+训练完成后，大家可以使用评估脚本`tools/val.py`来评估模型的精度，即对配置文件中的验证数据集进行测试。
 
 在PP-LiteSeg示例中，执行如下命令进行模型评估。其中，通过`--model_path`输入参数来指定评估的模型权重。
 
 ```
-python val.py \
+python tools/val.py \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
+       --model_path output/best_model/model.pdparams
+```
+
+如果想使用多卡进行评估，可以使用`paddle.distributed.launch`启动`tools/val.py`脚本。
+
+```
+export CUDA_VISIBLE_DEVICES=0,1
+python -m paddle.distributed.launch tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams
 ```
@@ -272,7 +289,7 @@ python val.py \
 如果想进行多尺度翻转评估，可以通过传入`--aug_eval`进行开启，然后通过`--scales`传入尺度信息， `--flip_horizontal`开启水平翻转，`--flip_vertical`开启垂直翻转。使用示例如下：
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --aug_eval \
@@ -283,7 +300,7 @@ python val.py \
 如果想进行滑窗评估，可以传入`--is_slide`进行开启， 通过`--crop_size`传入窗口大小， `--stride`传入步长。使用示例如下：
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --is_slide \
@@ -303,8 +320,6 @@ python val.py \
 
 ```
 ...
-2022-06-22 11:05:51 [INFO]      Start evaluating (total_samples: 76, total_iters: 76)...
-76/76 [==============================] - 3s 45ms/step - batch_cost: 0.0444 - reader cost: 5.4260e-04
 2022-06-22 11:05:55 [INFO]      [EVAL] #Images: 76 mIoU: 0.9232 Acc: 0.9970 Kappa: 0.9171 Dice: 0.9585
 2022-06-22 11:05:55 [INFO]      [EVAL] Class IoU:
 [0.997  0.8494]
@@ -321,7 +336,7 @@ python val.py \
 `predict.py`脚本是专门用来可视化预测的，命令格式如下所示。
 
 ```
-python predict.py \
+python tools/predict.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0002.jpg \
@@ -346,7 +361,7 @@ python predict.py \
 
 执行如下命令，加载精度最高的模型权重，导出预测模型。
 ```
-python export.py \
+python tools/export.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir output/infer_model
@@ -379,7 +394,7 @@ PaddleSeg目前支持以下部署方式：
 | 服务端部署   | HubServing   | 完善中 |
 | 前端部署     | PaddleJS     | [示例](../deploy/web/) |
 
-比如使用Python端部署方式，运行如下命令，会在output文件下面生成一张H0003.png的分割图像。
+比如使用Python端部署方式，运行如下命令，会在output文件下面生成一张H0002.png的分割图像。
 
 ```
 python deploy/python/infer.py \
@@ -427,8 +442,9 @@ PaddleSeg
         └── utils
             ├── visualize.py
             └── ...
-     ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
-     ├──  predict.py # 预测文件
+     ├──  tools
+          ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
+          ├──  predict.py # 预测文件
      └── ...
 ```
 

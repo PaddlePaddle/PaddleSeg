@@ -11,6 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Export the Paddle model to ONNX.
+
+Usage:
+    python tools/export_onnx.py \
+        --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml
+
+Note:
+* Some models are not supported exporting to ONNX.
+* Some ONNX models are not supportd deploying by TRT.
+"""
 
 import argparse
 import codecs
@@ -25,22 +36,8 @@ import paddle
 import onnx
 import onnxruntime
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(LOCAL_PATH, '..'))
-
-from paddleseg.cvlibs import Config
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.utils import logger, utils
-"""
-Export the Paddle model to ONNX.
-
-Usage:
-    python tools/export_onnx.py \
-        --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml
-
-Note:
-* Some models are not supported exporting to ONNX.
-* Some ONNX models are not supportd deploying by TRT.
-"""
 
 
 def parse_args():
@@ -83,9 +80,11 @@ def check_and_run_onnx(onnx_model_path, input_data):
 
 
 def export_onnx(args):
+    assert args.config is not None, \
+        'Please set --config path/to/yml'
     cfg = Config(args.config)
-    cfg.check_sync_info()
-    model = cfg.model
+    builder = SegBuilder(cfg)
+    model = builder.model
     if args.model_path is not None:
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')

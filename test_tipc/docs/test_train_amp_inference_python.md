@@ -79,7 +79,7 @@ bash test_tipc/test_train_inference_python.sh test_tipc/configs/pphumanseg_lite/
 输出结果如下，表示命令运行成功。
 
 ```bash
-[33m Run successfully with command - python3.7 train.py --config test_tipc/configs/pphumanseg_lite/pphumanseg_lite_mini_supervisely.yml --precision fp16 --amp_level O2 --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/pphumanseg_lite/amp_train_gpus_0_autocast_null --iters=50     --batch_size=2  
+[33m Run successfully with command - python3.7 tools/train.py --config test_tipc/configs/pphumanseg_lite/pphumanseg_lite_mini_supervisely.yml --precision fp16 --amp_level O2 --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/pphumanseg_lite/amp_train_gpus_0_autocast_null --iters=50     --batch_size=2  
 ......
 [33m Run successfully with command - python3.7 deploy/python/infer.py --device=cpu --enable_mkldnn=True --cpu_threads=1 --config=./test_tipc/output/pphumanseg_lite/amp_train_gpus_0_autocast_null//deploy.yaml --batch_size=1 --image_path=test_tipc/data/mini_supervisely/test.txt --benchmark=True --precision=fp32 --save_dir=./test_tipc/output/pphumanseg_lite/python_infer_cpu_usemkldnn_True_threads_1_precision_fp32_batchsize_1_results   > ./test_tipc/output/pphumanseg_lite/python_infer_cpu_usemkldnn_True_threads_1_precision_fp32_batchsize_1.log 2>&1 !
 ```

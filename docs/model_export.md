@@ -23,7 +23,7 @@ wget https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc1_citysca
 Run the following command in the root of PaddleSeg, the inference model is saved in `output/inference_model`.
 
 ```shell
-python export.py \
+python tools/export.py \
        --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml \
        --model_path model.pdparams \
        --save_dir output/inference_model

@@ -44,6 +44,8 @@ class CocoStuff(Dataset):
         edge (bool, optional): Whether to compute edge while training. Default: False
     """
     NUM_CLASSES = 171
+    IGNORE_INDEX = 255
+    IMG_CHANNELS = 3
 
     def __init__(self, transforms, dataset_root, mode='train', edge=False):
         self.dataset_root = dataset_root
@@ -52,7 +54,7 @@ class CocoStuff(Dataset):
         mode = mode.lower()
         self.mode = mode
         self.num_classes = self.NUM_CLASSES
-        self.ignore_index = 255
+        self.ignore_index = self.IGNORE_INDEX
         self.edge = edge
 
         if mode not in ['train', 'val']:

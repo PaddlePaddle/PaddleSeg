@@ -33,12 +33,11 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 #### 3. 安装
 
 ```shell
-cd PaddleSeg
+cd PaddleSeg/contrib/LaneSeg
 pip install scikit-learn
 pip install opencv-python
 pip install scikit-image
-pip install -e .
-cd contrib/LaneSeg
+pip install paddleseg==2.5.0
 ```
 
 ## 模型
