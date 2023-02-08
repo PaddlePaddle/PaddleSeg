@@ -37,7 +37,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def export(self, weight_path, save_dir, input_shape):
+    def export(self, weight_path, save_dir):
         raise NotImplementedError
 
     @abc.abstractmethod

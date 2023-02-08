@@ -102,7 +102,7 @@ class SegModel(BaseModel):
 
         self.runner.predict(config_file_path, cli_args, device)
 
-    def export(self, weight_path=None, save_dir=None):
+    def export(self, weight_path=None, save_dir=None, input_shape=None):
         if weight_path is not None:
             weight_path = abspath(weight_path)
         if save_dir is not None:
@@ -121,6 +121,10 @@ class SegModel(BaseModel):
             cli_args.append(CLIArgument('--model_path', weight_path))
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
+        if input_shape is not None:
+            if isinstance(input_shape, (list, tuple)):
+                input_shape = ' '.join(map(str, input_shape))
+            cli_args.append(CLIArgument('--input_shape', input_shape, sep=' '))
 
         self.runner.export(config_file_path, cli_args, None)
 

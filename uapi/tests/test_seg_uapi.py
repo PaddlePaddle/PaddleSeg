@@ -40,6 +40,7 @@ if __name__ == '__main__':
 
     model.export(
         weight_path='uapi/tests/seg_res/iter_10/model.pdparams',
+        input_shape=[1, 3, 256, 256],
         save_dir='uapi/tests/seg_res/infer')
 
     model.infer(
