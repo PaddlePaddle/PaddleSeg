@@ -27,7 +27,8 @@ if __name__ == '__main__':
         dataset='uapi/tests/data/mini_supervisely',
         batch_size=1,
         epochs_iters=10,
-        device='cpu',
+        device='gpu:0',
+        dy2st=True,
         amp='O1',
         save_dir='uapi/tests/seg_res')
 

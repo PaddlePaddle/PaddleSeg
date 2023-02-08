@@ -47,6 +47,8 @@ class SegModel(BaseModel):
         config_file_path = self.model_info['config_path']
         repo_config = SegConfig.build_from_file(config_file_path)
         repo_config.update_dataset_config(dataset)
+        if dy2st:
+            repo_config.update({'to_static_training': True})
         config_file_path = self.config_file_path
         repo_config.dump(config_file_path)
 
@@ -59,7 +61,6 @@ class SegModel(BaseModel):
         if resume_path is not None:
             model_dir = os.path.dirname(resume_path)
             cli_args.append(CLIArgument('--resume_path', model_dir))
-        # `dy2st` ignored
         if amp is not None:
             cli_args.append(CLIArgument('--precision', 'fp16'))
             cli_args.append(CLIArgument('--amp_level', amp))
