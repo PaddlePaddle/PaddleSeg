@@ -110,7 +110,7 @@ class BaseConfig(Config, metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @classmethod
-    def build_from_file(cls, config_file_path):
-        cfg = cls()
+    def build_from_file(cls, config_file_path, *args, **kwargs):
+        cfg = cls(*args, **kwargs)
         cfg.load(config_file_path)
         return cfg
