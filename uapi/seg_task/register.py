@@ -14,11 +14,12 @@
 
 import os.path as osp
 
-from .base.register import register_arch_info, register_model_info
-from .seg_task import SegModel, SegRunner
+from ..base.register import register_arch_info, register_model_info
+from .model import SegModel
+from .runner import SegRunner
 
 # XXX: Hard-code relative path of repo root dir
-REPO_ROOT_PATH = osp.abspath(osp.join(osp.dirname(__file__), '..'))
+REPO_ROOT_PATH = osp.abspath(osp.join(osp.dirname(__file__), '..', '..'))
 register_model_info({
     'model_name': 'SegModel',
     'model_cls': SegModel,

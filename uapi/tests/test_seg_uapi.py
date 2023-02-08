@@ -40,7 +40,6 @@ if __name__ == '__main__':
 
     model.export(
         weight_path='uapi/tests/seg_res/iter_10/model.pdparams',
-        input_shape=[1, 3, 256, 256],
         save_dir='uapi/tests/seg_res/infer')
 
     model.infer(
@@ -52,6 +51,7 @@ if __name__ == '__main__':
     model.compression(
         dataset='uapi/tests/data/mini_supervisely',
         batch_size=2,
+        learning_rate=0.1,
         epochs_iters=10,
         device='cpu',
         weight_path='uapi/tests/seg_res/iter_10/model.pdparams',

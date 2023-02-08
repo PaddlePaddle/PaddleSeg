@@ -14,3 +14,4 @@
 
 from .model import SegModel
 from .runner import SegRunner
+from . import register

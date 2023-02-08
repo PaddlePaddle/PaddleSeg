@@ -36,7 +36,7 @@ class SegConfig(BaseConfig):
         with open(config_file_path, 'w') as f:
             yaml.dump(self.dict, f, Dumper=NoAliasDumper)
 
-    def update_dataset_config(self, dataset_root_path):
+    def _update_dataset_config(self, dataset_root_path):
         ds_cfg = self._make_dataset_config(dataset_root_path)
         self.update(ds_cfg)
 

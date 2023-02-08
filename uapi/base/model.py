@@ -52,6 +52,7 @@ class BaseModel(metaclass=abc.ABCMeta):
     @cached_property
     def config_file_path(self):
         cls = self.__class__
-        tag = cls.__name__.lower()
+        arch_name = self.arch_info['arch_name']
+        tag = '_'.join([cls.__name__.lower(), arch_name])
         # Allow overwriting
         return create_yaml_config_file(tag=tag, noclobber=False)

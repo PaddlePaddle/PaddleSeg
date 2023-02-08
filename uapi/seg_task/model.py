@@ -27,6 +27,7 @@ class SegModel(BaseModel):
     def train(self,
               dataset,
               batch_size=None,
+              learning_rate=None,
               epochs_iters=None,
               device=None,
               resume_path=None,
@@ -46,7 +47,7 @@ class SegModel(BaseModel):
         # Update YAML config file
         config_file_path = self.arch_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
-        config.update_dataset_config(dataset)
+        config._update_dataset_config(dataset)
         if dy2st:
             config.update({'to_static_training': True})
         config_file_path = self.config_file_path
@@ -56,6 +57,8 @@ class SegModel(BaseModel):
         cli_args = []
         if batch_size is not None:
             cli_args.append(CLIArgument('--batch_size', batch_size))
+        if learning_rate is not None:
+            cli_args.append(CLIArgument('--learning_rate', learning_rate))
         if epochs_iters is not None:
             cli_args.append(CLIArgument('--iters', epochs_iters))
         if resume_path is not None:
@@ -84,7 +87,7 @@ class SegModel(BaseModel):
         # Update YAML config file
         config_file_path = self.arch_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
-        config.update_dataset_config(self._create_dummy_dataset())
+        config._update_dataset_config(self._create_dummy_dataset())
         config_file_path = self.config_file_path
         config.dump(config_file_path)
 
@@ -99,7 +102,7 @@ class SegModel(BaseModel):
 
         self.runner.predict(config_file_path, cli_args, device)
 
-    def export(self, weight_path=None, save_dir=None, input_shape=None):
+    def export(self, weight_path=None, save_dir=None):
         if weight_path is not None:
             weight_path = abspath(weight_path)
         if save_dir is not None:
@@ -108,7 +111,7 @@ class SegModel(BaseModel):
         # Update YAML config file
         config_file_path = self.arch_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
-        config.update_dataset_config(self._create_dummy_dataset())
+        config._update_dataset_config(self._create_dummy_dataset())
         config_file_path = self.config_file_path
         config.dump(config_file_path)
 
@@ -118,10 +121,6 @@ class SegModel(BaseModel):
             cli_args.append(CLIArgument('--model_path', weight_path))
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
-        if input_shape is not None:
-            if isinstance(input_shape, (list, tuple)):
-                input_shape = ' '.join(map(str, input_shape))
-            cli_args.append(CLIArgument('--input_shape', input_shape, sep=' '))
 
         self.runner.export(config_file_path, cli_args, None)
 
@@ -135,7 +134,7 @@ class SegModel(BaseModel):
         # Update YAML config file
         config_file_path = self.arch_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
-        config.update_dataset_config(self._create_dummy_dataset())
+        config._update_dataset_config(self._create_dummy_dataset())
         config.dump(self.config_file_path)
 
         # Parse CLI arguments
@@ -151,6 +150,7 @@ class SegModel(BaseModel):
     def compression(self,
                     dataset,
                     batch_size=None,
+                    learning_rate=None,
                     epochs_iters=None,
                     device=None,
                     weight_path=None,
@@ -164,7 +164,7 @@ class SegModel(BaseModel):
         # Update YAML config file
         config_file_path = self.arch_info['auto_compression_config_path']
         config = SegConfig.build_from_file(config_file_path)
-        config.update_dataset_config(dataset)
+        config._update_dataset_config(dataset)
         config_file_path = self.config_file_path
         config.dump(config_file_path)
 
@@ -172,6 +172,8 @@ class SegModel(BaseModel):
         cli_args = []
         if batch_size is not None:
             cli_args.append(CLIArgument('--batch_size', batch_size))
+        if learning_rate is not None:
+            cli_args.append(CLIArgument('--learning_rate', learning_rate))
         if epochs_iters is not None:
             cli_args.append(CLIArgument('--iters', epochs_iters))
         if weight_path is not None:

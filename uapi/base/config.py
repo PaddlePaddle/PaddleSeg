@@ -19,37 +19,6 @@ from collections import OrderedDict
 __all__ = ['Config', 'BaseConfig']
 
 
-def format_cfg(cfg, indent=0):
-    MAP_TYPES = (collections.abc.Mapping, )
-    SEQ_TYPES = (list, tuple)
-    NESTED_TYPES = (*MAP_TYPES, *SEQ_TYPES)
-
-    s = ' ' * indent
-    if isinstance(cfg, Config):
-        cfg = cfg.dict
-    if isinstance(cfg, MAP_TYPES):
-        for i, (k, v) in enumerate(sorted(cfg.items())):
-            s += str(k) + ': '
-            if isinstance(v, NESTED_TYPES):
-                s += '\n' + format_cfg(v, indent=indent + 1)
-            else:
-                s += str(v)
-            if i != len(cfg) - 1:
-                s += '\n'
-    elif isinstance(cfg, SEQ_TYPES):
-        for i, v in enumerate(cfg):
-            s += '- '
-            if isinstance(v, NESTED_TYPES):
-                s += '\n' + format_cfg(v, indent=indent + 1)
-            else:
-                s += str(v)
-            if i != len(cfg) - 1:
-                s += '\n'
-    else:
-        s += str(cfg)
-    return s
-
-
 class Config(object):
     _DICT_TYPE_ = OrderedDict
 
@@ -114,3 +83,34 @@ class BaseConfig(Config, metaclass=abc.ABCMeta):
         cfg = cls(*args, **kwargs)
         cfg.load(config_file_path)
         return cfg
+
+
+def format_cfg(cfg, indent=0):
+    MAP_TYPES = (collections.abc.Mapping, )
+    SEQ_TYPES = (list, tuple)
+    NESTED_TYPES = (*MAP_TYPES, *SEQ_TYPES)
+
+    s = ' ' * indent
+    if isinstance(cfg, Config):
+        cfg = cfg.dict
+    if isinstance(cfg, MAP_TYPES):
+        for i, (k, v) in enumerate(sorted(cfg.items())):
+            s += str(k) + ': '
+            if isinstance(v, NESTED_TYPES):
+                s += '\n' + format_cfg(v, indent=indent + 1)
+            else:
+                s += str(v)
+            if i != len(cfg) - 1:
+                s += '\n'
+    elif isinstance(cfg, SEQ_TYPES):
+        for i, v in enumerate(cfg):
+            s += '- '
+            if isinstance(v, NESTED_TYPES):
+                s += '\n' + format_cfg(v, indent=indent + 1)
+            else:
+                s += str(v)
+            if i != len(cfg) - 1:
+                s += '\n'
+    else:
+        s += str(cfg)
+    return s

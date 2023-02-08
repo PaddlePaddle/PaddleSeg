@@ -32,6 +32,13 @@ assert MODEL_INFO_PRIMARY_KEY in MODEL_INFO_REQUIRED_KEYS
 # 'model' in arch info <-> 'model_name' in model info
 
 
+class PaddleModel(object):
+    # We constrain function params here
+    def __new__(cls, model_name):
+        arch_info = get_registered_arch_info(model_name)
+        return build_model_from_arch_info(arch_info)
+
+
 def _validate_arch_info(arch_info):
     for key in ARCH_INFO_REQUIRED_KEYS:
         if key not in arch_info:
@@ -82,10 +89,3 @@ def build_model_from_arch_info(arch_info):
     model_info = get_registered_model_info(model_name)
     model_cls = model_info['model_cls']
     return model_cls(model_name=arch_name)
-
-
-class PaddleModel(object):
-    # We constrain function params here
-    def __new__(cls, model_name):
-        arch_info = get_registered_arch_info(model_name)
-        return build_model_from_arch_info(arch_info)

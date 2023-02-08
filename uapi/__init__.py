@@ -12,5 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uapi.model_zoo
 from .base import PaddleModel
+# Register models and architectures
+# Seg task
+from .seg_task import register
