@@ -74,7 +74,6 @@ class TopFormer(nn.Layer):
 
     def forward(self, x, upsample='intepolate'):
         x_hw = paddle.shape(x)[2:]
-        x_shape = paddle.shape(x)
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
         if upsample == 'intepolate':
@@ -103,15 +102,14 @@ class TopFormer(nn.Layer):
 
 
 class TopFormerHead(nn.Layer):
-    def __init__(
-            self,
-            num_classes,
-            in_channels,
-            in_index=[0, 1, 2],
-            in_transform='multiple_select',
-            use_dw=False,
-            dropout_ratio=0.1,  # here 
-            align_corners=False):
+    def __init__(self,
+                 num_classes,
+                 in_channels,
+                 in_index=[0, 1, 2],
+                 in_transform='multiple_select',
+                 use_dw=False,
+                 dropout_ratio=0.1,
+                 align_corners=False):
         super().__init__()
 
         self.in_index = in_index

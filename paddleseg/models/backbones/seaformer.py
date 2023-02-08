@@ -548,7 +548,7 @@ class SeaFormer(nn.Layer):
                  act_layer=nn.ReLU6,
                  lr_mult=1.0,
                  in_channels=3,
-                 use_AAM=True,
+                 use_AAM=False,
                  pretrained=None):
         super().__init__()
         self.channels = channels

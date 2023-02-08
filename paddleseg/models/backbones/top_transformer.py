@@ -533,7 +533,7 @@ class TopTransformer(nn.Layer):
                  injection=True,
                  lr_mult=1.0,
                  in_channels=3,
-                 backbone='MobileNetV2',
+                 backbone='top_transformer',
                  pretrained=None):
         super().__init__()
         print('The backbone is ', backbone)
