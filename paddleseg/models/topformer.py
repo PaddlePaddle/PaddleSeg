@@ -72,9 +72,8 @@ class TopFormer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def forward(self, x, upsample='valid'):
-        x_hw = x.shape[2:]
-        x_shape = paddle.shape(x)
+    def forward(self, x, upsample='intepolate'):
+        x_hw = paddle.shape(x)[2:]
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
         if upsample == 'intepolate':
@@ -87,7 +86,7 @@ class TopFormer(nn.Layer):
                 x = F.interpolate(
                     x, x_hw, mode='bilinear', align_corners=self.align_corners)
 
-                pred = paddle.argmax(x, 1)  # pred shape is -1
+                pred = paddle.argmax(x, 1)
                 pred_retrieve = paddle.zeros(pred.shape, dtype='int32')
                 for i, val in enumerate(labelset):
                     pred_retrieve[pred == i] = labelset[i].cast('int32')
@@ -107,7 +106,7 @@ class TopFormerHead(nn.Layer):
                  num_classes,
                  in_channels,
                  in_index=[0, 1, 2],
-                 in_transform='only_one',
+                 in_transform='multiple_select',
                  use_dw=False,
                  dropout_ratio=0.1,
                  align_corners=False):
@@ -133,7 +132,6 @@ class TopFormerHead(nn.Layer):
         assert in_transform in [
             None, 'resize_concat', 'multiple_select', 'only_one'
         ]
-        print('!!The in_transform is {}'.format(in_transform))
         if in_transform is not None:
             assert len(in_channels) == len(in_index)
             if in_transform == 'resize_concat':

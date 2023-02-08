@@ -44,10 +44,17 @@ optimizer:
   _inherited_: False
   type: AdamW
   weight_decay: 0.01
+  custom_cfg:
+  - name: pos_embed
+    weight_decay_mult: 0.0
+  - name: head
+    lr_multi: 10.0
+  - name: bn
+    weight_decay_mult: 0.0
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.00025 # 0.0012
+  learning_rate: 0.00025
   end_lr: 0
   power: 1.0
   warmup_iters: 1500
@@ -63,5 +70,7 @@ model:
   num_classes: 150
   backbone:
     type: SeaFormer_Base
-    lr_mult: 0.1
+    lr_mult: 1.0
+    use_AAM: False
     pretrained: saved_model/seaformer_76.4.pdparams
+  head_use_dw: True
