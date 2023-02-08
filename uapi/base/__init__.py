@@ -14,4 +14,5 @@
 
 from .config import BaseConfig
 from .model import BaseModel
-from .repo import BaseRepo
+from .runner import BaseRunner
+from .register import PaddleModel

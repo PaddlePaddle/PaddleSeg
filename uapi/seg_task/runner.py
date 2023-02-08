@@ -12,14 +12,10 @@
 # See the License for the specific language governing permissions and   
 # limitations under the License.
 
-from .base_uapi import BaseRepo
+from ..base import BaseRunner
 
 
-class PaddleSeg(BaseRepo):
-    def check(self, model_name):
-        # TODO:
-        pass
-
+class SegRunner(BaseRunner):
     def train(self, config_file_path, cli_args, device):
         python, device_type = self.distributed(device)
         args = self._gather_opts_args(cli_args)

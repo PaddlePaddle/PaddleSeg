@@ -14,10 +14,10 @@
 
 import os
 
-from .base_uapi import BaseModel
-from .base_uapi.utils.path import get_cache_dir
-from .base_uapi.utils.arg import CLIArgument
-from .base_uapi.utils.misc import abspath
+from ..base import BaseModel
+from ..base.utils.path import get_cache_dir
+from ..base.utils.arg import CLIArgument
+from ..base.utils.misc import abspath
 from .config import SegConfig
 
 
@@ -33,8 +33,8 @@ class SegModel(BaseModel):
               dy2st=None,
               amp=None,
               save_dir=None):
-        # We must use an absolute path here, 
-        # so we can run the scripts either inside or outsize the repo dir.
+        # NOTE: We must use an absolute path here, 
+        # so we can run the scripts either inside or outside the repo dir.
         dataset = abspath(dataset)
         if dy2st is None:
             dy2st = False
@@ -44,13 +44,13 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.model_info['config_path']
-        repo_config = SegConfig.build_from_file(config_file_path)
-        repo_config.update_dataset_config(dataset)
+        config_file_path = self.arch_info['config_path']
+        config = SegConfig.build_from_file(config_file_path)
+        config.update_dataset_config(dataset)
         if dy2st:
-            repo_config.update({'to_static_training': True})
+            config.update({'to_static_training': True})
         config_file_path = self.config_file_path
-        repo_config.dump(config_file_path)
+        config.dump(config_file_path)
 
         # Parse CLI arguments
         cli_args = []
@@ -67,7 +67,7 @@ class SegModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        self.repo_instance.train(config_file_path, cli_args, device)
+        self.runner.train(config_file_path, cli_args, device)
 
     def predict(self,
                 weight_path=None,
@@ -82,11 +82,11 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.model_info['config_path']
-        repo_config = SegConfig.build_from_file(config_file_path)
-        repo_config.update_dataset_config(self._create_dummy_dataset())
+        config_file_path = self.arch_info['config_path']
+        config = SegConfig.build_from_file(config_file_path)
+        config.update_dataset_config(self._create_dummy_dataset())
         config_file_path = self.config_file_path
-        repo_config.dump(config_file_path)
+        config.dump(config_file_path)
 
         # Parse CLI arguments
         cli_args = []
@@ -97,7 +97,7 @@ class SegModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        self.repo_instance.predict(config_file_path, cli_args, device)
+        self.runner.predict(config_file_path, cli_args, device)
 
     def export(self, weight_path=None, save_dir=None, input_shape=None):
         if weight_path is not None:
@@ -106,11 +106,11 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.model_info['config_path']
-        repo_config = SegConfig.build_from_file(config_file_path)
-        repo_config.update_dataset_config(self._create_dummy_dataset())
+        config_file_path = self.arch_info['config_path']
+        config = SegConfig.build_from_file(config_file_path)
+        config.update_dataset_config(self._create_dummy_dataset())
         config_file_path = self.config_file_path
-        repo_config.dump(config_file_path)
+        config.dump(config_file_path)
 
         # Parse CLI arguments
         cli_args = []
@@ -123,7 +123,7 @@ class SegModel(BaseModel):
                 input_shape = ' '.join(map(str, input_shape))
             cli_args.append(CLIArgument('--input_shape', input_shape, sep=' '))
 
-        self.repo_instance.export(config_file_path, cli_args, None)
+        self.runner.export(config_file_path, cli_args, None)
 
     def infer(self, model_dir, device=None, input_path=None, save_dir=None):
         model_dir = abspath(model_dir)
@@ -133,10 +133,10 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.model_info['config_path']
-        repo_config = SegConfig.build_from_file(config_file_path)
-        repo_config.update_dataset_config(self._create_dummy_dataset())
-        repo_config.dump(self.config_file_path)
+        config_file_path = self.arch_info['config_path']
+        config = SegConfig.build_from_file(config_file_path)
+        config.update_dataset_config(self._create_dummy_dataset())
+        config.dump(self.config_file_path)
 
         # Parse CLI arguments
         cli_args = []
@@ -146,7 +146,7 @@ class SegModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        self.repo_instance.infer(config_file_path, cli_args, device)
+        self.runner.infer(config_file_path, cli_args, device)
 
     def compression(self,
                     dataset,
@@ -162,11 +162,11 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.model_info['auto_compression_config_path']
-        repo_config = SegConfig.build_from_file(config_file_path)
-        repo_config.update_dataset_config(dataset)
+        config_file_path = self.arch_info['auto_compression_config_path']
+        config = SegConfig.build_from_file(config_file_path)
+        config.update_dataset_config(dataset)
         config_file_path = self.config_file_path
-        repo_config.dump(config_file_path)
+        config.dump(config_file_path)
 
         # Parse CLI arguments
         cli_args = []
@@ -179,7 +179,7 @@ class SegModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        self.repo_instance.compression(config_file_path, cli_args, device)
+        self.runner.compression(config_file_path, cli_args, device)
 
     def _create_dummy_dataset(self):
         # Create a PaddleSeg-style dataset

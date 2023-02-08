@@ -14,24 +14,25 @@
 
 import os.path as osp
 
-from .base_uapi.register import register_model_info, register_repo_info
-from .repo import PaddleSeg
+from .base.register import register_arch_info, register_model_info
+from .seg_task import SegModel, SegRunner
 
 # XXX: Hard-code relative path of repo root dir
 REPO_ROOT_PATH = osp.abspath(osp.join(osp.dirname(__file__), '..'))
-register_repo_info({
-    'repo_name': 'PaddleSeg',
-    'repo_cls': PaddleSeg,
-    'root_path': REPO_ROOT_PATH
+register_model_info({
+    'model_name': 'SegModel',
+    'model_cls': SegModel,
+    'runner_cls': SegRunner,
+    'repo': 'PaddleSeg',
+    'repo_root_path': REPO_ROOT_PATH
 })
 
 PPHUMANSEG_LITE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs',
                                     'pp_humanseg_lite',
                                     'pp_humanseg_lite_mini_supervisely.yml')
-register_model_info({
-    'model_name': 'pphumanseg_lite',
-    'repo': 'PaddleSeg',
+register_arch_info({
+    'arch_name': 'pphumanseg_lite',
+    'model': 'SegModel',
     'config_path': PPHUMANSEG_LITE_CFG_PATH,
-    'type': 'seg',
     'auto_compression_config_path': PPHUMANSEG_LITE_CFG_PATH
 })

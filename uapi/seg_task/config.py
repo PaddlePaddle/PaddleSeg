@@ -18,7 +18,7 @@ import yaml
 from paddleseg.utils import NoAliasDumper
 from paddleseg.cvlibs.config import parse_from_yaml, merge_config_dicts
 
-from .base_uapi import BaseConfig
+from ..base import BaseConfig
 
 
 class SegConfig(BaseConfig):
