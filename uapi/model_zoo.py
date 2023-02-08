@@ -23,7 +23,6 @@ register_model_info({
     'model_name': 'SegModel',
     'model_cls': SegModel,
     'runner_cls': SegRunner,
-    'repo': 'PaddleSeg',
     'repo_root_path': REPO_ROOT_PATH
 })
 

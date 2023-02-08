@@ -23,7 +23,7 @@ ARCH_INFO_REQUIRED_KEYS = ('arch_name', 'model', 'config_path',
                            'auto_compression_config_path')
 ARCH_INFO_PRIMARY_KEY = 'arch_name'
 assert ARCH_INFO_PRIMARY_KEY in ARCH_INFO_REQUIRED_KEYS
-MODEL_INFO_REQUIRED_KEYS = ('model_name', 'model_cls', 'runner_cls', 'repo',
+MODEL_INFO_REQUIRED_KEYS = ('model_name', 'model_cls', 'runner_cls',
                             'repo_root_path')
 MODEL_INFO_PRIMARY_KEY = 'model_name'
 assert MODEL_INFO_PRIMARY_KEY in MODEL_INFO_REQUIRED_KEYS
