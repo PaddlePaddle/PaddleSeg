@@ -26,6 +26,10 @@ class PaddleModel(metaclass=abc.ABCMeta):
         self.repo_instance = build_repo_from_model_info(self.model_info)
 
     @abc.abstractmethod
+    def build_repo_config(self, config_file_path):
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def train(self, dataset, batch_size, epochs_iters, device, resume_path,
               dy2st, amp, save_dir):
         raise NotImplementedError

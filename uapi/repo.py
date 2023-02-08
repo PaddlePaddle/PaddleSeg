@@ -13,19 +13,12 @@
 # limitations under the License.
 
 from .paddle_uapi.repo import BaseRepo
-from .config import SegConfig
 
 
 class PaddleSeg(BaseRepo):
     def check(self, model_name):
         # TODO:
         pass
-
-    def build_repo_config(self, config_file_path=None):
-        repo_config = SegConfig()
-        if config_file_path is not None:
-            repo_config.load(config_file_path)
-        return repo_config
 
     def train(self, config_file_path, cli_args, device):
         python, device_type = self.distributed(device)

@@ -36,10 +36,6 @@ class BaseRepo(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def build_repo_config(self, config_file_path):
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def train(self, config_file_path, cli_args, device):
         raise NotImplementedError
 
