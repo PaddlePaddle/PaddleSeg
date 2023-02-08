@@ -1,10 +1,10 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,155 +12,305 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This code is based on https://github.com/niecongchong/RS-building-regularization
-Ths copyright of niecongchong/RS-building-regularization is as follows:
+This code is based on https://github.com/PaddlePaddle/PaddleRS
+Ths copyright of PaddlePaddle/PaddleRS is as follows:
 Apache License [see LICENSE for details]
 """
 
+import math
+
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
-from .rdp_alg import rdp
-from .cal_point import cal_ang, cal_dist, cal_azimuth
-from .rotate_ang import Nrotation_angle_get_coor_coordinates, Srotation_angle_get_coor_coordinates
-from .cal_line import line, intersection, par_line_dist, point_in_line
+
+from .utils import calc_distance
+
+S = 20
+TD = 3
+D = TD + 1
+
+ALPHA = math.degrees(math.pi / 6)
+BETA = math.degrees(math.pi * 17 / 18)
+DELTA = math.degrees(math.pi / 12)
+THETA = math.degrees(math.pi / 4)
 
 
-def boundary_regularization(contours, img_shape, epsilon=6):
-    h, w = img_shape[0:2]
-    # 轮廓定位
-    contours = np.squeeze(contours)
-    # 轮廓精简DP
-    contours = rdp(contours, epsilon=epsilon)
-    contours[:, 1] = h - contours[:, 1]
-    # 轮廓规则化
-    dists = []
-    azis = []
-    azis_index = []
-    # 获取每条边的长度和方位角
-    for i in range(contours.shape[0]):
-        cur_index = i
-        next_index = i + 1 if i < contours.shape[0] - 1 else 0
-        prev_index = i - 1
-        cur_point = contours[cur_index]
-        nest_point = contours[next_index]
-        prev_point = contours[prev_index]
-        dist = cal_dist(cur_point, nest_point)
-        azi = cal_azimuth(cur_point, nest_point)
-        dists.append(dist)
-        azis.append(azi)
-        azis_index.append([cur_index, next_index])
-    # 以最长的边的方向作为主方向
-    longest_edge_idex = np.argmax(dists)
-    main_direction = azis[longest_edge_idex]
-    # 方向纠正，绕中心点旋转到与主方向垂直或者平行
-    correct_points = []
-    para_vetr_idxs = []  # 0平行 1垂直
-    for i, (azi, (point_0_index,
-                  point_1_index)) in enumerate(zip(azis, azis_index)):
-        if i == longest_edge_idex:
-            correct_points.append(
-                [contours[point_0_index], contours[point_1_index]])
-            para_vetr_idxs.append(0)
+def boundary_regularization(contour, mask_shape, W: int=32) -> np.ndarray:
+    new_contour = _coarse(contour, mask_shape)  # coarse
+    if new_contour is not None:
+        contour = _fine(new_contour, W)  # fine
+    return contour
+
+
+def _coarse(contour, img_shape):
+    def _inline_check(point, shape, eps=5):
+        x, y = point[0]
+        iH, iW = shape
+        if x < eps or x > iH - eps or y < eps or y > iW - eps:
+            return False
         else:
-            # 确定旋转角度
-            rotate_ang = main_direction - azi
-            if np.abs(rotate_ang) < 180 / 4:
-                rotate_ang = rotate_ang
-                para_vetr_idxs.append(0)
-            elif np.abs(rotate_ang) >= 90 - 180 / 4:
-                rotate_ang = rotate_ang + 90
-                para_vetr_idxs.append(1)
-            # 执行旋转任务
-            point_0 = contours[point_0_index]
-            point_1 = contours[point_1_index]
-            point_middle = (point_0 + point_1) / 2
-            if rotate_ang > 0:
-                rotate_point_0 = Srotation_angle_get_coor_coordinates(
-                    point_0, point_middle, np.abs(rotate_ang))
-                rotate_point_1 = Srotation_angle_get_coor_coordinates(
-                    point_1, point_middle, np.abs(rotate_ang))
-            elif rotate_ang < 0:
-                rotate_point_0 = Nrotation_angle_get_coor_coordinates(
-                    point_0, point_middle, np.abs(rotate_ang))
-                rotate_point_1 = Nrotation_angle_get_coor_coordinates(
-                    point_1, point_middle, np.abs(rotate_ang))
+            return True
+
+    area = cv2.contourArea(contour)
+    # S = 20
+    if area < S:  # remove polygons whose area is below a threshold S
+        return None
+    # D = 0.3 if area < 200 else 1.0
+    # TD = 0.5 if area < 200 else 0.9
+    epsilon = 0.005 * cv2.arcLength(contour, True)
+    contour = cv2.approxPolyDP(contour, epsilon, True)  # DP
+    p_number = contour.shape[0]
+    idx = 0
+    while idx < p_number:
+        last_point = contour[idx - 1]
+        current_point = contour[idx]
+        next_idx = (idx + 1) % p_number
+        next_point = contour[next_idx]
+        # remove edges whose lengths are below a given side length TD
+        # that varies with the area of a building.
+        distance = calc_distance(current_point, next_point)
+        if distance < TD and not _inline_check(next_point, img_shape):
+            contour = np.delete(contour, next_idx, axis=0)
+            p_number -= 1
+            continue
+        # remove over-sharp angles with threshold α.
+        # remove over-smooth angles with threshold β.
+        angle = _calc_angle(last_point, current_point, next_point)
+        if (ALPHA > angle or angle > BETA) and _inline_check(current_point,
+                                                             img_shape):
+            contour = np.delete(contour, idx, axis=0)
+            p_number -= 1
+            continue
+        idx += 1
+    if p_number > 2:
+        return contour
+    else:
+        return None
+
+
+def _fine(contour, W):
+    # area = cv2.contourArea(contour)
+    # W = 6 if area < 200 else 8
+    # TD = 0.5 if area < 200 else 0.9
+    # D = TD + 0.3
+    nW = W
+    p_number = contour.shape[0]
+    distance_list = []
+    azimuth_list = []
+    indexs_list = []
+    for idx in range(p_number):
+        current_point = contour[idx]
+        next_idx = (idx + 1) % p_number
+        next_point = contour[next_idx]
+        distance_list.append(calc_distance(current_point, next_point))
+        azimuth_list.append(_calc_azimuth(current_point, next_point))
+        indexs_list.append((idx, next_idx))
+    # add the direction of the longest edge to the list of main direction.
+    longest_distance_idx = np.argmax(distance_list)
+    main_direction_list = [azimuth_list[longest_distance_idx]]
+    max_dis = distance_list[longest_distance_idx]
+    if max_dis <= nW:
+        nW = max_dis - 1e-6
+    # Add other edges’ direction to the list of main directions
+    # according to the angle threshold δ between their directions
+    # and directions in the list.
+    for distance, azimuth in zip(distance_list, azimuth_list):
+        for mdir in main_direction_list:
+            abs_dif_ang = abs(mdir - azimuth)
+            if distance > nW and THETA <= abs_dif_ang <= (180 - THETA):
+                main_direction_list.append(azimuth)
+    contour_by_lines = []
+    md_used_list = [main_direction_list[0]]
+    for distance, azimuth, (idx, next_idx) in zip(distance_list, azimuth_list,
+                                                  indexs_list):
+        p1 = contour[idx]
+        p2 = contour[next_idx]
+        pm = (p1 + p2) / 2
+        # find long edges with threshold W that varies with building’s area.
+        if distance > nW:
+            rotate_ang = main_direction_list[0] - azimuth
+            for main_direction in main_direction_list:
+                r_ang = main_direction - azimuth
+                if abs(r_ang) < abs(rotate_ang):
+                    rotate_ang = r_ang
+                    md_used_list.append(main_direction)
+            abs_rotate_ang = abs(rotate_ang)
+            # adjust long edges according to the list and angles.
+            if abs_rotate_ang < DELTA or abs_rotate_ang > (180 - DELTA):
+                rp1 = _rotation(p1, pm, rotate_ang)
+                rp2 = _rotation(p2, pm, rotate_ang)
+            elif (90 - DELTA) < abs_rotate_ang < (90 + DELTA):
+                rp1 = _rotation(p1, pm, rotate_ang - 90)
+                rp2 = _rotation(p2, pm, rotate_ang - 90)
             else:
-                rotate_point_0 = point_0
-                rotate_point_1 = point_1
-            correct_points.append([rotate_point_0, rotate_point_1])
-    correct_points = np.array(correct_points)
-    # 相邻边校正，垂直取交点，平行平移短边或者加线
+                rp1, rp2 = p1, p2
+        # adjust short edges (judged by a threshold θ) according to the list and angles.
+        else:
+            rotate_ang = md_used_list[-1] - azimuth
+            abs_rotate_ang = abs(rotate_ang)
+            if abs_rotate_ang < THETA or abs_rotate_ang > (180 - THETA):
+                rp1 = _rotation(p1, pm, rotate_ang)
+                rp2 = _rotation(p2, pm, rotate_ang)
+            else:
+                rp1 = _rotation(p1, pm, rotate_ang - 90)
+                rp2 = _rotation(p2, pm, rotate_ang - 90)
+        # contour_by_lines.extend([rp1, rp2])
+        contour_by_lines.append([rp1[0], rp2[0]])
+    correct_points = np.array(contour_by_lines)
+    # merge (or connect) parallel lines if the distance between
+    # two lines is less than (or larger than) a threshold D.
     final_points = []
-    final_points.append(correct_points[0][0])
-    for i in range(correct_points.shape[0] - 1):
-        cur_index = i
-        next_index = i + 1 if i < correct_points.shape[0] - 1 else 0
-        cur_edge_point_0 = correct_points[cur_index][0]
-        cur_edge_point_1 = correct_points[cur_index][1]
-        next_edge_point_0 = correct_points[next_index][0]
-        next_edge_point_1 = correct_points[next_index][1]
-        cur_para_vetr_idx = para_vetr_idxs[cur_index]
-        next_para_vetr_idx = para_vetr_idxs[next_index]
-        if cur_para_vetr_idx != next_para_vetr_idx:
-            # 垂直取交点
-            L1 = line(cur_edge_point_0, cur_edge_point_1)
-            L2 = line(next_edge_point_0, next_edge_point_1)
-            point_intersection = intersection(L1, L2)
-            final_points.append(point_intersection)
-        elif cur_para_vetr_idx == next_para_vetr_idx:
-            # 平行分两种，一种加短线，一种平移，取决于距离阈值
-            L1 = line(cur_edge_point_0, cur_edge_point_1)
-            L2 = line(next_edge_point_0, next_edge_point_1)
-            marg = par_line_dist(L1, L2)
-            if marg < 3:
-                # 平移
-                point_move = point_in_line(
-                    next_edge_point_0[0], next_edge_point_0[1],
-                    cur_edge_point_0[0], cur_edge_point_0[1],
-                    cur_edge_point_1[0], cur_edge_point_1[1])
+    final_points.append(correct_points[0][0].reshape([1, 2]))
+    lp_number = correct_points.shape[0] - 1
+    for idx in range(lp_number):
+        next_idx = (idx + 1) if idx < lp_number else 0
+        cur_edge_p1 = correct_points[idx][0]
+        cur_edge_p2 = correct_points[idx][1]
+        next_edge_p1 = correct_points[next_idx][0]
+        next_edge_p2 = correct_points[next_idx][1]
+        L1 = _line(cur_edge_p1, cur_edge_p2)
+        L2 = _line(next_edge_p1, next_edge_p2)
+        A1 = _calc_azimuth([cur_edge_p1], [cur_edge_p2])
+        A2 = _calc_azimuth([next_edge_p1], [next_edge_p2])
+        dif_azi = abs(A1 - A2)
+        # find intersection point if not parallel
+        if (90 - DELTA) < dif_azi < (90 + DELTA):
+            point_intersection = _intersection(L1, L2)
+            if point_intersection is not None:
+                final_points.append(point_intersection)
+        # move or add lines when parallel
+        elif dif_azi < 1e-6:
+            marg = _calc_distance_between_lines(L1, L2)
+            if marg < D:
+                # move
+                point_move = _calc_project_in_line(next_edge_p1, cur_edge_p1,
+                                                   cur_edge_p2)
                 final_points.append(point_move)
-                # 更新平移之后的下一条边
-                correct_points[next_index][0] = point_move
-                correct_points[next_index][1] = point_in_line(
-                    next_edge_point_1[0], next_edge_point_1[1],
-                    cur_edge_point_0[0], cur_edge_point_0[1],
-                    cur_edge_point_1[0], cur_edge_point_1[1])
+                # update next
+                correct_points[next_idx][0] = point_move
+                correct_points[next_idx][1] = _calc_project_in_line(
+                    next_edge_p2, cur_edge_p1, cur_edge_p2)
             else:
-                # 加线
-                add_mid_point = (cur_edge_point_1 + next_edge_point_0) / 2
-                add_point_1 = point_in_line(
-                    add_mid_point[0], add_mid_point[1], cur_edge_point_0[0],
-                    cur_edge_point_0[1], cur_edge_point_1[0],
-                    cur_edge_point_1[1])
-                add_point_2 = point_in_line(
-                    add_mid_point[0], add_mid_point[1], next_edge_point_0[0],
-                    next_edge_point_0[1], next_edge_point_1[0],
-                    next_edge_point_1[1])
-                final_points.append(add_point_1)
-                final_points.append(add_point_2)
-    final_points.append(final_points[0])
+                # add line
+                add_mid_point = (cur_edge_p2 + next_edge_p1) / 2
+                rp1 = _calc_project_in_line(add_mid_point, cur_edge_p1,
+                                            cur_edge_p2)
+                rp2 = _calc_project_in_line(add_mid_point, next_edge_p1,
+                                            next_edge_p2)
+                final_points.extend([rp1, rp2])
+        else:
+            final_points.extend(
+                [cur_edge_p1[np.newaxis, :], cur_edge_p2[np.newaxis, :]])
     final_points = np.array(final_points)
-    final_points[:, 1] = h - final_points[:, 1]
-    final_points = final_points[np.newaxis, :].transpose((1, 0, 2))
     return final_points
 
 
-# def rs_build_re(mask):
-#     # 中值滤波，去噪
-#     ori_img = cv2.medianBlur(mask, 5)
-#     ori_img = cv2.cvtColor(ori_img, cv2.COLOR_BGR2GRAY)
-#     ret, ori_img = cv2.threshold(ori_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-#     # 连通域分析
-#     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(ori_img, connectivity=8)
-#     # 遍历联通域
-#     for i in range(1, num_labels):
-#         img = np.zeros_like(labels)
-#         index = np.where(labels==i)
-#         img[index] = 255
-#         img = np.array(img, dtype=np.uint8)
-#         regularization_contour = boundary_regularization(img).astype(np.int32)
-#         cv2.polylines(img=mask, pts=[regularization_contour], isClosed=True, color=(255, 0, 0), thickness=5)
-#         single_out = np.zeros_like(mask)
-#         cv2.polylines(img=single_out, pts=[regularization_contour], isClosed=True, color=(255, 0, 0), thickness=5)
-#         cv2.imwrite('single_out_{}.jpg'.format(i), single_out)
+def _get_priority(hierarchy):
+    if hierarchy[3] < 0:
+        return 1
+    if hierarchy[2] < 0:
+        return 2
+    return 3
+
+
+def _fill(img, coarse_conts):
+    result = np.zeros_like(img)
+    sorted(coarse_conts, key=lambda x: x[1])
+    for contour, priority in coarse_conts:
+        if priority == 2:
+            cv2.fillPoly(result, [contour.astype(np.int32)], (0, 0, 0))
+        else:
+            cv2.fillPoly(result, [contour.astype(np.int32)], (255, 255, 255))
+    return result
+
+
+def _calc_angle(p1, vertex, p2):
+    x1, y1 = p1[0]
+    xv, yv = vertex[0]
+    x2, y2 = p2[0]
+    a = ((xv - x2) * (xv - x2) + (yv - y2) * (yv - y2))**0.5
+    b = ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))**0.5
+    c = ((x1 - xv) * (x1 - xv) + (y1 - yv) * (y1 - yv))**0.5
+    return math.degrees(math.acos((b**2 - a**2 - c**2) / (-2 * a * c)))
+
+
+def _calc_azimuth(p1, p2):
+    x1, y1 = p1[0]
+    x2, y2 = p2[0]
+    if y1 == y2:
+        return 0.0
+    if x1 == x2:
+        return 90.0
+    elif x1 < x2:
+        if y1 < y2:
+            ang = math.atan((y2 - y1) / (x2 - x1))
+            return math.degrees(ang)
+        else:
+            ang = math.atan((y1 - y2) / (x2 - x1))
+            return 180 - math.degrees(ang)
+    else:  # x1 > x2
+        if y1 < y2:
+            ang = math.atan((y2 - y1) / (x1 - x2))
+            return 180 - math.degrees(ang)
+        else:
+            ang = math.atan((y1 - y2) / (x1 - x2))
+            return math.degrees(ang)
+
+
+def _rotation(point, center, angle):
+    if angle == 0:
+        return point
+    x, y = point[0]
+    cx, cy = center[0]
+    radian = math.radians(abs(angle))
+    if angle > 0:  # clockwise
+        rx = (x - cx) * math.cos(radian) - (y - cy) * math.sin(radian) + cx
+        ry = (x - cx) * math.sin(radian) + (y - cy) * math.cos(radian) + cy
+    else:
+        rx = (x - cx) * math.cos(radian) + (y - cy) * math.sin(radian) + cx
+        ry = (y - cy) * math.cos(radian) - (x - cx) * math.sin(radian) + cy
+    return np.array([[rx, ry]])
+
+
+def _line(p1, p2):
+    A = (p1[1] - p2[1])
+    B = (p2[0] - p1[0])
+    C = (p1[0] * p2[1] - p2[0] * p1[1])
+    return A, B, -C
+
+
+def _intersection(L1, L2):
+    D = L1[0] * L2[1] - L1[1] * L2[0]
+    Dx = L1[2] * L2[1] - L1[1] * L2[2]
+    Dy = L1[0] * L2[2] - L1[2] * L2[0]
+    if D != 0:
+        x = Dx / D
+        y = Dy / D
+        return np.array([[x, y]])
+    else:
+        return None
+
+
+def _calc_distance_between_lines(L1, L2):
+    eps = 1e-16
+    A1, _, C1 = L1
+    A2, B2, C2 = L2
+    new_C1 = C1 / (A1 + eps)
+    new_A2 = 1
+    new_B2 = B2 / (A2 + eps)
+    new_C2 = C2 / (A2 + eps)
+    dist = (np.abs(new_C1 - new_C2)) / (
+        np.sqrt(new_A2 * new_A2 + new_B2 * new_B2) + eps)
+    return dist
+
+
+def _calc_project_in_line(point, line_point1, line_point2):
+    eps = 1e-16
+    m, n = point
+    x1, y1 = line_point1
+    x2, y2 = line_point2
+    F = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
+    x = (m * (x2 - x1) * (x2 - x1) + n * (y2 - y1) * (x2 - x1) +
+         (x1 * y2 - x2 * y1) * (y2 - y1)) / (F + eps)
+    y = (m * (x2 - x1) * (y2 - y1) + n * (y2 - y1) * (y2 - y1) +
+         (x2 * y1 - x1 * y2) * (x2 - x1)) / (F + eps)
+    return np.array([[x, y]])

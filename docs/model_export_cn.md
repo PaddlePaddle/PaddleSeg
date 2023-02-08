@@ -21,7 +21,7 @@ wget https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc1_citysca
 在PaddleSeg根目录下，执行如下命令，导出预测模型，保存在`output/inference_model`目录。
 
 ```shell
-python export.py \
+python tools/export.py \
        --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml \
        --model_path model.pdparams \
        --save_dir output/inference_model

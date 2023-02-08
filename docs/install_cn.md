@@ -1,4 +1,4 @@
-简体中文|[English](install.md)
+简体中文 | [English](install.md)
 # 安装文档
 
 
@@ -60,6 +60,7 @@ git clone https://gitee.com/paddlepaddle/PaddleSeg.git
 
 ```
 cd PaddleSeg
+pip install -r requirements.txt
 pip install -v -e .
 ```
 

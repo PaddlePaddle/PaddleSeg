@@ -2,4 +2,4 @@ paddleseg >= 2.5
 pymatting
 scikit-image
 numba
-opencv-python==4.5.4.60
+opencv-python

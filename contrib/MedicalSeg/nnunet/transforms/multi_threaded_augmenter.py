@@ -42,13 +42,8 @@ def prefetch_data(queue,
                     queue.put(item)
             else:
                 sleep(wait_time)
-        except KeyboardInterrupt:
-            print("MultiThreadedGenerator: caught exception: {}".format(
-                sys.exc_info()))
-            self._finish()
-        except Exception as e:
-            print("Exception caught in process {}, info: {}".format(process_id,
-                                                                    e))
+        except Exception as exp:
+            raise exp
     return
 
 
@@ -91,6 +86,7 @@ class MultiThreadedAugmenter:
             self._finish()
         except Exception as e:
             print("Exception: {}".format(e))
+            self._finish()
         return item
 
     def initialize(self):

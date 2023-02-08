@@ -80,7 +80,7 @@ Finally, use the data conversion script to convert the data to the format requir
 
 Run the following code to convert the annotated data. `<PATH/TO/LABEL_JSON_FILE>` is the directory of the folder where the picture and the json file produced by LabelMe are located, and it is also the directory of the folder where the converted label set is located.
 ```
-python tools/labelme2seg.py <PATH/TO/LABEL_JSON_FILE>
+python tools/data/labelme2seg.py <PATH/TO/LABEL_JSON_FILE>
 ```
 
 The dataset directory structure after data format conversion is as follows:

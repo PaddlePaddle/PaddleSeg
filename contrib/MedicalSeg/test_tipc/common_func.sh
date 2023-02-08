@@ -19,9 +19,9 @@ function func_parser_value(){
 function func_set_params(){
     key=$1
     value=$2
-    if [ ${key}x = "null"x ];then
+    if [ ${key}x = "null"x ]; then
         echo " "
-    elif [[ ${value} = "null" ]] || [[ ${value} = " " ]] || [ ${#value} -le 0 ];then
+    elif [[ ${value} = "null" ]] || [[ ${value} = " " ]] || [ ${#value} -le 0 ]; then
         echo " "
     else
         echo "${key}=${value}"

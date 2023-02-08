@@ -211,11 +211,7 @@ def train(model,
                     losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
-                # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
-                if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
-                    optimizer.step(loss)
-                else:
-                    optimizer.step()
+                optimizer.step()
 
             lr = optimizer.get_lr()
 
@@ -225,12 +221,15 @@ def train(model,
             else:
                 lr_sche = optimizer._learning_rate
             if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
-                lr_sche.step()
+                if isinstance(lr_sche, paddle.optimizer.lr.ReduceOnPlateau):
+                    lr_sche.step(loss)
+                else:
+                    lr_sche.step()
 
             train_profiler.add_profiler_step(profiler_options)
 
             model.clear_gradients()
-            avg_loss += loss.numpy()[0]
+            avg_loss += float(loss)
             if not avg_loss_list:
                 avg_loss_list = [l.numpy() for l in loss_list]
             else:
@@ -328,7 +327,7 @@ def train(model,
             model, [1, c, h, w],
             custom_ops={paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn})
 
-    # Sleep for half a second to let dataloader release resources.
-    time.sleep(0.5)
+    # Sleep for a second to let dataloader release resources.
+    time.sleep(1)
     if use_vdl:
         log_writer.close()

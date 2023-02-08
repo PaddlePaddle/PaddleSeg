@@ -71,6 +71,8 @@ class PSSLDataset(Dataset):
     """
     ignore_index = 1001  # 0~999 is target class, 1000 is bg
     NUM_CLASSES = 1001  # consider target class and bg
+    IGNORE_INDEX = 1001
+    IMG_CHANNELS = 3
 
     def __init__(self,
                  transforms,
@@ -89,7 +91,7 @@ class PSSLDataset(Dataset):
         self.edge = edge
 
         self.num_classes = self.NUM_CLASSES
-        self.ignore_index = self.num_classes  # 1001
+        self.ignore_index = self.IGNORE_INDEX  # 1001
         self.file_list = []
         self.class_id_dict = {}
 

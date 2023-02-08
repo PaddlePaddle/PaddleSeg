@@ -141,7 +141,7 @@ def train(model,
             train_profiler.add_profiler_step(profiler_options)
 
             model.clear_gradients()
-            avg_loss += loss.numpy()[0]
+            avg_loss += float(loss)
             mdice += np.mean(per_channel_dice) * 100
 
             if channel_dice_array.size == 0:

@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 null:null
 ##
 trainer:amp_train
-amp_train:train.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml --precision fp16 --amp_level O1 --do_eval --save_interval 500 --seed 100
+amp_train:tools/train.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml --precision fp16 --amp_level O1 --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
 distill_train:null
@@ -27,7 +27,7 @@ null:null
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:export.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml
+norm_export:tools/export.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -35,7 +35,7 @@ export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/ocrnet_hrnetw48/model.pdparams
-infer_export:export.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml
+infer_export:tools/export.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml
 infer_quant:False
 inference:deploy/python/infer.py --save_dir ./test_tipc/output/ocrnet_hrnetw48/
 --device:cpu|gpu

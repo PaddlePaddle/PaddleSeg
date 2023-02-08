@@ -1,4 +1,4 @@
-English|[简体中文](train_cn.md)
+English | [简体中文](train_cn.md)
 # Model Training
 
 ## 1、Start Training
@@ -10,7 +10,7 @@ We can train the model through the script provided by PaddleSeg. Here we use `PP
 export CUDA_VISIBLE_DEVICES=0 # Set 1 usable card
 # If you are using windows, please excute following script:
 # set CUDA_VISIBLE_DEVICES=0
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
@@ -41,7 +41,7 @@ If you want to use multi-card training, you need to specify the environment vari
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # Set 4 usable cards
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
@@ -51,7 +51,7 @@ python -m paddle.distributed.launch train.py \
 
 ## 3、Resume Training：
 ```shell
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \

@@ -29,7 +29,7 @@ make -j
 cd ..
 
 ./build/test_seg \
-    --model_dir=./stdc1seg_infer_model \
+    --model_dir=./pp_liteseg_infer_model \
     --img_path=./cityscapes_demo.png \
     --devices=CPU \
     --use_mkldnn=true

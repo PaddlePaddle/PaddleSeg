@@ -12,23 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os.path as osp
-import time
 import json
 import logging
+import os.path as osp
+import time
 
 import cv2
 import numpy as np
-from skimage.measure import label
 import paddle
+from skimage.measure import label
 
+import util
 from eiseg import logger
 from inference import clicker
 from inference.predictor import get_predictor
-import util
-from util.vis import draw_with_blend_and_clicks
 from models import EISegModel
 from util import LabelList
+from util.vis import draw_with_blend_and_clicks
 
 
 class InteractiveController:
@@ -118,19 +118,26 @@ class InteractiveController:
             logger.info(f"Load model {model_path} took {time.time() - tic}")
             return True, "模型设置成功"
 
-    def setImage(self, image: np.array):
+    def setImage(self, image: np.array, type_seg: bool=True):
         """设置当前标注的图片
 
         Parameters
         ----------
         image : np.array
             当前标注的图片
+        type_seg : bool
+            标注类型是否为分割
 
         """
-        if self.model is not None:
+        if type_seg:
+            if self.model is not None:
+                self.image = image
+                self._result_mask = np.zeros(image.shape[:2], dtype=np.uint8)
+                self.resetLastObject()
+        else:
+            # 检测标注模式下我们是允许model为None的，因为如果不启用预标注，那就不需要模型了
             self.image = image
             self._result_mask = np.zeros(image.shape[:2], dtype=np.uint8)
-            self.resetLastObject()
 
     # 标签操作
     def setLabelList(self, labelList: json):

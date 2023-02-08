@@ -15,23 +15,15 @@
 import argparse
 import codecs
 import os
-import sys
 import time
-
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
 
 import yaml
 import numpy as np
-from paddle.inference import create_predictor, PrecisionType
-from paddle.inference import Config as PredictConfig
 
-import paddleseg.transforms as T
-from paddleseg.cvlibs import manager
-from paddleseg.utils import get_sys_env, logger, get_image_list
+from paddleseg.deploy.infer import DeployConfig
+from paddleseg.utils import logger
 from paddleseg.utils.visualize import get_pseudo_color_map
-
-from infer import use_auto_tune, auto_tune, DeployConfig, Predictor
+from infer import auto_tune, use_auto_tune, Predictor
 
 
 def parse_args():

@@ -1,4 +1,4 @@
-[English](./quick_start.md) | 简体中文
+简体中文 | [English](./quick_start.md)
 
 # 快速开始
 
@@ -41,7 +41,7 @@ cd ..
 export CUDA_VISIBLE_DEVICES=0 # Linux下设置1张可用的卡
 # set CUDA_VISIBLE_DEVICES=0 # Windows下设置1张可用的卡
 
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --save_interval 500 \
        --do_eval \
@@ -56,7 +56,7 @@ python train.py \
 在PaddleSeg根目录下，执行如下命令，使用`val.py`脚本来评估模型的精度，即计算验证数据集的精度。
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams
 ```
@@ -66,7 +66,7 @@ python val.py \
 在PaddleSeg根目录下，执行如下命令，使用`predict.py`脚本加载模型，对图像进行预测，并且保存预测结果。
 
 ```
-python predict.py \
+python tools/predict.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/best_model/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0002.jpg \

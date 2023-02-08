@@ -184,7 +184,7 @@ export CUDA_VISIBLE_DEVICES=0 # Set 1 usable card
 
 **Please execute the following command under windows**
 **set CUDA_VISIBLE_DEVICES=0**
-python train.py \
+python tools/train.py \
         --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --do_eval \
         --use_vdl \
@@ -244,7 +244,7 @@ A: As shown by the serial number in the figure, the parameters of the No. 1 yml 
 
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # Set 4 usable cards
-python -m paddle.distributed.launch train.py \
+python -m paddle.distributed.launch tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
@@ -255,7 +255,7 @@ python -m paddle.distributed.launch train.py \
 ### **3.8 Resume training**
 
 ```
-python train.py \
+python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
@@ -294,7 +294,7 @@ Enter the suggested URL in the browser, the effect is as follows:
 After the training is completed, the user can use the evaluation script val.py to evaluate the effect of the model. Assuming that the number of iterations (iters) in the training process is 1000, the interval for saving the model is 500, that is, the training model is saved twice for every 1000 iterations of the dataset. Therefore, there will be a total of 2 regularly saved models, plus the best model best_model saved, there are a total of 3 models. You can specify the model file you want to evaluate through model_path.
 
 ```
-python val.py \
+python tools/val.py \
         --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --model_path output/iter_1000/model.pdparams
 ```
@@ -302,7 +302,7 @@ python val.py \
 If you want to perform multi-scale flip evaluation, you can turn it on by passing in `--aug_eval`, and then passing in scale information via `--scales`, `--flip_horizontal` turns on horizontal flip, and `flip_vertical` turns on vertical flip. Examples of usage are as follows:
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --aug_eval \
@@ -313,7 +313,7 @@ python val.py \
 If you want to perform sliding window evaluation, you can open it by passing in `--is_slide`, pass in the window size by `--crop_size`, and pass in the step size by `--stride`. Examples of usage are as follows:
 
 ```
-python val.py \
+python tools/val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --is_slide \
@@ -349,7 +349,7 @@ In addition to analyzing the IOU, ACC and Kappa indicators of the model, we can 
 The predict.py script is specially used to visualize prediction cases. The command format is as follows
 
 ```
-python predict.py \
+python tools/predict.py \
         --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --model_path output/iter_1000/model.pdparams \
         --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
@@ -369,7 +369,7 @@ We select 1 picture to view, the effect is as follows. We can intuitively see th
 In order to facilitate the user's industrial-level deployment, PaddleSeg provides a one-click function of moving to static, which is to convert the trained dynamic graph model file into a static graph form.
 
 ```
-python export.py \
+python tools/export.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams
 ```
@@ -463,8 +463,9 @@ PaddleSeg
         └── utils
             ├── visualize.py
             └── ...
-     ├── train.py # The training entry file, which describes the analysis of parameters, the starting method of training, and the resources prepared for training.
-     ├── predict.py # Prediction file
+     ├── tools
+        ├── train.py # The training entry file, which describes the analysis of parameters, the starting method of training, and the resources prepared for training.
+        ├── predict.py # Prediction file
      └── ...
 
 

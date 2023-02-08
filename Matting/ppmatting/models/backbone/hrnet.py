@@ -20,7 +20,8 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
-from paddleseg.utils import utils
+
+import ppmatting
 
 __all__ = [
     "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", "HRNet_W18", "HRNet_W30",
@@ -194,7 +195,7 @@ class HRNet(nn.Layer):
                 param_init.constant_init(layer.weight, value=1.0)
                 param_init.constant_init(layer.bias, value=0.0)
         if self.pretrained is not None:
-            utils.load_pretrained_model(self, self.pretrained)
+            ppmatting.utils.load_pretrained_model(self, self.pretrained)
 
 
 class Layer1(nn.Layer):

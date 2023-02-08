@@ -27,7 +27,7 @@ URL = "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.ta
 class PascalVOC(Dataset):
     """
     PascalVOC2012 dataset `http://host.robots.ox.ac.uk/pascal/VOC/`.
-    If you want to augment the dataset, please run the voc_augment.py in tools.
+    If you want to augment the dataset, please run the voc_augment.py in tools/data.
 
     Args:
         transforms (list): Transforms for image.
@@ -37,6 +37,8 @@ class PascalVOC(Dataset):
         edge (bool, optional): Whether to compute edge while training. Default: False
     """
     NUM_CLASSES = 21
+    IGNORE_INDEX = 255
+    IMG_CHANNELS = 3
 
     def __init__(self, transforms, dataset_root=None, mode='train', edge=False):
         self.dataset_root = dataset_root
@@ -45,7 +47,7 @@ class PascalVOC(Dataset):
         self.mode = mode
         self.file_list = list()
         self.num_classes = self.NUM_CLASSES
-        self.ignore_index = 255
+        self.ignore_index = self.IGNORE_INDEX
         self.edge = edge
 
         if mode not in ['train', 'trainval', 'trainaug', 'val']:

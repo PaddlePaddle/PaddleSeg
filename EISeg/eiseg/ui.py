@@ -58,6 +58,7 @@ class Ui_EISeg(object):
         toolBar.setAllowedAreas(QtCore.Qt.BottomToolBarArea |
                                 QtCore.Qt.TopToolBarArea)
         toolBar.setObjectName("toolBar")
+        toolBar.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
         self.toolBar = toolBar
         MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         ## -----
@@ -143,6 +144,20 @@ class Ui_EISeg(object):
         horizontalLayout = QtWidgets.QHBoxLayout(widget)
         LabelRegion = QtWidgets.QVBoxLayout()
         LabelRegion.setObjectName("LabelRegion")
+        # 添加一个搜索功能
+        findHorizontalLayout = QtWidgets.QHBoxLayout()
+        self.cbbLabelFind = QtWidgets.QComboBox(self.CentralWidget)
+        self.cbbLabelFind.setMinimumSize(QtCore.QSize(0, 32))
+        self.cbbLabelFind.setEditable(True)
+        findHorizontalLayout.addWidget(self.cbbLabelFind)
+        self.btnLabelFind = self.p_create_button(
+            "btnLabelFind",
+            self.tr("查找"),
+            osp.join(pjpath, "resource/Find.png"), )
+        self.btnLabelFind.setMinimumSize(QtCore.QSize(0, 32))
+        self.btnLabelFind.setMaximumWidth(68)
+        findHorizontalLayout.addWidget(self.btnLabelFind)
+        LabelRegion.addLayout(findHorizontalLayout)
         self.labelListTable = TableWidget(
             self.CentralWidget)  # QtWidgets.QTableWidget(CentralWidget)
         self.labelListTable.horizontalHeader().hide()
@@ -399,6 +414,45 @@ class Ui_EISeg(object):
         verticalLayout.addLayout(VideoRegion)
         self.VideoDock.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea)
         MainWindow.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.VideoDock)
+        ## 检测区
+        widget = QtWidgets.QWidget()
+        horizontalLayout = QtWidgets.QHBoxLayout(widget)
+        self.DetDock = self.p_create_dock("DetDock", self.tr("检测设置"), widget)
+        DetRegion = QtWidgets.QVBoxLayout()
+        DetRegion.setObjectName("DetRegion")
+        self.sldNMS, _, NMSRegion = self.p_create_slider("sldNMS", "textNMS",
+                                                         self.tr("分数阈值："))
+        DetRegion.addLayout(NMSRegion)
+        DetRegion.addWidget(self.sldNMS)
+        fixHorizontalLayout = QtWidgets.QHBoxLayout()
+        self.btnDrawDet = self.p_create_button(
+            "btnDrawDet",
+            self.tr("开启画框功能"),
+            osp.join(pjpath, "resource/DrawRect.png"), )
+        fixHorizontalLayout.addWidget(self.btnDrawDet)
+        self.btnReDet = self.p_create_button(
+            "btnReDet",
+            self.tr("重推理"),
+            osp.join(pjpath, "resource/ReRun.png"), )
+        fixHorizontalLayout.addWidget(self.btnReDet)
+        DetRegion.addLayout(fixHorizontalLayout)
+        self.btnAutoLabelSetting = self.p_create_button(
+            "btnAutoLabelSetting",
+            self.tr("预标注设置"),
+            osp.join(pjpath, "resource/Setting.png"), )
+        DetRegion.addWidget(self.btnAutoLabelSetting)
+        btnDetSave = self.p_create_button(
+            "btnDetSave",
+            self.tr("保存"),
+            osp.join(pjpath, "resource/Save.png"),
+            "Ctrl+S", )
+        btnDetSave.clicked.connect(self.btnSave.click)  # 同步保存点击事件
+        DetRegion.addWidget(btnDetSave)
+        DetRegion.addSpacerItem(
+            QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum,
+                                  QtWidgets.QSizePolicy.Expanding))
+        horizontalLayout.addLayout(DetRegion)
+        MainWindow.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.DetDock)
         # timer
         self.timer = QTimer()
         self.timer.setSingleShot(False)

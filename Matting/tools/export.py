@@ -18,7 +18,8 @@ import sys
 
 import paddle
 import yaml
-from paddleseg.cvlibs import Config, manager
+import paddleseg
+from paddleseg.cvlibs import manager
 from paddleseg.utils import logger
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +29,7 @@ manager.BACKBONES._components_dict.clear()
 manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting
+from ppmatting.utils import get_input_spec, Config, MatBuilder
 
 
 def parse_args():
@@ -68,10 +70,16 @@ def parse_args():
 
 
 def main(args):
-    os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
+    assert args.cfg is not None, \
+        'No configuration file specified, please set --config'
     cfg = Config(args.cfg)
+    builder = MatBuilder(cfg)
 
-    net = cfg.model
+    paddleseg.utils.show_env_info()
+    paddleseg.utils.show_cfg_info(cfg)
+    os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
+
+    net = builder.model
     net.eval()
     if args.model_path:
         para_state_dict = paddle.load(args.model_path)
@@ -82,12 +90,8 @@ def main(args):
         shape = [None, 3, None, None]
     else:
         shape = args.input_shape
-
-    input_spec = [{"img": paddle.static.InputSpec(shape=shape, name='img')}]
-    if args.trimap:
-        shape[1] = 1
-        input_spec[0]['trimap'] = paddle.static.InputSpec(
-            shape=shape, name='trimap')
+    input_spec = get_input_spec(
+        net.__class__.__name__, shape=shape, trimap=args.trimap)
 
     net = paddle.jit.to_static(net, input_spec=input_spec)
     save_path = os.path.join(args.save_dir, 'model')
@@ -95,7 +99,7 @@ def main(args):
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
-        transforms = cfg.val_dataset_config.get('transforms', [{
+        transforms = cfg.val_dataset_cfg.get('transforms', [{
             'type': 'Normalize'
         }])
         data = {
@@ -104,7 +108,8 @@ def main(args):
                 'model': 'model.pdmodel',
                 'params': 'model.pdiparams',
                 'input_shape': shape
-            }
+            },
+            'ModelName': net.__class__.__name__
         }
         yaml.dump(data, file)
 

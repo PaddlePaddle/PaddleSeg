@@ -8,7 +8,7 @@ model:
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet101_vd_ssld.tar.gz
 
 optimizer:
-  type: sgd
+  type: SGD
   momentum: 0.9
   weight_decay: 4.0e-05
 

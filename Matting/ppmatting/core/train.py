@@ -227,7 +227,7 @@ def train(model,
             model.clear_gradients()
 
             for key, value in loss_dict.items():
-                avg_loss[key] += value.numpy()[0]
+                avg_loss[key] += float(value)
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=batch_size)
 

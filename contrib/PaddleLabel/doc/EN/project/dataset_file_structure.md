@@ -166,29 +166,29 @@ Format for the xml files is as follows
 
 ```text
 <annotation>
-	<folder>JPEGImages</folder>
-	<filename></filename>
-	<source>
-		<database></database>
-	</source>
-	<size>
-		<width></width>
-		<height></height>
-		<depth></depth>
-	</size>
-	<segmented>0</segmented>
-	<object>
-		<name></name>
-		<pose></pose>
-		<truncated></truncated>
-		<difficult></difficult>
-		<bndbox>
-			<xmin></xmin>
-			<ymin></ymin>
-			<xmax></xmax>
-			<ymax></ymax>
-		</bndbox>
-	</object>
+ <folder>JPEGImages</folder>
+ <filename></filename>
+ <source>
+  <database></database>
+ </source>
+ <size>
+  <width></width>
+  <height></height>
+  <depth></depth>
+ </size>
+ <segmented>0</segmented>
+ <object>
+  <name></name>
+  <pose></pose>
+  <truncated></truncated>
+  <difficult></difficult>
+  <bndbox>
+   <xmin></xmin>
+   <ymin></ymin>
+   <xmax></xmax>
+   <ymax></ymax>
+  </bndbox>
+ </object>
 </annotation>
 ```
 
@@ -196,7 +196,7 @@ In this format, we will treat all xml files under **Dataset Path** as annotation
 
 ### COCO
 
-COCO format keeps all information of a dataset in one file. We list part of COCO specifications below, please visit the [COCO website](https://cocodataset.org/#format-data) for more details. Note that in all projects using COCO format, xx_list.txt and labels.txt aren't supported. Example dataset: [Plane Detection]()
+COCO format keeps all information of a dataset in one file. We list part of COCO specifications below, please visit the [COCO website](https://cocodataset.org/#format-data) for more details. Note that in all projects using COCO format, xx_list.txt and labels.txt aren't supported. Example dataset: [Plane Detection](<>)
 
 Example Layout:
 
@@ -246,10 +246,10 @@ annotation{
 
 categories[
 {
-	"id": int,
-	"name": str,
-	"supercategory": str,
-	"color": str // this feature is specific to PPLabel. It's not in the coco spec.
+ "id": int,
+ "name": str,
+ "supercategory": str,
+ "color": str // this feature is specific to PPLabel. It's not in the coco spec.
 }
 ]
 ```
@@ -268,11 +268,9 @@ In the categories section we added a color field. This field isn't in the origio
 
 We support two types of segmentation task and two dataset formats: semantic segmentation and instance segmentation task, mask and polygon format. Semantic and instance segmentation are the same with polygon format while mask format trests the two types of tasks differently.
 
-
 ### Polygon
 
 For saving semantic or instance segmentation information as polygon we use the COCO format. The import and export process is virtually the same to [using COCO format with object detection project](#coco).
-
 
 ### MASK
 
@@ -319,13 +317,25 @@ During export, the first line of labels.txt will always be the background class.
 The process of importing and exporting instance segmentation masks is similar to semantic segmentation. We store the masks as a two channel image in tiff format. The first channel (index 0) is label id, the second channel (index 1) is instance id.
 
 [Napari](https://napari.org/#) is a convenient tool for inspecting tiff images. Install it following [official documentation](https://napari.org/#installation). Then:
+
 - Open a image
-![image](https://user-images.githubusercontent.com/29757093/178112182-1b7ae5d7-ab7b-4fee-b851-da2c43676da5.png)
+  ![image](https://user-images.githubusercontent.com/29757093/178112182-1b7ae5d7-ab7b-4fee-b851-da2c43676da5.png)
 - Open it's corresponding tiff mask PPLabel exports
-![image](https://user-images.githubusercontent.com/29757093/178112188-e9c2e081-6752-4137-b60d-e64d9e7a11b6.png)
+  ![image](https://user-images.githubusercontent.com/29757093/178112188-e9c2e081-6752-4137-b60d-e64d9e7a11b6.png)
 - Right click on the mask layer and select "Split Stack"
-![image](https://user-images.githubusercontent.com/29757093/178112212-13c84d24-d753-4037-8851-d3e09f8fe9c8.png)
-![image](https://user-images.githubusercontent.com/29757093/178112232-85feeec9-2ede-4045-9105-446b07454864.png)
+  ![image](https://user-images.githubusercontent.com/29757093/178112212-13c84d24-d753-4037-8851-d3e09f8fe9c8.png)
+  ![image](https://user-images.githubusercontent.com/29757093/178112232-85feeec9-2ede-4045-9105-446b07454864.png)
 - Right click on layer 0, select "Convert to Label" to see instance mask
-![image](https://user-images.githubusercontent.com/29757093/178112305-6a0e36d2-3cab-4265-a88d-9ee55044b97e.png)
+  ![image](https://user-images.githubusercontent.com/29757093/178112305-6a0e36d2-3cab-4265-a88d-9ee55044b97e.png)
 - Right click on layer 1, select "Convert to Label" to see category mask
+
+## OCR
+
+{
+"image_name": \[
+"transcription": "",
+"illegibility": true/false, // is the line blurred
+"points": \[\[w1, h1\], ..., \[wn, hn\]\], // w:horizontal, h:vertical
+"language": "Latin" / "Chinese" / ...
+\]
+}
