@@ -27,10 +27,10 @@ model_path=test_tipc/output/${model_name}/
 
 
 # Install dependencies
-pip install -r requirements.txt
-pip install -r test_tipc/requirements.txt
+pip install --user -r requirements.txt
+pip install --user -r test_tipc/requirements.txt
 # Install current version of PaddleSeg
-pip install .
+pip install --user .
 
 
 if [ ${MODE} = "serving_infer" ]; then
