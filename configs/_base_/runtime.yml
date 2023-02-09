@@ -14,6 +14,7 @@ train:
   seed: null
   precision: fp32
   amp_level: O1
+  use_vdl: False
   # Do NOT modify the value of `repeats` as it will be deprecated in the future.
   repeats: 1
 
