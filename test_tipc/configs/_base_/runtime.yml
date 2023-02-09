@@ -1,0 +1,29 @@
+global:
+  data_format: NCHW
+  # Choices: {'cpu', 'gpu', 'xpu', 'npu', 'mlu'}
+  device: gpu
+  num_workers: 0
+
+train:
+  save_dir: './output'
+  do_eval: False
+  resume_model: null
+  save_interval: 1000
+  log_iters: 10
+  keep_checkpoint_max: 5
+  seed: null
+  precision: fp32
+  amp_level: O1
+  use_vdl: False
+  # Do NOT modify the value of `repeats` as it will be deprecated in the future.
+  repeats: 1
+
+test:
+  aug_eval: False
+  scales: 1.0
+  flip_horizontal: False
+  flip_vertical: False
+  is_slide: False
+  crop_size: null
+  stride: null
+  auc_roc: False

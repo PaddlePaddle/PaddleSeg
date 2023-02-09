@@ -1,5 +1,5 @@
 # The ocrnet_hrnetw48 config for train benchmark
-_base_: '../_base_/cityscapes.yml'
+_base_: ['../_base_/cityscapes.yml', '../_base_/runtime.yml']
 
 batch_size: 2
 iters: 500

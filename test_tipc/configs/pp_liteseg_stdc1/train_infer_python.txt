@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 --profiler_options:null
 ##
 trainer:norm_train
-norm_train:tools/train.py --config test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml --device gpu --do_eval --save_interval 500 --seed 100
+norm_train:test_tipc/compat_scripts/tools/train.py --config test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml --device gpu --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
 distill_train:null
@@ -27,7 +27,7 @@ null:null
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:tools/export.py --config test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml
+norm_export:test_tipc/compat_scripts/tools/export.py --config test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -35,9 +35,9 @@ export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/pp_liteseg_stdc1/model.pdparams
-infer_export:tools/export.py --config test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml
+infer_export:test_tipc/compat_scripts/tools/export.py --config test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml
 infer_quant:False
-inference:deploy/python/infer.py --save_dir ./test_tipc/output/pp_liteseg_stdc1/
+inference:test_tipc/compat_scripts/deploy/python/infer.py --save_dir ./test_tipc/output/pp_liteseg_stdc1/
 --device:cpu|gpu
 --enable_mkldnn:True
 --cpu_threads:6
