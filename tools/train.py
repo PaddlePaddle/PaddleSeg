@@ -15,8 +15,8 @@
 import argparse
 
 from paddleseg.cvlibs import Config, SegBuilder
-from paddleseg.utils import utils
 from paddleseg.core import train
+from paddleseg.utils import utils
 
 
 def parse_args():

@@ -53,7 +53,7 @@ def parse_args():
            "    test.flip_vertical      Whether or not to implement vertical flip in test-time data augmentation. Invalidated when `test.is_aug` is False.\n" \
            "    test.is_slide       Whether or not to use sliding windows. It should be either True or False.\n" \
            "    test.crop_size      Set the size of sliding windows used for testing. Invalidated when `test.is_slide` is False.\n" \
-           "    test.stride         Set the stride of sliding windows used fortesting. Invalidated when `test.is_slide` is False.\n"
+           "    test.stride         Set the stride of sliding windows used for testing. Invalidated when `test.is_slide` is False.\n"
 
     parser = argparse.ArgumentParser(
         description=hstr, formatter_class=argparse.RawTextHelpFormatter)
