@@ -22,7 +22,7 @@ import paddle
 from paddleslim.dygraph import L1NormFilterPruner
 from paddleslim.analysis import dygraph_flops
 
-from paddleseg.cvlibs.config import Config, SegBuilder
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.core.val import evaluate
 from paddleseg.core.train import train
 from paddleseg.utils import logger, utils
@@ -122,7 +122,8 @@ def main(args):
     sen_file = os.path.join(args.save_dir, 'sen.pickle')
     pruner = L1NormFilterPruner(net, sample_shape)
     pruner.sensitive(
-        eval_func=partial(eval_fn, net, val_dataset, args.num_workers),
+        eval_func=partial(eval_fn, net, val_dataset,
+                          cfg.global_cfg['num_workers']),
         sen_file=sen_file)
     logger.info(
         f"The sensitivity calculation of model parameters has completed. The result is saved in {sen_file}"
@@ -151,7 +152,7 @@ def main(args):
         train_dataset,
         optimizer=builder.optimizer,
         save_dir=args.save_dir,
-        num_workers=args.num_workers,
+        num_workers=cfg.global_cfg['num_workers'],
         iters=cfg.iters,
         batch_size=cfg.batch_size,
         losses=builder.loss)
