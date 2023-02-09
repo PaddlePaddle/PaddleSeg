@@ -39,7 +39,7 @@ python tools/train.py \
     --do_eval \
     --num_workers 1 \
     --save_dir ${save_root} \
-    --opts model.pretrained "https://paddleseg.bj.bcebos.com/matting/models/ppmattingv2-stdc1-human_512.pdparams"
+    --opts model.pretrained="https://paddleseg.bj.bcebos.com/matting/models/ppmattingv2-stdc1-human_512.pdparams"
 
 # Evaluation
 echo "Test evaluation..."
@@ -47,7 +47,7 @@ python tools/val.py \
     --config configs/quick_start/ppmattingv2-stdc1-human_512.yml \
     --model_path ${save_root}/best_model/model.pdparams \
     --metrics sad mse grad conn \
-    --save_dir ${save_root}/results \
+    --save_dir ${save_root}/results/evaluation \
     --save_results
 
 # Predictions
@@ -56,7 +56,7 @@ python tools/predict.py \
     --config configs/quick_start/ppmattingv2-stdc1-human_512.yml \
     --model_path ${save_root}/best_model/model.pdparams \
     --image_path demo/human.jpg \
-    --save_dir ${save_root}/results \
+    --save_dir ${save_root}/results/prediction \
     --fg_estimate True
 
 # Video prediction
@@ -65,7 +65,7 @@ python tools/predict_video.py \
     --config configs/quick_start/ppmattingv2-stdc1-human_512.yml \
     --model_path ${save_root}/best_model/model.pdparams \
     --video_path ${video_path} \
-    --save_dir ${save_root}/results \
+    --save_dir ${save_root}/results/video_prediction \
     --fg_estimate False
 
 # Background replacement
@@ -75,7 +75,7 @@ python tools/bg_replace.py \
     --model_path ${save_root}/best_model/model.pdparams \
     --image_path demo/human.jpg \
     --background g \
-    --save_dir ${save_root}/results \
+    --save_dir ${save_root}/results/background_replacement \
     --fg_estimate True
 
 # Video background replacement
@@ -85,7 +85,7 @@ python tools/bg_replace_video.py \
     --model_path ${save_root}/best_model/model.pdparams \
     --video_path ${video_path} \
     --background 'g' \
-    --save_dir ${save_root}/results \
+    --save_dir ${save_root}/results/video_background_replacement \
     --fg_estimate False
 
 # Export

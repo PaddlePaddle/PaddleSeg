@@ -271,8 +271,10 @@ class SegBuilder(Builder):
             'No val_dataset specified in the configuration file.'
         self.show_msg('val_dataset', dataset_cfg)
         dataset = self.build_component(dataset_cfg)
-        assert len(dataset) != 0, \
-            'The number of samples in val_dataset is 0. Please check whether the dataset is valid.'
+        if len(dataset) == 0:
+            logger.warning(
+                'The number of samples in val_dataset is 0. Please ensure this is the desired behavior.'
+            )
         return dataset
 
     @cached_property
