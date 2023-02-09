@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and   
 # limitations under the License.
 
+import os
 import sys
 import abc
 
@@ -68,5 +69,9 @@ class BaseRunner(metaclass=abc.ABCMeta):
         if switch_wdir:
             if 'wd' in kwargs:
                 raise KeyError
-            kwargs['wd'] = self.runner_root_path
+            if isinstance(switch_wdir, str):
+                # In this case `switch_wdir` specifies a relative path
+                kwargs['wd'] = os.path.join(self.runner_root_path, switch_wdir)
+            else:
+                kwargs['wd'] = self.runner_root_path
         return _run_cmd(cmd, **kwargs)
