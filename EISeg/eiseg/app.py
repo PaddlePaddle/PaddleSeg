@@ -1954,13 +1954,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             if self.save_status["pseudo_color"]:
                 pseudoPath, ext = osp.splitext(savePath)
                 pseudoPath = pseudoPath + "_pseudo" + ext
-                pseudo = np.zeros([s[0], s[1], 3], dtype="uint8")
+                # color
+                bin_colormap = np.zeros((256, 3))
+                for idx, lab in enumerate(self.controller.labelList):
+                    bin_colormap[idx + 1, :] = lab.color
+                palette = bin_colormap.astype(np.uint8)
                 # mask = self.controller.result_mask
-                mask = mask_output
-                # print(pseudo.shape, mask.shape)
-                for lab in self.controller.labelList:
-                    pseudo[mask == lab.idx, :] = lab.color[::-1]
-                cv2.imencode(ext, pseudo)[1].tofile(pseudoPath)
+                mask = mask_output.astype(np.uint8)
+                visualimg = Image.fromarray(mask, "P")
+                visualimg.putpalette(palette)
+                visualimg.save(pseudoPath, format='PNG')
 
             # 4.3 保存前景抠图
             if self.save_status["cutout"]:
