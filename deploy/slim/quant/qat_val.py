@@ -23,129 +23,47 @@ from qat_config import quant_config
 from qat_train import skip_quant
 
 
-def get_test_config(cfg, args):
-
-    test_config = cfg.test_cfg
-    if args.aug_eval:
-        test_config['aug_eval'] = args.aug_eval
-        test_config['scales'] = args.scales
-
-    if args.flip_horizontal:
-        test_config['flip_horizontal'] = args.flip_horizontal
-
-    if args.flip_vertical:
-        test_config['flip_vertical'] = args.flip_vertical
-
-    if args.is_slide:
-        test_config['is_slide'] = args.is_slide
-        test_config['crop_size'] = args.crop_size
-        test_config['stride'] = args.stride
-
-    return test_config
-
-
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model evaluation')
+    parser = argparse.ArgumentParser(description='Evaluation of QAT models')
 
-    # params of evaluate
-    parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
+    parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
-        dest='model_path',
-        help='The path of model for evaluation.',
-        type=str,
-        default=None)
-    parser.add_argument(
-        '--num_workers',
-        dest='num_workers',
-        help='Number of workers for data loader.',
-        type=int,
-        default=0)
-
-    # augment for evaluation
-    parser.add_argument(
-        '--aug_eval',
-        dest='aug_eval',
-        help='Whether to use mulit-scales and flip augment for evaluation.',
-        action='store_true')
-    parser.add_argument(
-        '--scales',
-        dest='scales',
-        nargs='+',
-        help='Scales for augment.',
-        type=float,
-        default=1.0)
-    parser.add_argument(
-        '--flip_horizontal',
-        dest='flip_horizontal',
-        help='Whether to use flip horizontally augment.',
-        action='store_true')
-    parser.add_argument(
-        '--flip_vertical',
-        dest='flip_vertical',
-        help='Whether to use flip vertically augment.',
-        action='store_true')
-
-    # sliding window evaluation
-    parser.add_argument(
-        '--is_slide',
-        dest='is_slide',
-        help='Whether to evaluate by sliding window.',
-        action='store_true')
-    parser.add_argument(
-        '--crop_size',
-        dest='crop_size',
-        nargs=2,
-        help='The crop size of sliding window, the first is width and the second is height.',
-        type=int,
-        default=None)
-    parser.add_argument(
-        '--stride',
-        dest='stride',
-        nargs=2,
-        help='The stride of sliding window, the first is width and the second is height.',
-        type=int,
-        default=None)
-    parser.add_argument(
-        '--data_format',
-        dest='data_format',
-        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
-        type=str,
-        default='NCHW')
-    parser.add_argument(
-        '--device',
-        dest='device',
-        help='Device place to be set, which can be gpu, xpu, npu, or cpu.',
-        default='gpu',
-        choices=['cpu', 'gpu', 'xpu', 'npu'],
+        help="The path of trained weights to be loaded for evaluation.",
         type=str)
     parser.add_argument(
-        '--opts', help='Update the key-value pairs of all options.', nargs='+')
+        '--opts',
+        help="Specify key-value pairs to update configurations.",
+        default=None,
+        nargs='+')
 
     return parser.parse_args()
 
 
 def main(args):
-    if not args.cfg:
-        raise RuntimeError('No configuration file specified.')
-    cfg = Config(args.cfg, opts=args.opts)
+    if not args.config:
+        raise RuntimeError("No configuration file has been specified.")
+
+    cfg = Config(args.config, opts=args.opts)
+    global_cfg = cfg.global_cfg
     builder = SegBuilder(cfg)
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
-    utils.set_device(args.device)
+    utils.set_device(global_cfg['device'])
 
+    # TODO refactor
     # Only support for the DeepLabv3+ model
-    if args.data_format == 'NHWC':
+    data_format = global_cfg['data_format']
+    if data_format == 'NHWC':
         if cfg.dic['model']['type'] != 'DeepLabV3P':
             raise ValueError(
-                'The "NHWC" data format only support the DeepLabV3P model!')
-        cfg.dic['model']['data_format'] = args.data_format
-        cfg.dic['model']['backbone']['data_format'] = args.data_format
+                "The 'NHWC' data format only support the DeepLabV3P model!")
+        cfg.dic['model']['data_format'] = data_format
+        cfg.dic['model']['backbone']['data_format'] = data_format
         loss_len = len(cfg.dic['loss']['types'])
         for i in range(loss_len):
-            cfg.dic['loss']['types'][i]['data_format'] = args.data_format
+            cfg.dic['loss']['types'][i]['data_format'] = data_format
 
     model = builder.model
     val_dataset = builder.val_dataset
@@ -153,15 +71,17 @@ def main(args):
     skip_quant(model)
     quantizer = QAT(config=quant_config)
     quantizer.quantize(model)
-    logger.info('Quantize the model successfully')
+    logger.info("The model has been successfully quantized.")
 
     if args.model_path:
         utils.load_entire_model(model, args.model_path)
-        logger.info('Loaded trained params of model successfully')
+        logger.info("Loaded trained weights successfully.")
 
-    test_config = get_test_config(cfg, args)
-
-    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
+    evaluate(
+        model,
+        val_dataset,
+        num_workers=global_cfg['num_workers'],
+        **cfg.test_cfg)
 
 
 if __name__ == '__main__':

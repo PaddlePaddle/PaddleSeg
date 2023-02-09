@@ -27,60 +27,58 @@ from qat_train import skip_quant
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model export')
+    parser = argparse.ArgumentParser(
+        description='Export quantized model for inference')
+    parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
-        "--config", help="The config file.", type=str, required=True)
-    parser.add_argument(
-        '--model_path', help='The path of model for export', type=str)
+        '--model_path',
+        help="The path of trained weights for exporting inference model.",
+        type=str)
     parser.add_argument(
         '--save_dir',
-        help='The directory for saving the exported model',
+        help="The directory for saving the exported inference model.",
         type=str,
         default='./output/inference_model')
+    parser.add_argument(
+        "--input_shape",
+        nargs='+',
+        help="Export the model with a fixed input shape, e.g., `--input_shape 1 3 1024 1024`.",
+        type=int,
+        default=None)
     parser.add_argument(
         '--output_op',
         choices=['argmax', 'softmax', 'none'],
         default="argmax",
-        help="Select which op to be appended to output result, default: argmax")
-    parser.add_argument(
-        '--without_argmax',
-        dest='without_argmax',
-        help='Do not add the argmax operation at the end of the network',
-        action='store_true')
-    parser.add_argument(
-        '--with_softmax',
-        dest='with_softmax',
-        help='Add the softmax operation at the end of the network',
-        action='store_true')
+        help="Select the operator to be appended to the inference model. Default: argmax. "
+        "In PaddleSeg, the output of a trained model is logits (H*C*H*W). We can apply argmax or"
+        "softmax to the logits in different practice.")
 
     return parser.parse_args()
 
 
 def main(args):
-    os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
+    assert args.config is not None, \
+        "No configuration file has been specified. Please set `--config`."
+
     cfg = Config(args.config)
     builder = SegBuilder(cfg)
 
-    net = builder.model
+    utils.show_env_info()
+    utils.show_cfg_info(cfg)
+    os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
 
+    # Quantize model
+    net = builder.model
     skip_quant(net)
     quantizer = QAT(config=quant_config)
     quantizer.quantize(net)
-    logger.info('Quantize the model successfully')
+    logger.info("The model has been successfully quantized.")
 
     if args.model_path is not None:
         utils.load_entire_model(net, args.model_path)
-        logger.info('Loaded trained params of model successfully')
+        logger.info("Loaded trained weights successfully.")
 
     output_op = args.output_op
-    if args.without_argmax:
-        logger.warning(
-            '`--without_argmax` will be deprecated. Please use `--output_op`.')
-        output_op = 'none'
-    if args.with_softmax:
-        logger.warning(
-            '`--with_softmax` will be deprecated. Please use `--output_op`.')
-        output_op = 'softmax'
 
     new_net = net if output_op == 'none' else WrappedModel(net, output_op)
 
@@ -106,7 +104,7 @@ def main(args):
         }
         yaml.dump(data, file)
 
-    logger.info(f'The quantized inference model is saved in {args.save_dir}.')
+    logger.info(f"The quantized inference model is saved in {args.save_dir}")
 
 
 if __name__ == '__main__':

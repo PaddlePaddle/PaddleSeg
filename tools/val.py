@@ -58,7 +58,6 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description=hstr, formatter_class=argparse.RawTextHelpFormatter)
 
-    # Common params
     parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
@@ -90,7 +89,7 @@ def main(args):
     if data_format == 'NHWC':
         if cfg.dic['model']['type'] != 'DeepLabV3P':
             raise ValueError(
-                'The "NHWC" data format only support the DeepLabV3P model!')
+                "The 'NHWC' data format only support the DeepLabV3P model!")
         cfg.dic['model']['data_format'] = data_format
         cfg.dic['model']['backbone']['data_format'] = data_format
         loss_len = len(cfg.dic['loss']['types'])
@@ -100,7 +99,7 @@ def main(args):
     model = builder.model
     if args.model_path:
         utils.load_entire_model(model, args.model_path)
-        logger.info('Loaded trained weights successfully.')
+        logger.info("Loaded trained weights successfully.")
     val_dataset = builder.val_dataset
 
     evaluate(

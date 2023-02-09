@@ -23,87 +23,72 @@ from distill_config import prepare_distill_adaptor, prepare_distill_config
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model training')
+    parser = argparse.ArgumentParser(description='Knowledge distillation')
+
     parser.add_argument(
-        "--student_config",
+        '--student_config',
         help="The config file of the student model.",
         default=None,
         type=str)
     parser.add_argument(
-        "--teather_config",
-        help="The config file of the teacher model. Distillation only uses "
-        "the model in this config.",
+        '--teather_config',
+        help="The config file of the teacher model.",
         default=None,
         type=str)
-
     parser.add_argument(
         '--iters',
-        dest='iters',
-        help='iters for training',
+        help="The total iterations of training.",
         type=int,
         default=None)
     parser.add_argument(
         '--batch_size',
-        dest='batch_size',
-        help='Mini batch size of one gpu or cpu',
+        help="The mini-batch size on each GPU.",
         type=int,
         default=None)
     parser.add_argument(
-        '--learning_rate',
-        dest='learning_rate',
-        help='Learning rate',
-        type=float,
-        default=None)
+        '--learning_rate', help="The learning rate.", type=float, default=None)
     parser.add_argument(
         '--save_interval',
-        dest='save_interval',
-        help='How many iters to save a model snapshot once during training.',
+        help="How many iters to save a model snapshot during training.",
         type=int,
         default=1000)
     parser.add_argument(
         '--resume_model',
         dest='resume_model',
-        help='The path of resume model for the student model',
+        help="The path of the snapshot to resume for the student model.",
         type=str,
         default=None)
     parser.add_argument(
         '--save_dir',
-        dest='save_dir',
-        help='The directory for saving the model snapshot',
+        help="The directory for saving model snapshots.",
         type=str,
         default='./output')
     parser.add_argument(
         '--keep_checkpoint_max',
-        dest='keep_checkpoint_max',
-        help='Maximum number of checkpoints to save',
+        help="The maximum number of model snapshots to save.",
         type=int,
         default=5)
     parser.add_argument(
         '--num_workers',
-        dest='num_workers',
-        help='Num workers for data loader',
+        help="The number of worker processes used in the data loader.",
         type=int,
         default=0)
     parser.add_argument(
         '--do_eval',
-        dest='do_eval',
-        help='Eval while training',
+        help="Whether or not to validate model during training.",
         action='store_true')
     parser.add_argument(
         '--log_iters',
-        dest='log_iters',
-        help='Display logging information at every log_iters',
+        help="Display logging information every `log_iters` iterations.",
         default=10,
         type=int)
     parser.add_argument(
         '--use_vdl',
-        dest='use_vdl',
-        help='Whether to record the data to VisualDL during training',
+        help="Whether or not to enable VisualDL during training.",
         action='store_true')
     parser.add_argument(
         '--seed',
-        dest='seed',
-        help='Set the random seed during training.',
+        help="The random seed used in training.",
         default=None,
         type=int)
 
@@ -128,7 +113,9 @@ def main(args):
     prepare_envs(args)
 
     if args.teather_config is None or args.student_config is None:
-        raise RuntimeError('No configuration file specified.')
+        raise RuntimeError(
+            "At least one of the configuration files is not specified.")
+
     t_cfg = Config(args.teather_config)
     s_cfg = Config(
         args.student_config,
@@ -138,14 +125,14 @@ def main(args):
     t_builder = SegBuilder(t_cfg)
     s_builder = SegBuilder(s_cfg)
 
-    msg = '\n---------------Teacher Config Information---------------\n'
+    msg = "\n---------------Teacher Config Information---------------\n"
     msg += str(t_cfg)
-    msg += '------------------------------------------------'
+    msg += "------------------------------------------------"
     logger.info(msg)
 
-    msg = '\n---------------Student Config Information---------------\n'
+    msg = "\n---------------Student Config Information---------------\n"
     msg += str(s_cfg)
-    msg += '------------------------------------------------'
+    msg += "------------------------------------------------"
     logger.info(msg)
 
     distill_config = prepare_distill_config()

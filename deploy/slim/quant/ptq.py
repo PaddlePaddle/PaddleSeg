@@ -26,37 +26,35 @@ paddle.enable_static()
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model quant')
+    parser = argparse.ArgumentParser(description='Post-training quantization')
 
-    parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
+    parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
         '--model_dir',
-        dest='model_dir',
-        help='The directory of model',
+        help="The directory that stored the pretrained model.",
         type=str,
         default=None)
     parser.add_argument(
         '--batch_nums',
-        dest='batch_nums',
-        help='number of iterations. If set to None , it will run until the end of the sample_generator iteration, otherwise, the number of iterations is batch_nums, that is, the number of samples involved in Scale correction is batch_nums * batch_size .',
+        help="The number of iterations. If it is set to None, the quantization will continue until the end of the `sample_generator`. Otherwise, the number of iterations will be `batch_nums`, that is, the number of samples involved in Scale correction is `batch_nums * batch_size`.",
         type=int,
         default=10)
     parser.add_argument(
         '--batch_size',
-        dest='batch_size',
-        help='Number of pictures per batch',
+        help="The number of images in each mini-batch.",
         type=int,
         default=1)
     parser.add_argument(
-        '--opts', help='Update the key-value pairs of all options.', nargs='+')
+        '--opts',
+        help="Specify key-value pairs to update configurations.",
+        nargs='+')
 
     return parser.parse_args()
 
 
 def sample_generator(loader):
     def __reader__():
-        for indx, data in enumerate(loader):
+        for _, data in enumerate(loader):
             images = np.array(data['img'])
             yield images
 
@@ -64,10 +62,13 @@ def sample_generator(loader):
 
 
 def main(args):
+    assert args.config is not None, \
+        "No configuration file has been specified. Please set `--config`."
+
     fp32_model_dir = args.model_dir
     quant_output_dir = 'quant_model'
 
-    cfg = Config(args.cfg, opts=args.opts)
+    cfg = Config(args.config, opts=args.opts)
     builder = SegBuilder(cfg)
 
     val_dataset = builder.val_dataset
@@ -92,7 +93,7 @@ def main(args):
         batch_nums=args.batch_nums,
         algo='KL')
 
-    # copy yml
+    # Copy yaml file
     shutil.copyfile(
         os.path.join(fp32_model_dir, 'deploy.yaml'),
         os.path.join(quant_output_dir, 'deploy.yaml'))

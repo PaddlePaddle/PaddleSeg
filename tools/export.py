@@ -39,7 +39,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser(
         description=hstr, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("--config", help="The path of config file.", type=str)
+    parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
         help="The path of trained weights for exporting inference model.",
@@ -48,9 +48,9 @@ def parse_args():
         '--save_dir',
         help="The directory for saving the exported inference model.",
         type=str,
-        default='./output/inference_model')
+        default="./output/inference_model")
     parser.add_argument(
-        "--input_shape",
+        '--input_shape',
         nargs='+',
         help="Export the model with a fixed input shape, e.g., `--input_shape 1 3 1024 1024`.",
         type=int,
@@ -76,12 +76,12 @@ def main(args):
     utils.show_cfg_info(cfg)
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
 
-    # save model
+    # Save model
     model = builder.model
     if args.model_path is not None:
         state_dict = paddle.load(args.model_path)
         model.set_dict(state_dict)
-        logger.info('Loaded trained params successfully.')
+        logger.info("Loaded trained weights successfully.")
     if args.output_op != 'none':
         model = WrappedModel(model, args.output_op)
 
@@ -92,9 +92,9 @@ def main(args):
     model = paddle.jit.to_static(model, input_spec=input_spec)
     paddle.jit.save(model, os.path.join(args.save_dir, 'model'))
 
-    # save deploy.yaml
+    # Save deploy.yaml
     val_dataset_cfg = cfg.val_dataset_cfg
-    assert val_dataset_cfg != {}, 'No val_dataset specified in the configuration file.'
+    assert val_dataset_cfg != {}, "`val_dataset` is not specified in the configuration file."
     transforms = val_dataset_cfg.get('transforms', None)
     output_dtype = 'int32' if args.output_op == 'argmax' else 'float32'
 
@@ -109,7 +109,7 @@ def main(args):
             'output_dtype': output_dtype
         }
     }
-    msg = '\n---------------Deploy Information---------------\n'
+    msg = "\n---------------Deploy Information---------------\n"
     msg += str(yaml.dump(deploy_info))
     logger.info(msg)
 
@@ -117,7 +117,7 @@ def main(args):
     with open(yml_file, 'w') as file:
         yaml.dump(deploy_info, file)
 
-    logger.info(f'The inference model is saved in {args.save_dir}')
+    logger.info(f"The inference model is saved in {args.save_dir}")
 
 
 if __name__ == '__main__':

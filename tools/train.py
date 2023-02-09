@@ -49,12 +49,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description=hstr, formatter_class=argparse.RawTextHelpFormatter)
 
-    # Common params
     parser.add_argument('--config', help="The path of config file.", type=str)
-    parser.add_argument(
-        '--use_vdl',
-        help="Whether or not to enable VisualDL during training.",
-        action='store_true')
     parser.add_argument(
         '--profiler_options',
         type=str,
@@ -88,7 +83,7 @@ def main(args):
     if data_format == 'NHWC':
         if cfg.dic['model']['type'] != 'DeepLabV3P':
             raise ValueError(
-                'The "NHWC" data format only support the DeepLabV3P model!')
+                "The 'NHWC' data format only support the DeepLabV3P model!")
         cfg.dic['model']['data_format'] = data_format
         cfg.dic['model']['backbone']['data_format'] = data_format
         loss_len = len(cfg.dic['loss']['types'])
@@ -117,7 +112,7 @@ def main(args):
         save_interval=runtime_cfg['save_interval'],
         log_iters=runtime_cfg['log_iters'],
         num_workers=runtime_cfg['num_workers'],
-        use_vdl=args.use_vdl,
+        use_vdl=runtime_cfg['use_vdl'],
         losses=loss,
         keep_checkpoint_max=runtime_cfg['keep_checkpoint_max'],
         test_config=cfg.test_cfg,

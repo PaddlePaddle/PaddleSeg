@@ -64,8 +64,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description=hstr, formatter_class=argparse.RawTextHelpFormatter)
 
-    # Common params
-    parser.add_argument("--config", help="The path of config file.", type=str)
+    parser.add_argument('--config', help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
         help="The path of trained weights to be loaded for prediction.",
@@ -107,7 +106,7 @@ def main(args):
     model = builder.model
     transforms = Compose(builder.val_transforms)
     image_list, image_dir = get_image_list(args.image_path)
-    logger.info('The number of images: {}'.format(len(image_list)))
+    logger.info("The number of images: {}".format(len(image_list)))
 
     test_cfg = cfg.test_cfg
     for unused_key in ('aug_eval', 'auc_roc'):
