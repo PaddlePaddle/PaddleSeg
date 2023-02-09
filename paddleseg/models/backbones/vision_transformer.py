@@ -68,8 +68,6 @@ class Attention(nn.Layer):
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x):
-        import pdb
-        pdb.set_trace()
         x_shape = paddle.shape(x)  # [2   , 1025, 768 ])
         N, C = x_shape[1], x_shape[2]
         qkv = self.qkv(x).reshape((
@@ -274,8 +272,7 @@ class VisionTransformer(nn.Layer):
         cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
         x = x.flatten(2).transpose([0, 2, 1])  # b * hw * c
         x = paddle.concat([cls_tokens, x], axis=1)
-        import pdb
-        pdb.set_trace()
+
         if paddle.shape(x)[1] == self.pos_embed.shape[1]:
             x = x + self.pos_embed  # [1, 1025, 768]
         else:
