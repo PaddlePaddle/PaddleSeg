@@ -14,25 +14,25 @@
 
 import os.path as osp
 
-from ..base.register import register_arch_info, register_model_info
+from ..base.register import register_model_info, register_suite_info
 from .model import SegModel
 from .runner import SegRunner
 
 # XXX: Hard-code relative path of repo root dir
 REPO_ROOT_PATH = osp.abspath(osp.join(osp.dirname(__file__), '..', '..'))
-register_model_info({
-    'model_name': 'SegModel',
-    'model_cls': SegModel,
-    'runner_cls': SegRunner,
-    'repo_root_path': REPO_ROOT_PATH
+register_suite_info({
+    'suite_name': 'Seg',
+    'model': SegModel,
+    'runner': SegRunner,
+    'runner_root_path': REPO_ROOT_PATH
 })
 
 PPHUMANSEG_LITE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs',
                                     'pp_humanseg_lite',
                                     'pp_humanseg_lite_mini_supervisely.yml')
-register_arch_info({
-    'arch_name': 'pphumanseg_lite',
-    'model': 'SegModel',
+register_model_info({
+    'model_name': 'pphumanseg_lite',
+    'suite': 'Seg',
     'config_path': PPHUMANSEG_LITE_CFG_PATH,
     'auto_compression_config_path': PPHUMANSEG_LITE_CFG_PATH
 })

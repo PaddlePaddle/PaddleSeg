@@ -19,8 +19,8 @@ from .utils.misc import run_cmd as _run_cmd, abspath
 
 
 class BaseRunner(metaclass=abc.ABCMeta):
-    def __init__(self, repo_root_path):
-        self.repo_root_path = abspath(repo_root_path)
+    def __init__(self, runner_root_path):
+        self.runner_root_path = abspath(runner_root_path)
 
         self.python = sys.executable
 
@@ -68,5 +68,5 @@ class BaseRunner(metaclass=abc.ABCMeta):
         if switch_wdir:
             if 'wd' in kwargs:
                 raise KeyError
-            kwargs['wd'] = self.repo_root_path
+            kwargs['wd'] = self.runner_root_path
         return _run_cmd(cmd, **kwargs)

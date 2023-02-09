@@ -13,6 +13,6 @@
 # limitations under the License.
 
 from .base import PaddleModel
-# Register models and architectures
-# Seg task
-from .seg_task import register
+# Register models and suites
+# Seg
+from .seg import register

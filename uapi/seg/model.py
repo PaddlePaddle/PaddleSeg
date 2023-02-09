@@ -45,7 +45,7 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.arch_info['config_path']
+        config_file_path = self.model_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
         config._update_dataset_config(dataset)
         if dy2st:
@@ -85,7 +85,7 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.arch_info['config_path']
+        config_file_path = self.model_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
         config._update_dataset_config(self._create_dummy_dataset())
         config_file_path = self.config_file_path
@@ -109,7 +109,7 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.arch_info['config_path']
+        config_file_path = self.model_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
         config._update_dataset_config(self._create_dummy_dataset())
         config_file_path = self.config_file_path
@@ -136,7 +136,7 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.arch_info['config_path']
+        config_file_path = self.model_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
         config._update_dataset_config(self._create_dummy_dataset())
         config.dump(self.config_file_path)
@@ -166,7 +166,7 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.arch_info['auto_compression_config_path']
+        config_file_path = self.model_info['auto_compression_config_path']
         config = SegConfig.build_from_file(config_file_path)
         config._update_dataset_config(dataset)
         config_file_path = self.config_file_path
