@@ -104,6 +104,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.video = InferenceCore()
         self.video_images = None
         self.video_masks = None
+        self.video_first = None
 
         self.det = DetInfer()
 
@@ -1264,14 +1265,15 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.focusToLable(lab.idx)
 
     # 多边形标注
-    def createPoly(self, curr_polygon, color):
+    def createPoly(self, curr_polygon, color, label_idx=None):
         if curr_polygon is None:
             return
         for points in curr_polygon:
             if len(points) < 3:
                 continue
+            l_idx = self.currLabelIdx if label_idx is None else label_idx
             poly = PolygonAnnotation(
-                self.controller.labelList[self.currLabelIdx].idx,
+                self.controller.labelList[l_idx].idx,
                 self.controller.image.shape,
                 self.delPolygon,
                 self.setDirty,
@@ -1328,7 +1330,19 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if poly.labelIndex == idx:
                     pts = np.int32([np.array(poly.scnenePoints)])
                     cv2.fillPoly(pesudo, pts=pts, color=idx)
-        return pesudo
+        return pesudo.astype("uint8")
+
+    def getPolygon(self, mask):
+        m_shape = mask.shape
+        for i_clas in np.unique(mask):
+            if i_clas == 0:
+                continue
+            tmp_mask = (mask == i_clas).astype("uint8") * 255
+            curr_polygon = util.get_polygon(
+                tmp_mask, img_size=m_shape,
+                building=self.boundaryRegular.isChecked())
+            color = self.controller.labelList[i_clas - 1].color
+            self.createPoly(curr_polygon, color, i_clas - 1)
 
     def openRecentImage(self, file_path):
         self.queueEvent(partial(self.loadImage, file_path))
@@ -1461,6 +1475,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 2. 判断图像类型，打开
         # TODO: 加用户指定类型的功能
         image = None
+        self.video_first = None
 
         # 直接if会报错，因为打开遥感图像后多波段不存在，现在把遥感图像的单独抽出来了
         # 自然图像
@@ -1576,6 +1591,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.sldTime.setMaximum(self.video.num_frames - 1)
             image = self.video_images[self.video.cursur]
             self.sldTime.setProperty("value", 0)
+            self.video_first = True
             # 清空3d显示
             if self.TDDock.isVisible():
                 self.vtkWidget.init()
@@ -1590,7 +1606,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.image = image
         self.controller.setImage(image, self.type_seg)
         self.updateImage(True)
-
         # 2. 加载标签
         self.load_label_success = self.loadLabel(path)
         self.addRecentFile(path)
@@ -1750,17 +1765,23 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.turnImg(delta, True)
 
     def finishObject(self):
-        if not self.controller or self.image is None:
+        if self.image is None:
             return
-        current_mask, curr_polygon = self.controller.finishObject(
-            building=self.boundaryRegular.isChecked())
-        if curr_polygon is not None:
+        if self.controller is not None:
+            current_mask, curr_polygon = self.controller.finishObject(
+                building=self.boundaryRegular.isChecked())
+            if curr_polygon is not None:
+                self.updateImage()
+                if current_mask is not None:
+                    # current_mask = current_mask.astype(np.uint8) * 255
+                    # polygon = util.get_polygon(current_mask)
+                    color = self.controller.labelList[self.currLabelIdx].color
+                    self.createPoly(curr_polygon, color)
+        if self.video_first is False:
             self.updateImage()
-            if current_mask is not None:
-                # current_mask = current_mask.astype(np.uint8) * 255
-                # polygon = util.get_polygon(current_mask)
-                color = self.controller.labelList[self.currLabelIdx].color
-                self.createPoly(curr_polygon, color)
+            current_mask = self.getVideoMask()
+            if current_mask is not None and len(self.scene.polygon_items) == 0:
+                self.getPolygon(current_mask)
         # 状态改变
         if self.status == self.EDITING:
             self.status = self.ANNING
@@ -1770,10 +1791,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.status = self.EDITING
             for p in self.scene.polygon_items:
                 p.setAnning(isAnning=False)
-        current_mask = self.getMask()
-        if self.video_images is not None:
-            if current_mask.max() != 0:
-                self.video_masks[self.video.cursur] = current_mask
 
     def completeLastMask(self):
         # 返回最后一个标签是否完成，false就是还有带点的
@@ -2916,6 +2933,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def sframeChanged(self):
         if self.video_images is None:
             return
+        if len(self.scene.polygon_items) > 0:
+            self.video_masks[self.video.cursur] = self.getMask()
         self.textTime.setText(str(self.sldTime.value()))
         self.video.cursur = int(self.textTime.text())
         self.controller.setImage(self.video_images[self.video.cursur])
@@ -2926,18 +2945,18 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def turnPreFrame(self):
         if self.video_images is None:
             return
-        self.video.cursur -= 1
-        if self.video.cursur < 0:
-            self.video.cursur = self.video.num_frames - 1
-        self.sldTime.setProperty("value", self.video.cursur)
+        v_cursur = self.video.cursur - 1
+        if v_cursur < 0:
+            v_cursur = self.video.num_frames - 1
+        self.sldTime.setProperty("value", v_cursur)
 
     def turnNextFrame(self):
         if self.video_images is None:
             return
-        self.video.cursur += 1
-        if self.video.cursur > self.video.num_frames - 1:
-            self.video.cursur = 0
-        self.sldTime.setProperty("value", self.video.cursur)
+        v_cursur = self.video.cursur + 1
+        if v_cursur > self.video.num_frames - 1:
+            v_cursur = 0
+        self.sldTime.setProperty("value", v_cursur)
 
     def show_current_frame(self):
         self.viz = overlay_davis(self.video_images[self.video.cursur],
@@ -2961,20 +2980,20 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             return
         if self.timer.isActive():
             self.timer.stop()
+            self.image = self.video_images[self.video.cursur]
             self.videoPlay.setText(self.tr("播放"))
             self.videoPlay.setIcon(
                 QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
         else:
-            # self.delAllPolygon()
             self.timer.start(1000 // self.ratio)
             self.videoPlay.setText(self.tr("暂停"))
             self.videoPlay.setIcon(
                 QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))
 
     def getVideoMask(self):
-        if self.video_masks is not None:
+        try:
             return self.video_masks[self.video.cursur]
-        else:
+        except:
             return None
 
     def on_propgation(self):
@@ -3014,6 +3033,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         end = time.time()
         print("propagation time cost", end - start)
         self.statusbar.showMessage(self.tr("传播完成!"), 5000)
+        self.video_first = False
         # 传播进度条重置
         self.proPropagete.setValue(0)
         self.proPropagete.setFormat('0%')
