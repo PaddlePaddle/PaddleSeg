@@ -70,7 +70,7 @@ class Config(object):
 
         if learning_rate or batch_size or iters:
             logger.warning(
-                "Constructing a `Config` object with `learning_rate`, `batch_size`, or `iters` arguments is not suggested. Please specify these values in the config file."
+                "Constructing a `Config` object with `learning_rate`, `batch_size`, or `iters` arguments is not recommended. Please specify these values in the config file."
             )
 
         self.dic = self._parse_from_yaml(path)
@@ -136,6 +136,11 @@ class Config(object):
     @property
     def test_cfg(self) -> Dict:
         return self.dic.get('test', {}).copy()
+
+    # For backward compatibility
+    @property
+    def test_config(self) -> Dict:
+        return self.test_cfg
 
     @property
     def runtime_cfg(self) -> Dict:
