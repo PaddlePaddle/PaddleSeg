@@ -28,6 +28,16 @@ class PaddleModel(object):
 
 
 class BaseModel(metaclass=abc.ABCMeta):
+    """
+    Abstract base class of Model.
+    
+    Model defines how Config and Runner interact with each other. In addition, Model 
+        provides users with multiple APIs to perform model training, prediction, etc.
+
+    Args:
+        model_name (str): A registered model name.
+    """
+
     def __init__(self, model_name):
         self.name = model_name
         self.model_info = get_registered_model_info(model_name)
@@ -38,23 +48,79 @@ class BaseModel(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def train(self, dataset, batch_size, epochs_iters, device, resume_path,
               dy2st, amp, save_dir):
+        """
+        Train a model.
+
+        Args:
+            dataset (str|None): Root path of the dataset. If None, use a pre-defined default dataset.
+            batch_size (int|None): Number of samples in each mini-batch. If None, use a pre-defined default 
+                batch size.
+            epochs_iters (int|None): Total iterations or epochs of model training. If None, use a 
+                pre-defined default value of epochs/iterations.
+            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
+            resume_path (str|None): If not None, resume training from the model snapshot stored in `resume_path`.
+            dy2st (bool|None): Whether or not to enable dynamic-to-static training. If None, use a default 
+                setting.
+            amp (str|None): Optimization level to use in AMP training. Choices are ['O1', 'O2', None]. 
+                If None, do not enable AMP training.
+            save_dir (str|None): Directory to store model snapshots. If None, use a default setting. 
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def predict(self, weight_path, device, input_path, save_dir):
+    def predict(self, weight_path, input_path, device, save_dir):
+        """
+        Make prediction with a pre-trained model.
+
+        Args:
+            weight_path (str): Path of the weights to initialize the model.
+            input_path (str): Path of the input file, e.g. an image.
+            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
+            save_dir (str|None): Directory to store prediction results. If None, use a default setting. 
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
     def export(self, weight_path, save_dir):
+        """
+        Export a pre-trained model.
+
+        Args:
+            weight_path (str): Path of the weights to initialize the model.
+            save_dir (str|None): Directory to store the exported model. If None, use a default setting. 
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def infer(self, model_dir, device, input_path, save_dir):
+    def infer(self, model_dir, input_path, device, save_dir):
+        """
+        Make inference with an exported model.
+
+        Args:
+            model_dir (str): Path of the model snapshot to load.
+            input_path (str): Path of the input file, e.g. an image.
+            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
+            save_dir (str|None): Directory to store inference results. If None, use a default setting. 
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def compression(self, dataset, batch_size, epochs_iters, device,
-                    weight_path, save_dir):
+    def compression(self, weight_path, dataset, batch_size, epochs_iters,
+                    device, save_dir):
+        """
+        Perform quantization aware training (QAT) and export the quantized model.
+
+        Args:
+            weight_path (str): Path of the weights to initialize the model.
+            dataset (str|None): Root path of the dataset. If None, use a pre-defined default dataset.
+            batch_size (int|None): Number of samples in each mini-batch. If None, use a pre-defined default 
+                batch size.
+            epochs_iters (int|None): Total iterations or epochs of model training. If None, use a 
+                pre-defined default value of epochs/iterations.
+            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
+            save_dir (str|None): Directory to store model snapshots. The exported model will be saved in the 
+                `infer` subdirectory of `save_dir`. If None, use a default setting. 
+        """
         raise NotImplementedError
 
     @cached_property

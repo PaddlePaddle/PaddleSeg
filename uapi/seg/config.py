@@ -36,9 +36,34 @@ class SegConfig(BaseConfig):
         with open(config_file_path, 'w') as f:
             yaml.dump(self.dict, f, Dumper=NoAliasDumper)
 
-    def _update_dataset_config(self, dataset_root_path):
-        ds_cfg = self._make_dataset_config(dataset_root_path)
+    def update_dataset(self, dataset_path, dataset_type=None):
+        if dataset_type is None:
+            dataset_type = 'Dataset'
+        if dataset_type == 'Dataset':
+            ds_cfg = self._make_dataset_config(dataset_path)
+        else:
+            raise ValueError(f"{dataset_type} is not supported.")
         self.update(ds_cfg)
+
+    def update_optimizer(self, optimizer_type):
+        # Not yet implemented
+        raise NotImplementedError
+
+    def update_backbone(self, backbone_type):
+        # Not yet implemented
+        raise NotImplementedError
+
+    def update_lr_scheduler(self, lr_scheduler_type):
+        # Not yet implemented
+        raise NotImplementedError
+
+    def update_batch_size(self, batch_size, mode='train'):
+        # Not yet implemented
+        raise NotImplementedError
+
+    def update_weight_decay(self, weight_decay):
+        # Not yet implemented
+        raise NotImplementedError
 
     def _make_dataset_config(self, dataset_root_path):
         # TODO: Description of dataset protocol

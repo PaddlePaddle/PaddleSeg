@@ -50,7 +50,7 @@ class SegModel(BaseModel):
         # Update YAML config file
         config_file_path = self.model_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
-        config._update_dataset_config(dataset)
+        config.update_dataset(dataset)
         if dy2st:
             config.update({'to_static_training': True})
         config_file_path = self.config_file_path
@@ -86,7 +86,7 @@ class SegModel(BaseModel):
         # Update YAML config file
         config_file_path = self.model_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
-        config._update_dataset_config(self._create_dummy_dataset())
+        config.update_dataset(self._create_dummy_dataset())
         config_file_path = self.config_file_path
         config.dump(config_file_path)
 
@@ -109,7 +109,7 @@ class SegModel(BaseModel):
         # Update YAML config file
         config_file_path = self.model_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
-        config._update_dataset_config(self._create_dummy_dataset())
+        config.update_dataset(self._create_dummy_dataset())
         config_file_path = self.config_file_path
         config.dump(config_file_path)
 
@@ -137,7 +137,7 @@ class SegModel(BaseModel):
         # Update YAML config file
         config_file_path = self.model_info['config_path']
         config = SegConfig.build_from_file(config_file_path)
-        config._update_dataset_config(self._create_dummy_dataset())
+        config.update_dataset(self._create_dummy_dataset())
         config.dump(self.config_file_path)
 
         # Parse CLI arguments
@@ -151,25 +151,24 @@ class SegModel(BaseModel):
         self.runner.infer(config_file_path, cli_args, device)
 
     def compression(self,
+                    weight_path,
                     dataset=None,
                     batch_size=None,
                     learning_rate=None,
                     epochs_iters=None,
                     device=None,
-                    weight_path=None,
                     save_dir=None,
                     input_shape=None):
+        weight_path = abspath(weight_path)
         if dataset is not None:
             dataset = abspath(dataset)
-        if weight_path is not None:
-            weight_path = abspath(weight_path)
         if save_dir is not None:
             save_dir = abspath(save_dir)
 
         # Update YAML config file
         config_file_path = self.model_info['auto_compression_config_path']
         config = SegConfig.build_from_file(config_file_path)
-        config._update_dataset_config(dataset)
+        config.update_dataset(dataset)
         config_file_path = self.config_file_path
         config.dump(config_file_path)
 
@@ -201,6 +200,7 @@ class SegModel(BaseModel):
 
     def _create_dummy_dataset(self):
         # Create a PaddleSeg-style dataset
+        # We will use this fake dataset to pass the config checks of PaddleSeg
         dir_ = os.path.abspath(self._DUMMY_DATASET_DIR)
         if os.path.exists(dir_):
             return dir_
