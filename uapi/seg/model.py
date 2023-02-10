@@ -25,7 +25,7 @@ class SegModel(BaseModel):
     _DUMMY_DATASET_DIR = os.path.join(get_cache_dir(), 'ppseg_dummy_dataset')
 
     def train(self,
-              dataset,
+              dataset=None,
               batch_size=None,
               learning_rate=None,
               epochs_iters=None,
@@ -34,9 +34,12 @@ class SegModel(BaseModel):
               dy2st=None,
               amp=None,
               save_dir=None):
-        # NOTE: We must use an absolute path here, 
-        # so we can run the scripts either inside or outside the repo dir.
-        dataset = abspath(dataset)
+        if dataset is not None:
+            # NOTE: We must use an absolute path here, 
+            # so we can run the scripts either inside or outside the repo dir.
+            dataset = abspath(dataset)
+        if device is None:
+            device = 'gpu'
         if dy2st is None:
             dy2st = False
         if resume_path is not None:
@@ -72,15 +75,11 @@ class SegModel(BaseModel):
 
         self.runner.train(config_file_path, cli_args, device)
 
-    def predict(self,
-                weight_path=None,
-                device=None,
-                input_path=None,
-                save_dir=None):
-        if weight_path is not None:
-            weight_path = abspath(weight_path)
-        if input_path is not None:
-            input_path = abspath(input_path)
+    def predict(self, weight_path, input_path, device=None, save_dir=None):
+        weight_path = abspath(weight_path)
+        input_path = abspath(input_path)
+        if device is None:
+            device = 'gpu'
         if save_dir is not None:
             save_dir = abspath(save_dir)
 
@@ -102,9 +101,8 @@ class SegModel(BaseModel):
 
         self.runner.predict(config_file_path, cli_args, device)
 
-    def export(self, weight_path=None, save_dir=None, input_shape=None):
-        if weight_path is not None:
-            weight_path = abspath(weight_path)
+    def export(self, weight_path, save_dir=None, input_shape=None):
+        weight_path = abspath(weight_path)
         if save_dir is not None:
             save_dir = abspath(save_dir)
 
@@ -128,10 +126,11 @@ class SegModel(BaseModel):
 
         self.runner.export(config_file_path, cli_args, None)
 
-    def infer(self, model_dir, device=None, input_path=None, save_dir=None):
+    def infer(self, model_dir, input_path, device=None, save_dir=None):
         model_dir = abspath(model_dir)
-        if input_path is not None:
-            input_path = abspath(input_path)
+        input_path = abspath(input_path)
+        if device is None:
+            device = 'gpu'
         if save_dir is not None:
             save_dir = abspath(save_dir)
 
@@ -152,14 +151,16 @@ class SegModel(BaseModel):
         self.runner.infer(config_file_path, cli_args, device)
 
     def compression(self,
-                    dataset,
+                    dataset=None,
                     batch_size=None,
                     learning_rate=None,
                     epochs_iters=None,
                     device=None,
                     weight_path=None,
-                    save_dir=None):
-        dataset = abspath(dataset)
+                    save_dir=None,
+                    input_shape=None):
+        if dataset is not None:
+            dataset = abspath(dataset)
         if weight_path is not None:
             weight_path = abspath(weight_path)
         if save_dir is not None:
@@ -173,19 +174,30 @@ class SegModel(BaseModel):
         config.dump(config_file_path)
 
         # Parse CLI arguments
-        cli_args = []
+        train_cli_args = []
+        export_cli_args = []
         if batch_size is not None:
-            cli_args.append(CLIArgument('--batch_size', batch_size))
+            train_cli_args.append(CLIArgument('--batch_size', batch_size))
         if learning_rate is not None:
-            cli_args.append(CLIArgument('--learning_rate', learning_rate))
+            train_cli_args.append(CLIArgument('--learning_rate', learning_rate))
         if epochs_iters is not None:
-            cli_args.append(CLIArgument('--iters', epochs_iters))
+            train_cli_args.append(CLIArgument('--iters', epochs_iters))
         if weight_path is not None:
-            cli_args.append(CLIArgument('--model_path', weight_path))
+            train_cli_args.append(CLIArgument('--model_path', weight_path))
         if save_dir is not None:
-            cli_args.append(CLIArgument('--save_dir', save_dir))
+            train_cli_args.append(CLIArgument('--save_dir', save_dir))
+            # The exported model saved in a subdirectory named `infer`
+            export_cli_args.append(
+                CLIArgument('--save_dir', os.path.join(save_dir, 'infer')))
+        if input_shape is not None:
+            if isinstance(input_shape, (list, tuple)):
+                input_shape = ' '.join(map(str, input_shape))
+            export_cli_args.append(
+                CLIArgument(
+                    '--input_shape', input_shape, sep=' '))
 
-        self.runner.compression(config_file_path, cli_args, device)
+        self.runner.compression(config_file_path, train_cli_args,
+                                export_cli_args, device, save_dir)
 
     def _create_dummy_dataset(self):
         # Create a PaddleSeg-style dataset

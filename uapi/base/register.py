@@ -23,19 +23,13 @@ MODEL_INFO_REQUIRED_KEYS = ('model_name', 'suite', 'config_path',
                             'auto_compression_config_path')
 MODEL_INFO_PRIMARY_KEY = 'model_name'
 assert MODEL_INFO_PRIMARY_KEY in MODEL_INFO_REQUIRED_KEYS
-SUITE_INFO_REQUIRED_KEYS = ('suite_name', 'model', 'runner', 'runner_root_path')
+SUITE_INFO_REQUIRED_KEYS = ('suite_name', 'model', 'runner', 'runner_root_path',
+                            'supported_api_list')
 SUITE_INFO_PRIMARY_KEY = 'suite_name'
 assert SUITE_INFO_PRIMARY_KEY in SUITE_INFO_REQUIRED_KEYS
 
 # Relations:
 # 'suite' in model info <-> 'suite_name' in suite info
-
-
-class PaddleModel(object):
-    # We constrain function params here
-    def __new__(cls, model_name):
-        model_info = get_registered_model_info(model_name)
-        return build_model_from_model_info(model_info)
 
 
 def _validate_model_info(model_info):

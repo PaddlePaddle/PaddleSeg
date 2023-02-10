@@ -14,9 +14,17 @@
 
 import abc
 
-from .register import get_registered_model_info, build_runner_from_model_info
+from .register import (get_registered_model_info, build_runner_from_model_info,
+                       build_model_from_model_info)
 from .utils.misc import CachedProperty as cached_property
 from .utils.path import create_yaml_config_file
+
+
+class PaddleModel(object):
+    # We constrain function params here
+    def __new__(cls, model_name):
+        model_info = get_registered_model_info(model_name)
+        return build_model_from_model_info(model_info)
 
 
 class BaseModel(metaclass=abc.ABCMeta):

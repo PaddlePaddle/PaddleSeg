@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and   
 # limitations under the License.
 
+import os
+
 from ..base import BaseRunner
 
 
@@ -44,11 +46,22 @@ class SegRunner(BaseRunner):
         cmd = f"{self.python} deploy/python/infer.py --config {config_file_path} --device {device_type} {args_str}"
         self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
 
-    def compression(self, config_file_path, cli_args, device):
+    def compression(self, config_file_path, train_cli_args, export_cli_args,
+                    device, train_save_dir):
+        # Step 1: Train model
         python, device_type = self.distributed(device)
-        args = self._gather_opts_args(cli_args)
-        args_str = ' '.join(str(arg) for arg in args)
-        cmd = f"{python} deploy/slim/quant/qat_train.py --do_eval --config {config_file_path} --device {device_type} {args_str}"
+        train_args = self._gather_opts_args(train_cli_args)
+        train_args_str = ' '.join(str(arg) for arg in train_args)
+        cmd = f"{python} deploy/slim/quant/qat_train.py --do_eval --config {config_file_path} --device {device_type} {train_args_str}"
+        self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
+
+        # Step 2: Export model
+        export_args = self._gather_opts_args(export_cli_args)
+        export_args_str = ' '.join(str(arg) for arg in export_args)
+        # We export the best model on the validation dataset
+        weight_path = os.path.join(train_save_dir, 'best_model',
+                                   'model.pdparams')
+        cmd = f"{self.python} deploy/slim/quant/qat_export.py --config {config_file_path} --model_path {weight_path} {export_args_str}"
         self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
 
     def _gather_opts_args(self, args):

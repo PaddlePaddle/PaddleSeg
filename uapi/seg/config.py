@@ -41,6 +41,7 @@ class SegConfig(BaseConfig):
         self.update(ds_cfg)
 
     def _make_dataset_config(self, dataset_root_path):
+        # TODO: Description of dataset protocol
         return {
             'train_dataset': {
                 'type': 'Dataset',

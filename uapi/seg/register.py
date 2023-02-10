@@ -24,7 +24,9 @@ register_suite_info({
     'suite_name': 'Seg',
     'model': SegModel,
     'runner': SegRunner,
-    'runner_root_path': REPO_ROOT_PATH
+    'runner_root_path': REPO_ROOT_PATH,
+    'supported_api_list':
+    ['train', 'predict', 'export', 'infer', 'compression']
 })
 
 PPHUMANSEG_LITE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs',

@@ -13,6 +13,5 @@
 # limitations under the License.
 
 from .config import BaseConfig
-from .model import BaseModel
+from .model import PaddleModel, BaseModel
 from .runner import BaseRunner
-from .register import PaddleModel

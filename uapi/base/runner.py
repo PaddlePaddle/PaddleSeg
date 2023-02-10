@@ -42,7 +42,8 @@ class BaseRunner(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def compression(self, config_file_path, cli_args, device):
+    def compression(self, config_file_path, train_cli_args, export_cli_args,
+                    device, train_save_dir):
         raise NotImplementedError
 
     def distributed(self, device):
