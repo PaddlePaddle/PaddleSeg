@@ -99,7 +99,7 @@ python tools/train.py \
 单卡和多卡训练都采用相同的方法设置`resume_model`输入参数，即可恢复训练。
 
 ## 4、模型微调
-如果想利用预训练模型进行微调（finetune），可以在配置文件中添加`model.pretained`字段，内容为预训练模型权重文件的URL地址或本地路径。
+如果想利用预训练模型进行微调（finetune），可以在配置文件中添加`model.pretained`字段，内容为预训练模型权重文件的URL地址或本地路径。PaddleSeg提供基于Cityscapes、ADE20K等公开数据集的预训练模型，可以在`PaddleSeg/configs`下面不同模型的页面中获取下载链接。
 ```yaml
 model:
   type: FCN
