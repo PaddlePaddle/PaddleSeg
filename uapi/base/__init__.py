@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and   
 # limitations under the License.
 
-from .config import BaseConfig
+from .config import Config, BaseConfig
 from .model import PaddleModel, BaseModel
 from .runner import BaseRunner

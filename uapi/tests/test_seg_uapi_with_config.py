@@ -18,17 +18,19 @@ import sys
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..', '..')))
 
-from uapi import PaddleModel
+from uapi import PaddleModel, Config
 
 if __name__ == '__main__':
-    model = PaddleModel('pphumanseg_lite')
+    config = Config('pphumanseg_lite')
+    config.update({'lr_scheduler': {'learning_rate': 0.1}})
+
+    model = PaddleModel(config=config)
 
     model.train(
         dataset='uapi/tests/data/mini_supervisely',
         batch_size=1,
         epochs_iters=10,
-        device='gpu:0',
-        dy2st=True,
+        device='gpu:0,1',
         amp='O1',
         save_dir='uapi/tests/seg_res')
 

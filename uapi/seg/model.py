@@ -18,7 +18,6 @@ from ..base import BaseModel
 from ..base.utils.path import get_cache_dir
 from ..base.utils.arg import CLIArgument
 from ..base.utils.misc import abspath
-from .config import SegConfig
 
 
 class SegModel(BaseModel):
@@ -48,8 +47,7 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.model_info['config_path']
-        config = SegConfig.build_from_file(config_file_path)
+        config = self.config.copy()
         config.update_dataset(dataset)
         if dy2st:
             config.update({'to_static_training': True})
@@ -84,8 +82,7 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.model_info['config_path']
-        config = SegConfig.build_from_file(config_file_path)
+        config = self.config.copy()
         config.update_dataset(self._create_dummy_dataset())
         config_file_path = self.config_file_path
         config.dump(config_file_path)
@@ -107,8 +104,7 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.model_info['config_path']
-        config = SegConfig.build_from_file(config_file_path)
+        config = self.config.copy()
         config.update_dataset(self._create_dummy_dataset())
         config_file_path = self.config_file_path
         config.dump(config_file_path)
@@ -135,8 +131,7 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.model_info['config_path']
-        config = SegConfig.build_from_file(config_file_path)
+        config = self.config.copy()
         config.update_dataset(self._create_dummy_dataset())
         config.dump(self.config_file_path)
 
@@ -167,7 +162,8 @@ class SegModel(BaseModel):
 
         # Update YAML config file
         config_file_path = self.model_info['auto_compression_config_path']
-        config = SegConfig.build_from_file(config_file_path)
+        config = self.config.copy()
+        config.load(config_file_path)
         config.update_dataset(dataset)
         config_file_path = self.config_file_path
         config.dump(config_file_path)

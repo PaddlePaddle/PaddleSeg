@@ -15,16 +15,27 @@
 import abc
 
 from .register import (get_registered_model_info, build_runner_from_model_info,
-                       build_model_from_model_info)
+                       build_model_from_model_info,
+                       build_config_from_model_info)
 from .utils.misc import CachedProperty as cached_property
 from .utils.path import create_yaml_config_file
 
 
 class PaddleModel(object):
     # We constrain function params here
-    def __new__(cls, model_name):
+    def __new__(cls, model_name=None, config=None):
+        if model_name is None and config is None:
+            raise ValueError(
+                "At least one of `model_name` and `config` must be not None.")
+        elif model_name is not None and config is not None:
+            if model_name != config.model_name:
+                raise ValueError(
+                    "If both `model_name` and `config` are not None, `model_name` should be the same as `config.model_name`."
+                )
+        elif model_name is None and config is not None:
+            model_name = config.model_name
         model_info = get_registered_model_info(model_name)
-        return build_model_from_model_info(model_info)
+        return build_model_from_model_info(model_info, config=config)
 
 
 class BaseModel(metaclass=abc.ABCMeta):
@@ -36,14 +47,18 @@ class BaseModel(metaclass=abc.ABCMeta):
 
     Args:
         model_name (str): A registered model name.
+        config (config.BaseConfig): Config.
     """
 
-    def __init__(self, model_name):
+    def __init__(self, model_name, config):
         self.name = model_name
         self.model_info = get_registered_model_info(model_name)
         # NOTE: We build runner instance here by extracting runner info from model info
         # so that we don't have to overwrite the `__init__()` method of each child class.
         self.runner = build_runner_from_model_info(self.model_info)
+        if config is None:
+            config = build_config_from_model_info(self.model_info)
+        self.config = config
 
     @abc.abstractmethod
     def train(self, dataset, batch_size, epochs_iters, device, resume_path,
@@ -130,3 +145,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         tag = '_'.join([cls.__name__.lower(), model_name])
         # Allow overwriting
         return create_yaml_config_file(tag=tag, noclobber=False)
+
+    @cached_property
+    def supported_apis(self):
+        return tuple(self.model_info['supported_apis'])

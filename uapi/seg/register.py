@@ -17,6 +17,7 @@ import os.path as osp
 from ..base.register import register_model_info, register_suite_info
 from .model import SegModel
 from .runner import SegRunner
+from .config import SegConfig
 
 # XXX: Hard-code relative path of repo root dir
 REPO_ROOT_PATH = osp.abspath(osp.join(osp.dirname(__file__), '..', '..'))
@@ -24,9 +25,8 @@ register_suite_info({
     'suite_name': 'Seg',
     'model': SegModel,
     'runner': SegRunner,
-    'runner_root_path': REPO_ROOT_PATH,
-    'supported_api_list':
-    ['train', 'predict', 'export', 'infer', 'compression']
+    'config': SegConfig,
+    'runner_root_path': REPO_ROOT_PATH
 })
 
 PPHUMANSEG_LITE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs',
@@ -36,5 +36,6 @@ register_model_info({
     'model_name': 'pphumanseg_lite',
     'suite': 'Seg',
     'config_path': PPHUMANSEG_LITE_CFG_PATH,
-    'auto_compression_config_path': PPHUMANSEG_LITE_CFG_PATH
+    'auto_compression_config_path': PPHUMANSEG_LITE_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
 })

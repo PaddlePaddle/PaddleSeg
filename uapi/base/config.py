@@ -16,10 +16,20 @@ import abc
 import collections.abc
 from collections import OrderedDict
 
+from .register import get_registered_model_info, build_config_from_model_info
+
 __all__ = ['Config', 'BaseConfig']
 
 
 class Config(object):
+    # We constrain function params here
+    def __new__(cls, model_name, config_file_path=None):
+        model_info = get_registered_model_info(model_name)
+        return build_config_from_model_info(
+            model_info, config_file_path=config_file_path)
+
+
+class _Config(object):
     _DICT_TYPE_ = OrderedDict
 
     def __init__(self, cfg=None):
@@ -70,7 +80,7 @@ class Config(object):
         self._dict.update(dict_like_obj)
 
 
-class BaseConfig(Config, metaclass=abc.ABCMeta):
+class BaseConfig(_Config, metaclass=abc.ABCMeta):
     """
     Abstract base class of Config.
 
