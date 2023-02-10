@@ -48,7 +48,7 @@ class PadHelper:
 
 
 class LocalPermuteHelper:
-    """ Permute the feature map to gather pixels in local groups, and the reverse permutation."""
+    """ Permute the feature map to gather pixels in local groups, and then reverse permutation."""
 
     def __init__(self, local_group_size=7):
         self.lgs = local_group_size
@@ -82,9 +82,6 @@ class LocalPermuteHelper:
 
 class Attention(nn.MultiHeadAttention):
     """ Multihead Attention with extra flags on the q/k/v and out projections."""
-
-    # bias_k: Optional[paddle.Tensor]
-    # bias_v: Optional[paddle.Tensor]
 
     def __init__(self,
                  *args,
@@ -224,7 +221,7 @@ class Attention(nn.MultiHeadAttention):
                     shape) == [bsz * self.num_heads, tgt_len, src_len]
         """ Add relative position embedding."""
         if self.rpe and rpe:
-            # NOTE: for simplicity, we assume the src_len == tgt_len == window_size**2 here
+            # NOTE: for simplicity, we assume src_len == tgt_len == window_size**2 here
             assert (
                 src_len == self.window_size[0] * self.window_size[1] and
                 tgt_len == self.window_size[0] * self.window_size[1]
@@ -241,7 +238,7 @@ class Attention(nn.MultiHeadAttention):
             ]) + relative_position_bias.unsqueeze(0)
             attn_output_weights = attn_output_weights.reshape(
                 [bsz * self.num_heads, tgt_len, src_len])
-        """ Attention weight for the invalid region is -inf."""
+        # Attention weight for the invalid region is -inf.
         if attn_mask is not None:
             if attn_mask.dtype == paddle.bool:
                 attn_output_weights.masked_fill_(attn_mask, float("-inf"))
@@ -507,19 +504,19 @@ class HighResolutionTransformerModule(nn.Layer):
                         num_channels):
 
         if num_branches != len(num_blocks):
-            error_msg = f"The num_branches {num_branches} is not equal\
+            error_msg = f"Num_branches {num_branches} is not equal\
                 to the length of num_blocks {len(num_blocks)}"
 
             raise ValueError(error_msg)
 
         if num_branches != len(num_channels):
-            error_msg = f"The num_branches {num_branches} is not equal\
+            error_msg = f"Num_branches {num_branches} is not equal\
                 to the length of num_channels {len(num_channels)}"
 
             raise ValueError(error_msg)
 
         if num_branches != len(num_inchannels):
-            error_msg = f"The num_branches {num_branches} is not equal\
+            error_msg = f"Num_branches {num_branches} is not equal\
                 to the length of num_inchannels {len(num_inchannels)}"
 
             raise ValueError(error_msg)
