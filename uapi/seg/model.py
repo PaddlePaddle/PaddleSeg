@@ -188,6 +188,10 @@ class SegModel(BaseModel):
             # The exported model saved in a subdirectory named `infer`
             export_cli_args.append(
                 CLIArgument('--save_dir', os.path.join(save_dir, 'infer')))
+        else:
+            # According to
+            # https://github.com/PaddlePaddle/PaddleSeg/blob/ba7b4d61e456fa8bfdfb7415c64cdce2945919d4/deploy/slim/quant/qat_train.py#L66
+            save_dir = 'output'
         if input_shape is not None:
             if isinstance(input_shape, (list, tuple)):
                 input_shape = ' '.join(map(str, input_shape))
