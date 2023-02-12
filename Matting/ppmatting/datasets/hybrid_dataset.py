@@ -26,7 +26,6 @@ import ppmatting.transforms as T
 
 @manager.DATASETS.add_component
 class HybridDataset(paddle.io.Dataset):
-    
     def __init__(self,
                  dataset_root,
                  transforms,
@@ -220,9 +219,7 @@ class HybridDataset(paddle.io.Dataset):
     @staticmethod
     def gen_trimap(alpha, mode='train', eval_kernel=7):
         if mode == 'train':
-            # k_size = random.choice(range(2, 5))
             k_size = 30
-            # iterations = np.random.randint(5, 15)
             iterations = 1
             kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
                                                (k_size, k_size))

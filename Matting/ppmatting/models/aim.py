@@ -21,16 +21,29 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
+
+
 from ppmatting.models.losses import AlphaLoss, LaplacianLoss, CompositionLoss
 from paddleseg.models.losses import CrossEntropyLoss
 
 @manager.MODELS.add_component
 class AIM(nn.Layer):
+    """
+    The AIM implementation based on PaddlePaddle
+
+    The original article refers to
+    Li, Jizhizi, et, al. "Deep Automatic Natural Image Matting"
+    (https://arxiv.org/pdf/2107.07235.pdf)
+
+    Args:
+        backbone: backbone model.
+        pretrained(str, optional): The path of pretrianed model. Defautl: None.
+    """
     def __init__(self, backbone, pretrained=None):
         super().__init__()
         self.backbone = backbone
-        self.loss_func_dict = None
         self.pretrained = pretrained
+        self.loss_func_dict = None
 
         # encoder - resnet
         self.encoder0 = nn.Sequential(

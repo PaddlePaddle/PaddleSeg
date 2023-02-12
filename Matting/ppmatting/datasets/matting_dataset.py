@@ -43,6 +43,7 @@ class MattingDataset(paddle.io.Dataset):
         |--train.txt
         |
         |--val.txt
+        
     See README.md for more information of dataset.
     Args:
         dataset_root(str): The root path of dataset.

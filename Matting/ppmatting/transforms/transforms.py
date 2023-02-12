@@ -797,10 +797,10 @@ class HybridResize:
     Resize the image using different hybrid-resolution testing strategies.
 
     Args:
-        global_ratio (float, optional): The scale ratio of global down-sampling. Default: 0.25.
-        local_ratio (float, optinal): The scale ratio of local down-sampling.  Default: 0.5.
-        max_size (list|tuple, optional): The maxiumn size of image. index 0 means height of image, and index 1 means width of image. Default: [1600, 1600].
-        if_hybrid (bool, optional): Enable hybrid-resolution test strategy. Default: False
+        global_ratio (float, optional): The scaling ratio of global down-sampling. Default: 0.25.
+        local_ratio (float, optinal): The scaling ratio of local down-sampling.  Default: 0.5.
+        max_size (list|tuple, optional): The maxiumn size of image in [width, height] format. Default: [1600, 1600].
+        if_hybrid (bool, optional): Enable hybrid-resolution test strategy. Default: False. 
 
     Raises:
         TypeError: When max_size is neither list nor tuple.
@@ -808,7 +808,7 @@ class HybridResize:
     """
     def __init__(self, global_ratio=0.25, 
                     local_ratio=0.5, 
-                    max_size=[1600, 1600], 
+                    max_size=(1600, 1600), 
                     if_hybrid=True):
         self.global_ratio = global_ratio
         self.local_ratio = local_ratio
@@ -837,22 +837,22 @@ class HybridResize:
         if self.if_hybrid:
             resize_h_g = int(h * self.global_ratio)
             resize_w_g = int(w * self.global_ratio)
-            new_h_g = min(self.max_size[0], resize_h_g - (resize_h_g % 32))
-            new_w_g = min(self.max_size[1], resize_w_g - (resize_w_g % 32))
+            new_h_g = min(self.max_size[1], resize_h_g - (resize_h_g % 32))
+            new_w_g = min(self.max_size[0], resize_w_g - (resize_w_g % 32))
             data['img_g'] = resize(x, (new_h_g, new_w_g)) * 255.0
             data['img_g'] = data['img_g'].astype(np.float32)[:, :, :]
             
             resize_h_l = int(h * self.local_ratio)
             resize_w_l = int(w * self.local_ratio)
-            new_h_l = min(self.max_size[0], resize_h_l - (resize_h_l % 32))
-            new_w_l = min(self.max_size[1], resize_w_l - (resize_w_l % 32))
+            new_h_l = min(self.max_size[1], resize_h_l - (resize_h_l % 32))
+            new_w_l = min(self.max_size[0], resize_w_l - (resize_w_l % 32))
             data['img_l'] = resize(x, (new_h_l, new_w_l)) * 255.0
             data['img_l'] = data['img_l'].astype(np.float32)[:, :, :]
         else:
             resize_h = int(h / 4)
             resize_w = int(w / 4)
-            new_h = min(self.max_size[0], resize_h - (resize_h % 32))
-            new_w = min(self.max_size[1], resize_w - (resize_w % 32))
+            new_h = min(self.max_size[1], resize_h - (resize_h % 32))
+            new_w = min(self.max_size[0], resize_w - (resize_w % 32))
             data['img'] = resize(data['img'], (new_h, new_w)) * 255.0
             data['img'] = data['img'].astype(np.float32)[:, :, :]
             

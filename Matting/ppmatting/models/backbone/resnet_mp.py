@@ -175,12 +175,3 @@ def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
 def ResNet34_mp(**args):
     model = ResNet(BasicBlock, [3, 4, 6, 3], **args)
     return model
-
-def resnet34_mp(**kwargs):
-    r"""ResNet-34 model from
-    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`
-    """
-    model = ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
-    checkpoint = paddle.load("/home/aistudio/data/data178535/r34mp_paddle.pdparams")
-    model.load_dict(checkpoint)
-    return model
