@@ -35,8 +35,6 @@ class PaddleModel(object):
         elif model_name is None and config is not None:
             model_name = config.model_name
         model_info = get_registered_model_info(model_name)
-        if config is None:
-            config = Config(model_name)
         return build_model_from_model_info(model_info=model_info, config=config)
 
 
@@ -48,17 +46,39 @@ class BaseModel(metaclass=abc.ABCMeta):
         provides users with multiple APIs to perform model training, prediction, etc.
 
     Args:
-        model_info (dict): Meta-information of a registered model.
-        config (config.BaseConfig): Config.
+        model_name (str): A registered model name.
+        config (config.BaseConfig|None): Config.
     """
 
-    def __init__(self, model_info, config):
-        self.name = model_info['model_name']
-        self.model_info = model_info
+    _API_FULL_LIST = ('train', 'predict', 'export', 'infer', 'compression')
+
+    def __init__(self, model_name, config=None):
+        self.name = model_name
+        self.model_info = get_registered_model_info(model_name)
         # NOTE: We build runner instance here by extracting runner info from model info
         # so that we don't have to overwrite the `__init__()` method of each child class.
         self.runner = build_runner_from_model_info(self.model_info)
+        if config is None:
+            config = Config(model_name)
         self.config = config
+
+        self._patch_unavail_apis()
+
+    def _patch_unavail_apis(self):
+        def _make_unavailable(bnd_method):
+            def _unavailable_api(*args, **kwargs):
+                model_name = self.name
+                api_name = bnd_method.__name__
+                raise RuntimeError(
+                    f"{model_name} does not support `{api_name}`.")
+
+            return _unavailable_api
+
+        avail_api_set = set(self.supported_apis)
+        for api_name in self._API_FULL_LIST:
+            if api_name not in avail_api_set:
+                api = getattr(self, api_name)
+                setattr(self, api_name, _make_unavailable(api))
 
     @abc.abstractmethod
     def train(self, dataset, batch_size, epochs_iters, device, resume_path,

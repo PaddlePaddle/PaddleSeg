@@ -27,15 +27,10 @@ class Config(object):
         # Build config from model name
         model_info = get_registered_model_info(model_name)
         suite_name = model_info['suite']
-        # `suite_name` being the primary key of suite info
         suite_info = get_registered_suite_info(suite_name)
         config_cls = suite_info['config']
-        if config_file_path is None:
-            config_file_path = model_info['config_path']
-        model_name = model_info['model_name']
-        config_obj = config_cls(model_name=model_name)
-        # Eagerly load the file
-        config_obj.load(config_file_path)
+        config_obj = config_cls(
+            model_name=model_name, config_file_path=config_file_path)
         return config_obj
 
 
@@ -100,13 +95,19 @@ class BaseConfig(_Config, metaclass=abc.ABCMeta):
         hyperparameters and model components.
 
     Args:
-        model_name (str|None): A registered model name.
+        model_name (str): A registered model name.
+        config_file_path (str|None): Path of a configuration file.
         cfg (BaseConfig|None): `BaseConfig` object to initialize from.
     """
 
-    def __init__(self, model_name=None, cfg=None):
+    def __init__(self, model_name, config_file_path=None, cfg=None):
         super().__init__(cfg=cfg)
         self.model_name = model_name
+        model_info = get_registered_model_info(self.model_name)
+        if config_file_path is None:
+            config_file_path = model_info['config_path']
+        # Eagerly load the file
+        self.load(config_file_path)
 
     @abc.abstractmethod
     def load(self, config_file_path):

@@ -80,4 +80,5 @@ def build_model_from_model_info(model_info, config=None):
     # `suite_name` being the primary key of suite info
     suite_info = get_registered_suite_info(suite_name)
     model_cls = suite_info['model']
-    return model_cls(model_info=model_info, config=config)
+    model_name = model_info['model_name']
+    return model_cls(model_name=model_name, config=config)
