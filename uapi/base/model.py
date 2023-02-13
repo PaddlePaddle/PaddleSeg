@@ -14,9 +14,9 @@
 
 import abc
 
+from .config import Config
 from .register import (get_registered_model_info, build_runner_from_model_info,
-                       build_model_from_model_info,
-                       build_config_from_model_info)
+                       build_model_from_model_info)
 from .utils.misc import CachedProperty as cached_property
 from .utils.path import create_yaml_config_file
 
@@ -35,7 +35,9 @@ class PaddleModel(object):
         elif model_name is None and config is not None:
             model_name = config.model_name
         model_info = get_registered_model_info(model_name)
-        return build_model_from_model_info(model_info, config=config)
+        if config is None:
+            config = Config(model_name)
+        return build_model_from_model_info(model_info=model_info, config=config)
 
 
 class BaseModel(metaclass=abc.ABCMeta):
@@ -46,18 +48,16 @@ class BaseModel(metaclass=abc.ABCMeta):
         provides users with multiple APIs to perform model training, prediction, etc.
 
     Args:
-        model_name (str): A registered model name.
+        model_info (dict): Meta-information of a registered model.
         config (config.BaseConfig): Config.
     """
 
-    def __init__(self, model_name, config):
-        self.name = model_name
-        self.model_info = get_registered_model_info(model_name)
+    def __init__(self, model_info, config):
+        self.name = model_info['model_name']
+        self.model_info = model_info
         # NOTE: We build runner instance here by extracting runner info from model info
         # so that we don't have to overwrite the `__init__()` method of each child class.
         self.runner = build_runner_from_model_info(self.model_info)
-        if config is None:
-            config = build_config_from_model_info(self.model_info)
         self.config = config
 
     @abc.abstractmethod

@@ -75,23 +75,9 @@ def build_runner_from_model_info(model_info):
     return runner_cls(runner_root_path=runner_root_path)
 
 
-def build_config_from_model_info(model_info, config_file_path=None):
-    suite_name = model_info['suite']
-    # `suite_name` being the primary key of suite info
-    suite_info = get_registered_suite_info(suite_name)
-    config_cls = suite_info['config']
-    if config_file_path is None:
-        config_file_path = model_info['config_path']
-    config_obj = config_cls.build_from_file(config_file_path)
-    model_name = model_info['model_name']
-    config_obj.set_val('model_name', model_name)
-    return config_obj
-
-
 def build_model_from_model_info(model_info, config=None):
-    model_name = model_info['model_name']
     suite_name = model_info['suite']
     # `suite_name` being the primary key of suite info
     suite_info = get_registered_suite_info(suite_name)
     model_cls = suite_info['model']
-    return model_cls(model_name=model_name, config=config)
+    return model_cls(model_info=model_info, config=config)

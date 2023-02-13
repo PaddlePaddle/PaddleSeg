@@ -28,19 +28,15 @@ class SegModel(BaseModel):
               batch_size=None,
               learning_rate=None,
               epochs_iters=None,
-              device=None,
+              device='gpu',
               resume_path=None,
-              dy2st=None,
+              dy2st=False,
               amp=None,
               save_dir=None):
         if dataset is not None:
             # NOTE: We must use an absolute path here, 
             # so we can run the scripts either inside or outside the repo dir.
             dataset = abspath(dataset)
-        if device is None:
-            device = 'gpu'
-        if dy2st is None:
-            dy2st = False
         if resume_path is not None:
             resume_path = abspath(resume_path)
         if save_dir is not None:
@@ -73,11 +69,9 @@ class SegModel(BaseModel):
 
         self.runner.train(config_file_path, cli_args, device)
 
-    def predict(self, weight_path, input_path, device=None, save_dir=None):
+    def predict(self, weight_path, input_path, device='gpu', save_dir=None):
         weight_path = abspath(weight_path)
         input_path = abspath(input_path)
-        if device is None:
-            device = 'gpu'
         if save_dir is not None:
             save_dir = abspath(save_dir)
 
@@ -122,11 +116,9 @@ class SegModel(BaseModel):
 
         self.runner.export(config_file_path, cli_args, None)
 
-    def infer(self, model_dir, input_path, device=None, save_dir=None):
+    def infer(self, model_dir, input_path, device='gpu', save_dir=None):
         model_dir = abspath(model_dir)
         input_path = abspath(input_path)
-        if device is None:
-            device = 'gpu'
         if save_dir is not None:
             save_dir = abspath(save_dir)
 
@@ -151,7 +143,7 @@ class SegModel(BaseModel):
                     batch_size=None,
                     learning_rate=None,
                     epochs_iters=None,
-                    device=None,
+                    device='gpu',
                     save_dir=None,
                     input_shape=None):
         weight_path = abspath(weight_path)

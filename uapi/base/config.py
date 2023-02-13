@@ -16,7 +16,7 @@ import abc
 import collections.abc
 from collections import OrderedDict
 
-from .register import get_registered_model_info, build_config_from_model_info
+from .register import get_registered_model_info, get_registered_suite_info
 
 __all__ = ['Config', 'BaseConfig']
 
@@ -24,9 +24,19 @@ __all__ = ['Config', 'BaseConfig']
 class Config(object):
     # We constrain function params here
     def __new__(cls, model_name, config_file_path=None):
+        # Build config from model name
         model_info = get_registered_model_info(model_name)
-        return build_config_from_model_info(
-            model_info, config_file_path=config_file_path)
+        suite_name = model_info['suite']
+        # `suite_name` being the primary key of suite info
+        suite_info = get_registered_suite_info(suite_name)
+        config_cls = suite_info['config']
+        if config_file_path is None:
+            config_file_path = model_info['config_path']
+        model_name = model_info['model_name']
+        config_obj = config_cls(model_name=model_name)
+        # Eagerly load the file
+        config_obj.load(config_file_path)
+        return config_obj
 
 
 class _Config(object):
@@ -67,7 +77,7 @@ class _Config(object):
         cfg.update(kwargs)
 
     def copy(self):
-        return type(self)(self)
+        return type(self)(cfg=self)
 
     def pop(self, key):
         self._dict.pop(key)
@@ -88,7 +98,15 @@ class BaseConfig(_Config, metaclass=abc.ABCMeta):
         configuration file with a specific format. Also, it provides 
         APIs to update configurations of several important 
         hyperparameters and model components.
+
+    Args:
+        model_name (str|None): A registered model name.
+        cfg (BaseConfig|None): `BaseConfig` object to initialize from.
     """
+
+    def __init__(self, model_name=None, cfg=None):
+        super().__init__(cfg=cfg)
+        self.model_name = model_name
 
     @abc.abstractmethod
     def load(self, config_file_path):
@@ -139,11 +157,8 @@ class BaseConfig(_Config, metaclass=abc.ABCMeta):
         """Update configurations of weight decay."""
         raise NotImplementedError
 
-    @classmethod
-    def build_from_file(cls, config_file_path, *args, **kwargs):
-        cfg = cls(*args, **kwargs)
-        cfg.load(config_file_path)
-        return cfg
+    def copy(self):
+        return type(self)(model_name=self.model_name, cfg=self)
 
 
 def format_cfg(cfg, indent=0):
