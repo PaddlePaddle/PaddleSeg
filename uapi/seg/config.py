@@ -73,19 +73,6 @@ class SegConfig(BaseConfig):
                 'dataset_root': dataset_root_path,
                 'train_path': os.path.join(dataset_root_path, 'train.txt'),
                 'num_classes': 2,
-                'transforms': [{
-                    'type': 'Resize',
-                    'target_size': [398, 224]
-                }, {
-                    'type': 'RandomHorizontalFlip'
-                }, {
-                    'type': 'RandomDistort',
-                    'brightness_range': 0.4,
-                    'contrast_range': 0.4,
-                    'saturation_range': 0.4
-                }, {
-                    'type': 'Normalize'
-                }],
                 'mode': 'train'
             },
             'val_dataset': {
@@ -93,12 +80,6 @@ class SegConfig(BaseConfig):
                 'dataset_root': dataset_root_path,
                 'val_path': os.path.join(dataset_root_path, 'val.txt'),
                 'num_classes': 2,
-                'transforms': [{
-                    'type': 'Resize',
-                    'target_size': [398, 224]
-                }, {
-                    'type': 'Normalize'
-                }],
                 'mode': 'val'
             },
         }

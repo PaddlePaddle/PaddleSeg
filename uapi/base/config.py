@@ -102,11 +102,12 @@ class BaseConfig(_Config, metaclass=abc.ABCMeta):
     def __init__(self, model_name, config_path=None, cfg=None):
         super().__init__(cfg=cfg)
         self.model_name = model_name
-        if config_path is None:
-            model_info = get_registered_model_info(self.model_name)
-            config_path = model_info['config_path']
-        # Eagerly load the file
-        self.load(config_path)
+        if cfg is None:
+            # Initialize from file if no `cfg` is specified to initialize from
+            if config_path is None:
+                model_info = get_registered_model_info(self.model_name)
+                config_path = model_info['config_path']
+            self.load(config_path)
 
     @abc.abstractmethod
     def load(self, config_path):
@@ -167,7 +168,7 @@ def format_cfg(cfg, indent=0):
     NESTED_TYPES = (*MAP_TYPES, *SEQ_TYPES)
 
     s = ' ' * indent
-    if isinstance(cfg, Config):
+    if isinstance(cfg, _Config):
         cfg = cfg.dict
     if isinstance(cfg, MAP_TYPES):
         for i, (k, v) in enumerate(sorted(cfg.items())):
