@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,18 +32,13 @@ class SegNeXt(nn.Layer):
     (https://arxiv.org/pdf/2209.08575.pdf)
 
     Args:
-        backbone ("MSCAN): The backbone must be an instance of MSCAN.
+        backbone ("MSCAN"): The backbone must be an instance of MSCAN.
         decoder_cfg (dict): The arguments of decoder.
         num_classes (int): The unique number of target classes.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
-    def __init__(
-            self,
-            backbone,
-            decoder_cfg,
-            num_classes,
-            pretrained=None):
+    def __init__(self, backbone, decoder_cfg, num_classes, pretrained=None):
         super().__init__()
         if not isinstance(backbone, MSCAN):
             raise TypeError(
@@ -51,9 +46,10 @@ class SegNeXt(nn.Layer):
                 format(type(backbone)))
         self.backbone = backbone
 
-        decoder_cfg.setdefault("num_classes", num_classes)
         self.decode_head = LightHamHead(
-            in_channels=self.backbone.feat_channels[1:], **decoder_cfg)
+            in_channels=self.backbone.feat_channels[1:],
+            num_classes=num_classes,
+            **decoder_cfg)
 
         self.align_corners = self.decode_head.align_corners
         self.pretrained = pretrained
@@ -77,16 +73,9 @@ class SegNeXt(nn.Layer):
 
 
 class Hamburger(nn.Layer):
-    def __init__(
-            self,
-            ham_channels=512,
-            num_groups=32,
-            ham_kwargs=None):
+    def __init__(self, ham_channels=512, num_groups=32, ham_kwargs=None):
         super().__init__()
-        self.ham_in = nn.Conv2D(
-            ham_channels,
-            ham_channels,
-            kernel_size=1)
+        self.ham_in = nn.Conv2D(ham_channels, ham_channels, kernel_size=1)
 
         self.ham = NMF2D(ham_kwargs)
 
@@ -111,6 +100,7 @@ class LightHamHead(nn.Layer):
     """The head implementation of HamNet based on PaddlePaddle.
     The original article refers to Zhengyang Geng, et al. "Is Attention Better Than Matrix Decomposition?"
     (https://arxiv.org/abs/2109.04553.pdf)
+
     Args:
         in_channels (list[int]): The feature channels from backbone.
         num_classes (int): The unique number of target classes.
@@ -119,23 +109,24 @@ class LightHamHead(nn.Layer):
         align_corners (bool, optional): Whether use align_corners when interpolating. Default: False.
         ham_channels (int, optional): Input channel of Hamburger. Default: 512.
         num_groups (int, optional): The num_groups of convolutions in LightHamHead. Default: 32.
-        ham_kwargs (dict): Keyword arguments of Hamburger module.
+        ham_kwargs (dict, optional): Keyword arguments of Hamburger module.
     """
 
-    def __init__(
-            self,
-            in_channels,
-            num_classes,
-            channels=256,
-            dropout_rate=0.1,
-            align_corners=False,
-            ham_channels=512,
-            num_groups=32,
-            ham_kwargs=None):
+    def __init__(self,
+                 in_channels,
+                 num_classes,
+                 channels=256,
+                 dropout_rate=0.1,
+                 align_corners=False,
+                 ham_channels=512,
+                 num_groups=32,
+                 ham_kwargs=None):
         super().__init__()
 
         if len(in_channels) != 3:
-            raise ValueError("The length of `in_channels` must be 3, but got {}".format(len(in_channels)))
+            raise ValueError(
+                "The length of `in_channels` must be 3, but got {}".format(
+                    len(in_channels)))
 
         self.align_corners = align_corners
 
@@ -159,10 +150,7 @@ class LightHamHead(nn.Layer):
 
         self.dropout = (nn.Dropout2D(dropout_rate)
                         if dropout_rate > 0.0 else nn.Identity())
-        self.conv_seg = nn.Conv2D(
-            channels,
-            num_classes,
-            kernel_size=1)
+        self.conv_seg = nn.Conv2D(channels, num_classes, kernel_size=1)
 
     def forward(self, inputs):
         inputs = inputs[1:]

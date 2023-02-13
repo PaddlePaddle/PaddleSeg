@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
 
 from abc import abstractmethod, ABCMeta
 
-from numpy.testing import raises
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -24,8 +22,11 @@ import paddle.nn.functional as F
 class _MatrixDecomposition2DBase(nn.Layer, metaclass=ABCMeta):
     def __init__(self, args=None):
         super().__init__()
-        if not isinstance(args, dict):
-            raise TypeError("`args` must to be dict, but got {}".format(type(args)))
+        if args is None:
+            args = dict()
+        elif not isinstance(args, dict):
+            raise TypeError("`args` must be a dict, but got {}".foramt(
+                args.__class__.__name__))
 
         self.spatial = args.setdefault("SPATIAL", True)
 

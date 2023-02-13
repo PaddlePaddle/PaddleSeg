@@ -1,4 +1,4 @@
-# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2023 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,11 +21,8 @@ from paddle.nn import Conv2D
 from paddle.nn.initializer import Assign, Normal
 
 from paddleseg.cvlibs import manager
-from paddleseg.models.backbones.transformer_utils import (
-    DropPath,
-    ones_,
-    to_2tuple,
-    zeros_)
+from paddleseg.models.backbones.transformer_utils import (DropPath, ones_,
+                                                          to_2tuple, zeros_)
 from paddleseg.models.layers import SyncBatchNorm
 from paddleseg.utils import utils
 
@@ -43,13 +40,12 @@ def get_depthwise_conv(dim, kernel_size=3):
 class Mlp(nn.Layer):
     """Multilayer perceptron."""
 
-    def __init__(
-            self,
-            in_features,
-            hidden_features=None,
-            out_features=None,
-            act_layer=nn.GELU,
-            drop=0.0):
+    def __init__(self,
+                 in_features,
+                 hidden_features=None,
+                 out_features=None,
+                 act_layer=nn.GELU,
+                 drop=0.0):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -104,7 +100,7 @@ class AttentionModule(nn.Layer):
     AttentionModule Layer, which contains some depth-wise strip convolutions.
     Args:
         dim (int): Number of input channels.
-        kernel_sizes (list[int]): The height or width of each strip convolution kernel. Default: [7, 11, 21].
+        kernel_sizes (list[int], optional): The height or width of each strip convolution kernel. Default: [7, 11, 21].
     """
 
     def __init__(self, dim, kernel_sizes=[7, 11, 21]):
@@ -112,9 +108,8 @@ class AttentionModule(nn.Layer):
         self.conv0 = nn.Conv2D(dim, dim, 5, padding=2, groups=dim)
 
         self.dwconvs = nn.LayerList([
-            nn.Sequential(
-                (f"conv{i+1}_1", get_depthwise_conv(dim, (1, k))),
-                (f"conv{i+1}_2", get_depthwise_conv(dim, (k, 1))))
+            nn.Sequential((f"conv{i+1}_1", get_depthwise_conv(dim, (1, k))),
+                          (f"conv{i+1}_2", get_depthwise_conv(dim, (k, 1))))
             for i, k in enumerate(kernel_sizes)
         ])
 
@@ -139,7 +134,7 @@ class SpatialAttention(nn.Layer):
 
     Args:
         d_model (int): Number of input channels.
-        atten_kernel_sizes (list[int]): The height or width of each strip convolution kernel in attention module.
+        atten_kernel_sizes (list[int], optional): The height or width of each strip convolution kernel in attention module.
             Default: [7, 11, 21].
     """
 
@@ -167,7 +162,7 @@ class Block(nn.Layer):
 
     Args:
         dim (int): Number of feature channels.
-        atten_kernel_sizes (list[int]): The height or width of each strip convolution kernel in attention module.
+        atten_kernel_sizes (list[int], optional): The height or width of each strip convolution kernel in attention module.
             Default: [7, 11, 21].
         mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim. Default: 4.0.
         drop (float, optional): Dropout rate. Default: 0.0
@@ -190,11 +185,10 @@ class Block(nn.Layer):
         self.drop_path = DropPath(
             drop_path) if drop_path > 0.0 else nn.Identity()
         self.norm2 = SyncBatchNorm(dim)
-        self.mlp = Mlp(
-            in_features=dim,
-            hidden_features=int(dim * mlp_ratio),
-            act_layer=act_layer,
-            drop=drop)
+        self.mlp = Mlp(in_features=dim,
+                       hidden_features=int(dim * mlp_ratio),
+                       act_layer=act_layer,
+                       drop=drop)
 
         layer_scale_init_value = paddle.full(
             [dim, 1, 1], fill_value=1e-2, dtype="float32")
@@ -217,10 +211,10 @@ class OverlapPatchEmbed(nn.Layer):
     An Opverlaping Image to Patch Embedding Layer.
 
     Args:
-        patch_size (int): Patch token size. Default: 7.
-        stride (int): Stride of Convolution in OverlapPatchEmbed. Default: 4.
-        in_chans (int): Number of input image channels. Default: 3.
-        embed_dim (int): Number of linear projection output channels. Default: 768.
+        patch_size (int, optional): Patch token size. Default: 7.
+        stride (int, optional): Stride of Convolution in OverlapPatchEmbed. Default: 4.
+        in_chans (int, optional): Number of input image channels. Default: 3.
+        embed_dim (int, optional): Number of linear projection output channels. Default: 768.
     """
 
     def __init__(self, patch_size=7, stride=4, in_chans=3, embed_dim=768):
@@ -262,27 +256,26 @@ class MSCAN(nn.Layer):
     (https://arxiv.org/pdf/2209.08575.pdf)
 
     Args:
-        in_channels (int): Number of input image channels. Default: 3.
-        embed_dims (list[int]): Number of each stage output channels. Default: [32, 64, 160, 256].
-        depths (list[int]): Depths of each MSCAN stage.
-        atten_kernel_sizes (list[int]): The height or width of each strip convolution kernel in attention module.
+        in_channels (int, optional): Number of input image channels. Default: 3.
+        embed_dims (list[int], optional): Number of each stage output channels. Default: [32, 64, 160, 256].
+        depths (list[int], optional): Depths of each MSCAN stage.
+        atten_kernel_sizes (list[int], optional): The height or width of each strip convolution kernel in attention module.
             Default: [7, 11, 21].
-        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim. Default: 4.
-        drop_rate (float): Dropout rate. Default: 0.0.
-        drop_path_rate (float): Stochastic depth rate. Default: 0.1.
+        mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim. Default: 4.
+        drop_rate (float, optional): Dropout rate. Default: 0.0.
+        drop_path_rate (float, optional): Stochastic depth rate. Default: 0.1.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
-    def __init__(
-            self,
-            in_channels=3,
-            embed_dims=[32, 64, 160, 256],
-            depths=[3, 3, 5, 2],
-            mlp_ratios=[8, 8, 4, 4],
-            atten_kernel_sizes=[7, 11, 21],
-            drop_rate=0.0,
-            drop_path_rate=0.1,
-            pretrained=None, ):
+    def __init__(self,
+                 in_channels=3,
+                 embed_dims=[32, 64, 160, 256],
+                 depths=[3, 3, 5, 2],
+                 mlp_ratios=[8, 8, 4, 4],
+                 atten_kernel_sizes=[7, 11, 21],
+                 drop_rate=0.0,
+                 drop_path_rate=0.1,
+                 pretrained=None):
         super().__init__()
         if not _check_length(embed_dims, mlp_ratios, depths):
             raise ValueError(
