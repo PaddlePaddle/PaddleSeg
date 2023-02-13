@@ -153,9 +153,10 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_path = self.model_info['auto_compression_config_path']
+        # NOTE: In PaddleSeg, QAT does not use a different config file than regular training
+        # Reusing `self.config` preserves the config items modified by the user when 
+        # `SegModel` is initialized with a `SegConfig` object.
         config = self.config.copy()
-        config.load(config_path)
         config.update_dataset(dataset)
         config_path = self._config_path
         config.dump(config_path)
