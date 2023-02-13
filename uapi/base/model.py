@@ -85,7 +85,7 @@ class BaseModel(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def train(self, dataset, batch_size, epochs_iters, device, resume_path,
-              dy2st, amp, save_dir):
+              dy2st, amp, use_vdl, save_dir):
         """
         Train a model.
 
@@ -101,7 +101,10 @@ class BaseModel(metaclass=abc.ABCMeta):
                 setting.
             amp (str|None): Optimization level to use in AMP training. Choices are ['O1', 'O2', None]. 
                 If None, do not enable AMP training.
-            save_dir (str|None): Directory to store model snapshots. If None, use a default setting. 
+            use_vdl (bool|None): Whether or not to enable VisualDL during training. If None, use a default 
+                setting. If `use_vdl` is True and `save_dir` is None, the VisualDL logs will be stored in 
+                `output/train`.
+            save_dir (str|None): Directory to store model snapshots and logs. If None, use `output/train`.
         """
         raise NotImplementedError
 
@@ -114,7 +117,7 @@ class BaseModel(metaclass=abc.ABCMeta):
             weight_path (str): Path of the weights to initialize the model.
             input_path (str): Path of the input file, e.g. an image.
             device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
-            save_dir (str|None): Directory to store prediction results. If None, use a default setting. 
+            save_dir (str|None): Directory to store prediction results. If None, use `output/predict`.
         """
         raise NotImplementedError
 
@@ -125,7 +128,7 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         Args:
             weight_path (str): Path of the weights to initialize the model.
-            save_dir (str|None): Directory to store the exported model. If None, use a default setting. 
+            save_dir (str|None): Directory to store the exported model. If None, use `output/export`.
         """
         raise NotImplementedError
 
@@ -138,13 +141,13 @@ class BaseModel(metaclass=abc.ABCMeta):
             model_dir (str): Path of the model snapshot to load.
             input_path (str): Path of the input file, e.g. an image.
             device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
-            save_dir (str|None): Directory to store inference results. If None, use a default setting. 
+            save_dir (str|None): Directory to store inference results. If None, use `output/infer`.
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def compression(self, weight_path, dataset, batch_size, epochs_iters,
-                    device, save_dir):
+                    device, use_vdl, save_dir):
         """
         Perform quantization aware training (QAT) and export the quantized model.
 
@@ -156,8 +159,11 @@ class BaseModel(metaclass=abc.ABCMeta):
             epochs_iters (int|None): Total iterations or epochs of model training. If None, use a 
                 pre-defined default value of epochs/iterations.
             device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
+            use_vdl (bool|None): Whether or not to enable VisualDL during training. If None, use a default 
+                setting. If `use_vdl` is True and `save_dir` is None, the VisualDL logs will be stored in 
+                `output/compress`.
             save_dir (str|None): Directory to store model snapshots. The exported model will be saved in the 
-                `infer` subdirectory of `save_dir`. If None, use a default setting. 
+                `export` subdirectory of `save_dir`. If None, use `output/compress`.
         """
         raise NotImplementedError
 

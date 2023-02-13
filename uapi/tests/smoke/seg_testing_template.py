@@ -36,7 +36,6 @@ def build_model(model_name):
             }, {
                 'type': 'Normalize'
             }],
-            'mode': 'train'
         },
         'val_dataset': {
             'num_classes': 2,
@@ -46,7 +45,6 @@ def build_model(model_name):
             }, {
                 'type': 'Normalize'
             }],
-            'mode': 'val'
         },
     })
 

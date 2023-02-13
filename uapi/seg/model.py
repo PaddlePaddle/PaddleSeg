@@ -32,6 +32,7 @@ class SegModel(BaseModel):
               resume_path=None,
               dy2st=False,
               amp=None,
+              use_vdl=True,
               save_dir=None):
         if dataset is not None:
             # NOTE: We must use an absolute path here, 
@@ -41,6 +42,9 @@ class SegModel(BaseModel):
             resume_path = abspath(resume_path)
         if save_dir is not None:
             save_dir = abspath(save_dir)
+        else:
+            # `save_dir` is None
+            save_dir = abspath(os.path.join('output', 'train'))
 
         # Update YAML config file
         config = self.config.copy()
@@ -64,6 +68,8 @@ class SegModel(BaseModel):
         if amp is not None:
             cli_args.append(CLIArgument('--precision', 'fp16'))
             cli_args.append(CLIArgument('--amp_level', amp))
+        if use_vdl:
+            cli_args.append(CLIArgument('--use_vdl', '', sep=''))
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
@@ -74,6 +80,9 @@ class SegModel(BaseModel):
         input_path = abspath(input_path)
         if save_dir is not None:
             save_dir = abspath(save_dir)
+        else:
+            # `save_dir` is None
+            save_dir = abspath(os.path.join('output', 'predict'))
 
         # Update YAML config file
         config = self.config.copy()
@@ -96,6 +105,9 @@ class SegModel(BaseModel):
         weight_path = abspath(weight_path)
         if save_dir is not None:
             save_dir = abspath(save_dir)
+        else:
+            # `save_dir` is None
+            save_dir = abspath(os.path.join('output', 'export'))
 
         # Update YAML config file
         config = self.config.copy()
@@ -121,6 +133,9 @@ class SegModel(BaseModel):
         input_path = abspath(input_path)
         if save_dir is not None:
             save_dir = abspath(save_dir)
+        else:
+            # `save_dir` is None
+            save_dir = abspath(os.path.join('output', 'infer'))
 
         # Update YAML config file
         config = self.config.copy()
@@ -144,6 +159,7 @@ class SegModel(BaseModel):
                     learning_rate=None,
                     epochs_iters=None,
                     device='gpu',
+                    use_vdl=True,
                     save_dir=None,
                     input_shape=None):
         weight_path = abspath(weight_path)
@@ -151,6 +167,9 @@ class SegModel(BaseModel):
             dataset = abspath(dataset)
         if save_dir is not None:
             save_dir = abspath(save_dir)
+        else:
+            # `save_dir` is None
+            save_dir = abspath(os.path.join('output', 'compress'))
 
         # Update YAML config file
         # NOTE: In PaddleSeg, QAT does not use a different config file than regular training
@@ -172,11 +191,13 @@ class SegModel(BaseModel):
             train_cli_args.append(CLIArgument('--iters', epochs_iters))
         if weight_path is not None:
             train_cli_args.append(CLIArgument('--model_path', weight_path))
+        if use_vdl:
+            train_cli_args.append(CLIArgument('--use_vdl', '', sep=''))
         if save_dir is not None:
             train_cli_args.append(CLIArgument('--save_dir', save_dir))
-            # The exported model saved in a subdirectory named `infer`
+            # The exported model saved in a subdirectory named `export`
             export_cli_args.append(
-                CLIArgument('--save_dir', os.path.join(save_dir, 'infer')))
+                CLIArgument('--save_dir', os.path.join(save_dir, 'export')))
         else:
             # According to
             # https://github.com/PaddlePaddle/PaddleSeg/blob/ba7b4d61e456fa8bfdfb7415c64cdce2945919d4/deploy/slim/quant/qat_train.py#L66
