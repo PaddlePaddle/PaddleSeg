@@ -50,9 +50,11 @@ class TopFormer(nn.Layer):
                  backbone,
                  head_use_dw=False,
                  align_corners=False,
-                 pretrained=None):
+                 pretrained=None,
+                 upsample='intepolate'):
         super().__init__()
         self.backbone = backbone
+        self.upsample = upsample
 
         head_in_channels = [
             i for i in backbone.injection_out_channels if i is not None
@@ -72,14 +74,14 @@ class TopFormer(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def forward(self, x, upsample='intepolate'):
-        x_hw = paddle.shape(x)[2:]
+    def forward(self, x):
+        x_hw = x.shape[2:]
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
-        if upsample == 'intepolate':
+        if self.upsample == 'intepolate':
             x = F.interpolate(
                 x, x_hw, mode='bilinear', align_corners=self.align_corners)
-        elif upsample == 'valid':
+        elif self.upsample == 'valid':
             if not self.training:
                 labelset = paddle.unique(paddle.argmax(x, 1))
                 x = paddle.gather(x, labelset, axis=1)

@@ -1,6 +1,6 @@
 _base_: '../_base_/ade20k.yml'
 
-batch_size: 2  # total batch size is 16
+batch_size: 8  # total batch size is 16
 iters: 160000
 
 train_dataset:
@@ -71,6 +71,7 @@ model:
   backbone:
     type: SeaFormer_Base
     lr_mult: 1.0
-    use_AAM: True
+    inj_type: AAM_cpt_opt
     pretrained: saved_model/seaformer_76.4.pdparams
   head_use_dw: True
+  upsample: intepolate
