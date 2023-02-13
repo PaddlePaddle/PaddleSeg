@@ -18,41 +18,41 @@ from ..base import BaseRunner
 
 
 class SegRunner(BaseRunner):
-    def train(self, config_file_path, cli_args, device):
+    def train(self, config_path, cli_args, device):
         python, device_type = self.distributed(device)
         args = self._gather_opts_args(cli_args)
         args_str = ' '.join(str(arg) for arg in args)
-        cmd = f"{python} tools/train.py --do_eval --config {config_file_path} --device {device_type} {args_str}"
+        cmd = f"{python} tools/train.py --do_eval --config {config_path} --device {device_type} {args_str}"
         self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
 
-    def predict(self, config_file_path, cli_args, device):
+    def predict(self, config_path, cli_args, device):
         _, device_type = self.distributed(device)
         args = self._gather_opts_args(cli_args)
         args_str = ' '.join(str(arg) for arg in args)
-        cmd = f"{self.python} tools/predict.py --config {config_file_path} --device {device_type} {args_str}"
+        cmd = f"{self.python} tools/predict.py --config {config_path} --device {device_type} {args_str}"
         self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
 
-    def export(self, config_file_path, cli_args, device):
+    def export(self, config_path, cli_args, device):
         # `device` unused
         args = self._gather_opts_args(cli_args)
         args_str = ' '.join(str(arg) for arg in args)
-        cmd = f"{self.python} tools/export.py --config {config_file_path} {args_str}"
+        cmd = f"{self.python} tools/export.py --config {config_path} {args_str}"
         self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
 
-    def infer(self, config_file_path, cli_args, device):
+    def infer(self, config_path, cli_args, device):
         _, device_type = self.distributed(device)
         args = self._gather_opts_args(cli_args)
         args_str = ' '.join(str(arg) for arg in args)
-        cmd = f"{self.python} deploy/python/infer.py --config {config_file_path} --device {device_type} {args_str}"
+        cmd = f"{self.python} deploy/python/infer.py --config {config_path} --device {device_type} {args_str}"
         self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
 
-    def compression(self, config_file_path, train_cli_args, export_cli_args,
-                    device, train_save_dir):
+    def compression(self, config_path, train_cli_args, export_cli_args, device,
+                    train_save_dir):
         # Step 1: Train model
         python, device_type = self.distributed(device)
         train_args = self._gather_opts_args(train_cli_args)
         train_args_str = ' '.join(str(arg) for arg in train_args)
-        cmd = f"{python} deploy/slim/quant/qat_train.py --do_eval --config {config_file_path} --device {device_type} {train_args_str}"
+        cmd = f"{python} deploy/slim/quant/qat_train.py --do_eval --config {config_path} --device {device_type} {train_args_str}"
         self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
 
         # Step 2: Export model
@@ -61,7 +61,7 @@ class SegRunner(BaseRunner):
         # We export the best model on the validation dataset
         weight_path = os.path.join(train_save_dir, 'best_model',
                                    'model.pdparams')
-        cmd = f"{self.python} deploy/slim/quant/qat_export.py --config {config_file_path} --model_path {weight_path} {export_args_str}"
+        cmd = f"{self.python} deploy/slim/quant/qat_export.py --config {config_path} --model_path {weight_path} {export_args_str}"
         self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
 
     def _gather_opts_args(self, args):

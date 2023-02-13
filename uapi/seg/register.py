@@ -29,6 +29,7 @@ register_suite_info({
     'runner_root_path': REPO_ROOT_PATH
 })
 
+# PP-HumanSeg
 PPHUMANSEG_LITE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs',
                                     'pp_humanseg_lite',
                                     'pp_humanseg_lite_mini_supervisely.yml')
@@ -37,5 +38,38 @@ register_model_info({
     'suite': 'Seg',
     'config_path': PPHUMANSEG_LITE_CFG_PATH,
     'auto_compression_config_path': PPHUMANSEG_LITE_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
+# PP-LiteSeg
+PP_LITESEG_STDC1_CFG_PATH = osp.join(
+    REPO_ROOT_PATH, 'configs', 'pp_liteseg',
+    'pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml')
+register_model_info({
+    'model_name': 'pp_liteseg_stdc1',
+    'suite': 'Seg',
+    'config_path': PP_LITESEG_STDC1_CFG_PATH,
+    'auto_compression_config_path': PP_LITESEG_STDC1_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+PP_LITESEG_STDC2_CFG_PATH = osp.join(
+    REPO_ROOT_PATH, 'configs', 'pp_liteseg',
+    'pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.yml')
+register_model_info({
+    'model_name': 'pp_liteseg_stdc2',
+    'suite': 'Seg',
+    'config_path': PP_LITESEG_STDC2_CFG_PATH,
+    'auto_compression_config_path': PP_LITESEG_STDC2_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
+# SegFormer
+SEGFORMER_B0_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'segformer',
+                                 'segformer_b0_cityscapes_1024x512_160k.yml')
+register_model_info({
+    'model_name': 'segformer_b0',
+    'suite': 'Seg',
+    'config_path': SEGFORMER_B0_CFG_PATH,
+    'auto_compression_config_path': SEGFORMER_B0_CFG_PATH,
     'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
 })

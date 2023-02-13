@@ -47,8 +47,8 @@ class SegModel(BaseModel):
         config.update_dataset(dataset)
         if dy2st:
             config.update({'to_static_training': True})
-        config_file_path = self.config_file_path
-        config.dump(config_file_path)
+        config_path = self._config_path
+        config.dump(config_path)
 
         # Parse CLI arguments
         cli_args = []
@@ -67,7 +67,7 @@ class SegModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        self.runner.train(config_file_path, cli_args, device)
+        self.runner.train(config_path, cli_args, device)
 
     def predict(self, weight_path, input_path, device='gpu', save_dir=None):
         weight_path = abspath(weight_path)
@@ -78,8 +78,8 @@ class SegModel(BaseModel):
         # Update YAML config file
         config = self.config.copy()
         config.update_dataset(self._create_dummy_dataset())
-        config_file_path = self.config_file_path
-        config.dump(config_file_path)
+        config_path = self._config_path
+        config.dump(config_path)
 
         # Parse CLI arguments
         cli_args = []
@@ -90,7 +90,7 @@ class SegModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        self.runner.predict(config_file_path, cli_args, device)
+        self.runner.predict(config_path, cli_args, device)
 
     def export(self, weight_path, save_dir=None, input_shape=None):
         weight_path = abspath(weight_path)
@@ -100,8 +100,8 @@ class SegModel(BaseModel):
         # Update YAML config file
         config = self.config.copy()
         config.update_dataset(self._create_dummy_dataset())
-        config_file_path = self.config_file_path
-        config.dump(config_file_path)
+        config_path = self._config_path
+        config.dump(config_path)
 
         # Parse CLI arguments
         cli_args = []
@@ -114,7 +114,7 @@ class SegModel(BaseModel):
                 input_shape = ' '.join(map(str, input_shape))
             cli_args.append(CLIArgument('--input_shape', input_shape, sep=' '))
 
-        self.runner.export(config_file_path, cli_args, None)
+        self.runner.export(config_path, cli_args, None)
 
     def infer(self, model_dir, input_path, device='gpu', save_dir=None):
         model_dir = abspath(model_dir)
@@ -125,17 +125,17 @@ class SegModel(BaseModel):
         # Update YAML config file
         config = self.config.copy()
         config.update_dataset(self._create_dummy_dataset())
-        config.dump(self.config_file_path)
+        config.dump(self._config_path)
 
         # Parse CLI arguments
         cli_args = []
-        config_file_path = os.path.join(model_dir, 'deploy.yaml')
+        config_path = os.path.join(model_dir, 'deploy.yaml')
         if input_path is not None:
             cli_args.append(CLIArgument('--image_path', input_path))
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        self.runner.infer(config_file_path, cli_args, device)
+        self.runner.infer(config_path, cli_args, device)
 
     def compression(self,
                     weight_path,
@@ -153,12 +153,12 @@ class SegModel(BaseModel):
             save_dir = abspath(save_dir)
 
         # Update YAML config file
-        config_file_path = self.model_info['auto_compression_config_path']
+        config_path = self.model_info['auto_compression_config_path']
         config = self.config.copy()
-        config.load(config_file_path)
+        config.load(config_path)
         config.update_dataset(dataset)
-        config_file_path = self.config_file_path
-        config.dump(config_file_path)
+        config_path = self._config_path
+        config.dump(config_path)
 
         # Parse CLI arguments
         train_cli_args = []
@@ -187,8 +187,8 @@ class SegModel(BaseModel):
                 CLIArgument(
                     '--input_shape', input_shape, sep=' '))
 
-        self.runner.compression(config_file_path, train_cli_args,
-                                export_cli_args, device, save_dir)
+        self.runner.compression(config_path, train_cli_args, export_cli_args,
+                                device, save_dir)
 
     def _create_dummy_dataset(self):
         # Create a PaddleSeg-style dataset

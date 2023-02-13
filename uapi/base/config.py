@@ -23,14 +23,13 @@ __all__ = ['Config', 'BaseConfig']
 
 class Config(object):
     # We constrain function params here
-    def __new__(cls, model_name, config_file_path=None):
+    def __new__(cls, model_name, config_path=None):
         # Build config from model name
         model_info = get_registered_model_info(model_name)
         suite_name = model_info['suite']
         suite_info = get_registered_suite_info(suite_name)
         config_cls = suite_info['config']
-        config_obj = config_cls(
-            model_name=model_name, config_file_path=config_file_path)
+        config_obj = config_cls(model_name=model_name, config_path=config_path)
         return config_obj
 
 
@@ -96,26 +95,26 @@ class BaseConfig(_Config, metaclass=abc.ABCMeta):
 
     Args:
         model_name (str): A registered model name.
-        config_file_path (str|None): Path of a configuration file.
+        config_path (str|None): Path of a configuration file.
         cfg (BaseConfig|None): `BaseConfig` object to initialize from.
     """
 
-    def __init__(self, model_name, config_file_path=None, cfg=None):
+    def __init__(self, model_name, config_path=None, cfg=None):
         super().__init__(cfg=cfg)
         self.model_name = model_name
-        model_info = get_registered_model_info(self.model_name)
-        if config_file_path is None:
-            config_file_path = model_info['config_path']
+        if config_path is None:
+            model_info = get_registered_model_info(self.model_name)
+            config_path = model_info['config_path']
         # Eagerly load the file
-        self.load(config_file_path)
+        self.load(config_path)
 
     @abc.abstractmethod
-    def load(self, config_file_path):
+    def load(self, config_path):
         """Load configurations from a file."""
         raise NotImplementedError
 
     @abc.abstractmethod
-    def dump(self, config_file_path):
+    def dump(self, config_path):
         """Dump configurations to a file."""
         raise NotImplementedError
 

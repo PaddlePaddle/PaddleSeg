@@ -78,6 +78,9 @@ class BaseModel(metaclass=abc.ABCMeta):
         for api_name in self._API_FULL_LIST:
             if api_name not in avail_api_set:
                 api = getattr(self, api_name)
+                # We decorate old API implementation with `_make_unavailable`
+                # which practically patches to `self` a bounded method that 
+                # always raises an error when being invoked.
                 setattr(self, api_name, _make_unavailable(api))
 
     @abc.abstractmethod
@@ -159,7 +162,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @cached_property
-    def config_file_path(self):
+    def _config_path(self):
         cls = self.__class__
         model_name = self.model_info['model_name']
         tag = '_'.join([cls.__name__.lower(), model_name])

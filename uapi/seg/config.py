@@ -26,14 +26,14 @@ class SegConfig(BaseConfig):
         dict_ = merge_config_dicts(dict_like_obj, self.dict)
         self.reset_from_dict(dict_)
 
-    def load(self, config_file_path):
-        dict_ = parse_from_yaml(config_file_path)
+    def load(self, config_path):
+        dict_ = parse_from_yaml(config_path)
         if not isinstance(dict_, dict):
             raise TypeError
         self.reset_from_dict(dict_)
 
-    def dump(self, config_file_path):
-        with open(config_file_path, 'w') as f:
+    def dump(self, config_path):
+        with open(config_path, 'w') as f:
             yaml.dump(self.dict, f, Dumper=NoAliasDumper)
 
     def update_dataset(self, dataset_path, dataset_type=None):
@@ -71,11 +71,34 @@ class SegConfig(BaseConfig):
             'train_dataset': {
                 'type': 'Dataset',
                 'dataset_root': dataset_root_path,
-                'train_path': os.path.join(dataset_root_path, 'train.txt')
+                'train_path': os.path.join(dataset_root_path, 'train.txt'),
+                'num_classes': 2,
+                'transforms': [{
+                    'type': 'Resize',
+                    'target_size': [398, 224]
+                }, {
+                    'type': 'RandomHorizontalFlip'
+                }, {
+                    'type': 'RandomDistort',
+                    'brightness_range': 0.4,
+                    'contrast_range': 0.4,
+                    'saturation_range': 0.4
+                }, {
+                    'type': 'Normalize'
+                }],
+                'mode': 'train'
             },
             'val_dataset': {
                 'type': 'Dataset',
                 'dataset_root': dataset_root_path,
-                'val_path': os.path.join(dataset_root_path, 'val.txt')
+                'val_path': os.path.join(dataset_root_path, 'val.txt'),
+                'num_classes': 2,
+                'transforms': [{
+                    'type': 'Resize',
+                    'target_size': [398, 224]
+                }, {
+                    'type': 'Normalize'
+                }],
+                'mode': 'val'
             },
         }
