@@ -98,7 +98,7 @@ class TopFormer(nn.Layer):
                 x = F.interpolate(
                     x, x_hw, mode='bilinear', align_corners=self.align_corners)
         else:
-            raise NotImplementedError(upsample, "is not implemented")
+            raise NotImplementedError(self.upsample, "is not implemented")
 
         return [x]
 

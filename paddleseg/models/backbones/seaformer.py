@@ -325,7 +325,7 @@ class Sea_Attention(nn.Layer):
         v = self.to_v(
             x
         )  # !!!v 的C维度还会乘以attention_ratio  这个维度可以随意调整，增加之后，所有特征输出通道会扩大倍数 # [B, nhead*dim*attn_ratio, H, W]
-
+        # idea：对比实验，不增加这个维度，带来多少延时的减少，能否替换高通道注意力？
         # detail enhance
         qkv = paddle.concat([q, k, v], axis=1)
         qkv = self.act(self.dwconv(qkv))
@@ -362,12 +362,10 @@ class Sea_Attention(nn.Layer):
         xx_column = self.proj_encode_column(
             xx_column.transpose([0, 1, 3, 2]).reshape([B, self.dh, 1, W]))
 
-        xx = paddle.add(
-            xx_row,
-            xx_column)  # ！！！这之前少了一个dropout泛化特征 [B, self.dh,H,W] drop=0.0
-        xx = paddle.add(v, xx)  # 和论文中多出的增加一个v的特征。相当于增加了原本x的一个本体
-        xx = self.proj(xx)  # 多个特征之间交流
-        xx = self.sigmoid(xx) * qkv  # 全局作为权重调节局部特征重要性， 这里可以试着+全局特征突出全局特征的重要性
+        xx = paddle.add(xx_row, xx_column)  # [B, self.dh,H,W] 
+        xx = paddle.add(v, xx)  # 和论文中多出的增加一个v的特征。相当于增加了原本x的一个本体，提升注意力的稳定性
+        xx = self.proj(xx)  # 多个特征之间交流，idea： k=3
+        xx = self.sigmoid(xx) * qkv  # 全局作为权重调节局部特征重要性， idea：试着+全局特征突出全局特征的重要性
         return xx
 
 
@@ -490,7 +488,7 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
     def __init__(self,
                  in_channels=(64, 128, 256, 384),
                  activations=None,
-                 out_channels=256,
+                 out_channels=160,
                  lr_mult=1.0):
         super(InjectionMultiSumallmultiallsum, self).__init__()
         self.embedding_list = nn.LayerList()
@@ -555,7 +553,7 @@ class InjectionUnionMultiSumCompact(nn.Layer):
             self,
             in_channels=(64, 128, 256, 384),  # 先大图再小图
             activations=None,
-            out_channels=256,
+            out_channels=160,
             lr_mult=1.0):
         super(InjectionUnionMultiSumCompact, self).__init__()
         self.embedding_list = nn.LayerList()
@@ -611,7 +609,7 @@ class InjectionUnionMultiSumCpt_opt(nn.Layer):
             self,
             in_channels=(64, 128, 256, 384),  # 先大图再小图
             activations=None,
-            out_channels=256,
+            out_channels=160,  # idea：这个通道数量也可以做ablation实验
             lr_mult=1.0):
         super(InjectionUnionMultiSumCpt_opt, self).__init__()
         self.embedding_list = nn.LayerList()
@@ -628,9 +626,9 @@ class InjectionUnionMultiSumCpt_opt(nn.Layer):
             if i == 0:
                 self.embedding_list.append(
                     ConvBNAct(
-                        in_channels[i],
                         out_channels,
-                        kernel_size=1,
+                        out_channels,
+                        kernel_size=1,  ## 没有提取local信息， 尝试k=3？
                         lr_mult=lr_mult))
             else:
                 self.act_embedding_list.append(
@@ -642,28 +640,28 @@ class InjectionUnionMultiSumCpt_opt(nn.Layer):
                 self.act_list.append(HSigmoid())
 
     def forward(
-            self, inputs
+            self,
+            inputs  # idea：替换k=3
     ):  # x_x8, x_x16, x_x32, x_x64 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
-
+        H, W = inputs[0].shape[-2:]
         feat_x8 = self.embedding_list[0](inputs[0])
 
         # x16
         feat_x32_act = self.act_list[0](
             self.act_embedding_list[0](inputs[1]))  # x16
-        feat_x32_act = F.interpolate(
-            feat_x32_act, scale_factor=4, mode='bilinear')
+
+        feat_x32_act = F.interpolate(feat_x32_act, size=(H, W), mode='bilinear')
         feat_x32_conv = self.embedding_list[2](inputs[1])
         feat_x32_conv = F.interpolate(
-            feat_x32_conv, scale_factor=4, mode='bilinear')
-
+            feat_x32_conv, size=(H, W), mode='bilinear')
         feat32 = self.embedding_list[1](feat_x32_act * feat_x8 + feat_x32_conv)
 
         feat_x64_act = self.act_list[1](self.act_embedding_list[1](inputs[2]))
-        feat_x64_act = F.interpolate(
-            feat_x64_act, scale_factor=8, mode='bilinear')
+        feat_x64_act = F.interpolate(feat_x64_act, size=(H, W), mode='bilinear')
         feat_x64_conv = self.embedding_list[3](inputs[2])
         feat_x64_conv = F.interpolate(
-            feat_x64_conv, scale_factor=8, mode='bilinear')
+            feat_x64_conv, size=(H, W), mode='bilinear')
+
         res = feat32 * feat_x64_act + feat_x64_conv
 
         return res
@@ -684,11 +682,15 @@ class SeaFormer(nn.Layer):
                  lr_mult=1.0,
                  in_channels=3,
                  inj_type='AAM',
-                 pretrained=None):
+                 pretrained=None,
+                 out_channels=160,
+                 dims=None,
+                 out_feat_chs=None):
         super().__init__()
         self.channels = channels
         self.depths = depths
         self.cfgs = cfgs
+        self.dims = dims
 
         for i in range(len(cfgs)):
             smb = StackedMV2Block(
@@ -722,6 +724,7 @@ class SeaFormer(nn.Layer):
             self.inj_module = InjectionMultiSumallmultiallsum(
                 in_channels=[channels[-4]] + channels[-2:],
                 activations=act_layer,
+                out_channels=out_channels,
                 lr_mult=lr_mult)
             print('Using AAM')
             self.injection_out_channels = [self.inj_module.out_channels, ] * 3
@@ -729,24 +732,24 @@ class SeaFormer(nn.Layer):
             self.inj_module = InjectionUnionMultiSumCompact(
                 in_channels=[channels[-4]] + channels[-2:],
                 activations=act_layer,
+                out_channels=out_channels,
                 lr_mult=lr_mult)
             print('Using AAM_cpt')
             self.injection_out_channels = [self.inj_module.out_channels, ] * 3
         elif self.inj_type == 'AAM_cpt_opt':
             self.inj_module = InjectionUnionMultiSumCpt_opt(
-                in_channels=[channels[-4]] + channels[-2:],
+                in_channels=out_feat_chs,
                 activations=act_layer,
+                out_channels=out_channels,
                 lr_mult=lr_mult)
             print('Using AAM_cpt_opt')
             self.injection_out_channels = [self.inj_module.out_channels, ] * 3
         else:
-            dims = [128, 160]
-            channels = [64, 192, 256]
             for i in range(len(dims)):
                 fuse = Fusion_block(
-                    channels[0] if i == 0 else dims[i - 1],
-                    channels[i + 1],
-                    embed_dim=dims[i],
+                    out_feat_chs[0] if i == 0 else dims[i - 1],
+                    out_feat_chs[i + 1],
+                    embed_dim=dims[i],  # 多层通道时，输出变大
                     lr_mult=lr_mult)
                 setattr(self, f"fuse{i + 1}", fuse)
             self.injection_out_channels = [dims[i]] * 3
@@ -787,10 +790,11 @@ class SeaFormer(nn.Layer):
             output = self.inj_module(
                 outputs
             )  # 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
-        else:
+        else:  # (1, 128, 64, 64) (1, 160, 64, 64)
             x_detail = outputs[0]
-            for i in range(2):
+            for i in range(len(self.dims)):
                 fuse = getattr(self, f'fuse{i+1}')
+
                 x_detail = fuse(x_detail, outputs[i + 1])
             output = x_detail
 
@@ -800,20 +804,20 @@ class SeaFormer(nn.Layer):
 @manager.BACKBONES.add_component
 def SeaFormer_Base(**kwargs):
     cfgs = [
-        # k,  t,  c, s
-        [3, 1, 16, 1],  # 1/2        
-        [3, 4, 32, 2],  # 1/4 1      
-        [3, 3, 32, 1],  #            
-        [5, 3, 64, 2],  # 1/8 3      
-        [5, 3, 64, 1],  #            
-        [3, 3, 128, 2],  # 1/16 5     
-        [3, 3, 128, 1],  #            
-        [5, 6, 160, 2],  # 1/32 7     
-        [5, 6, 160, 1],  #            
-        [3, 6, 160, 1],  #            
+        # ktc, s
+        [3, 1, 16, 1]  # 1/2        
+        [3, 4, 32, 2]  # 1/4 1      
+        [3, 3, 32, 1]  #            
+        [5, 3, 64, 2]  # 1/8 3      
+        [5, 3, 64, 1]  #            
+        [3, 3, 128, 2]  # 1/16 5     
+        [3, 3, 128, 1]  #            
+        [5, 6, 160, 2]  # 1/32 7     
+        [5, 6, 160, 1]  #            
+        [3, 6, 160, 1]  #            
     ]
     cfg1 = [
-        # k,  t,  c, s
+        # ktc, s
         [3, 1, 16, 1],
         [3, 4, 32, 2],
         [3, 3, 32, 1]
@@ -838,6 +842,39 @@ def SeaFormer_Base(**kwargs):
         num_heads=num_heads,
         drop_path_rate=drop_path_rate,
         act_layer=nn.ReLU6,
+        # lr_mult=1.0,
+        # in_channels=3,
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def SeaFormer_Large(**kwargs):
+    # k t c s
+    cfg1 = [[3, 3, 32, 1], [3, 4, 64, 2], [3, 4, 64, 1]]
+    cfg2 = [[5, 4, 128, 2], [5, 4, 128, 1]]
+    cfg3 = [[3, 4, 192, 2], [3, 4, 192, 1]]
+    cfg4 = [[5, 4, 256, 2]]
+    cfg5 = [[3, 6, 320, 2]]
+
+    channels = [32, 64, 128, 192, 256, 320]
+    depths = [3, 3, 3]
+    key_dims = [16, 20, 24]
+    emb_dims = [192, 256, 320]
+    num_heads = 8
+    mlp_ratios = [2, 4, 6]
+    drop_path_rate = 0.1
+
+    model = SeaFormer(
+        cfgs=[cfg1, cfg2, cfg3, cfg4, cfg5],
+        channels=channels,
+        embed_dims=emb_dims,
+        key_dims=key_dims,
+        depths=depths,
+        num_heads=num_heads,
+        drop_path_rate=drop_path_rate,
+        act_layer=nn.ReLU6,
+        mlp_ratios=mlp_ratios,
         # lr_mult=1.0,
         # in_channels=3,
         **kwargs)

@@ -69,12 +69,12 @@ model:
   type: TopFormer
   num_classes: 150
   backbone:
-    type: SeaFormer_Base
+    type: SeaFormer_Large
     lr_mult: 1.0
-    inj_type: AAM_cpt_opt
-    pretrained: saved_model/seaformer_76.4.pdparams
-    out_channels: 160
-    dims: [128, 160]
-    out_feat_chs: [64, 192, 256]
+    inj_type: AAM_opt
+    pretrained: saved_model/seaformercls_79.9.pdparams
+    out_channels: 192
+    dims: [128, 160, 192]
+    out_feat_chs: [128, 192, 256, 320]
   head_use_dw: True
   upsample: intepolate
