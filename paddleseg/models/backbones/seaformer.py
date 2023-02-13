@@ -15,6 +15,7 @@
 This file refers to https://github.com/hustvl/TopFormer and https://github.com/BR-IDL/PaddleViT
 """
 
+from tkinter import Scale
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -153,7 +154,7 @@ class MLP(nn.Layer):
 
     def forward(self, x):
         x = self.fc1(x)
-        x = self.dwconv(x)
+        x = self.dwconv(x)  # ！！！多了一个卷积，和之前的fc堆叠起来都是卷积会不会重叠？ edit
         x = self.act(x)
         x = self.drop(x)
         x = self.fc2(x)
@@ -319,26 +320,31 @@ class Sea_Attention(nn.Layer):
     def forward(self, x):  # x (B,N,C)
         B, C, H, W = x.shape
 
-        q = self.to_q(x)
+        q = self.to_q(x)  # [B, nhead*dim, H, W]
         k = self.to_k(x)
-        v = self.to_v(x)
+        v = self.to_v(
+            x
+        )  # !!!v 的C维度还会乘以attention_ratio  这个维度可以随意调整，增加之后，所有特征输出通道会扩大倍数 # [B, nhead*dim*attn_ratio, H, W]
 
         # detail enhance
         qkv = paddle.concat([q, k, v], axis=1)
         qkv = self.act(self.dwconv(qkv))
         qkv = self.pwconv(qkv)
 
-        # squeeze axial attention
-        ## squeeze row
-        qrow = self.pos_emb_rowq(q.mean(-1)).reshape(
-            [B, self.num_heads, -1, H]).transpose([0, 1, 3, 2])
-        krow = self.pos_emb_rowk(k.mean(-1)).reshape([B, self.num_heads, -1, H])
+        # squeeze axial attention 仅在部分head上进行横/纵的注意力，选择部分的时候采用全中覆盖的方式，create-parameter,index_select
+        ## squeeze row ## ！！！压缩通道特征并在HW上做全局注意力会怎么样呢？ 但是C被看作是每个位置的特征dim
+        qrow = self.pos_emb_rowq(q.mean(
+            -1)).reshape(  # ！！！patch_embedding直接一开始加在图像上，而不是加在特征上 
+                [B, self.num_heads, -1, H]).transpose(
+                    [0, 1, 3, 2])  # [B, nhead, H, dim] 选择部分去做全局attention？
+        krow = self.pos_emb_rowk(k.mean(-1)).reshape(
+            [B, self.num_heads, -1, H])  # [B, nhead, dim, H]
         vrow = v.mean(-1).reshape([B, self.num_heads, -1, H]).transpose(
-            [0, 1, 3, 2])
+            [0, 1, 3, 2])  # [B, nhead, H, dim*attn_ratio]
 
-        attn_row = paddle.matmul(qrow, krow) * self.scale
-        attn_row = F.softmax(attn_row, axis=-1)
-        xx_row = paddle.matmul(attn_row, vrow)  # B nH H C
+        attn_row = paddle.matmul(qrow, krow) * self.scale  # [B, nhead, H, H]
+        attn_row = F.softmax(attn_row, axis=-1)  # ！！！这之后少了attn_drop drop_rate=0
+        xx_row = paddle.matmul(attn_row, vrow)  # [B, nhead, H, dim*attn_ratio]
         xx_row = self.proj_encode_row(
             xx_row.transpose([0, 1, 3, 2]).reshape([B, self.dh, H, 1]))
 
@@ -356,10 +362,12 @@ class Sea_Attention(nn.Layer):
         xx_column = self.proj_encode_column(
             xx_column.transpose([0, 1, 3, 2]).reshape([B, self.dh, 1, W]))
 
-        xx = paddle.add(xx_row, xx_column)
-        xx = paddle.add(v, xx)
-        xx = self.proj(xx)
-        xx = self.sigmoid(xx) * qkv
+        xx = paddle.add(
+            xx_row,
+            xx_column)  # ！！！这之前少了一个dropout泛化特征 [B, self.dh,H,W] drop=0.0
+        xx = paddle.add(v, xx)  # 和论文中多出的增加一个v的特征。相当于增加了原本x的一个本体
+        xx = self.proj(xx)  # 多个特征之间交流
+        xx = self.sigmoid(xx) * qkv  # 全局作为权重调节局部特征重要性， 这里可以试着+全局特征突出全局特征的重要性
         return xx
 
 
@@ -378,6 +386,7 @@ class Block(nn.Layer):
         self.dim = dim
         self.num_heads = num_heads
         self.mlp_ratio = mlp_ratio
+        # self.norm1 = nn.LayerNorm(dim) edit
 
         self.attn = Sea_Attention(
             dim,
@@ -390,6 +399,7 @@ class Block(nn.Layer):
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity(
         )
+        # self.norm2 = nn.LayerNorm(dim) edit
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = MLP(in_features=dim,
                        hidden_features=mlp_hidden_dim,
@@ -398,8 +408,14 @@ class Block(nn.Layer):
                        lr_mult=lr_mult)
 
     def forward(self, x1):
-        x1 = x1 + self.drop_path(self.attn(x1))
-        x1 = x1 + self.drop_path(self.mlp(x1))
+        # 多头注意力
+        x1 = x1 + self.drop_path(
+            self.attn(x1))  # ！！！没有增加attention和mlp之前的prenorm
+        # x1 += self.drop_path(self.attn(self.norm1(x1))) edit
+        # 线性组合多头注意力
+        x1 = x1 + self.drop_path(
+            self.mlp(x1))  # ！！！替换mlp中dropout为act？ 因为两个drop 重叠了。
+        # x1 = x1 + self.drop_path(self.mlp(self.norm2(x1))) edit
         return x1
 
 
@@ -534,6 +550,125 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
         return res
 
 
+class InjectionUnionMultiSumCompact(nn.Layer):
+    def __init__(
+            self,
+            in_channels=(64, 128, 256, 384),  # 先大图再小图
+            activations=None,
+            out_channels=256,
+            lr_mult=1.0):
+        super(InjectionUnionMultiSumCompact, self).__init__()
+        self.embedding_list = nn.LayerList()
+        self.act_embedding_list = nn.LayerList()
+        self.act_list = nn.LayerList()
+        self.out_channels = out_channels
+        for i in range(len(in_channels)):
+            self.embedding_list.append(
+                ConvBNAct(
+                    in_channels[i],
+                    out_channels,
+                    kernel_size=1,
+                    lr_mult=lr_mult))
+            if i != 0:
+                self.act_embedding_list.append(
+                    ConvBNAct(
+                        in_channels[i],
+                        out_channels,
+                        kernel_size=1,
+                        lr_mult=lr_mult))
+                self.act_list.append(HSigmoid())
+
+    def forward(
+            self, inputs
+    ):  # x_x8, x_x16, x_x32, x_x64 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
+
+        feat_x8 = self.embedding_list[0](inputs[0])
+
+        # x16
+        feat_x32_act = self.act_list[0](
+            self.act_embedding_list[0](inputs[1]))  # x16
+        feat_x32_act = F.interpolate(
+            feat_x32_act, scale_factor=4, mode='bilinear')
+        feat_x32_conv = self.embedding_list[1](inputs[1])
+        feat_x32_conv = F.interpolate(
+            feat_x32_conv, scale_factor=4, mode='bilinear')
+
+        feat_x64_act = self.act_list[1](self.act_embedding_list[1](inputs[2]))
+        feat_x64_act = F.interpolate(
+            feat_x64_act, scale_factor=8, mode='bilinear')
+        feat_x64_conv = self.embedding_list[2](inputs[2])
+        feat_x64_conv = F.interpolate(
+            feat_x64_conv, scale_factor=8, mode='bilinear')
+
+        res = (feat_x8 * feat_x32_act * feat_x64_act
+               ) + feat_x64_conv + feat_x32_conv
+
+        return res
+
+
+class InjectionUnionMultiSumCpt_opt(nn.Layer):
+    def __init__(
+            self,
+            in_channels=(64, 128, 256, 384),  # 先大图再小图
+            activations=None,
+            out_channels=256,
+            lr_mult=1.0):
+        super(InjectionUnionMultiSumCpt_opt, self).__init__()
+        self.embedding_list = nn.LayerList()
+        self.act_embedding_list = nn.LayerList()
+        self.act_list = nn.LayerList()
+        self.out_channels = out_channels
+        for i in range(len(in_channels)):
+            self.embedding_list.append(
+                ConvBNAct(
+                    in_channels[i],
+                    out_channels,
+                    kernel_size=1,
+                    lr_mult=lr_mult))
+            if i == 0:
+                self.embedding_list.append(
+                    ConvBNAct(
+                        in_channels[i],
+                        out_channels,
+                        kernel_size=1,
+                        lr_mult=lr_mult))
+            else:
+                self.act_embedding_list.append(
+                    ConvBNAct(
+                        in_channels[i],
+                        out_channels,
+                        kernel_size=1,
+                        lr_mult=lr_mult))
+                self.act_list.append(HSigmoid())
+
+    def forward(
+            self, inputs
+    ):  # x_x8, x_x16, x_x32, x_x64 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
+
+        feat_x8 = self.embedding_list[0](inputs[0])
+
+        # x16
+        feat_x32_act = self.act_list[0](
+            self.act_embedding_list[0](inputs[1]))  # x16
+        feat_x32_act = F.interpolate(
+            feat_x32_act, scale_factor=4, mode='bilinear')
+        feat_x32_conv = self.embedding_list[2](inputs[1])
+        feat_x32_conv = F.interpolate(
+            feat_x32_conv, scale_factor=4, mode='bilinear')
+
+        feat32 = self.embedding_list[1](feat_x32_act * feat_x8 + feat_x32_conv)
+
+        feat_x64_act = self.act_list[1](self.act_embedding_list[1](inputs[2]))
+        feat_x64_act = F.interpolate(
+            feat_x64_act, scale_factor=8, mode='bilinear')
+        feat_x64_conv = self.embedding_list[3](inputs[2])
+        feat_x64_conv = F.interpolate(
+            feat_x64_conv, scale_factor=8, mode='bilinear')
+        res = feat32 * feat_x64_act + feat_x64_conv
+
+        return res
+
+
 class SeaFormer(nn.Layer):
     def __init__(self,
                  cfgs,
@@ -548,7 +683,7 @@ class SeaFormer(nn.Layer):
                  act_layer=nn.ReLU6,
                  lr_mult=1.0,
                  in_channels=3,
-                 use_AAM=False,
+                 inj_type='AAM',
                  pretrained=None):
         super().__init__()
         self.channels = channels
@@ -582,13 +717,27 @@ class SeaFormer(nn.Layer):
                 lr_mult=lr_mult)
             setattr(self, f"trans{i+1}", trans)
 
-        self.use_AAM = use_AAM
-        if self.use_AAM:
+        self.inj_type = inj_type
+        if self.inj_type == "AAM":
             self.inj_module = InjectionMultiSumallmultiallsum(
                 in_channels=[channels[-4]] + channels[-2:],
                 activations=act_layer,
                 lr_mult=lr_mult)
             print('Using AAM')
+            self.injection_out_channels = [self.inj_module.out_channels, ] * 3
+        elif self.inj_type == 'AAM_cpt':
+            self.inj_module = InjectionUnionMultiSumCompact(
+                in_channels=[channels[-4]] + channels[-2:],
+                activations=act_layer,
+                lr_mult=lr_mult)
+            print('Using AAM_cpt')
+            self.injection_out_channels = [self.inj_module.out_channels, ] * 3
+        elif self.inj_type == 'AAM_cpt_opt':
+            self.inj_module = InjectionUnionMultiSumCpt_opt(
+                in_channels=[channels[-4]] + channels[-2:],
+                activations=act_layer,
+                lr_mult=lr_mult)
+            print('Using AAM_cpt_opt')
             self.injection_out_channels = [self.inj_module.out_channels, ] * 3
         else:
             dims = [128, 160]
@@ -632,10 +781,9 @@ class SeaFormer(nn.Layer):
                     self, f"trans{i + num_trans_stage - num_smb_stage + 1}")
                 x = trans(x)
                 # x.register_hook(lambda grad: print('x_trans{} grad'.format(i), grad.abs().sum()))
-
                 outputs.append(x)
 
-        if self.use_AAM:
+        if self.inj_type == "AAM" or self.inj_type == 'AAM_cpt' or self.inj_type == 'AAM_cpt_opt':
             output = self.inj_module(
                 outputs
             )  # 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]

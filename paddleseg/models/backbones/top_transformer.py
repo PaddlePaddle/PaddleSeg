@@ -546,7 +546,7 @@ class TopTransformer(nn.Layer):
                 out_indices=encoder_out_indices,
                 in_channels=in_channels,
                 lr_mult=lr_mult)
-            pretrained = 'https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_base_imagenet_pretrained.zip'
+            pretrained = "saved_model/topformer74.9.pdparams"
         elif backbone == 'esnet':
             self.feat_channels = [24, 56, 120, 232]
             from .esnet import ESNet_x0_5
