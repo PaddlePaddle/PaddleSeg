@@ -62,7 +62,7 @@ python tools/train.py \
 
 ## 4、Model Finetune
 If you want to finetune from a pretrained model, you can set the `model.pretrained` keyword in config file, whose content is the URL or filepath of the pretrained model weights. Models pretrained on public datasets like Cityscapes or ADE20K are provided, and you can find the download urls of different models in `PaddleSeg/configs`.
-PaddleSeg提供基于Cityscapes、ADE20K等公开数据集的预训练模型，可以在PaddleSeg/configs/下面不同模型的页面中获取下载链接。
+
 ```yaml
 model:
   type: FCN
