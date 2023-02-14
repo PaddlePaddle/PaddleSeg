@@ -12,7 +12,7 @@
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |OCRNet|HRNet_w18|1024x512|160000|80.67%|81.21%|81.30%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ocrnet_hrnetw18_cityscapes_1024x512_160k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ocrnet_hrnetw18_cityscapes_1024x512_160k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=901a5d0a78b71ca56f06002f05547837)|
 |OCRNet|HRNet_w48|1024x512|160000|82.15%|82.59%|82.85%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ocrnet_hrnetw48_cityscapes_1024x512_160k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ocrnet_hrnetw48_cityscapes_1024x512_160k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=176bf6ca4d89957ffe62ac7c30fcd039) |
-|OCRNet|HRFormer_small|1024x512|80000|80.62%|80.82%|80.98%|[model]() \| [log]() \| [vdl]() |
+|OCRNet|HRFormer_small|1024x512|80000|80.62%|80.82%|80.98%|[model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/ocrnet_hrformer_small_cityscapes_1024x512_80k_ce_ohem/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/ocrnet_hrformer_small_cityscapes_1024x512_80k_ce_ohem/train.log) \| [vdl]() |
 
 ### Pascal VOC 2012 + Aug
 
