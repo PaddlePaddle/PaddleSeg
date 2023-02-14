@@ -71,9 +71,9 @@ model:
   backbone:
     type: SeaFormer_Large
     lr_mult: 1.0
-    inj_type: AAM_opt
+    inj_type: AAM
     pretrained: saved_model/seaformercls_79.9.pdparams
-    out_channels: 192
+    out_channels: 256
     dims: [128, 160, 192]
     out_feat_chs: [128, 192, 256, 320]
   head_use_dw: True

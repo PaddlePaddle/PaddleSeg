@@ -518,20 +518,21 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
         low_feat1_act = self.act_list[0](self.act_embedding_list[0](low_feat1))
         low_feat1 = self.embedding_list[0](low_feat1)
 
-        low_feat2 = F.interpolate(
-            inputs[1], scale_factor=2, mode="bilinear")  # x16
+        # low_feat2 = F.interpolate(
+        #     inputs[1], scale_factor=2, mode="bilinear")  # x16
         low_feat2_act = self.act_list[1](
-            self.act_embedding_list[1](low_feat2))  # x16
-        low_feat2 = self.embedding_list[1](low_feat2)
+            self.act_embedding_list[1](inputs[1]))  # x16
+        low_feat2 = self.embedding_list[1](inputs[1])
 
-        # low_feat3_act = F.interpolate(
-        #     self.act_list[2](self.act_embedding_list[2](inputs[2])),
-        #     size=low_feat2.shape[2:],
-        #     mode="bilinear")
-        # low_feat3 = F.interpolate(
-        #     self.embedding_list[2](inputs[2]),
-        #     size=low_feat2.shape[2:],
-        #     mode="bilinear")
+        # 输出的特征个数不一致，相应有维度和分辨率差异，这个模块最好重写。
+        low_feat3_act = F.interpolate(
+            self.act_list[2](self.act_embedding_list[2](inputs[2])),
+            size=low_feat2.shape[2:],
+            mode="bilinear")
+        low_feat3 = F.interpolate(
+            self.embedding_list[2](inputs[2]),
+            size=low_feat2.shape[2:],
+            mode="bilinear")
 
         high_feat_act = F.interpolate(
             self.act_list[2](self.act_embedding_list[2](inputs[2])),
@@ -542,8 +543,8 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
             size=low_feat2.shape[2:],
             mode="bilinear")
 
-        res = low_feat1_act * low_feat2_act * high_feat_act * (
-            low_feat1 + low_feat2) + high_feat
+        res = low_feat1_act * low_feat2_act * low_feat3_act * high_feat_act * (
+            low_feat1 + low_feat2 + low_feat3) + high_feat
 
         return res
 
@@ -722,7 +723,7 @@ class SeaFormer(nn.Layer):
         self.inj_type = inj_type
         if self.inj_type == "AAM":
             self.inj_module = InjectionMultiSumallmultiallsum(
-                in_channels=[channels[-4]] + channels[-2:],
+                in_channels=out_feat_chs,
                 activations=act_layer,
                 out_channels=out_channels,
                 lr_mult=lr_mult)
@@ -730,7 +731,7 @@ class SeaFormer(nn.Layer):
             self.injection_out_channels = [self.inj_module.out_channels, ] * 3
         elif self.inj_type == 'AAM_cpt':
             self.inj_module = InjectionUnionMultiSumCompact(
-                in_channels=[channels[-4]] + channels[-2:],
+                in_channels=out_feat_chs,
                 activations=act_layer,
                 out_channels=out_channels,
                 lr_mult=lr_mult)
