@@ -27,7 +27,7 @@ import ppmatting.transforms as T
 @manager.DATASETS.add_component
 class MattingDataset(paddle.io.Dataset):
     """
-    Pass in a dataset that conforms to the format.
+    Pass in a dataset that confirms to the format.
         matting_dataset/
         |--bg/
         |

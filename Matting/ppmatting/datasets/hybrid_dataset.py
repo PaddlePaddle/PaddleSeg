@@ -20,146 +20,38 @@ import numpy as np
 import random
 import paddle
 from paddleseg.cvlibs import manager
+from ppmatting.datasets import MattingDataset
 
 import ppmatting.transforms as T
 
 
+
 @manager.DATASETS.add_component
-class HybridDataset(paddle.io.Dataset):
-    def __init__(self,
-                 dataset_root,
-                 transforms,
-                 mode='train',
-                 train_file=None,
-                 val_file=None,
-                 get_trimap=True,
-                 separator=' ',
-                 key_del=None,
-                 if_rssn=False):
-        super().__init__()
-        self.dataset_root = dataset_root
-        self.transforms = T.Compose(transforms)
-        self.mode = mode
-        self.get_trimap = get_trimap
-        self.separator = separator
-        self.key_del = key_del
-        self.if_rssn = if_rssn
+class HybridDataset(MattingDataset):
+    """
+    Pass in a dataset that confirms to the format.
+    matting_dataset/
+        |--bg/
+        |
+        |--dataset1/
+        |  |--train/
+        |       |--fg/
+        |       |--alpha/
+        |       |--trimap/ (if existing) 
+        |
+        |  |--dataset2/
+        |       |--fg/
+        |       |--alpha/
+        |       |--trimap/ (if existing)
+        | ....
 
-        # check file
-        if mode == 'train' or mode == 'trainval':
-            if train_file is None:
-                raise ValueError(
-                    "When `mode` is 'train' or 'trainval', `train_file must be provided!"
-                )
-            if isinstance(train_file, str):
-                train_file = [train_file]
-            file_list = train_file
+    Mix training using two or more of the above datasets.
+    Prepare a hybrid dataset, use `create_hybrid_list.py` to generate `train.txt`.
+    Please make sure all datasets are placed in the same folder.
 
-        if mode == 'val' or mode == 'trainval':
-            if val_file is None:
-                raise ValueError(
-                    "When `mode` is 'val' or 'trainval', `val_file` must be provided!"
-                )
-            if isinstance(val_file, str):
-                val_file = [val_file]
-            file_list = val_file
-
-        if mode == 'trainval':
-            file_list = train_file + val_file
-
-        # read file
-        self.fg_bg_list = []
-        for file in file_list:
-            file = os.path.join(dataset_root, file)
-            with open(file, 'r') as f:
-                lines = f.readlines()
-                for line in lines:
-                    line = line.strip()
-                    self.fg_bg_list.append(line)
-        if mode != 'val':
-            random.shuffle(self.fg_bg_list)
-
-    def __getitem__(self, idx):
-        data = {}
-
-        fg_bg_file = self.fg_bg_list[idx]
-        fg_bg_file = fg_bg_file.split(self.separator)
-        data['img_name'] = fg_bg_file[0]  # using in save prediction results
-        fg_file = os.path.join(self.dataset_root, fg_bg_file[0])
-        alpha_file = fg_file.replace('/fg', '/alpha')
-        
-        fg = cv2.imread(fg_file)
-        alpha = cv2.imread(alpha_file, 0)
-        data['alpha'] = alpha
-        data['gt_fields'] = []
-
-        # line is: fg [bg] [trimap]
-        if len(fg_bg_file) >= 2:
-            bg_file = os.path.join(self.dataset_root, fg_bg_file[1])
-            bg = cv2.imread(bg_file)
-            data['img'], data['fg'], data['bg'] = self.composite(fg, alpha, bg)
-
-            if self.mode in ['train', 'trainval']:
-                data['gt_fields'].append('fg')
-                data['gt_fields'].append('bg')
-                data['gt_fields'].append('alpha')
-            if len(fg_bg_file) == 3 and self.get_trimap:
-                if self.mode == 'val':
-                    trimap_path = os.path.join(self.dataset_root, fg_bg_file[2])
-                    if os.path.exists(trimap_path):
-                        data['trimap'] = cv2.imread(trimap_path, 0)
-                        data['gt_fields'].append('trimap')
-                        data['ori_trimap'] = data['trimap'].copy()
-                    else:
-                        raise FileNotFoundError(
-                            'trimap is not Found: {}'.format(fg_bg_file[2]))
-        else:
-            data['img'] = fg
-            if self.mode in ['train', 'trainval']:
-                data['fg'] = fg.copy()
-                data['bg'] = fg.copy()
-                data['gt_fields'].append('fg')
-                data['gt_fields'].append('bg')
-                data['gt_fields'].append('alpha')
-
-        data['trans_info'] = []  # Record shape change information
-
-        # Generate trimap from alpha if no trimap file provided
-        if self.get_trimap:
-            if 'trimap' not in data:
-                data['trimap'] = self.gen_trimap(
-                    data['alpha'], mode=self.mode).astype('float32')
-                data['gt_fields'].append('trimap')
-                if self.mode == 'val':
-                    data['ori_trimap'] = data['trimap'].copy()
-
-        # Delete key which is not need
-        if self.key_del is not None:
-            for key in self.key_del:
-                if key in data.keys():
-                    data.pop(key)
-                if key in data['gt_fields']:
-                    data['gt_fields'].remove(key)
-        data = self.transforms(data)
-
-        # When evaluation, gt should not be transforms.
-        if self.mode == 'val':
-            data['gt_fields'].append('alpha')
-
-        data['img'] = data['img'].astype('float32')
-        for key in data.get('gt_fields', []):
-            data[key] = data[key].astype('float32')
-
-        if 'trimap' in data:
-            data['trimap'] = data['trimap'][np.newaxis, :, :]
-        if 'ori_trimap' in data:
-            data['ori_trimap'] = data['ori_trimap'][np.newaxis, :, :]
-
-        data['alpha'] = data['alpha'][np.newaxis, :, :] / 255
-        return data
-
-    def __len__(self):
-        return len(self.fg_bg_list)
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def composite(self, fg, alpha, ori_bg):
         if self.if_rssn:
