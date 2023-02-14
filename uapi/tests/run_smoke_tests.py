@@ -24,8 +24,8 @@ if __name__ == '__main__':
     smoke_test_dir = os.path.join(__dir__, 'smoke')
 
     for filename in os.listdir(smoke_test_dir):
-        if filename.endswith('.py'):
-            # Skip .py files
+        if filename.endswith('.py') or filename == '__pycache__':
+            # Skip .py files and __pycache__
             continue
         full_path = os.path.join(smoke_test_dir, filename)
         if os.path.isdir(full_path):

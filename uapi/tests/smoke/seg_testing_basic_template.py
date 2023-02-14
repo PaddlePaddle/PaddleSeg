@@ -48,11 +48,15 @@ def build_model(model_name):
         },
     })
 
+    # Set model params
+    if 'num_classes' in config.model:
+        config.model['num_classes'] = 2
+
     model = PaddleModel(config=config)
     return model
 
 
-def test_model(model):
+def test_model(model, input_shape=None):
     if isinstance(model, str):
         # In this case `model` is model name
         model_name = model
@@ -87,9 +91,7 @@ def test_model(model):
         save_dir=pred_save_dir)
 
     model.export(
-        weight_path=weight_path,
-        input_shape=[1, 3, 256, 256],
-        save_dir=export_dir)
+        weight_path=weight_path, input_shape=input_shape, save_dir=export_dir)
 
     model.infer(
         model_dir=export_dir,
@@ -104,4 +106,6 @@ def test_model(model):
         epochs_iters=10,
         device='cpu',
         weight_path=weight_path,
-        save_dir=compress_save_dir)
+        use_vdl=False,
+        save_dir=compress_save_dir,
+        input_shape=input_shape)

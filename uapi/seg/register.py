@@ -29,6 +29,50 @@ register_suite_info({
     'runner_root_path': REPO_ROOT_PATH
 })
 
+# DeepLab V3+
+DEEPLABV3P_R50_CFG_PATH = osp.join(
+    REPO_ROOT_PATH, 'configs', 'deeplabv3p',
+    'deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml')
+register_model_info({
+    'model_name': 'deeplabv3p_r50',
+    'suite': 'Seg',
+    'config_path': DEEPLABV3P_R50_CFG_PATH,
+    'auto_compression_config_path': DEEPLABV3P_R50_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+DEEPLABV3P_R101_CFG_PATH = osp.join(
+    REPO_ROOT_PATH, 'configs', 'deeplabv3p',
+    'deeplabv3p_resnet101_os8_cityscapes_1024x512_80k.yml')
+register_model_info({
+    'model_name': 'deeplabv3p_r101',
+    'suite': 'Seg',
+    'config_path': DEEPLABV3P_R101_CFG_PATH,
+    'auto_compression_config_path': DEEPLABV3P_R101_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
+# MobileSeg
+MOBILESEG_MV2_CFG_PATH = osp.join(
+    REPO_ROOT_PATH, 'configs', 'mobileseg',
+    'mobileseg_mobilenetv2_cityscapes_1024x512_80k.yml')
+register_model_info({
+    'model_name': 'mobileseg_mv2',
+    'suite': 'Seg',
+    'config_path': MOBILESEG_MV2_CFG_PATH,
+    'auto_compression_config_path': MOBILESEG_MV2_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+MOBILESEG_MV3_CFG_PATH = osp.join(
+    REPO_ROOT_PATH, 'configs', 'mobileseg',
+    'mobileseg_mobilenetv3_cityscapes_1024x512_80k.yml')
+register_model_info({
+    'model_name': 'mobileseg_mv3',
+    'suite': 'Seg',
+    'config_path': MOBILESEG_MV3_CFG_PATH,
+    'auto_compression_config_path': MOBILESEG_MV3_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
 # PP-HumanSeg
 PPHUMANSEG_LITE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs',
                                     'pp_humanseg_lite',
@@ -60,6 +104,17 @@ register_model_info({
     'suite': 'Seg',
     'config_path': PP_LITESEG_STDC2_CFG_PATH,
     'auto_compression_config_path': PP_LITESEG_STDC2_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
+# RTFormer
+RTFORMER_BASE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'rtformer',
+                                  'rtformer_base_cityscapes_1024x512_120k.yml')
+register_model_info({
+    'model_name': 'rtformer_base',
+    'suite': 'Seg',
+    'config_path': RTFORMER_BASE_CFG_PATH,
+    'auto_compression_config_path': RTFORMER_BASE_CFG_PATH,
     'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
 })
 

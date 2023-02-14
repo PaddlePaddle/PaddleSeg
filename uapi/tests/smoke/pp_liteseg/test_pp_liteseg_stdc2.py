@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from uapi.tests.smoke.seg_testing_template import test_model
+from uapi.tests.smoke.seg_testing_basic_template import test_model
 
 if __name__ == '__main__':
     test_model('pp_liteseg_stdc2')

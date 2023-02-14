@@ -15,4 +15,4 @@
 from uapi.tests.smoke.seg_testing_basic_template import test_model
 
 if __name__ == '__main__':
-    test_model('pp_liteseg_stdc1')
+    test_model('mobileseg_mv3')

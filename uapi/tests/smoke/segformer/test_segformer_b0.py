@@ -12,46 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from uapi import PaddleModel, Config
-from uapi.tests.smoke.seg_testing_template import test_model
+from uapi.tests.smoke.seg_testing_basic_template import test_model
 
 if __name__ == '__main__':
-    model_name = 'segformer_b0'
-
-    config = Config(model_name)
-    # Set dataset params
-    config.update({
-        'train_dataset': {
-            'num_classes': 2,
-            'transforms': [{
-                'type': 'Resize',
-                'target_size': [398, 224]
-            }, {
-                'type': 'RandomHorizontalFlip'
-            }, {
-                'type': 'RandomDistort',
-                'brightness_range': 0.4,
-                'contrast_range': 0.4,
-                'saturation_range': 0.4
-            }, {
-                'type': 'Normalize'
-            }],
-            'mode': 'train'
-        },
-        'val_dataset': {
-            'num_classes': 2,
-            'transforms': [{
-                'type': 'Resize',
-                'target_size': [398, 224]
-            }, {
-                'type': 'Normalize'
-            }],
-            'mode': 'val'
-        },
-    })
-    # Update model params
-    config.update({'model': {'num_classes': 2}})
-
-    model = PaddleModel(config=config)
-
-    test_model(model)
+    test_model('segformer_b0')
