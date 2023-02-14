@@ -66,8 +66,9 @@ class SegModel(BaseModel):
             model_dir = os.path.dirname(resume_path)
             cli_args.append(CLIArgument('--resume_path', model_dir))
         if amp is not None:
-            cli_args.append(CLIArgument('--precision', 'fp16'))
-            cli_args.append(CLIArgument('--amp_level', amp))
+            if amp != 'OFF':
+                cli_args.append(CLIArgument('--precision', 'fp16'))
+                cli_args.append(CLIArgument('--amp_level', amp))
         if use_vdl:
             cli_args.append(CLIArgument('--use_vdl', '', sep=''))
         if save_dir is not None:

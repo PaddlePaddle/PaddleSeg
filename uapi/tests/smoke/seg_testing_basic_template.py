@@ -17,8 +17,7 @@ import os.path as osp
 from uapi import PaddleModel, Config
 
 
-def build_model(model_name):
-    config = Config(model_name)
+def build_model(config):
     # Set dataset params
     config.update({
         'train_dataset': {
@@ -56,13 +55,12 @@ def build_model(model_name):
     return model
 
 
-def test_model(model, input_shape=None):
-    if isinstance(model, str):
-        # In this case `model` is model name
-        model_name = model
-        model = build_model(model)
+def test_model(model_name, config=None, input_shape=None):
+    if config is None:
+        config = Config(model_name)
     else:
-        model_name = model.name
+        assert model_name == config.model_name
+    model = build_model(config)
 
     # Hard-code paths
     save_dir = f"uapi/tests/output/{model_name}_res"

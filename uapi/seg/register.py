@@ -29,6 +29,17 @@ register_suite_info({
     'runner_root_path': REPO_ROOT_PATH
 })
 
+# BiSeNet V2
+BISENETV2_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'bisenet',
+                              'bisenet_cityscapes_1024x1024_160k.yml')
+register_model_info({
+    'model_name': 'bisenetv2',
+    'suite': 'Seg',
+    'config_path': BISENETV2_CFG_PATH,
+    'auto_compression_config_path': BISENETV2_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
 # DeepLab V3+
 DEEPLABV3P_R50_CFG_PATH = osp.join(
     REPO_ROOT_PATH, 'configs', 'deeplabv3p',
@@ -51,6 +62,37 @@ register_model_info({
     'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
 })
 
+# Fast-SCNN
+FASTSCNN_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'fastscnn',
+                             'fastscnn_cityscapes_1024x1024_160k.yml')
+register_model_info({
+    'model_name': 'fastscnn',
+    'suite': 'Seg',
+    'config_path': FASTSCNN_CFG_PATH,
+    'auto_compression_config_path': FASTSCNN_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
+# FCN
+FCN_HRNETW18_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'fcn',
+                                 'fcn_hrnetw18_cityscapes_1024x512_80k.yml')
+register_model_info({
+    'model_name': 'fcn_hrnetw18',
+    'suite': 'Seg',
+    'config_path': FCN_HRNETW18_CFG_PATH,
+    'auto_compression_config_path': FCN_HRNETW18_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+FCN_HRNETW48_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'fcn',
+                                 'fcn_hrnetw48_cityscapes_1024x512_80k.yml')
+register_model_info({
+    'model_name': 'fcn_hrnetw48',
+    'suite': 'Seg',
+    'config_path': FCN_HRNETW48_CFG_PATH,
+    'auto_compression_config_path': FCN_HRNETW48_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
 # MobileSeg
 MOBILESEG_MV2_CFG_PATH = osp.join(
     REPO_ROOT_PATH, 'configs', 'mobileseg',
@@ -70,6 +112,28 @@ register_model_info({
     'suite': 'Seg',
     'config_path': MOBILESEG_MV3_CFG_PATH,
     'auto_compression_config_path': MOBILESEG_MV3_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
+# OCRNet
+OCRNET_HRNETW18_CFG_PATH = osp.join(
+    REPO_ROOT_PATH, 'configs', 'ocrnet',
+    'ocrnet_hrnetw18_cityscapes_1024x512_160k.yml')
+register_model_info({
+    'model_name': 'ocrnet_hrnetw18',
+    'suite': 'Seg',
+    'config_path': OCRNET_HRNETW18_CFG_PATH,
+    'auto_compression_config_path': OCRNET_HRNETW18_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+OCRNET_HRNETW48_CFG_PATH = osp.join(
+    REPO_ROOT_PATH, 'configs', 'ocrnet',
+    'ocrnet_hrnetw48_cityscapes_1024x512_160k.yml')
+register_model_info({
+    'model_name': 'ocrnet_hrnetw48',
+    'suite': 'Seg',
+    'config_path': OCRNET_HRNETW48_CFG_PATH,
+    'auto_compression_config_path': OCRNET_HRNETW48_CFG_PATH,
     'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
 })
 
@@ -107,6 +171,28 @@ register_model_info({
     'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
 })
 
+# PSPNet
+PSPNET_R50_CFG_PATH = osp.join(
+    REPO_ROOT_PATH, 'configs', 'pspnet',
+    'pspnet_resnet50_os8_cityscapes_1024x512_80k.yml')
+register_model_info({
+    'model_name': 'pspnet_r50',
+    'suite': 'Seg',
+    'config_path': PSPNET_R50_CFG_PATH,
+    'auto_compression_config_path': PSPNET_R50_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+PSPNET_R101_CFG_PATH = osp.join(
+    REPO_ROOT_PATH, 'configs', 'pspnet',
+    'pspnet_resnet101_os8_cityscapes_1024x512_80k.yml')
+register_model_info({
+    'model_name': 'pspnet_r101',
+    'suite': 'Seg',
+    'config_path': PSPNET_R101_CFG_PATH,
+    'auto_compression_config_path': PSPNET_R101_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
 # RTFormer
 RTFORMER_BASE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'rtformer',
                                   'rtformer_base_cityscapes_1024x512_120k.yml')
@@ -126,5 +212,45 @@ register_model_info({
     'suite': 'Seg',
     'config_path': SEGFORMER_B0_CFG_PATH,
     'auto_compression_config_path': SEGFORMER_B0_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
+# TopFormer
+TOPFORMER_BASE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'topformer',
+                                   'topformer_base_ade20k_512x512_160k.yml')
+register_model_info({
+    'model_name': 'topformer_base',
+    'suite': 'Seg',
+    'config_path': TOPFORMER_BASE_CFG_PATH,
+    'auto_compression_config_path': TOPFORMER_BASE_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+TOPFORMER_SMALL_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'topformer',
+                                    'topformer_small_ade20k_512x512_160k.yml')
+register_model_info({
+    'model_name': 'topformer_small',
+    'suite': 'Seg',
+    'config_path': TOPFORMER_SMALL_CFG_PATH,
+    'auto_compression_config_path': TOPFORMER_SMALL_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+TOPFORMER_TINY_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'topformer',
+                                   'topformer_tiny_ade20k_512x512_160k.yml')
+register_model_info({
+    'model_name': 'topformer_tiny',
+    'suite': 'Seg',
+    'config_path': TOPFORMER_TINY_CFG_PATH,
+    'auto_compression_config_path': TOPFORMER_TINY_CFG_PATH,
+    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+})
+
+# UNet
+UNET_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'unet',
+                         'unet_cityscapes_1024x512_160k.yml')
+register_model_info({
+    'model_name': 'unet',
+    'suite': 'Seg',
+    'config_path': UNET_CFG_PATH,
+    'auto_compression_config_path': UNET_CFG_PATH,
     'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
 })

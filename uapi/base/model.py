@@ -90,17 +90,20 @@ class BaseModel(metaclass=abc.ABCMeta):
         Train a model.
 
         Args:
-            dataset (str|None): Root path of the dataset. If None, use a pre-defined default dataset.
-            batch_size (int|None): Number of samples in each mini-batch. If None, use a pre-defined default 
-                batch size.
-            epochs_iters (int|None): Total iterations or epochs of model training. If None, use a 
-                pre-defined default value of epochs/iterations.
-            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
+            dataset (str|None): Root path of the dataset. If None, use the setting in the config file or a 
+                pre-defined default dataset.
+            batch_size (int|None): Number of samples in each mini-batch. If None, use the setting in the 
+                config file or a pre-defined default batch size.
+            epochs_iters (int|None): Total iterations or epochs of model training. If None, use the setting in
+                the config file or a pre-defined default value of epochs/iterations.
+            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. If
+                None, use the setting in the config file or a default setting.
             resume_path (str|None): If not None, resume training from the model snapshot stored in `resume_path`.
-            dy2st (bool|None): Whether or not to enable dynamic-to-static training. If None, use a default 
-                setting.
-            amp (str|None): Optimization level to use in AMP training. Choices are ['O1', 'O2', None]. 
-                If None, do not enable AMP training.
+                If None, use the setting in the config file or a default setting.
+            dy2st (bool|None): Whether or not to enable dynamic-to-static training. If None, use the setting in 
+                the config file or a default setting.
+            amp (str|None): Optimization level to use in AMP training. Choices are ['O1', 'O2', 'OFF', None]. 
+                If None, use the setting in the config file or a default setting.
             use_vdl (bool|None): Whether or not to enable VisualDL during training. If None, use a default 
                 setting. If `use_vdl` is True and `save_dir` is None, the VisualDL logs will be stored in 
                 `output/train`.
@@ -116,7 +119,8 @@ class BaseModel(metaclass=abc.ABCMeta):
         Args:
             weight_path (str): Path of the weights to initialize the model.
             input_path (str): Path of the input file, e.g. an image.
-            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
+            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. If
+                None, use the setting in the config file or a default setting.
             save_dir (str|None): Directory to store prediction results. If None, use `output/predict`.
         """
         raise NotImplementedError
@@ -140,7 +144,8 @@ class BaseModel(metaclass=abc.ABCMeta):
         Args:
             model_dir (str): Path of the model snapshot to load.
             input_path (str): Path of the input file, e.g. an image.
-            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
+            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. If
+                None, use the setting in the config file or a default setting.
             save_dir (str|None): Directory to store inference results. If None, use `output/infer`.
         """
         raise NotImplementedError
@@ -153,12 +158,14 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         Args:
             weight_path (str): Path of the weights to initialize the model.
-            dataset (str|None): Root path of the dataset. If None, use a pre-defined default dataset.
-            batch_size (int|None): Number of samples in each mini-batch. If None, use a pre-defined default 
-                batch size.
-            epochs_iters (int|None): Total iterations or epochs of model training. If None, use a 
-                pre-defined default value of epochs/iterations.
-            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. 
+            dataset (str|None): Root path of the dataset. If None, use the setting in the config file or a 
+                pre-defined default dataset.
+            batch_size (int|None): Number of samples in each mini-batch. If None, use the setting in the 
+                config file or a pre-defined default batch size.
+            epochs_iters (int|None): Total iterations or epochs of model training. If None, use the setting in
+                the config file or a pre-defined default value of epochs/iterations.
+            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. If
+                None, use the setting in the config file or a default setting.
             use_vdl (bool|None): Whether or not to enable VisualDL during training. If None, use a default 
                 setting. If `use_vdl` is True and `save_dir` is None, the VisualDL logs will be stored in 
                 `output/compress`.
