@@ -98,6 +98,7 @@ class StemConv(nn.Layer):
 class AttentionModule(nn.Layer):
     """
     AttentionModule Layer, which contains some depth-wise strip convolutions.
+
     Args:
         dim (int): Number of input channels.
         kernel_sizes (list[int], optional): The height or width of each strip convolution kernel. Default: [7, 11, 21].
