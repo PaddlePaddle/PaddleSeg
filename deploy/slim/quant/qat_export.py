@@ -33,6 +33,12 @@ def parse_args():
     parser.add_argument(
         '--model_path', help='The path of model for export', type=str)
     parser.add_argument(
+        "--input_shape",
+        nargs='+',
+        help="Export the model with fixed input shape, e.g., `--input_shape 1 3 1024 1024`.",
+        type=int,
+        default=None)
+    parser.add_argument(
         '--save_dir',
         help='The directory for saving the exported model',
         type=str,
@@ -86,10 +92,9 @@ def main(args):
 
     new_net.eval()
     save_path = os.path.join(args.save_dir, 'model')
-    input_spec = [
-        paddle.static.InputSpec(
-            shape=[None, 3, None, None], dtype='float32')
-    ]
+    shape = [None, 3, None, None] if args.input_shape is None \
+        else args.input_shape
+    input_spec = [paddle.static.InputSpec(shape=shape, dtype='float32')]
     quantizer.save_quantized_model(new_net, save_path, input_spec=input_spec)
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
