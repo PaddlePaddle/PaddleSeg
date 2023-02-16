@@ -26,7 +26,7 @@ class TestSegConfig(CpuCommonTest):
     def setUpClass(cls):
         super().setUpClass()
         # We test `SegConfig` with a registered *real* model
-        cls.proto_cfg = Config(model_name='pphumanseg_lite')
+        cls.proto_cfg = Config(model_name='deeplabv3p_r50')
 
     def setUp(self):
         self.cfg = self.proto_cfg.copy()
@@ -80,16 +80,47 @@ class TestSegConfig(CpuCommonTest):
             self.cfg.update_dataset('dummy2', dataset_type='Cityscapes')
 
     def test_update_optimizer(self):
-        pass
+        self.cfg.update_optimizer('SGD')
+        self.assertEqual(self.cfg.optimizer, {'type': 'SGD'})
+        self.cfg.update_optimizer('Momentum')
+        self.assertEqual(self.cfg.optimizer, {'type': 'Momentum'})
+        self.cfg.update_optimizer('Adam')
+        self.assertEqual(self.cfg.optimizer, {'type': 'Adam'})
+        self.cfg.update_optimizer('AdamW')
+        self.assertEqual(self.cfg.optimizer, {'type': 'AdamW'})
+        with self.assertRaises(ValueError):
+            self.cfg.update_optimizer('FakeName')
 
     def test_update_backbone(self):
-        pass
+        self.cfg.update_backbone('HRNet_W18')
+        self.cfg.update_backbone('MobileNetV3_large_x1_0')
+        self.cfg.update_backbone('ResNet50_vd')
+        self.cfg.update_backbone('TopTransformer_Base')
+        self.cfg.update_backbone('ViT_large_patch16_384')
+        with self.assertRaises(ValueError):
+            self.cfg.update_backbone('FakeName')
+        self.cfg.model.pop('backbone')
+        with self.assertRaises(RuntimeError):
+            self.cfg.update_backbone('ResNet50_vd')
+        self.cfg.pop('model')
+        with self.assertRaises(RuntimeError):
+            self.cfg.update_backbone('ResNet50_vd')
 
     def test_update_lr_scheduler(self):
-        pass
+        self.cfg.update_lr_scheduler('PolynomialDecay')
+        self.assertEqual(self.cfg.lr_scheduler['type'], 'PolynomialDecay')
+        with self.assertRaises(ValueError):
+            self.cfg.update_lr_scheduler('FakeName')
 
     def test_update_batch_size(self):
-        pass
+        self.cfg.update_batch_size(999)
+        self.assertEqual(self.cfg.batch_size, 999)
+        with self.assertRaises(ValueError):
+            self.cfg.update_batch_size(999, mode='val')
 
     def test_update_weight_decay(self):
-        pass
+        self.cfg.update_weight_decay(10)
+        self.assertEqual(self.cfg.optimizer['weight_decay'], 10)
+        self.cfg.pop('optimizer')
+        with self.assertRaises(RuntimeError):
+            self.cfg.update_weight_decay(10)
