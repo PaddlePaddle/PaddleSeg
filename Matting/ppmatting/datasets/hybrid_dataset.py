@@ -46,7 +46,7 @@ class HybridDataset(MattingDataset):
         | ....
 
     Mix training using two or more of the above datasets.
-    Prepare a hybrid dataset, use `create_hybrid_list.py` to generate `train.txt`.
+    To prepare a hybrid dataset, use `create_hybrid_list.py` to generate `train.txt`.
     Please make sure all datasets are placed in the same folder.
 
     """
