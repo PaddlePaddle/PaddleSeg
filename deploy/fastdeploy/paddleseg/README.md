@@ -15,7 +15,7 @@
 |硬件类型|该硬件是否支持|使用指南|Python|C++|
 |:---:|:---:|:---:|:---:|:---:|
 |X86 CPU|✅|[链接](cpu-gpu)|✅|✅|
-|NVIDIA GPU|✅|[链接](cpu-gpu)|✅| 
+|NVIDIA GPU|✅|[链接](cpu-gpu)|✅|✅| 
 |飞腾CPU|✅|[链接](cpu-gpu)|✅|✅|
 |ARM CPU|✅|[链接](cpu-gpu)|✅|✅| 
 |Intel GPU(集成显卡)|✅|[链接](cpu-gpu)|✅|✅|  
