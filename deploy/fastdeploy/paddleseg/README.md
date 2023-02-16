@@ -28,11 +28,9 @@
 
 ## 更多部署方式
 
-- [Android ARM CPU部署](android)
-- [服务化Serving部署](serving)
-- [web部署](web)
-- [模型自动化压缩工具](quantize)
-
+|Android ARM CPU部署|服务化Serving部署|web部署|模型自动化压缩工具|  
+|:---:|:---:|:---:|:---:|  
+|[使用指南](android)|[使用指南](serving)|[使用指南](web)|[使用指南](quantize)|
 
 ## 常见问题
 
