@@ -2,7 +2,13 @@
 
 ## FastDeploy介绍
 
-[FastDeploy](https://github.com/PaddlePaddle/FastDeploy)是一款全场景、易用灵活、极致高效的AI推理部署工具，使用FastDeploy可以简单高效的在10+款硬件上对PaddleSeg模型进行快速部署
+**[⚡️FastDeploy](https://github.com/PaddlePaddle/FastDeploy)**是一款**全场景**、**易用灵活**、**极致高效**的AI推理部署工具，支持**云边端**部署。使用FastDeploy可以简单高效的在X86 CPU、NVIDIA GPU、飞腾CPU、ARM CPU、Intel GPU、昆仑、昇腾、瑞芯微、晶晨、算能等10+款硬件上对PaddleSeg模型进行快速部署，并且支持Paddle Inference、Paddle Lite、TensorRT、OpenVINO、ONNXRuntime、RKNN、SOPHGO等多框推理后端。
+
+<div align="center">
+    
+<img src="https://user-images.githubusercontent.com/54695910/213087733-7f2ea97b-baa4-4b0d-9b71-202ff6032a30.png" >
+    
+</div>  
 
 ## 硬件支持列表
 
@@ -12,7 +18,7 @@
 |NVIDIA GPU|✅|[链接](cpu-gpu)|   
 |飞腾CPU|✅|[链接](cpu-gpu)|   
 |ARM CPU|✅|[链接](cpu-gpu)|   
-|Intel GPU(独立显卡/集成显卡|✅|[链接](cpu-gpu)|   
+|Intel GPU(独立显卡/集成显卡)|✅|[链接](cpu-gpu)|   
 |昆仑|✅|[链接](kunlun)|   
 |昇腾|✅|[链接](ascend)|   
 |瑞芯微|✅|[链接](rockchip)|   
