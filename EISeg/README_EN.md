@@ -58,7 +58,7 @@ EISeg (Efficient Interactive Segmentation) is an efficient and intelligent inter
 * If you have any problem or suggestion on EISeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Welcome to Join EISeg WeChat Group
 <div align="center">
-<img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/30883834/216607378-94745b74-0ca1-4d39-a817-de94385496f1.jpg"  width = "200" />  
 </div>
 ## <img src="../docs/images/teach.png" width="20"/> Tutorials
 
