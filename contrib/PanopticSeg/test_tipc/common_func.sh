@@ -28,9 +28,9 @@ function func_set_params() {
     local key=$1
     local value=$2
     local sep="${3-=}"
-    if [ ${key}x = "null"x ];then
+    if [ ${key}x = "null"x ]; then
         echo " "
-    elif [[ ${value} = "null" ]] || [[ ${value} = " " ]] || [ ${#value} -le 0 ];then
+    elif [[ ${value} = "null" ]] || [[ ${value} = " " ]] || [ ${#value} -le 0 ]; then
         echo " "
     else 
         echo "${key}${sep}${value}"
