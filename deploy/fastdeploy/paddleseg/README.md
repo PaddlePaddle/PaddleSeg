@@ -6,7 +6,7 @@
 
 <div align="center">
     
-<img src="https://user-images.githubusercontent.com/54695910/213087733-7f2ea97b-baa4-4b0d-9b71-202ff6032a30.png" >
+<img src="https://user-images.githubusercontent.com/31974251/219546373-c02f24b7-2222-4ad4-9b43-42b8122b898f.png" >
     
 </div>  
 
@@ -28,9 +28,10 @@
 
 ## 更多部署方式
 
-|Android ARM CPU部署|服务化Serving部署|web部署|模型自动化压缩工具|  
-|:---:|:---:|:---:|:---:|  
-|[链接](android)|[链接](serving)|[链接](web)|[链接](quantize)|
+- [Android ARM CPU部署](android)  
+- [服务化Serving部署](serving)  
+- [web部署](web)  
+- [模型自动化压缩工具](quantize)
 
 ## 常见问题
 
