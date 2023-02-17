@@ -1,4 +1,4 @@
-# PaddleSeg语义分割模型FastDeploy高性能部署方案
+# PaddleSeg语义分割模型高性能全场景部署方案-FastDeploy
 
 ## 硬件支持列表
 
