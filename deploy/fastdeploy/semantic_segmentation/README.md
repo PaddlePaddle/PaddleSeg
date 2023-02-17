@@ -19,6 +19,7 @@
 |晶晨|✅|[链接](amlogic)|--|✅|      
 |算能|✅|[链接](sophgo)|✅|✅|       
 
+## 3. 详细使用文档
 - X86 CPU
   - [部署模型准备](cpu-gpu)  
   - [Python部署示例](cpu-gpu/python/) 
@@ -63,14 +64,14 @@
   - [Python部署示例](sophgo/python/) 
   - [C++部署示例](sophgo/cpp/)  
 
-## 3. 更多部署方式
+## 4. 更多部署方式
 
 - [Android ARM CPU部署](android)  
 - [服务化Serving部署](serving)  
 - [web部署](web)  
 - [模型自动化压缩工具](quantize)
 
-## 4. 常见问题
+## 5. 常见问题
 
 遇到问题可查看常见问题集合，搜索FastDeploy issue，*或给FastDeploy提交[issue](https://github.com/PaddlePaddle/FastDeploy/issues)*:
 
