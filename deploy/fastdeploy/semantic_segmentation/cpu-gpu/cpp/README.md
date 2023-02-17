@@ -3,6 +3,9 @@
 
 本目录下提供`infer.cc`快速完成PP-LiteSeg在CPU/GPU，以及GPU上通过Paddle-TensorRT加速部署的示例。
 
+## 说明  
+PaddleSeg支持利用FastDeploy在NVIDIA GPU、X86 CPU、飞腾CPU、ARM CPU、Intel GPU(独立显卡/集成显卡)硬件上部署Segmentation模型
+
 ## 部署环境准备
 
 在部署前，需确认软硬件环境，同时下载预编译部署库，参考文档[FastDeploy预编译库安装](https://github.com/PaddlePaddle/FastDeploy/blob/develop/docs/cn/build_and_install#FastDeploy预编译库安装)

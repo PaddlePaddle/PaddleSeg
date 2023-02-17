@@ -4,14 +4,23 @@
 
 PaddleSeg支持利用FastDeploy在NVIDIA GPU、X86 CPU、飞腾CPU、ARM CPU、Intel GPU(独立显卡/集成显卡)硬件上部署Segmentation模型
 
+## 目录 
+- [准备PaddleSeg部署模型](#准备PaddleSeg部署模型)
+  - [模型版本](#模型版本说明)
+  - [模型导出](#模型导出)
+  - [导出须知](#导出须知)
+- [FastDeploy提供的预导出模型](#FastDeploy提供的预导出模型)  
+- [详细部署的部署示例](#详细部署的部署示例)
+  - [Python部署](python)
+  - [C++部署](cpp)
 
-
-## 模型版本说明
+## 1. 准备PaddleSeg部署模型  
+### 1.1 模型版本
 
 - [PaddleSeg](https://github.com/PaddlePaddle/PaddleSeg)
 >> **注意**：支持PaddleSeg高于2.6版本的Segmentation模型
 
-目前FastDeploy支持如下模型的部署
+目前FastDeploy支持如下模型的部署: 
 
 - [U-Net系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/unet/README.md)
 - [PP-LiteSeg系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/pp_liteseg/README.md)
@@ -20,20 +29,25 @@ PaddleSeg支持利用FastDeploy在NVIDIA GPU、X86 CPU、飞腾CPU、ARM CPU、I
 - [DeepLabV3系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/deeplabv3/README.md)
 - [SegFormer系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/segformer/README.md)
 
->>**注意** 如部署的为**PP-Matting**、**PP-HumanMatting**以及**ModNet**请参考[Matting模型部署](../../ppmatting)
+>>**注意** 如部署的为**PP-Matting**、**PP-HumanMatting**以及**ModNet**请参考[Matting模型部署](../../matting/)
 
-## 准备PaddleSeg部署模型
+### 1.2 模型导出
 PaddleSeg模型导出，请参考其文档说明[模型导出](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/model_export_cn.md)  
 
 **注意**
 - PaddleSeg导出的模型包含`model.pdmodel`、`model.pdiparams`和`deploy.yaml`三个文件，FastDeploy会从yaml文件中获取模型在推理时需要的预处理信息
 
-## 预导出的推理模型
+### 1.3 导出须知  
+请参考[模型导出](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/model_export_cn.md)中`output_op`参数的说明，获取您部署所需的模型，比如是否带`argmax`或`softmax`算子
 
+## 2. FastDeploy提供的预导出模型
+
+### 2.1 预导出的模型类型说明
 为了方便开发者的测试，下面提供了PaddleSeg导出的部分模型
-- without-argmax导出方式为：**不指定**`--input_shape`，**指定**`--output_op none`
-- with-argmax导出方式为：**不指定**`--input_shape`，**指定**`--output_op argmax`
+- 文件名标记了`without-argmax`的模型，导出方式为：**不指定**`--input_shape`，**指定**`--output_op none`
+- 文件名标记了`with-argmax`的模型导出方式为：**不指定**`--input_shape`，**指定**`--output_op argmax`
 
+### 2.2 预导出的模型列表
 开发者可直接下载使用。
 
 | 模型                                                               | 参数文件大小    |输入Shape |  mIoU | mIoU (flip) | mIoU (ms+flip) |
@@ -49,7 +63,7 @@ PaddleSeg模型导出，请参考其文档说明[模型导出](https://github.co
 | [Deeplabv3-ResNet101-OS8-cityscapes-with-argmax](https://bj.bcebos.com/paddlehub/fastdeploy/Deeplabv3_ResNet101_OS8_cityscapes_with_argmax_infer.tgz) \| [Deeplabv3-ResNet101-OS8-cityscapes-without-argmax](https://bj.bcebos.com/paddlehub/fastdeploy/Deeplabv3_ResNet101_OS8_cityscapes_without_argmax_infer.tgz) |  150MB | 1024x512 | 79.90% | 80.22% | 80.47% |
 | [SegFormer_B0-cityscapes-with-argmax](https://bj.bcebos.com/paddlehub/fastdeploy/SegFormer_B0-cityscapes-with-argmax.tgz) \| [SegFormer_B0-cityscapes-without-argmax](https://bj.bcebos.com/paddlehub/fastdeploy/SegFormer_B0-cityscapes-without-argmax.tgz) |  15MB | 1024x1024 | 76.73% | 77.16% | - |
 
-## 详细部署文档
+## 3. 详细部署的部署示例
 
 - [Python部署](python)
 - [C++部署](cpp)

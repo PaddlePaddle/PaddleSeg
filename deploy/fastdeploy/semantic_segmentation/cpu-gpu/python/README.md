@@ -1,6 +1,9 @@
-[English](README.md) | 简体中文
+[English](README.md) | 简体中文  
 # PaddleSeg Python部署示例
 本目录下提供`infer.py`快速完成PP-LiteSeg在CPU/GPU，以及GPU上通过Paddle-TensorRT加速部署的示例。执行如下脚本即可完成
+
+## 说明  
+PaddleSeg支持利用FastDeploy在NVIDIA GPU、X86 CPU、飞腾CPU、ARM CPU、Intel GPU(独立显卡/集成显卡)硬件上部署Segmentation模型
 
 ## 部署环境准备
 
