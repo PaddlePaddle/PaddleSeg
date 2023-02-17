@@ -33,12 +33,57 @@
 |晶晨|✅|[链接](semantic_segmentation/amlogic)|--|✅|✅|      
 |算能|✅|[链接](semantic_segmentation/sophgo)|✅|✅|     
 
+## 2.2. 详细使用文档
+- X86 CPU
+  - [部署模型准备](semantic_segmentation/cpu-gpu)  
+  - [Python部署示例](semantic_segmentation/cpu-gpu/python/) 
+  - [C++部署示例](semantic_segmentation/cpu-gpu/cpp/)
+- NVIDIA GPU
+  - [部署模型准备](semantic_segmentation/cpu-gpu)  
+  - [Python部署示例](semantic_segmentation/cpu-gpu/python/) 
+  - [C++部署示例](semantic_segmentation/cpu-gpu/cpp/)
+- 飞腾CPU
+  - [部署模型准备](semantic_segmentation/cpu-gpu)  
+  - [Python部署示例](semantic_segmentation/cpu-gpu/python/) 
+  - [C++部署示例](semantic_segmentation/cpu-gpu/cpp/)
+- ARM CPU
+  - [部署模型准备](semantic_segmentation/cpu-gpu)  
+  - [Python部署示例](semantic_segmentation/cpu-gpu/python/) 
+  - [C++部署示例](semantic_segmentation/cpu-gpu/cpp/)
+- X86 CPU
+  - [部署模型准备](semantic_segmentation/cpu-gpu)  
+  - [Python部署示例](semantic_segmentation/cpu-gpu/python/) 
+  - [C++部署示例](semantic_segmentation/cpu-gpu/cpp/)
+- Intel GPU
+  - [部署模型准备](semantic_segmentation/cpu-gpu)  
+  - [Python部署示例](semantic_segmentation/cpu-gpu/python/) 
+  - [C++部署示例](semantic_segmentation/cpu-gpu/cpp/)
+- 昆仑 XPU
+  - [部署模型准备](semantic_segmentation/kunlun)  
+  - [Python部署示例](semantic_segmentation/kunlun/python/) 
+  - [C++部署示例](semantic_segmentation/kunlun/cpp/)
+- 昇腾 Ascend
+  - [部署模型准备](semantic_segmentation/ascend)  
+  - [Python部署示例](semantic_segmentation/ascend/python/) 
+  - [C++部署示例](semantic_segmentation/ascend/cpp/)
+- 瑞芯微 Rockchip
+  - [部署模型准备](semantic_segmentation/rockchip/)  
+  - [Python部署示例](semantic_segmentation/rockchip/rknpu2/) 
+  - [C++部署示例](semantic_segmentation/rockchip/rknpu2/)
+- 晶晨 Amlogic
+  - [部署模型准备](semantic_segmentation/amlogic/a311d/)  
+  - [C++部署示例](semantic_segmentation/amlogic/a311d/cpp/)    
+- 算能 Sophgo
+  - [部署模型准备](semantic_segmentation/sophgo/)  
+  - [Python部署示例](semantic_segmentation/sophgo/python/) 
+  - [C++部署示例](semantic_segmentation/sophgo/cpp/)  
+
 ### 2.2 更多部署方式
 
-- [Android ARM CPU部署](android)  
-- [服务化Serving部署](serving)  
-- [web部署](web)  
-- [模型自动化压缩工具](quantize)
+- [Android ARM CPU部署](semantic_segmentation/android)  
+- [服务化Serving部署](semantic_segmentation/serving)  
+- [web部署](semantic_segmentation/web)  
+- [模型自动化压缩工具](semantic_segmentation/quantize)
 
 ## 3. Matting模型部署  
 ### 3.1 硬件支持列表
@@ -53,6 +98,40 @@
 |Intel GPU(独立显卡)|✅|[链接](matting/cpu-gpu)|✅|✅|    
 |昆仑|✅|[链接](matting/kunlun)|✅|✅|     
 |昇腾|✅|[链接](matting/ascend)|✅|✅|     
+
+## 3.2 详细使用文档
+- X86 CPU
+  - [部署模型准备](matting/cpu-gpu)  
+  - [Python部署示例](matting/cpu-gpu/python/) 
+  - [C++部署示例](matting/cpu-gpu/cpp/)
+- NVIDIA GPU
+  - [部署模型准备](matting/cpu-gpu)  
+  - [Python部署示例](matting/cpu-gpu/python/) 
+  - [C++部署示例](matting/cpu-gpu/cpp/)
+- 飞腾CPU
+  - [部署模型准备](matting/cpu-gpu)  
+  - [Python部署示例](matting/cpu-gpu/python/) 
+  - [C++部署示例](matting/cpu-gpu/cpp/)
+- ARM CPU
+  - [部署模型准备](matting/cpu-gpu)  
+  - [Python部署示例](matting/cpu-gpu/python/) 
+  - [C++部署示例](matting/cpu-gpu/cpp/)
+- X86 CPU
+  - [部署模型准备](matting/cpu-gpu)  
+  - [Python部署示例](matting/cpu-gpu/python/) 
+  - [C++部署示例](matting/cpu-gpu/cpp/)
+- Intel GPU
+  - [部署模型准备](matting/cpu-gpu)  
+  - [Python部署示例](matting/cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- 昆仑 XPU
+  - [部署模型准备](matting/kunlun)  
+  - [Python部署示例](matting/kunlun/README.md) 
+  - [C++部署示例](matting/kunlun/README.md)
+- 昇腾 Ascend
+  - [部署模型准备](matting/ascend)  
+  - [Python部署示例](matting/ascend/README.md) 
+  - [C++部署示例](matting/ascend/README.md)
 
 ## 4. 常见问题
 
