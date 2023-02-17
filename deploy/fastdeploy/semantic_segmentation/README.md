@@ -1,8 +1,9 @@
 # PaddleSeg语义分割模型高性能全场景部署方案-FastDeploy
 
-**[⚡️FastDeploy](https://github.com/PaddlePaddle/FastDeploy)**是一款**全场景**、**易用灵活**、**极致高效**的AI推理部署工具，支持**云边端**部署。使用FastDeploy可以简单高效的在X86 CPU、NVIDIA GPU、飞腾CPU、ARM CPU、Intel GPU、昆仑、昇腾、瑞芯微、晶晨、算能等10+款硬件上对PaddleSeg模型进行快速部署，并且支持Paddle Inference、Paddle Lite、TensorRT、OpenVINO、ONNXRuntime、RKNPU2、SOPHGO等多种推理后端。
+## 1. FastDeploy介绍
+**[⚡️FastDeploy](https://github.com/PaddlePaddle/FastDeploy)**是一款**全场景**、**易用灵活**、**极致高效**的AI推理部署工具，支持**云边端**部署。使用FastDeploy可以简单高效的在X86 CPU、NVIDIA GPU、飞腾CPU、ARM CPU、Intel GPU、昆仑、昇腾、瑞芯微、晶晨、算能等10+款硬件上对PaddleSeg语义分割模型进行快速部署，并且支持Paddle Inference、Paddle Lite、TensorRT、OpenVINO、ONNXRuntime、RKNPU2、SOPHGO等多种推理后端。
 
-## 1. 硬件支持列表
+## 2. 硬件支持列表
 
 |硬件类型|该硬件是否支持|使用指南|Python|C++|
 |:---:|:---:|:---:|:---:|:---:|
@@ -18,14 +19,14 @@
 |晶晨|✅|[链接](amlogic)|--|✅|✅|      
 |算能|✅|[链接](sophgo)|✅|✅|     
 
-## 2. 更多部署方式
+## 3. 更多部署方式
 
 - [Android ARM CPU部署](android)  
 - [服务化Serving部署](serving)  
 - [web部署](web)  
 - [模型自动化压缩工具](quantize)
 
-## 3. 常见问题
+## 4. 常见问题
 
 遇到问题可查看常见问题集合，搜索FastDeploy issue，*或给FastDeploy提交[issue](https://github.com/PaddlePaddle/FastDeploy/issues)*:
 
