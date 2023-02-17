@@ -16,8 +16,41 @@
 |昆仑|✅|[链接](kunlun)|✅|✅|     
 |昇腾|✅|[链接](ascend)|✅|✅|     
 
+## 3. 详细使用文档
+- X86 CPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- NVIDIA GPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- 飞腾CPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- ARM CPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- X86 CPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- Intel GPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- 昆仑 XPU
+  - [部署模型准备](kunlun)  
+  - [Python部署示例](kunlun/README.md) 
+  - [C++部署示例](kunlun/README.md)
+- 昇腾 Ascend
+  - [部署模型准备](ascend)  
+  - [Python部署示例](ascend/README.md) 
+  - [C++部署示例](ascend/README.md)
 
-## 3. 常见问题
+## 4. 常见问题
 
 遇到问题可查看常见问题集合，搜索FastDeploy issue，*或给FastDeploy提交[issue](https://github.com/PaddlePaddle/FastDeploy/issues)*:
 
