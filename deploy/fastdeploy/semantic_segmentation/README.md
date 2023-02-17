@@ -16,8 +16,52 @@
 |昆仑|✅|[链接](kunlun)|✅|✅|
 |昇腾|✅|[链接](ascend)|✅|✅|
 |瑞芯微|✅|[链接](rockchip)|✅|✅|  
-|晶晨|✅|[链接](amlogic)|--|✅|✅|      
-|算能|✅|[链接](sophgo)|✅|✅|     
+|晶晨|✅|[链接](amlogic)|--|✅|      
+|算能|✅|[链接](sophgo)|✅|✅|       
+
+- X86 CPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- NVIDIA GPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- 飞腾CPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- ARM CPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- X86 CPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- Intel GPU
+  - [部署模型准备](cpu-gpu)  
+  - [Python部署示例](cpu-gpu/python/) 
+  - [C++部署示例](cpu-gpu/cpp/)
+- 昆仑 XPU
+  - [部署模型准备](kunlun)  
+  - [Python部署示例](kunlun/python/) 
+  - [C++部署示例](kunlun/cpp/)
+- 昇腾 Ascend
+  - [部署模型准备](ascend)  
+  - [Python部署示例](ascend/python/) 
+  - [C++部署示例](ascend/cpp/)
+- 瑞芯微 Rockchip
+  - [部署模型准备](rockchip/)  
+  - [Python部署示例](rockchip/rknpu2/) 
+  - [C++部署示例](rockchip/rknpu2/)
+- 晶晨 Amlogic
+  - [部署模型准备](amlogic/a311d/)  
+  - [C++部署示例](amlogic/a311d/cpp/)    
+- 算能 Sophgo
+  - [部署模型准备](sophgo/)  
+  - [Python部署示例](sophgo/python/) 
+  - [C++部署示例](sophgo/cpp/)  
 
 ## 3. 更多部署方式
 
