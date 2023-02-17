@@ -28,10 +28,7 @@
 
 ## 常见问题
 
-遇到问题可查看常见问题集合文档或搜索FastDeploy issues，链接如下：
+遇到问题可查看常见问题集合文档或搜索FastDeploy issues，请参考以下链接，或给FastDeploy提交[issue](https://github.com/PaddlePaddle/FastDeploy/issues):
 
-[常见问题集合](https://github.com/PaddlePaddle/FastDeploy/tree/develop/docs/cn/faq)
-
-[FastDeploy issues](https://github.com/PaddlePaddle/FastDeploy/issues)
-
-若以上方式都无法解决问题，欢迎给FastDeploy提交新的[issue](https://github.com/PaddlePaddle/FastDeploy/issues)
+[常见问题集合](https://github.com/PaddlePaddle/FastDeploy/tree/develop/docs/cn/faq)  
+[FastDeploy issues](https://github.com/PaddlePaddle/FastDeploy/issues)  

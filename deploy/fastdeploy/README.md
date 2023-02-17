@@ -21,17 +21,17 @@
 
 |硬件类型|该硬件是否支持|使用指南|Python|C++|
 |:---:|:---:|:---:|:---:|:---:|
-|X86 CPU|✅|[链接](cpu-gpu)|✅|✅|
-|NVIDIA GPU|✅|[链接](cpu-gpu)|✅|✅| 
-|飞腾CPU|✅|[链接](cpu-gpu)|✅|✅|
-|ARM CPU|✅|[链接](cpu-gpu)|✅|✅| 
-|Intel GPU(集成显卡)|✅|[链接](cpu-gpu)|✅|✅|  
-|Intel GPU(独立显卡)|✅|[链接](cpu-gpu)|✅|✅|    
-|昆仑|✅|[链接](kunlun)|✅|✅|
-|昇腾|✅|[链接](ascend)|✅|✅|
-|瑞芯微|✅|[链接](rockchip)|✅|✅|  
-|晶晨|✅|[链接](amlogic)|--|✅|✅|      
-|算能|✅|[链接](sophgo)|✅|✅|     
+|X86 CPU|✅|[链接](semantic_segmentation/cpu-gpu)|✅|✅|
+|NVIDIA GPU|✅|[链接](semantic_segmentation/cpu-gpu)|✅|✅| 
+|飞腾CPU|✅|[链接](semantic_segmentation/cpu-gpu)|✅|✅|
+|ARM CPU|✅|[链接](semantic_segmentation/cpu-gpu)|✅|✅| 
+|Intel GPU(集成显卡)|✅|[链接](semantic_segmentation/cpu-gpu)|✅|✅|  
+|Intel GPU(独立显卡)|✅|[链接](semantic_segmentation/cpu-gpu)|✅|✅|    
+|昆仑|✅|[链接](semantic_segmentation/kunlun)|✅|✅|
+|昇腾|✅|[链接](semantic_segmentation/ascend)|✅|✅|
+|瑞芯微|✅|[链接](semantic_segmentation/rockchip)|✅|✅|  
+|晶晨|✅|[链接](semantic_segmentation/amlogic)|--|✅|✅|      
+|算能|✅|[链接](semantic_segmentation/sophgo)|✅|✅|     
 
 ### 更多部署方式
 
@@ -45,18 +45,18 @@
 
 |硬件类型|该硬件是否支持|使用指南|Python|C++|  
 |:---:|:---:|:---:|:---:|:---:|   
-|X86 CPU|✅|[链接](cpu-gpu)|✅|✅|     
-|NVIDIA GPU|✅|[链接](cpu-gpu)|✅|✅|     
-|飞腾CPU|✅|[链接](cpu-gpu)|✅|✅|     
-|ARM CPU|✅|[链接](cpu-gpu)|✅|✅|     
-|Intel GPU(集成显卡)|✅|[链接](cpu-gpu)|✅|✅|     
-|Intel GPU(独立显卡)|✅|[链接](cpu-gpu)|✅|✅|    
-|昆仑|✅|[链接](kunlun)|✅|✅|     
-|昇腾|✅|[链接](ascend)|✅|✅|     
+|X86 CPU|✅|[链接](matting/cpu-gpu)|✅|✅|     
+|NVIDIA GPU|✅|[链接](matting/cpu-gpu)|✅|✅|     
+|飞腾CPU|✅|[链接](matting/cpu-gpu)|✅|✅|     
+|ARM CPU|✅|[链接](matting/cpu-gpu)|✅|✅|     
+|Intel GPU(集成显卡)|✅|[链接](matting/cpu-gpu)|✅|✅|     
+|Intel GPU(独立显卡)|✅|[链接](matting/cpu-gpu)|✅|✅|    
+|昆仑|✅|[链接](matting/kunlun)|✅|✅|     
+|昇腾|✅|[链接](matting/ascend)|✅|✅|     
 
 ## 常见问题
 
-遇到问题可查看常见问题集合文档或搜索FastDeploy issues，请参考一下链接，或给FastDeploy提交[issue](https://github.com/PaddlePaddle/FastDeploy/issues):
+遇到问题可查看常见问题集合文档或搜索FastDeploy issues，请参考以下链接，或给FastDeploy提交[issue](https://github.com/PaddlePaddle/FastDeploy/issues):
 
 [常见问题集合](https://github.com/PaddlePaddle/FastDeploy/tree/develop/docs/cn/faq)  
 [FastDeploy issues](https://github.com/PaddlePaddle/FastDeploy/issues)  
