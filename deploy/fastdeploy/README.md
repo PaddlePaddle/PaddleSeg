@@ -33,7 +33,7 @@
 |晶晨|✅|[链接](semantic_segmentation/amlogic)|--|✅|✅|      
 |算能|✅|[链接](semantic_segmentation/sophgo)|✅|✅|     
 
-## 2.2. 详细使用文档
+### 2.2. 详细使用文档
 - X86 CPU
   - [部署模型准备](semantic_segmentation/cpu-gpu)  
   - [Python部署示例](semantic_segmentation/cpu-gpu/python/) 
@@ -78,7 +78,7 @@
   - [Python部署示例](semantic_segmentation/sophgo/python/) 
   - [C++部署示例](semantic_segmentation/sophgo/cpp/)  
 
-### 2.2 更多部署方式
+### 2.3 更多部署方式
 
 - [Android ARM CPU部署](semantic_segmentation/android)  
 - [服务化Serving部署](semantic_segmentation/serving)  
@@ -99,7 +99,7 @@
 |昆仑|✅|[链接](matting/kunlun)|✅|✅|     
 |昇腾|✅|[链接](matting/ascend)|✅|✅|     
 
-## 3.2 详细使用文档
+### 3.2 详细使用文档
 - X86 CPU
   - [部署模型准备](matting/cpu-gpu)  
   - [Python部署示例](matting/cpu-gpu/python/) 
