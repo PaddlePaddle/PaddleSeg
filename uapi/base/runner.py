@@ -30,6 +30,8 @@ class BaseRunner(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, runner_root_path):
+        super().__init__()
+
         self.runner_root_path = abspath(runner_root_path)
         # Path to python interpreter
         self.python = sys.executable
@@ -143,13 +145,13 @@ class BaseRunner(metaclass=abc.ABCMeta):
             python = f"CUDA_VISIBLE_DEVICES={dev_ids} {python}"
         return python, device
 
-    def run_cmd(self, cmd, switch_wdir=False, **kwargs):
+    def run_cmd(self, cmd, switch_wdir=False, silent=True, echo=False):
         if switch_wdir:
-            if 'cwd' in kwargs:
-                raise KeyError
             if isinstance(switch_wdir, str):
                 # In this case `switch_wdir` specifies a relative path
-                kwargs['cwd'] = os.path.join(self.runner_root_path, switch_wdir)
+                cwd = os.path.join(self.runner_root_path, switch_wdir)
             else:
-                kwargs['cwd'] = self.runner_root_path
-        return _run_cmd(cmd, **kwargs)
+                cwd = self.runner_root_path
+        else:
+            cwd = None
+        return _run_cmd(cmd, cwd=cwd, silent=silent, echo=echo)

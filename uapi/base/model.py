@@ -47,12 +47,14 @@ class BaseModel(metaclass=abc.ABCMeta):
 
     Args:
         model_name (str): A registered model name.
-        config (config.BaseConfig|None): Config.
+        config (config.BaseConfig|None, optional): Config. Default: None.
     """
 
     _API_FULL_LIST = ('train', 'predict', 'export', 'infer', 'compression')
 
     def __init__(self, model_name, config=None):
+        super().__init__()
+
         self.name = model_name
         self.model_info = get_registered_model_info(model_name)
         # NOTE: We build runner instance here by extracting runner info from model info

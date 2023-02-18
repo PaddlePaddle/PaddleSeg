@@ -28,24 +28,6 @@ def run_cmd(cmd, silent=True, cwd=None, timeout=None, echo=False):
     return subprocess.run(cmd, **cfg)
 
 
-def run_cmd_nb(cmd, cwd=None, redirect_stderr=True, interact=True, echo=False):
-    cfg = dict(
-        shell=True,
-        cwd=cwd,
-        stdout=subprocess.PIPE,
-        bufsize=1,
-        universal_newlines=True)
-    if redirect_stderr:
-        cfg['stderr'] = subprocess.STDOUT
-    else:
-        cfg['stderr'] = subprocess.PIPE
-    if interact:
-        cfg['stdin'] = subprocess.PIPE
-    if echo:
-        print(cmd)
-    return subprocess.Popen(cmd, **cfg)
-
-
 @contextlib.contextmanager
 def switch_working_dir(new_wd):
     cwd = os.getcwd()
