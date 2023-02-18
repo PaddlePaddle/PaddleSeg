@@ -108,6 +108,9 @@ class BaseModel(metaclass=abc.ABCMeta):
                 setting. If `use_vdl` is True and `save_dir` is None, the VisualDL logs will be stored in 
                 `output/train`.
             save_dir (str|None): Directory to store model snapshots and logs. If None, use `output/train`.
+
+        Returns:
+            subprocess.CompletedProcess
         """
         raise NotImplementedError
 
@@ -122,6 +125,9 @@ class BaseModel(metaclass=abc.ABCMeta):
             device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. If
                 None, use the setting in the config file or a default setting.
             save_dir (str|None): Directory to store prediction results. If None, use `output/predict`.
+
+        Returns:
+            subprocess.CompletedProcess
         """
         raise NotImplementedError
 
@@ -133,6 +139,9 @@ class BaseModel(metaclass=abc.ABCMeta):
         Args:
             weight_path (str): Path of the weights to initialize the model.
             save_dir (str|None): Directory to store the exported model. If None, use `output/export`.
+
+        Returns:
+            subprocess.CompletedProcess
         """
         raise NotImplementedError
 
@@ -147,6 +156,9 @@ class BaseModel(metaclass=abc.ABCMeta):
             device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. If
                 None, use the setting in the config file or a default setting.
             save_dir (str|None): Directory to store inference results. If None, use `output/infer`.
+
+        Returns:
+            subprocess.CompletedProcess
         """
         raise NotImplementedError
 
@@ -171,6 +183,9 @@ class BaseModel(metaclass=abc.ABCMeta):
                 `output/compress`.
             save_dir (str|None): Directory to store model snapshots. The exported model will be saved in the 
                 `export` subdirectory of `save_dir`. If None, use `output/compress`.
+
+        Returns:
+            tuple[subprocess.CompletedProcess]
         """
         raise NotImplementedError
 

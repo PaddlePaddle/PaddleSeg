@@ -74,7 +74,7 @@ class SegModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        self.runner.train(config_path, cli_args, device)
+        return self.runner.train(config_path, cli_args, device)
 
     def predict(self, weight_path, input_path, device='gpu', save_dir=None):
         weight_path = abspath(weight_path)
@@ -100,7 +100,7 @@ class SegModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        self.runner.predict(config_path, cli_args, device)
+        return self.runner.predict(config_path, cli_args, device)
 
     def export(self, weight_path, save_dir=None, input_shape=None):
         weight_path = abspath(weight_path)
@@ -127,7 +127,7 @@ class SegModel(BaseModel):
                 input_shape = ' '.join(map(str, input_shape))
             cli_args.append(CLIArgument('--input_shape', input_shape, sep=' '))
 
-        self.runner.export(config_path, cli_args, None)
+        return self.runner.export(config_path, cli_args, None)
 
     def infer(self, model_dir, input_path, device='gpu', save_dir=None):
         model_dir = abspath(model_dir)
@@ -151,7 +151,7 @@ class SegModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        self.runner.infer(config_path, cli_args, device)
+        return self.runner.infer(config_path, cli_args, device)
 
     def compression(self,
                     weight_path,
@@ -210,8 +210,8 @@ class SegModel(BaseModel):
                 CLIArgument(
                     '--input_shape', input_shape, sep=' '))
 
-        self.runner.compression(config_path, train_cli_args, export_cli_args,
-                                device, save_dir)
+        return self.runner.compression(config_path, train_cli_args,
+                                       export_cli_args, device, save_dir)
 
     def _create_dummy_dataset(self):
         # Create a PaddleSeg-style dataset

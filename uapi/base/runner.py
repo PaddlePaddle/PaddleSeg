@@ -24,11 +24,12 @@ class BaseRunner(metaclass=abc.ABCMeta):
     Abstract base class of Runner.
 
     Runner is responsible for executing training/inference/compression commands.
+
+    Args:
+        runner_root_path (str): Path of the directory where the scripts reside.
     """
 
     def __init__(self, runner_root_path):
-        # The path to the directory where the scripts reside, 
-        # e.g. the root directory of the repository.
         self.runner_root_path = abspath(runner_root_path)
         # Path to python interpreter
         self.python = sys.executable
@@ -51,6 +52,9 @@ class BaseRunner(metaclass=abc.ABCMeta):
             config_path (str): Path of the configuration file.
             cli_args (list[utils.arg.CLIArgument]): List of command-line Arguments.
             device (str): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'.
+
+        Returns:
+            subprocess.CompletedProcess
         """
         raise NotImplementedError
 
@@ -63,6 +67,9 @@ class BaseRunner(metaclass=abc.ABCMeta):
             config_path (str): Path of the configuration file.
             cli_args (list[utils.arg.CLIArgument]): List of command-line Arguments.
             device (str): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'.
+
+        Returns:
+            subprocess.CompletedProcess
         """
         raise NotImplementedError
 
@@ -75,6 +82,9 @@ class BaseRunner(metaclass=abc.ABCMeta):
             config_path (str): Path of the configuration file.
             cli_args (list[utils.arg.CLIArgument]): List of command-line Arguments.
             device (str): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'.
+
+        Returns:
+            subprocess.CompletedProcess
         """
         raise NotImplementedError
 
@@ -87,6 +97,9 @@ class BaseRunner(metaclass=abc.ABCMeta):
             config_path (str): Path of the configuration file.
             cli_args (list[utils.arg.CLIArgument]): List of command-line Arguments.
             device (str): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'.
+
+        Returns:
+            subprocess.CompletedProcess
         """
         raise NotImplementedError
 
@@ -104,6 +117,9 @@ class BaseRunner(metaclass=abc.ABCMeta):
                 export.
             device (str): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'.
             train_save_dir (str): Directory to store model snapshots and the exported model.
+
+        Returns:
+            tuple[subprocess.CompletedProcess]
         """
         raise NotImplementedError
 
@@ -129,11 +145,11 @@ class BaseRunner(metaclass=abc.ABCMeta):
 
     def run_cmd(self, cmd, switch_wdir=False, **kwargs):
         if switch_wdir:
-            if 'wd' in kwargs:
+            if 'cwd' in kwargs:
                 raise KeyError
             if isinstance(switch_wdir, str):
                 # In this case `switch_wdir` specifies a relative path
-                kwargs['wd'] = os.path.join(self.runner_root_path, switch_wdir)
+                kwargs['cwd'] = os.path.join(self.runner_root_path, switch_wdir)
             else:
-                kwargs['wd'] = self.runner_root_path
+                kwargs['cwd'] = self.runner_root_path
         return _run_cmd(cmd, **kwargs)

@@ -17,19 +17,33 @@ import contextlib
 import subprocess
 
 
-def run_cmd(cmd, silent=True, wd=None, timeout=None, echo=False):
+def run_cmd(cmd, silent=True, cwd=None, timeout=None, echo=False):
     """Wrap around `subprocess.run()` to execute a shell command."""
     # XXX: This function is not safe!!!
-    cfg = dict(check=True, shell=True, timeout=timeout)
+    cfg = dict(check=True, shell=True, timeout=timeout, cwd=cwd)
     if silent:
         cfg['stdout'] = subprocess.DEVNULL
     if echo:
         print(cmd)
-    if wd is not None:
-        with switch_working_dir(wd):
-            return subprocess.run(cmd, **cfg)
+    return subprocess.run(cmd, **cfg)
+
+
+def run_cmd_nb(cmd, cwd=None, redirect_stderr=True, interact=True, echo=False):
+    cfg = dict(
+        shell=True,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        bufsize=1,
+        universal_newlines=True)
+    if redirect_stderr:
+        cfg['stderr'] = subprocess.STDOUT
     else:
-        return subprocess.run(cmd, **cfg)
+        cfg['stderr'] = subprocess.PIPE
+    if interact:
+        cfg['stdin'] = subprocess.PIPE
+    if echo:
+        print(cmd)
+    return subprocess.Popen(cmd, **cfg)
 
 
 @contextlib.contextmanager
