@@ -20,6 +20,14 @@ import paddle.nn.functional as F
 
 
 class _MatrixDecomposition2DBase(nn.Layer, metaclass=ABCMeta):
+    """
+    The base implementation of 2d matrix decomposition.
+
+    The original article refers to
+    Yuanduo Hong, Huihui Pan, Weichao Sun, et al. "Deep Dual-resolution Networks for Real-time and Accurate Semantic Segmentation of Road Scenes"
+    (https://arxiv.org/abs/2101.06085)
+    """
+
     def __init__(self, args=None):
         super().__init__()
         if args is None:

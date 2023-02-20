@@ -32,24 +32,24 @@ class SegNeXt(nn.Layer):
     (https://arxiv.org/pdf/2209.08575.pdf)
 
     Args:
-        backbone ("MSCAN"): The backbone must be an instance of MSCAN.
+        backbone (nn.Layer): The backbone must be an instance of MSCAN.
         decoder_cfg (dict): The arguments of decoder.
         num_classes (int): The unique number of target classes.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
-    def __init__(self, backbone, decoder_cfg, num_classes, pretrained=None):
+    def __init__(self,
+                 backbone,
+                 decoder_cfg,
+                 num_classes,
+                 backbone_indices=[1, 2, 3],
+                 pretrained=None):
         super().__init__()
-        if not isinstance(backbone, MSCAN):
-            raise TypeError(
-                "The backbone of `SegNeXt` must be an instance of `MSCAN`, but got {}.".
-                format(type(backbone)))
         self.backbone = backbone
 
+        in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]
         self.decode_head = LightHamHead(
-            in_channels=self.backbone.feat_channels[1:],
-            num_classes=num_classes,
-            **decoder_cfg)
+            in_channels=in_channels, num_classes=num_classes, **decoder_cfg)
 
         self.align_corners = self.decode_head.align_corners
         self.pretrained = pretrained
