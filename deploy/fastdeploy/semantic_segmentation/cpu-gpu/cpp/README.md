@@ -1,5 +1,5 @@
 [English](README.md) | 简体中文
-# PaddleSeg C++部署示例
+# PaddleSeg CPU-GPU C++部署示例
 
 本目录下提供`infer.cc`快速完成PP-LiteSeg在CPU/GPU，以及GPU上通过Paddle-TensorRT加速部署的示例。
 
@@ -7,7 +7,7 @@
 PaddleSeg支持利用FastDeploy在NVIDIA GPU、X86 CPU、飞腾CPU、ARM CPU、Intel GPU(独立显卡/集成显卡)硬件上快速部署Segmentation模型。
 
 ## 2. 部署环境准备  
-在部署前，需确认软硬件环境，同时下载预编译部署库，参考文档[FastDeploy预编译库安装](https://github.com/PaddlePaddle/FastDeploy/blob/develop/docs/cn/build_and_install#FastDeploy预编译库安装)
+在部署前，需确认软硬件环境，同时下载预编译部署库，参考[FastDeploy安装文档](https://github.com/PaddlePaddle/FastDeploy/blob/develop/docs/cn/build_and_install#FastDeploy预编译库安装)安装FastDeploy预编译库。
 
 ## 3. 部署模型准备
 在部署前，请准备好您所需要运行的推理模型，你可以选择使用[预导出的推理模型](../README.md)或者[自行导出PaddleSeg部署模型](../README.md)，如果你部署的为**PP-Matting**、**PP-HumanMatting**以及**ModNet**请参考[Matting模型部署](../../../matting)。
@@ -15,15 +15,17 @@ PaddleSeg支持利用FastDeploy在NVIDIA GPU、X86 CPU、飞腾CPU、ARM CPU、I
 ## 4. 运行部署示例
 以Linux上推理为例，在本目录执行如下命令即可完成编译测试，支持此模型需保证FastDeploy版本1.0.0以上(x.x.x>=1.0.0)
 
-```bash
-#下载部署示例代码
-cd path/to/paddleseg/cpp-gpu/cpp
-
-mkdir build
-cd build
+```bash  
 # 下载FastDeploy预编译库，用户可在上文提到的`FastDeploy预编译库`中自行选择合适的版本使用
 wget https://bj.bcebos.com/fastdeploy/release/cpp/fastdeploy-linux-x64-x.x.x.tgz
 tar xvf fastdeploy-linux-x64-x.x.x.tgz
+
+# 下载部署示例代码
+git clone https://github.com/PaddlePaddle/PaddleSeg.git 
+cd PaddleSeg/deploy/fastdeploy/semantic_segmentation/cpp-gpu/cpp
+
+# 编译部署示例
+mkdir build && cd build
 cmake .. -DFASTDEPLOY_INSTALL_DIR=${PWD}/fastdeploy-linux-x64-x.x.x
 make -j
 
@@ -32,7 +34,7 @@ wget https://bj.bcebos.com/paddlehub/fastdeploy/PP_LiteSeg_B_STDC2_cityscapes_wi
 tar -xvf PP_LiteSeg_B_STDC2_cityscapes_without_argmax_infer.tgz
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
-
+# 运行部署示例
 # CPU推理
 ./infer_demo PP_LiteSeg_B_STDC2_cityscapes_without_argmax_infer cityscapes_demo.png 0
 # GPU推理
