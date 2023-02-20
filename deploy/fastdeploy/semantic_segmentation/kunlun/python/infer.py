@@ -17,18 +17,18 @@ def parse_arguments():
 runtime_option = fd.RuntimeOption()
 runtime_option.use_kunlunxin()
 
-# 配置runtime，加载模型
+# setup runtime
 model_file = os.path.join(args.model, "model.pdmodel")
 params_file = os.path.join(args.model, "model.pdiparams")
 config_file = os.path.join(args.model, "deploy.yaml")
 model = fd.vision.segmentation.PaddleSegModel(
     model_file, params_file, config_file, runtime_option=runtime_option)
 
-# 预测图片分割结果
+# predict
 im = cv2.imread(args.image)
 result = model.predict(im)
 print(result)
 
-# 可视化结果
+# visualize
 vis_im = fd.vision.vis_segmentation(im, result, weight=0.5)
 cv2.imwrite("vis_img.png", vis_im)
