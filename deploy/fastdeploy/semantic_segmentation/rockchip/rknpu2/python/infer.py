@@ -37,7 +37,7 @@ def build_option(args):
 
 args = parse_arguments()
 
-# 配置runtime，加载模型
+# setup runtime 
 runtime_option = build_option(args)
 model_file = args.model_file
 params_file = ""
@@ -52,11 +52,11 @@ model = fd.vision.segmentation.PaddleSegModel(
 model.preprocessor.disable_normalize()
 model.preprocessor.disable_permute()
 
-# 预测图片分割结果
+# predict
 im = cv2.imread(args.image)
 result = model.predict(im)
 print(result)
 
-# 可视化结果
+# visualize
 vis_im = fd.vision.vis_segmentation(im, result, weight=0.5)
 cv2.imwrite("vis_img.png", vis_im)

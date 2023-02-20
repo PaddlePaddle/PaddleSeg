@@ -40,6 +40,6 @@ PaddleSeg模型导出，请参考其文档说明[模型导出](https://github.co
 ### 3.3 导出须知  
 请参考[模型导出](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/model_export_cn.md)中`output_op`参数的说明，获取您部署所需的模型，比如是否带`argmax`或`softmax`算子
 
-## 4. 详细部署的部署示例  
+## 4. 详细的部署示例  
 - [Python部署](python)
 - [C++部署](cpp)

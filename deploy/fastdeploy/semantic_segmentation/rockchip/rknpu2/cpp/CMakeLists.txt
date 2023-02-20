@@ -3,7 +3,6 @@ project(infer_demo)
 
 set(CMAKE_CXX_STANDARD 14)
 
-# 指定下载解压后的fastdeploy库路径
 option(FASTDEPLOY_INSTALL_DIR "Path of downloaded fastdeploy sdk.")
 
 include(${FASTDEPLOY_INSTALL_DIR}/FastDeployConfig.cmake)
