@@ -3,26 +3,26 @@
 
 本目录下提供的 `infer.cc`，可以帮助用户快速完成 PP-LiteSeg 量化模型在晶晨 A311D 上的部署推理加速。
 
-## 部署准备
-### FastDeploy 交叉编译环境准备
-软硬件环境满足要求，以及交叉编译环境的准备，请参考：[FastDeploy](https://github.com/PaddlePaddle/FastDeploy/blob/develop/docs/cn/build_and_install#自行编译安装)  
+## 1. 部署环境准备
+### 1.1 FastDeploy 交叉编译环境准备
+软硬件环境满足要求，以及交叉编译环境的准备，请参考：[FastDeploy 晶晨 A311d 编译文档](https://github.com/PaddlePaddle/FastDeploy/blob/develop/docs/cn/build_and_install/a311d.md)  
 
-### 模型准备
-1. 用户可以直接使用由[FastDeploy 提供的量化模型](../README_CN.md#晶晨a311d支持的paddleseg模型)进行部署。
-2. 若FastDeploy没有提供满足要求的量化模型，用户可以参考[PaddleSeg动态图模型导出为A311D支持的INT8模型](../README_CN.md#paddleseg动态图模型导出为a311d支持的int8模型)自行导出或训练量化模型
+## 2. 部署模型准备
+1. 用户可以直接使用由[FastDeploy 提供的量化模型](../README_CN.md)进行部署。
+2. 若FastDeploy没有提供满足要求的量化模型，用户可以参考[PaddleSeg动态图模型导出为A311D支持的INT8模型](../README_CN.md)自行导出或训练量化模型
 3. 若上述导出或训练的模型出现精度下降或者报错，则需要使用异构计算，使得模型算子部分跑在A311D的ARM CPU上进行调试以及精度验证，其中异构计算所需的文件是subgraph.txt。具体关于异构计算可参考：[异构计算](https://github.com/PaddlePaddle/FastDeploy/blob/develop/docs/cn/faq/heterogeneous_computing_on_timvx_npu.md)。
 
-## 在 A311D 上部署量化后的 PP-LiteSeg 分割模型
+## 3. 在 A311D 上部署量化后的 PP-LiteSeg 分割模型
 请按照以下步骤完成在 A311D 上部署 PP-LiteSeg 量化模型：
 
 1. 将编译后的库拷贝到当前目录，可使用如下命令：
 ```bash
-cp -r FastDeploy/build/fastdeploy-timvx/ path/to/paddleseg/amlogic/a311d/cpp
+cp -r FastDeploy/build/fastdeploy-timvx/ path/to/PaddleSeg/deploy/fastdeploy/semantic_segmentation/amlogic/a311d/cpp
 ```
 
 2. 在当前路径下载部署所需的模型和示例图片：
 ```bash
-cd path/to/paddleseg/amlogic/a311d/cpp
+cd path/to/PaddleSeg/deploy/fastdeploy/semantic_segmentation/amlogic/a311d/cpp
 mkdir models && mkdir images
 wget https://bj.bcebos.com/fastdeploy/models/rk1/ppliteseg.tar.gz
 tar -xvf ppliteseg.tar.gz
@@ -33,7 +33,7 @@ cp -r cityscapes_demo.png images
 
 3. 编译部署示例，可使入如下命令：
 ```bash
-cd path/to/paddleseg/amlogic/a311d/cpp
+cd path/to/PaddleSeg/deploy/fastdeploy/semantic_segmentation/amlogic/a311d/cpp
 mkdir build && cd build
 cmake -DCMAKE_TOOLCHAIN_FILE=${PWD}/../fastdeploy-timvx/toolchain.cmake -DFASTDEPLOY_INSTALL_DIR=${PWD}/../fastdeploy-timvx -DTARGET_ABI=arm64 ..
 make -j8
@@ -54,6 +54,6 @@ bash run_with_adb.sh infer_demo ppliteseg cityscapes_demo.png $DEVICE_ID
 
 <img width="640" src="https://user-images.githubusercontent.com/30516196/205544166-9b2719ff-ed82-4908-b90a-095de47392e1.png">
 
-## 快速链接
+## 4. 更多指南
 - [PaddleSeg C++ API文档](https://www.paddlepaddle.org.cn/fastdeploy-api-doc/cpp/html/namespacefastdeploy_1_1vision_1_1segmentation.html)
 - [FastDeploy部署PaddleSeg模型概览](../../)
