@@ -32,11 +32,7 @@
 - ARM CPU
   - [部署模型准备](cpu-gpu)  
   - [Python部署示例](cpu-gpu/python/) 
-  - [C++部署示例](cpu-gpu/cpp/)
-- X86 CPU
-  - [部署模型准备](cpu-gpu)  
-  - [Python部署示例](cpu-gpu/python/) 
-  - [C++部署示例](cpu-gpu/cpp/)
+  - [C++部署示例](cpu-gpu/cpp/)  
 - Intel GPU
   - [部署模型准备](cpu-gpu)  
   - [Python部署示例](cpu-gpu/python/) 
