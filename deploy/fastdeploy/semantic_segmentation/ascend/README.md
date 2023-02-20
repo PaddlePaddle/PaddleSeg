@@ -1,37 +1,11 @@
 [English](README.md) | 简体中文
 
-# PaddleSeg利用FastDeploy在华为昇腾上部署模型
+# PaddleSeg 语义分割模型在华为昇腾上部署方案-FastDeploy
 
+## 1. 说明  
 PaddleSeg支持通过FastDeploy在华为昇腾上部署Segmentation相关模型
 
-## 支持的PaddleSeg模型
-
-- [PaddleSeg](https://github.com/PaddlePaddle/PaddleSeg)
->> **注意**：支持PaddleSeg高于2.6版本的Segmentation模型
-
-目前FastDeploy支持如下模型的部署
-
-- [PP-LiteSeg系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/pp_liteseg/README.md)
-- [PP-HumanSeg系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/contrib/PP-HumanSeg/README.md)
-- [FCN系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/fcn/README.md)
-- [DeepLabV3系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/deeplabv3/README.md)
-- [SegFormer系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/segformer/README.md)
-
->>**注意** 若需要在华为昇腾上部署**PP-Matting**、**PP-HumanMatting**请从[Matting模型部署](../../ppmatting/)下载对应模型，部署过程与此文档一致
-
-## 准备PaddleSeg部署模型
-PaddleSeg模型导出，请参考其文档说明[模型导出](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/model_export_cn.md)  
-
-**注意**
-- PaddleSeg导出的模型包含`model.pdmodel`、`model.pdiparams`和`deploy.yaml`三个文件，FastDeploy会从yaml文件中获取模型在推理时需要的预处理信息
-
-## 预导出的推理模型
-
-为了方便开发者的测试，下面提供了PaddleSeg导出的部分推理模型模型
-- without-argmax导出方式为：**不指定**`--input_shape`，**指定**`--output_op none`
-- with-argmax导出方式为：**不指定**`--input_shape`，**指定**`--output_op argmax`
-
-开发者可直接下载使用。
+## 2. 使用预导出的模型列表
 
 | 模型                                                               | 参数文件大小    |输入Shape |  mIoU | mIoU (flip) | mIoU (ms+flip) |
 |:---------------------------------------------------------------- |:----- |:----- | :----- | :----- | :----- |
@@ -45,7 +19,25 @@ PaddleSeg模型导出，请参考其文档说明[模型导出](https://github.co
 | [Deeplabv3-ResNet101-OS8-cityscapes-with-argmax](https://bj.bcebos.com/paddlehub/fastdeploy/Deeplabv3_ResNet101_OS8_cityscapes_with_argmax_infer.tgz) \| [Deeplabv3-ResNet101-OS8-cityscapes-without-argmax](https://bj.bcebos.com/paddlehub/fastdeploy/Deeplabv3_ResNet101_OS8_cityscapes_without_argmax_infer.tgz) |  150MB | 1024x512 | 79.90% | 80.22% | 80.47% |
 | [SegFormer_B0-cityscapes-with-argmax](https://bj.bcebos.com/paddlehub/fastdeploy/SegFormer_B0-cityscapes-with-argmax.tgz) \| [SegFormer_B0-cityscapes-without-argmax](https://bj.bcebos.com/paddlehub/fastdeploy/SegFormer_B0-cityscapes-without-argmax.tgz) |  15MB | 1024x1024 | 76.73% | 77.16% | - |
 
-## 详细部署文档
+补充说明：  
+- 文件名标记了`without-argmax`的模型，导出方式为：**不指定**`--input_shape`，**指定**`--output_op none`
+- 文件名标记了`with-argmax`的模型导出方式为：**不指定**`--input_shape`，**指定**`--output_op argmax`
 
+## 3. 自行导出PaddleSeg部署模型  
+### 3.1 模型版本
+支持[PaddleSeg](https://github.com/PaddlePaddle/PaddleSeg)高于2.6版本的Segmentation模型，如果部署的为**PP-Matting**、**PP-HumanMatting**以及**ModNet**请参考[Matting模型部署](../../matting/)。目前FastDeploy测试过成功部署的模型:   
+- [PP-LiteSeg系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/pp_liteseg/README.md)
+- [PP-HumanSeg系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/contrib/PP-HumanSeg/README.md)
+- [FCN系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/fcn/README.md)
+- [DeepLabV3系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/deeplabv3/README.md)
+- [SegFormer系列模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/configs/segformer/README.md)  
+
+### 3.2 模型导出
+PaddleSeg模型导出，请参考其文档说明[模型导出](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/model_export_cn.md)，**注意**：PaddleSeg导出的模型包含`model.pdmodel`、`model.pdiparams`和`deploy.yaml`三个文件，FastDeploy会从yaml文件中获取模型在推理时需要的预处理信息
+
+### 3.3 导出须知  
+请参考[模型导出](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/model_export_cn.md)中`output_op`参数的说明，获取您部署所需的模型，比如是否带`argmax`或`softmax`算子
+
+## 4. 详细部署的部署示例  
 - [Python部署](python)
 - [C++部署](cpp)

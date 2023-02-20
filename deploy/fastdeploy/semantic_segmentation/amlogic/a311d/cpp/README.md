@@ -1,11 +1,11 @@
 [English](README.md) | 简体中文
-# PP-LiteSeg 量化模型 C++ 部署示例
+# PaddleSeg TIMVX A311D C++ 部署示例
 
 本目录下提供的 `infer.cc`，可以帮助用户快速完成 PP-LiteSeg 量化模型在晶晨 A311D 上的部署推理加速。
 
 ## 1. 部署环境准备
 ### 1.1 FastDeploy 交叉编译环境准备
-软硬件环境满足要求，以及交叉编译环境的准备，请参考：[FastDeploy 晶晨 A311d 编译文档](https://github.com/PaddlePaddle/FastDeploy/blob/develop/docs/cn/build_and_install/a311d.md)  
+软硬件环境满足要求，以及交叉编译环境的准备，请参考：[FastDeploy 晶晨 A311d 编译文档](https://github.com/PaddlePaddle/FastDeploy/blob/develop/docs/cn/build_and_install#自行编译安装)  
 
 ## 2. 部署模型准备
 1. 用户可以直接使用由[FastDeploy 提供的量化模型](../README_CN.md)进行部署。
