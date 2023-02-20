@@ -248,6 +248,208 @@ class StackedMV2Block(nn.Layer):
         return x
 
 
+class Hardsigmoid(nn.Layer):
+    def __init__(self, slope=0.2, offset=0.5):
+        super().__init__()
+        self.slope = slope
+        self.offset = offset
+
+    def forward(self, x):
+        return nn.functional.hardsigmoid(
+            x, slope=self.slope, offset=self.offset)
+
+
+class SEModule(nn.Layer):
+    def __init__(self, channel, reduction=4):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2D(1)
+        self.conv1 = nn.Conv2D(
+            in_channels=channel,
+            out_channels=channel // reduction,
+            kernel_size=1,
+            stride=1,
+            padding=0)
+        self.relu = nn.ReLU()
+        self.conv2 = nn.Conv2D(
+            in_channels=channel // reduction,
+            out_channels=channel,
+            kernel_size=1,
+            stride=1,
+            padding=0)
+        self.hardsigmoid = Hardsigmoid(slope=0.2, offset=0.5)
+
+    def forward(self, x):
+        identity = x
+        x = self.avg_pool(x)
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.conv2(x)
+        x = self.hardsigmoid(x)
+        return paddle.multiply(x=identity, y=x)
+
+
+def _create_act(act):
+    if act == "hardswish":
+        return nn.Hardswish()
+    elif act == "relu":
+        return nn.ReLU()
+    elif act is None:
+        return None
+    else:
+        raise RuntimeError(
+            "The activation function is not supported: {}".format(act))
+
+
+class ConvBNLayer(nn.Layer):
+    def __init__(self,
+                 in_c,
+                 out_c,
+                 filter_size,
+                 stride,
+                 padding,
+                 num_groups=1,
+                 if_act=True,
+                 act=None,
+                 dilation=1):
+        super().__init__()
+
+        self.conv = nn.Conv2D(
+            in_channels=in_c,
+            out_channels=out_c,
+            kernel_size=filter_size,
+            stride=stride,
+            padding=padding,
+            groups=num_groups,
+            bias_attr=False,
+            dilation=dilation)
+        self.bn = nn.BatchNorm(
+            num_channels=out_c,
+            act=None,
+            param_attr=ParamAttr(regularizer=L2Decay(0.0)),
+            bias_attr=ParamAttr(regularizer=L2Decay(0.0)))
+        self.if_act = if_act
+        self.act = _create_act(act)
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.bn(x)
+        if self.if_act:
+            x = self.act(x)
+        return x
+
+
+class ResidualUnit(nn.Layer):
+    def __init__(self,
+                 in_c,
+                 mid_c,
+                 out_c,
+                 filter_size,
+                 stride,
+                 use_se,
+                 act=None,
+                 dilation=1):
+        super().__init__()
+        self.if_shortcut = stride == 1 and in_c == out_c
+        self.if_se = use_se
+
+        self.expand_conv = ConvBNLayer(
+            in_c=in_c,
+            out_c=mid_c,
+            filter_size=1,
+            stride=1,
+            padding=0,
+            if_act=True,
+            act=act)
+        self.bottleneck_conv = ConvBNLayer(
+            in_c=mid_c,
+            out_c=mid_c,
+            filter_size=filter_size,
+            stride=stride,
+            padding=int((filter_size - 1) // 2) * dilation,
+            num_groups=mid_c,
+            if_act=True,
+            act=act,
+            dilation=dilation)
+        if self.if_se:
+            self.mid_se = SEModule(mid_c)
+        self.linear_conv = ConvBNLayer(
+            in_c=mid_c,
+            out_c=out_c,
+            filter_size=1,
+            stride=1,
+            padding=0,
+            if_act=False,
+            act=None)
+
+    def forward(self, x):
+        identity = x
+        x = self.expand_conv(x)
+        x = self.bottleneck_conv(x)
+        if self.if_se:
+            x = self.mid_se(x)
+        x = self.linear_conv(x)
+        if self.if_shortcut:
+            x = paddle.add(identity, x)
+        return x
+
+
+class StackedMV3Block(nn.Layer):
+    """
+    MobileNetV3
+    Args:
+        config: list. MobileNetV3 depthwise blocks config.
+        in_channels (int, optional): The channels of input image. Default: 3.
+        scale: float=1.0. The coefficient that controls the size of network parameters. 
+    Returns:
+        model: nn.Layer. Specific MobileNetV3 model depends on args.
+    """
+
+    def __init__(self,
+                 config,
+                 stem,
+                 inp_channel,
+                 in_channels=3,
+                 scale=1.0,
+                 pretrained=None):
+        super().__init__()
+
+        self.scale = scale
+        self.stem = stem
+
+        if self.stem:
+            self.conv = ConvBNLayer(
+                in_c=3,
+                out_c=_make_divisible(inp_channel * self.scale),
+                filter_size=3,
+                stride=2,
+                padding=1,
+                num_groups=1,
+                if_act=True,
+                act="hardswish")
+        self.blocks = nn.LayerList()
+        for i, (k, exp, c, se, act, s) in enumerate(config):
+            self.blocks.append(
+                ResidualUnit(
+                    in_c=_make_divisible(inplanes * self.scale),
+                    mid_c=_make_divisible(self.scale * exp),
+                    out_c=_make_divisible(self.scale * c),
+                    filter_size=k,
+                    stride=s,
+                    use_se=se,
+                    act=act,
+                    dilation=1))
+            inplanes = _make_divisible(self.scale * c)
+
+    def forward(self, x):
+        if self.stem:
+            x = self.conv(x)
+
+        for i, block in enumerate(self.blocks):
+            x = block(x)
+
+        return x
+
+
 class SqueezeAxialPositionalEmbedding(nn.Layer):
     def __init__(self, dim, shape):
         super().__init__()
@@ -509,6 +711,12 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
                     kernel_size=1,
                     lr_mult=lr_mult))
             self.act_list.append(HSigmoid())
+        self.pool1 = nn.AdaptiveAvgPool2D(output_size=1)
+        self.pool2 = nn.AdaptiveAvgPool2D(output_size=1)
+        self.pool3 = nn.AdaptiveAvgPool2D(output_size=1)
+        self.conv1 = nn.Conv2D(out_channels, out_channels, 1)
+        self.conv2 = nn.Conv2D(out_channels, out_channels, 1)
+        self.act_hs = Hardsigmoid(slope=0.2, offset=0.5)
 
     def forward(
             self, inputs
@@ -520,31 +728,39 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
 
         # low_feat2 = F.interpolate(
         #     inputs[1], scale_factor=2, mode="bilinear")  # x16
-        low_feat2_act = self.act_list[1](
-            self.act_embedding_list[1](inputs[1]))  # x16
+        low_feat2_act = F.interpolate(
+            self.act_list[1](self.act_embedding_list[1](inputs[1])),
+            size=low_feat1.shape[-2:],  # x16
+            mode='bilinear')
         low_feat2 = self.embedding_list[1](inputs[1])
+        low_feat2_up = F.interpolate(
+            low_feat2, size=low_feat1.shape[-2:], mode='bilinear')
 
         # 输出的特征个数不一致，相应有维度和分辨率差异，这个模块最好重写。
-        low_feat3_act = F.interpolate(
-            self.act_list[2](self.act_embedding_list[2](inputs[2])),
-            size=low_feat2.shape[2:],
-            mode="bilinear")
-        low_feat3 = F.interpolate(
-            self.embedding_list[2](inputs[2]),
-            size=low_feat2.shape[2:],
-            mode="bilinear")
+        # low_feat3_act = F.interpolate(
+        #     self.act_list[2](self.act_embedding_list[2](inputs[2])),
+        #     size=low_feat2.shape[2:],
+        #     mode="bilinear")
+        # low_feat3 = F.interpolate(
+        #     self.embedding_list[2](inputs[2]),
+        #     size=low_feat2.shape[2:],
+        #     mode="bilinear")
 
         high_feat_act = F.interpolate(
             self.act_list[2](self.act_embedding_list[2](inputs[2])),
-            size=low_feat2.shape[2:],
+            size=low_feat2_up.shape[2:],
             mode="bilinear")
-        high_feat = F.interpolate(
-            self.embedding_list[2](inputs[2]),
-            size=low_feat2.shape[2:],
-            mode="bilinear")
+        high_feat = self.embedding_list[2](inputs[2])
+        high_feat_up = F.interpolate(
+            high_feat, size=low_feat2_up.shape[2:], mode="bilinear")
 
-        res = low_feat1_act * low_feat2_act * low_feat3_act * high_feat_act * (
-            low_feat1 + low_feat2 + low_feat3) + high_feat
+        res = low_feat1_act * low_feat2_act * high_feat_act * (
+            low_feat1 + low_feat2_up) + high_feat_up  # NCHW
+
+        res += res * self.act_hs(
+            self.conv2(
+                self.conv1(self.pool1(low_feat1) + self.pool2(low_feat2_up)) +
+                self.pool3(high_feat_up)))
 
         return res
 
@@ -686,7 +902,8 @@ class SeaFormer(nn.Layer):
                  pretrained=None,
                  out_channels=160,
                  dims=None,
-                 out_feat_chs=None):
+                 out_feat_chs=None,
+                 mv3=False):
         super().__init__()
         self.channels = channels
         self.depths = depths
@@ -694,11 +911,18 @@ class SeaFormer(nn.Layer):
         self.dims = dims
 
         for i in range(len(cfgs)):
-            smb = StackedMV2Block(
-                cfgs=cfgs[i],
-                stem=True if i == 0 else False,
-                inp_channel=channels[i],
-                lr_mult=lr_mult)
+            if not mv3:
+                smb = StackedMV2Block(
+                    cfgs=cfgs[i],
+                    stem=True if i == 0 else False,
+                    inp_channel=channels[i],
+                    lr_mult=lr_mult)
+            else:
+                smb = StackedMV3Block(
+                    cfgs=cfgs[i],
+                    stem=True if i == 0 else False,
+                    inp_channel=channels[i],
+                    lr_mult=lr_mult)
             setattr(self, f'smb{i+1}', smb)
 
         for i in range(len(depths)):
@@ -728,7 +952,8 @@ class SeaFormer(nn.Layer):
                 out_channels=out_channels,
                 lr_mult=lr_mult)
             print('Using AAM')
-            self.injection_out_channels = [self.inj_module.out_channels, ] * 3
+            self.injection_out_channels = [self.inj_module.out_channels] * 3
+            # self.injection_out_channels = [out_feat_chs[0], self.inj_module.out_channels, self.inj_module.out_channels]
         elif self.inj_type == 'AAM_cpt':
             self.inj_module = InjectionUnionMultiSumCompact(
                 in_channels=out_feat_chs,
@@ -803,20 +1028,67 @@ class SeaFormer(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-def SeaFormer_Base(**kwargs):
-    cfgs = [
-        # ktc, s
-        [3, 1, 16, 1]  # 1/2        
-        [3, 4, 32, 2]  # 1/4 1      
-        [3, 3, 32, 1]  #            
-        [5, 3, 64, 2]  # 1/8 3      
-        [5, 3, 64, 1]  #            
-        [3, 3, 128, 2]  # 1/16 5     
-        [3, 3, 128, 1]  #            
-        [5, 6, 160, 2]  # 1/32 7     
-        [5, 6, 160, 1]  #            
-        [3, 6, 160, 1]  #            
+def SeaFormer_MV3_Base(**kwargs):
+    # cfgs = [
+    #     # k exp c, s
+    #     [3, 16, 16, True, "relu", 1],
+    #     [3, 64, 32, False, "relu", 2],
+    #     [3, 96, 32, False, "relu", 1],
+    #     [5, 96, 64, True, "hardswish", 2],
+    #     [5, 240, 64, True, "hardswish", 1],
+    #     [5, 192, 128, True, "hardswish", 2],
+    #     [5, 384, 128, True, "hardswish", 1],
+    #     [5, 512, 192, True, "hardswish", 2],
+    #     [5, 1152, 256, True, "hardswish", 2],
+    # ]
+    cfg1 = [
+        # k t c, s
+        [3, 16, 16, True, "relu", 1],
+        [3, 64, 32, False, "relu", 2],
+        [3, 96, 32, False, "relu", 1]
     ]
+    cfg2 = [[5, 96, 64, True, "hardswish", 2],
+            [5, 240, 64, True, "hardswish", 1]]
+    cfg3 = [[5, 192, 128, True, "hardswish", 2],
+            [5, 384, 128, True, "hardswish", 1]]
+    cfg4 = [[5, 512, 192, True, "hardswish", 2]]
+    cfg5 = [[5, 1152, 256, True, "hardswish", 2]]
+    channels = [16, 32, 64, 128, 192, 256]
+    depths = [4, 4]
+    key_dims = [16, 24]
+    emb_dims = [192, 256]
+    num_heads = 8
+    drop_path_rate = 0.1
+
+    model = SeaFormer(
+        cfgs=[cfg1, cfg2, cfg3, cfg4, cfg5],
+        channels=channels,
+        embed_dims=emb_dims,
+        key_dims=key_dims,
+        depths=depths,
+        num_heads=num_heads,
+        drop_path_rate=drop_path_rate,
+        act_layer=nn.ReLU6,
+        mv3=True,
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def SeaFormer_Base(**kwargs):
+    # cfgs = [
+    #     # ktc, s
+    #     [3, 1, 16, 1]  # 1/2        
+    #     [3, 4, 32, 2]  # 1/4 1      
+    #     [3, 3, 32, 1]  #            
+    #     [5, 3, 64, 2]  # 1/8 3      
+    #     [5, 3, 64, 1]  #            
+    #     [3, 3, 128, 2]  # 1/16 5     
+    #     [3, 3, 128, 1]  #            
+    #     [5, 6, 160, 2]  # 1/32 7     
+    #     [5, 6, 160, 1]  #            
+    #     [3, 6, 160, 1]  #            
+    # ]
     cfg1 = [
         # ktc, s
         [3, 1, 16, 1],
@@ -843,8 +1115,6 @@ def SeaFormer_Base(**kwargs):
         num_heads=num_heads,
         drop_path_rate=drop_path_rate,
         act_layer=nn.ReLU6,
-        # lr_mult=1.0,
-        # in_channels=3,
         **kwargs)
     return model
 
@@ -876,7 +1146,5 @@ def SeaFormer_Large(**kwargs):
         drop_path_rate=drop_path_rate,
         act_layer=nn.ReLU6,
         mlp_ratios=mlp_ratios,
-        # lr_mult=1.0,
-        # in_channels=3,
         **kwargs)
     return model
