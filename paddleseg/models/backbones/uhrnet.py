@@ -646,7 +646,7 @@ class SELayer(nn.Layer):
     def __init__(self, num_channels, num_filters, reduction_ratio, name=None):
         super(SELayer, self).__init__()
 
-        self.pool2d_gap = nn.AdaptiveAvgPool2d(1)
+        self.pool2d_gap = nn.AdaptiveAvgPool2D(1)
 
         self._num_channels = num_channels
 
