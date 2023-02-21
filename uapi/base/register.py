@@ -20,7 +20,7 @@ model_zoo = OrderedDict()
 suite_zoo = OrderedDict()
 
 MODEL_INFO_REQUIRED_KEYS = ('model_name', 'suite', 'config_path',
-                            'auto_compression_config_path', 'supported_apis')
+                            'auto_compression_config_path')
 MODEL_INFO_PRIMARY_KEY = 'model_name'
 assert MODEL_INFO_PRIMARY_KEY in MODEL_INFO_REQUIRED_KEYS
 SUITE_INFO_REQUIRED_KEYS = ('suite_name', 'model', 'runner', 'config',

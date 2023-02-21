@@ -38,7 +38,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': BISENETV2_CFG_PATH,
     'auto_compression_config_path': BISENETV2_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # DeepLab V3+
@@ -50,7 +51,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': DEEPLABV3P_R50_CFG_PATH,
     'auto_compression_config_path': DEEPLABV3P_R50_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 DEEPLABV3P_R101_CFG_PATH = osp.join(
     REPO_ROOT_PATH, 'configs', 'deeplabv3p',
@@ -60,7 +62,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': DEEPLABV3P_R101_CFG_PATH,
     'auto_compression_config_path': DEEPLABV3P_R101_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # Fast-SCNN
@@ -71,7 +74,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': FASTSCNN_CFG_PATH,
     'auto_compression_config_path': FASTSCNN_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # FCN
@@ -82,7 +86,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': FCN_HRNETW18_CFG_PATH,
     'auto_compression_config_path': FCN_HRNETW18_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 FCN_HRNETW48_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'fcn',
                                  'fcn_hrnetw48_cityscapes_1024x512_80k.yml')
@@ -91,7 +96,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': FCN_HRNETW48_CFG_PATH,
     'auto_compression_config_path': FCN_HRNETW48_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # MobileSeg
@@ -103,7 +109,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': MOBILESEG_MV2_CFG_PATH,
     'auto_compression_config_path': MOBILESEG_MV2_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 MOBILESEG_MV3_CFG_PATH = osp.join(
     REPO_ROOT_PATH, 'configs', 'mobileseg',
@@ -113,7 +120,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': MOBILESEG_MV3_CFG_PATH,
     'auto_compression_config_path': MOBILESEG_MV3_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # OCRNet
@@ -125,7 +133,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': OCRNET_HRNETW18_CFG_PATH,
     'auto_compression_config_path': OCRNET_HRNETW18_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 OCRNET_HRNETW48_CFG_PATH = osp.join(
     REPO_ROOT_PATH, 'configs', 'ocrnet',
@@ -135,7 +144,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': OCRNET_HRNETW48_CFG_PATH,
     'auto_compression_config_path': OCRNET_HRNETW48_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # PP-HumanSeg
@@ -147,7 +157,32 @@ register_model_info({
     'suite': 'Seg',
     'config_path': PPHUMANSEG_LITE_CFG_PATH,
     'auto_compression_config_path': PPHUMANSEG_LITE_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+})
+
+# PP-HumanSeg V2
+PP_HUMANSEGV2_LITE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'contrib', 'PP-HumanSeg',
+                                       'configs',
+                                       'human_pp_humansegv2_lite.yml')
+register_model_info({
+    'model_name': 'pp_humansegv2_lite',
+    'suite': 'Seg',
+    'config_path': PP_HUMANSEGV2_LITE_CFG_PATH,
+    'auto_compression_config_path': PP_HUMANSEGV2_LITE_CFG_PATH,
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+})
+PP_HUMANSEGV2_MOBILE_CFG_PATH = osp.join(REPO_ROOT_PATH, 'contrib',
+                                         'PP-HumanSeg', 'configs',
+                                         'human_pp_humansegv2_mobile.yml')
+register_model_info({
+    'model_name': 'pp_humansegv2_mobile',
+    'suite': 'Seg',
+    'config_path': PP_HUMANSEGV2_MOBILE_CFG_PATH,
+    'auto_compression_config_path': PP_HUMANSEGV2_MOBILE_CFG_PATH,
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # PP-LiteSeg
@@ -159,7 +194,26 @@ register_model_info({
     'suite': 'Seg',
     'config_path': PP_LITESEG_STDC1_CFG_PATH,
     'auto_compression_config_path': PP_LITESEG_STDC1_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression'],
+    'supported_train_opts': {
+        'device': ['cpu', 'gpu_nxcx'],
+        'dy2st': True,
+        'amp': ['O1', 'O2']
+    },
+    'supported_evaluate_opts': {
+        'device': ['cpu', 'gpu_nxcx']
+    },
+    'supported_predict_opts': {
+        'device': ['cpu', 'gpu']
+    },
+    'supported_infer_opts': {
+        'device': ['cpu', 'gpu']
+    },
+    'supported_compression_opts': {
+        'device': ['cpu', 'gpu_nxcx']
+    },
+    'supported_dataset_types': []
 })
 PP_LITESEG_STDC2_CFG_PATH = osp.join(
     REPO_ROOT_PATH, 'configs', 'pp_liteseg',
@@ -169,7 +223,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': PP_LITESEG_STDC2_CFG_PATH,
     'auto_compression_config_path': PP_LITESEG_STDC2_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # PSPNet
@@ -181,7 +236,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': PSPNET_R50_CFG_PATH,
     'auto_compression_config_path': PSPNET_R50_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 PSPNET_R101_CFG_PATH = osp.join(
     REPO_ROOT_PATH, 'configs', 'pspnet',
@@ -191,7 +247,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': PSPNET_R101_CFG_PATH,
     'auto_compression_config_path': PSPNET_R101_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # RTFormer
@@ -202,7 +259,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': RTFORMER_BASE_CFG_PATH,
     'auto_compression_config_path': RTFORMER_BASE_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # SegFormer
@@ -213,7 +271,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': SEGFORMER_B0_CFG_PATH,
     'auto_compression_config_path': SEGFORMER_B0_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # TopFormer
@@ -224,7 +283,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': TOPFORMER_BASE_CFG_PATH,
     'auto_compression_config_path': TOPFORMER_BASE_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 TOPFORMER_SMALL_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'topformer',
                                     'topformer_small_ade20k_512x512_160k.yml')
@@ -233,7 +293,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': TOPFORMER_SMALL_CFG_PATH,
     'auto_compression_config_path': TOPFORMER_SMALL_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 TOPFORMER_TINY_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'topformer',
                                    'topformer_tiny_ade20k_512x512_160k.yml')
@@ -242,7 +303,8 @@ register_model_info({
     'suite': 'Seg',
     'config_path': TOPFORMER_TINY_CFG_PATH,
     'auto_compression_config_path': TOPFORMER_TINY_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
 
 # UNet
@@ -253,5 +315,6 @@ register_model_info({
     'suite': 'Seg',
     'config_path': UNET_CFG_PATH,
     'auto_compression_config_path': UNET_CFG_PATH,
-    'supported_apis': ['train', 'predict', 'export', 'infer', 'compression']
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })

@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .model import SegModel
-from .runner import SegRunner
-from . import register
-from .dataset_check import check_dataset
+from uapi import Config
+from uapi.tests.smoke.seg_testing_basic_template import test_model
+
+if __name__ == '__main__':
+    config = Config('pp_humansegv2_lite')
+    config.model['pretrained'] = None
+    test_model('pp_humansegv2_lite', config=config)

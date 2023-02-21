@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import abc
+import inspect
 
 from .config import Config
 from .register import (get_registered_model_info, build_runner_from_model_info,
@@ -50,7 +51,9 @@ class BaseModel(metaclass=abc.ABCMeta):
         config (config.BaseConfig|None, optional): Config. Default: None.
     """
 
-    _API_FULL_LIST = ('train', 'predict', 'export', 'infer', 'compression')
+    _API_FULL_LIST = ('train', 'evaluate', 'predict', 'export', 'infer',
+                      'compression')
+    _API_SUPPORTED_OPTS_KEY_PATTERN = 'supported_{api_name}_opts'
 
     def __init__(self, model_name, config=None):
         super().__init__()
@@ -64,38 +67,20 @@ class BaseModel(metaclass=abc.ABCMeta):
             config = Config(model_name)
         self.config = config
 
-        self._patch_unavail_apis()
-
-    def _patch_unavail_apis(self):
-        def _make_unavailable(bnd_method):
-            def _unavailable_api(*args, **kwargs):
-                model_name = self.name
-                api_name = bnd_method.__name__
-                raise RuntimeError(
-                    f"{model_name} does not support `{api_name}`.")
-
-            return _unavailable_api
-
-        avail_api_set = set(self.supported_apis)
-        for api_name in self._API_FULL_LIST:
-            if api_name not in avail_api_set:
-                api = getattr(self, api_name)
-                # We decorate old API implementation with `_make_unavailable`
-                # which practically patches to `self` a bounded method that 
-                # always raises an error when being invoked.
-                setattr(self, api_name, _make_unavailable(api))
+        self._patch_apis()
 
     @abc.abstractmethod
     def train(self, dataset, batch_size, epochs_iters, device, resume_path,
-              dy2st, amp, use_vdl, save_dir):
+              dy2st, amp, use_vdl, ips, save_dir):
         """
         Train a model.
 
         Args:
             dataset (str|None): Root path of the dataset. If None, use the setting in the config file or a 
                 pre-defined default dataset.
-            batch_size (int|None): Number of samples in each mini-batch. If None, use the setting in the 
-                config file or a pre-defined default batch size.
+            batch_size (int|None): Number of samples in each mini-batch. If multiple devices are used, this
+                is the batch size on each device. If None, use the setting in the config file or a 
+                pre-defined default batch size.
             epochs_iters (int|None): Total iterations or epochs of model training. If None, use the setting in
                 the config file or a pre-defined default value of epochs/iterations.
             device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. If
@@ -109,7 +94,33 @@ class BaseModel(metaclass=abc.ABCMeta):
             use_vdl (bool|None): Whether or not to enable VisualDL during training. If None, use a default 
                 setting. If `use_vdl` is True and `save_dir` is None, the VisualDL logs will be stored in 
                 `output/train`.
+            ips (str|None): If not None, enable multi-machine training mode. `ips` specifies Paddle cluster node 
+                ips, e.g., '192.168.0.16,192.168.0.17'.
             save_dir (str|None): Directory to store model snapshots and logs. If None, use `output/train`.
+
+        Returns:
+            subprocess.CompletedProcess
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def evaluate(self, weight_path, dataset, batch_size, device, amp, ips):
+        """
+        Evaluate a model.
+
+        Args:
+            weight_path (str): Path of the weights to initialize the model.
+            dataset (str|None): Root path of the dataset. If None, use the setting in the config file or a 
+                pre-defined default dataset.
+            batch_size (int|None): Number of samples in each mini-batch. If multiple devices are used, this
+                is the batch size on each device. If None, use the setting in the config file or a 
+                pre-defined default batch size.
+            device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. If
+                None, use the setting in the config file or a default setting.
+            amp (str|None): Optimization level to use in AMP evaluation. Choices are ['O1', 'O2', 'OFF', None]. 
+                If None, use the setting in the config file or a default setting.
+            ips (str|None): If not None, enable multi-machine evaluation mode. `ips` specifies Paddle cluster node 
+                ips, e.g., '192.168.0.16,192.168.0.17'.
 
         Returns:
             subprocess.CompletedProcess
@@ -174,8 +185,9 @@ class BaseModel(metaclass=abc.ABCMeta):
             weight_path (str): Path of the weights to initialize the model.
             dataset (str|None): Root path of the dataset. If None, use the setting in the config file or a 
                 pre-defined default dataset.
-            batch_size (int|None): Number of samples in each mini-batch. If None, use the setting in the 
-                config file or a pre-defined default batch size.
+            batch_size (int|None): Number of samples in each mini-batch. If multiple devices are used, this
+                is the batch size on each device. If None, use the setting in the config file or a 
+                pre-defined default batch size.
             epochs_iters (int|None): Total iterations or epochs of model training. If None, use the setting in
                 the config file or a pre-defined default value of epochs/iterations.
             device (str|None): A string that describes the device(s) to use, e.g., 'cpu', 'xpu:0', 'gpu:1,2'. If
@@ -201,4 +213,240 @@ class BaseModel(metaclass=abc.ABCMeta):
 
     @cached_property
     def supported_apis(self):
-        return tuple(self.model_info['supported_apis'])
+        return self.model_info.get('supported_apis', None)
+
+    @cached_property
+    def supported_train_opts(self):
+        return self.model_info.get(
+            self._API_SUPPORTED_OPTS_KEY_PATTERN.format(api_name='train'), None)
+
+    @cached_property
+    def supported_evaluate_opts(self):
+        return self.model_info.get(
+            self._API_SUPPORTED_OPTS_KEY_PATTERN.format(api_name='evaluate'),
+            None)
+
+    @cached_property
+    def supported_predict_opts(self):
+        return self.model_info.get(self._API_SUPPORTED_OPTS_KEY_PATTERN.format(
+            api_name='predict'),
+                                   None)
+
+    @cached_property
+    def supported_infer_opts(self):
+        return self.model_info.get(
+            self._API_SUPPORTED_OPTS_KEY_PATTERN.format(api_name='infer'), None)
+
+    @cached_property
+    def supported_compression_opts(self):
+        return self.model_info.get(self._API_SUPPORTED_OPTS_KEY_PATTERN.format(
+            api_name='compression'),
+                                   None)
+
+    @cached_property
+    def supported_dataset_types(self):
+        return self.model_info.get('supported_dataset_types', None)
+
+    def _patch_apis(self):
+        def _make_unavailable(bnd_method):
+            def _unavailable_api(*args, **kwargs):
+                model_name = self.name
+                api_name = bnd_method.__name__
+                raise RuntimeError(
+                    f"{model_name} does not support `{api_name}()`.")
+
+            return _unavailable_api
+
+        def _add_prechecks(bnd_method):
+            def _api_with_prechecks(*args, **kwargs):
+                sig = inspect.Signature.from_callable(bnd_method)
+                bnd_args = sig.bind(*args, **kwargs)
+                args_dict = bnd_args.arguments
+                # Merge default values
+                for p in sig.parameters.values():
+                    if p.name not in args_dict and p.default is not p.empty:
+                        args_dict[p.name] = p.default
+
+                # Rely on nonlocal variable `checks`
+                for check in checks:
+                    try:
+                        check.check(args_dict)
+                    except _CheckFailed as e:
+                        raise RuntimeError(
+                            f"Unsupported options are found when calling `{api_name}()`: \n  {str(e)}"
+                        )
+
+                return bnd_method(*args, **kwargs)
+
+            api_name = bnd_method.__name__
+            checks = []
+            # We hardcode the prechecks for each API here
+            if api_name == 'train':
+                opts = self.supported_train_opts
+                if opts is not None:
+                    if 'device' in opts:
+                        checks.append(
+                            _CheckDevice(
+                                opts['device'],
+                                self.runner.parse_device,
+                                check_mc=True))
+                    if 'dy2st' in opts:
+                        checks.append(_CheckDy2St(opts['dy2st']))
+                    if 'amp' in opts:
+                        checks.append(_CheckAMP(opts['amp']))
+            elif api_name == 'evaluate':
+                opts = self.supported_evaluate_opts
+                if opts is not None:
+                    if 'device' in opts:
+                        checks.append(
+                            _CheckDevice(
+                                opts['device'],
+                                self.runner.parse_device,
+                                check_mc=True))
+                    if 'amp' in opts:
+                        checks.append(_CheckAMP(opts['amp']))
+            elif api_name == 'predict':
+                opts = self.supported_predict_opts
+                if opts is not None:
+                    if 'device' in opts:
+                        checks.append(
+                            _CheckDevice(
+                                opts['device'],
+                                self.runner.parse_device,
+                                check_mc=False))
+            elif api_name == 'infer':
+                opts = self.supported_infer_opts
+                if opts is not None:
+                    if 'device' in opts:
+                        checks.append(
+                            _CheckDevice(
+                                opts['device'],
+                                self.runner.parse_device,
+                                check_mc=False))
+            elif api_name == 'compression':
+                opts = self.supported_compression_opts
+                if opts is not None:
+                    if 'device' in opts:
+                        checks.append(
+                            _CheckDevice(
+                                opts['device'],
+                                self.runner.parse_device,
+                                check_mc=True))
+            else:
+                return bnd_method
+
+            return _api_with_prechecks
+
+        supported_apis = self.supported_apis
+        if supported_apis is not None:
+            avail_api_set = set(self.supported_apis)
+        else:
+            avail_api_set = set(self._API_FULL_LIST)
+        for api_name in self._API_FULL_LIST:
+            api = getattr(self, api_name)
+            if api_name not in avail_api_set:
+                # We decorate old API implementation with `_make_unavailable` 
+                # so that an error is always raised when the API is called.
+                decorated_api = _make_unavailable(api)
+            else:
+                # We decorate old API implementation with `_add_prechecks` to 
+                # perform validity checks before invoking the internal API.
+                decorated_api = _add_prechecks(api)
+
+            # Monkey-patch
+            setattr(self, api_name, decorated_api)
+
+
+class _CheckFailed(Exception):
+    def __init__(self, arg_name, arg_val, legal_vals):
+        self.arg_name = arg_name
+        self.arg_val = arg_val
+        self.legal_vals = legal_vals
+
+    def __str__(self):
+        return f"`{self.arg_name}` is expected to be one of or conforms to {self.legal_vals}, but got {self.arg_val}"
+
+
+class _APICallArgsChecker(object):
+    def __init__(self, legal_vals):
+        super().__init__()
+        self.legal_vals = legal_vals
+
+    def check(self, args):
+        raise NotImplementedError
+
+
+class _CheckDevice(_APICallArgsChecker):
+    def __init__(self, legal_vals, parse_device, check_mc=False):
+        super().__init__(legal_vals)
+        self.parse_device = parse_device
+        self.check_mc = check_mc
+
+    def check(self, args):
+        assert 'device' in args
+        device = args['device']
+        if device is not None:
+            device_type, dev_ids = self.parse_device(device)
+            if not self.check_mc:
+                if device_type not in self.legal_vals:
+                    raise _CheckFailed('device', device, self.legal_vals)
+            else:
+                # Currently we only check multi-device settings for GPUs
+                if device_type != 'gpu':
+                    if device_type not in self.legal_vals:
+                        raise _CheckFailed('device', device, self.legal_vals)
+                else:
+                    n1c1_desc = f'{device_type}_n1c1'
+                    n1cx_desc = f'{device_type}_n1cx'
+                    nxcx_desc = f'{device_type}_nxcx'
+
+                    if len(dev_ids) <= 1:
+                        if (n1c1_desc not in self.legal_vals and
+                                n1cx_desc not in self.legal_vals and
+                                nxcx_desc not in self.legal_vals):
+                            raise _CheckFailed('device', device,
+                                               self.legal_vals)
+                    else:
+                        assert 'ips' in args
+                        if args['ips'] is not None:
+                            # Multi-machine
+                            if nxcx_desc not in self.legal_vals:
+                                raise _CheckFailed('device', device,
+                                                   self.legal_vals)
+                        else:
+                            # Single-machine multi-device
+                            if (n1cx_desc not in self.legal_vals and
+                                    nxcx_desc not in self.legal_vals):
+                                raise _CheckFailed('device', device,
+                                                   self.legal_vals)
+        else:
+            # When `device` is None, we assume that a default device that the 
+            # current model supports will be used, so we simply do nothing.
+            pass
+
+
+class _CheckDy2St(_APICallArgsChecker):
+    def check(self, args):
+        assert 'dy2st' in args
+        dy2st = args['dy2st']
+        if isinstance(self.legal_vals, list):
+            assert len(self.legal_vals) == 1
+            support_dy2st = bool(self.legal_vals[0])
+        else:
+            support_dy2st = bool(self.legal_vals)
+        if dy2st is not None:
+            if dy2st and not support_dy2st:
+                raise _CheckFailed('dy2st', dy2st, [support_dy2st])
+        else:
+            pass
+
+
+class _CheckAMP(_APICallArgsChecker):
+    def check(self, args):
+        assert 'amp' in args
+        amp = args['amp']
+        if amp is not None:
+            if amp != 'OFF' and amp not in self.legal_vals:
+                raise _CheckFailed('amp', amp, self.legal_vals)
+        else:
+            pass

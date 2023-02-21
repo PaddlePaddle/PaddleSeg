@@ -33,6 +33,7 @@ class SegModel(BaseModel):
               dy2st=False,
               amp=None,
               use_vdl=True,
+              ips=None,
               save_dir=None):
         if dataset is not None:
             # NOTE: We must use an absolute path here, 
@@ -74,7 +75,38 @@ class SegModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        return self.runner.train(config_path, cli_args, device)
+        return self.runner.train(config_path, cli_args, device, ips)
+
+    def evaluate(self,
+                 weight_path,
+                 dataset=None,
+                 batch_size=None,
+                 device='gpu',
+                 amp=None,
+                 ips=None):
+        weight_path = abspath(weight_path)
+        if dataset is not None:
+            dataset = abspath(dataset)
+
+        # Update YAML config file
+        config = self.config.copy()
+        config.update_dataset(dataset)
+        config_path = self._config_path
+        config.dump(config_path)
+
+        # Parse CLI arguments
+        cli_args = []
+        if weight_path is not None:
+            cli_args.append(CLIArgument('--model_path', weight_path))
+        if batch_size is not None:
+            if batch_size != 1:
+                raise ValueError("Batch size other than 1 is not supported.")
+        if amp is not None:
+            if amp != 'OFF':
+                cli_args.append(CLIArgument('--precision', 'fp16'))
+                cli_args.append(CLIArgument('--amp_level', amp))
+
+        return self.runner.evaluate(config_path, cli_args, device, ips)
 
     def predict(self, weight_path, input_path, device='gpu', save_dir=None):
         weight_path = abspath(weight_path)

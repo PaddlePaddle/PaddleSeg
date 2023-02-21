@@ -82,6 +82,8 @@ def test_model(model_name, config=None, input_shape=None):
         amp='O1',
         save_dir=save_dir)
 
+    model.evaluate(dataset=dataset_dir, device='gpu:0', amp='O2')
+
     model.predict(
         weight_path=weight_path,
         device='gpu',

@@ -125,23 +125,13 @@ class BaseConfig(_Config, metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update_dataset(self, dataset_path, dataset_type=None):
+    def update_dataset(self, dataset_dir, dataset_type=None):
         """Update configurations of dataset."""
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update_optimizer(self, optimizer_type):
-        """Update configurations of optimizer."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def update_backbone(self, backbone_type):
-        """Update configurations of backbone."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def update_lr_scheduler(self, lr_scheduler_type):
-        """Update configurations of lr scheduler."""
+    def update_learning_rate(self, learning_rate):
+        """Update learning rate."""
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -151,11 +141,6 @@ class BaseConfig(_Config, metaclass=abc.ABCMeta):
         
         By default this method modifies the training batch size.
         """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def update_weight_decay(self, weight_decay):
-        """Update configurations of weight decay."""
         raise NotImplementedError
 
     def copy(self):
