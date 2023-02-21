@@ -12,7 +12,7 @@ Before serving deployment, it is necessary to confirm the hardware and software 
 ```bash
 # Download demo code
 git clone https://github.com/PaddlePaddle/PaddleSeg.git 
-cd PaddleSeg/deploy/fastdeploy/semantic_segmentation/fastdeploy_serving
+cd PaddleSeg/deploy/fastdeploy/semantic_segmentation/serving/fastdeploy_serving
 
 # Download PP_LiteSeg model file
 wget  https://bj.bcebos.com/paddlehub/fastdeploy/PP_LiteSeg_B_STDC2_cityscapes_with_argmax_infer.tgz

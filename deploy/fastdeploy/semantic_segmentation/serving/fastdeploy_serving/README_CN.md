@@ -1,7 +1,7 @@
 [English](README.md) | 简体中文
 # PaddleSeg 服务化部署示例
 
-PaddleSeg 服务化部署示例是利用FastDeploy Serving搭建的服务化部署示例。FastDeploy Serving是基于Triton Inference Server框架封装的适用于高并发、高吞吐量请求的服务化部署框架，是一套可用于实际生产的完备且性能卓越的服务化部署框架。如没有高并发，高吞吐场景的需求，只想快速检验模型线上部署的可行性，请参考[fastdeploy_serving](../simple_serving/)
+PaddleSeg 服务化部署示例是利用FastDeploy Serving搭建的服务化部署示例。FastDeploy Serving是基于Triton Inference Server框架封装的适用于高并发、高吞吐量请求的服务化部署框架，是一套可用于实际生产的完备且性能卓越的服务化部署框架。如没有高并发，高吞吐场景的需求，只想快速检验模型线上部署的可行性，请参考[simple_serving](../simple_serving/)
 
 ## 1. 部署环境准备
 在服务化部署前，需确认服务化镜像的软硬件环境要求和镜像拉取命令，请参考[FastDeploy服务化部署](https://github.com/PaddlePaddle/FastDeploy/blob/develop/serving/README_CN.md)
@@ -12,7 +12,7 @@ PaddleSeg 服务化部署示例是利用FastDeploy Serving搭建的服务化部�
 ```bash
 # 下载部署示例代码
 git clone https://github.com/PaddlePaddle/PaddleSeg.git 
-cd PaddleSeg/deploy/fastdeploy/semantic_segmentation/fastdeploy_serving
+cd PaddleSeg/deploy/fastdeploy/semantic_segmentation/serving/fastdeploy_serving
 
 # 下载PP-LiteSeg模型文件
 wget  https://bj.bcebos.com/paddlehub/fastdeploy/PP_LiteSeg_B_STDC2_cityscapes_with_argmax_infer.tgz
