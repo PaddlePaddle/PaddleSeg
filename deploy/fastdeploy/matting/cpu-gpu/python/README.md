@@ -34,7 +34,7 @@ python infer.py --model PP-Matting-512 --image matting_input.jpg --bg matting_bg
 # 昆仑芯XPU推理
 python infer.py --model PP-Matting-512 --image matting_input.jpg --bg matting_bgr.jpg --device kunlunxin
 ```
-***注意** 以上示例未提供华为昇腾的示例，在编译好昇腾部署环境后，只需改造一行代码，将示例文件中的`option.use_kunlunxin()`为`option.use_ascend()`就可以完成在华为昇腾上的推理部署
+**注意** 以上示例未提供华为昇腾的示例，在编译好昇腾部署环境后，只需改造一行代码，将示例文件中的`option.use_kunlunxin()`为`option.use_ascend()`就可以完成在华为昇腾上的推理部署
 
 运行完成可视化结果如下图所示
 <div width="840">

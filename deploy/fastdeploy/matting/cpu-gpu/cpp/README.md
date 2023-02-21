@@ -44,7 +44,7 @@ wget https://bj.bcebos.com/paddlehub/fastdeploy/matting_bgr.jpg
 # 昆仑芯XPU推理
 ./infer_demo PP-Matting-512 matting_input.jpg matting_bgr.jpg 3
 ```
-***注意** 以上示例未提供华为昇腾的示例，在编译好昇腾部署环境后，只需改造一行代码，将示例文件中KunlunXinInfer方法的`option.UseKunlunXin()`为`option.UseAscend()`就可以完成在华为昇腾上的推理部署
+**注意** 以上示例未提供华为昇腾的示例，在编译好昇腾部署环境后，只需改造一行代码，将示例文件中KunlunXinInfer方法的`option.UseKunlunXin()`为`option.UseAscend()`就可以完成在华为昇腾上的推理部署
 
 运行完成可视化结果如下图所示
 <div width="840">
