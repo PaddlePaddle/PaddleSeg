@@ -61,6 +61,9 @@ class SegConfig(BaseConfig):
             raise ValueError(
                 f"Setting `batch_size` in '{mode}' mode is not supported.")
 
+    def _update_dy2st(self, dy2st):
+        self.set_val('to_static_training', dy2st)
+
     def _make_custom_dataset_config(self, dataset_root_path):
         # TODO: Description of dataset protocol
         return {

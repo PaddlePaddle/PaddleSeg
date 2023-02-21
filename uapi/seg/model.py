@@ -51,7 +51,7 @@ class SegModel(BaseModel):
         config = self.config.copy()
         config.update_dataset(dataset)
         if dy2st:
-            config.update({'to_static_training': True})
+            config._update_dy2st(dy2st)
         config_path = self._config_path
         config.dump(config_path)
 
