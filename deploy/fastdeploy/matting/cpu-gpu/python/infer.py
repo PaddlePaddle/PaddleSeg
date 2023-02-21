@@ -51,7 +51,7 @@ def build_option(args):
 
 args = parse_arguments()
 
-# 配置runtime，加载模型
+# setup runtime
 runtime_option = build_option(args)
 model_file = os.path.join(args.model, "model.pdmodel")
 params_file = os.path.join(args.model, "model.pdiparams")
@@ -59,12 +59,13 @@ config_file = os.path.join(args.model, "deploy.yaml")
 model = fd.vision.matting.PPMatting(
     model_file, params_file, config_file, runtime_option=runtime_option)
 
-# 预测图片抠图结果
+# predict
 im = cv2.imread(args.image)
 bg = cv2.imread(args.bg)
 result = model.predict(im)
 print(result)
-# 可视化结果
+
+# visualize
 vis_im = fd.vision.vis_matting(im, result)
 vis_im_with_bg = fd.vision.swap_background(im, bg, result)
 cv2.imwrite("visualized_result_fg.png", vis_im)
