@@ -6,8 +6,8 @@ iters: 80000
 model:
   type: OCRNet
   backbone:
-    type: HRFormer_small
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/hrformer_small_imagenet_pretrained.zip
+    type: HRFormer_base
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/hrformer_base_imagenet_pretrained.zip
   backbone_indices: [0]
 
 optimizer:
