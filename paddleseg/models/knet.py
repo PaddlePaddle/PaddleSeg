@@ -1,4 +1,4 @@
-# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,12 +22,116 @@ from paddleseg.models import layers
 from .upernet import UPerNetHead
 
 
+@manager.MODELS.add_component
+class KNet(nn.Layer):
+    """
+    The KNet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Wenwei Zhang, et, al. "K-Net: Towards Unified Image Segmentation"
+    (https://arxiv.org/abs/2106.14855).
+
+    Args:
+        num_classes (int): The unique number of target classes.
+        backbone (paddle.nn.Layer): Backbone network.
+        backbone_indices (tuple): Four values in the tuple indicate the indices of output of backbone.
+        kernel_update_head_params (dict): The params to build KernelUpdateHead.
+        kernel_generate_head_params (dict): The params to build KernelGenerateHead.
+        num_stages (int, optional): The num of KernelUpdateHead. Default: 3
+        channels (int, optional): The channels of intermediate layers. Default: 512.
+        enable_auxiliary_loss (bool, optional): A bool value that indicates whether or not to add auxiliary loss. Default: False.
+        align_corners (bool, optional): An argument of "F.interpolate". It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
+        dropout_prob (float, optional): Dropout ratio for KNet model. Default: 0.1.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
+
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 backbone_indices,
+                 kernel_update_head_params,
+                 kernel_generate_head_params,
+                 num_stages=3,
+                 channels=512,
+                 enable_auxiliary_loss=False,
+                 align_corners=False,
+                 dropout_prob=0.1,
+                 pretrained=None):
+        super().__init__()
+        assert hasattr(backbone, 'feat_channels'), \
+            "The backbone should has `feat_channels`."
+        assert len(backbone.feat_channels) >= len(backbone_indices), \
+            f"The length of input `backbone_indices` ({len(backbone_indices)}) should not be" \
+            f"greater than the length of `feat_channels` ({len(backbone.feat_channels)})."
+        assert len(backbone.feat_channels) > max(backbone_indices), \
+            f"The maximum value ({max(backbone_indices)}) of `backbone_indices` should be " \
+            f"less than the length of `feat_channels` ({len(backbone.feat_channels)})."
+
+        self.backbone = backbone
+        self.backbone_indices = backbone_indices
+        self.in_channels = [
+            self.backbone.feat_channels[i] for i in backbone_indices
+        ]
+
+        self.align_corners = align_corners
+        self.pretrained = pretrained
+        self.enable_auxiliary_loss = enable_auxiliary_loss
+        self.num_stages = num_stages
+        self.kernel_update_head = nn.LayerList([
+            KernelUpdateHead(**kernel_update_head_params)
+            for _ in range(num_stages)
+        ])
+        self.kernel_generate_head = build_kernel_generate_head(
+            kernel_generate_head_params)
+        if self.enable_auxiliary_loss:
+            self.aux_head = layers.AuxLayer(
+                1024, 256, num_classes, dropout_prob=dropout_prob)
+        self.init_weight()
+
+    def forward(self, x):
+        feats = self.backbone(x)
+        if self.enable_auxiliary_loss:
+            aux_out = self.aux_head(feats[2])
+        feats = [feats[i] for i in self.backbone_indices]
+        sem_seg, feats, seg_kernels = self.kernel_generate_head(feats)
+        stage_segs = [sem_seg]
+        for i in range(self.num_stages):
+            sem_seg, seg_kernels = self.kernel_update_head[i](
+                feats, seg_kernels, sem_seg)
+            stage_segs.append(sem_seg)
+        if self.training:
+            if self.enable_auxiliary_loss:
+                stage_segs.append(aux_out)
+            for i, v in enumerate(stage_segs):
+                stage_segs[i] = F.interpolate(
+                    v,
+                    paddle.shape(x)[2:],
+                    mode='bilinear',
+                    align_corners=self.align_corners)
+            return stage_segs
+        # only return the prediction of the last stage during testing
+        return [
+            F.interpolate(
+                stage_segs[-1],
+                paddle.shape(x)[2:],
+                mode='bilinear',
+                align_corners=self.align_corners)
+        ]
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
+
 def build_kernel_generate_head(kwargs):
-    support_heads = ['UPerKernelHead']
+    support_heads = ['UPerKernelHead', 'FCNKernelHead']
     head_layer = kwargs.pop('head_layer')
     assert head_layer in support_heads, f"head layer {head_layer} not supported"
     if head_layer == 'UPerKernelHead':
         return UPerKernelHead(**kwargs)
+    if head_layer == 'FCNKernelHead':
+        return FCNKernelHead(**kwargs)
 
 
 class UPerKernelHead(UPerNetHead):
@@ -59,6 +163,74 @@ class UPerKernelHead(UPerNetHead):
                 align_corners=self.align_corners)
         fuse_out = paddle.concat(fpn_outs, axis=1)
         feats = self.fpn_bottleneck(fuse_out)
+        output = self.conv_seg(feats)
+        if self.training:
+            seg_kernels = self.conv_seg.weight.clone()
+        else:
+            # Since tensor.clone() raises error when exporting static model, we use tensor.detach() instead,
+            # although this may cause little performance drop in mIoU.
+            seg_kernels = self.conv_seg.weight.detach()
+        seg_kernels = seg_kernels[None].expand(
+            [paddle.shape(feats)[0], *paddle.shape(seg_kernels)])
+        return output, feats, seg_kernels
+
+
+class FCNKernelHead(nn.Layer):
+    def __init__(self,
+                 in_channels=2048,
+                 channels=512,
+                 num_convs=2,
+                 concat_input=True,
+                 dropout_prob=0.1,
+                 num_classes=150,
+                 kernel_size=3,
+                 dilation=1):
+        assert num_convs >= 0 and dilation > 0 and isinstance(dilation, int)
+        self.in_channels = in_channels
+        self.channels = channels
+        self.num_convs = num_convs
+        self.concat_input = concat_input
+        self.kernel_size = kernel_size
+        super(FCNKernelHead, self).__init__()
+        if num_convs == 0:
+            assert self.in_channels == self.channels
+
+        conv_padding = (kernel_size // 2) * dilation
+        convs = []
+        for i in range(num_convs):
+            _in_channels = self.in_channels if i == 0 else self.channels
+            convs.append(
+                layers.ConvBNReLU(
+                    _in_channels,
+                    self.channels,
+                    kernel_size=kernel_size,
+                    padding=conv_padding,
+                    dilation=dilation))
+
+        if len(convs) == 0:
+            self.convs = nn.Identity()
+        else:
+            self.convs = nn.Sequential(*convs)
+        if self.concat_input:
+            self.conv_cat = layers.ConvBNReLU(
+                self.in_channels + self.channels,
+                self.channels,
+                kernel_size=kernel_size,
+                padding=kernel_size // 2)
+
+        self.conv_seg = nn.Conv2D(channels, num_classes, kernel_size=1)
+
+        if dropout_prob > 0:
+            self.dropout = nn.Dropout2D(dropout_prob)
+        else:
+            self.dropout = None
+
+    def forward(self, inputs):
+        feats = self.convs(inputs[0])
+        if self.concat_input:
+            feats = self.conv_cat(paddle.concat([inputs[0], feats], axis=1))
+        if self.dropout is not None:
+            feats = self.dropout(feats)
         output = self.conv_seg(feats)
         if self.training:
             seg_kernels = self.conv_seg.weight.clone()
@@ -237,11 +409,11 @@ class KernelUpdateHead(nn.Layer):
         self.mask_transform_stride = mask_transform_stride
 
         self.attention = nn.MultiHeadAttention(
-            in_channels * conv_kernel_size**2,
+            in_channels * conv_kernel_size ** 2,
             num_heads,
             dropout,
             bias_attr=True)
-        self.attention_norm = nn.LayerNorm(in_channels * conv_kernel_size**2)
+        self.attention_norm = nn.LayerNorm(in_channels * conv_kernel_size ** 2)
 
         self.kernel_update_conv = KernelUpdator(**kernel_updator_cfg)
 
@@ -358,105 +530,3 @@ class KernelUpdateHead(nn.Layer):
             N, num_proposals, self.in_channels, self.conv_kernel_size,
             self.conv_kernel_size
         ])
-
-
-@manager.MODELS.add_component
-class KNet(nn.Layer):
-    """
-    The KNet implementation based on PaddlePaddle.
-
-    The original article refers to
-    Wenwei Zhang, et, al. "K-Net: Towards Unified Image Segmentation"
-    (https://arxiv.org/abs/2106.14855).
-
-    Args:
-        num_classes (int): The unique number of target classes.
-        backbone (Paddle.nn.Layer): Backbone network.
-        backbone_indices (tuple): Four values in the tuple indicate the indices of output of backbone.
-        kernel_update_head_params (dict): The params to build KernelUpdateHead.
-        kernel_generate_head_params (dict): The params to build KernelGenerateHead.
-        num_stages (int, optional): The num of KernelUpdateHead. Default: 3
-        channels (int, optional): The channels of intermediate layers. Default: 512.
-        enable_auxiliary_loss (bool, optional): A bool value that indicates whether or not to add auxiliary loss. Default: False.
-        align_corners (bool, optional): An argument of "F.interpolate". It should be set to False when the feature size is even,
-            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
-        dropout_prob (float, optional): Dropout ratio for KNet model. Default: 0.1.
-        pretrained (str, optional): The path or url of pretrained model. Default: None.
-    """
-
-    def __init__(self,
-                 num_classes,
-                 backbone,
-                 backbone_indices,
-                 kernel_update_head_params,
-                 kernel_generate_head_params,
-                 num_stages=3,
-                 channels=512,
-                 enable_auxiliary_loss=False,
-                 align_corners=False,
-                 dropout_prob=0.1,
-                 pretrained=None):
-        super().__init__()
-        assert hasattr(backbone, 'feat_channels'), \
-            "The backbone should has 'feat_channels'."
-        assert len(backbone.feat_channels) >= len(backbone_indices), \
-            f"The length of input 'backbone_indices' ({len(backbone_indices)}) should not be" \
-            f"greater than the length of 'feat_channels' ({len(backbone.feat_channels)})."
-        assert len(backbone.feat_channels) > max(backbone_indices), \
-            f"The maximum value ({max(backbone_indices)}) of 'backbone_indices' should be " \
-            f"less than the length of 'feat_channels' ({len(backbone.feat_channels)})."
-
-        self.backbone = backbone
-        self.backbone_indices = backbone_indices
-        self.in_channels = [
-            self.backbone.feat_channels[i] for i in backbone_indices
-        ]
-
-        self.align_corners = align_corners
-        self.pretrained = pretrained
-        self.enable_auxiliary_loss = enable_auxiliary_loss
-        self.num_stages = num_stages
-        self.kernel_update_head = nn.LayerList([
-            KernelUpdateHead(**kernel_update_head_params)
-            for _ in range(num_stages)
-        ])
-        self.kernel_generate_head = build_kernel_generate_head(
-            kernel_generate_head_params)
-        if self.enable_auxiliary_loss:
-            self.aux_head = layers.AuxLayer(
-                1024, 256, num_classes, dropout_prob=dropout_prob)
-        self.init_weight()
-
-    def forward(self, x):
-        feats = self.backbone(x)
-        feats = [feats[i] for i in self.backbone_indices]
-        if self.enable_auxiliary_loss:
-            aux_out = self.aux_head(feats[2])
-        sem_seg, feats, seg_kernels = self.kernel_generate_head(feats)
-        stage_segs = [sem_seg]
-        for i in range(self.num_stages):
-            sem_seg, seg_kernels = self.kernel_update_head[i](
-                feats, seg_kernels, sem_seg)
-            stage_segs.append(sem_seg)
-        if self.training:
-            if self.enable_auxiliary_loss:
-                stage_segs.append(aux_out)
-            for i, v in enumerate(stage_segs):
-                stage_segs[i] = F.interpolate(
-                    v,
-                    paddle.shape(x)[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners)
-            return stage_segs
-        # only return the prediction of the last stage during testing
-        return [
-            F.interpolate(
-                stage_segs[-1],
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
-        ]
-
-    def init_weight(self):
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
