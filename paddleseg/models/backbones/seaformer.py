@@ -17,6 +17,8 @@ This file refers to https://github.com/hustvl/TopFormer and https://github.com/B
 
 from tkinter import Scale
 import paddle
+from paddle import ParamAttr
+from paddle.regularizer import L2Decay
 import paddle.nn as nn
 import paddle.nn.functional as F
 
@@ -26,7 +28,7 @@ from paddleseg.models.backbones.transformer_utils import Identity, DropPath
 from paddleseg.models.backbones.topformer_utils import *
 
 
-def _make_divisible(val, divisor, min_value=None):
+def _make_divisible(val, divisor=8, min_value=None):
     """
     This function is taken from the original tf repo.
     It ensures that all layers have a channel number that is divisible by 8
@@ -313,7 +315,7 @@ class ConvBNLayer(nn.Layer):
                  dilation=1):
         super().__init__()
 
-        self.conv = nn.Conv2D(
+        self.c = nn.Conv2D(
             in_channels=in_c,
             out_channels=out_c,
             kernel_size=filter_size,
@@ -331,7 +333,7 @@ class ConvBNLayer(nn.Layer):
         self.act = _create_act(act)
 
     def forward(self, x):
-        x = self.conv(x)
+        x = self.c(x)
         x = self.bn(x)
         if self.if_act:
             x = self.act(x)
@@ -405,11 +407,12 @@ class StackedMV3Block(nn.Layer):
     """
 
     def __init__(self,
-                 config,
+                 cfgs,
                  stem,
                  inp_channel,
                  in_channels=3,
                  scale=1.0,
+                 lr_mult=1.0,
                  pretrained=None):
         super().__init__()
 
@@ -427,10 +430,10 @@ class StackedMV3Block(nn.Layer):
                 if_act=True,
                 act="hardswish")
         self.blocks = nn.LayerList()
-        for i, (k, exp, c, se, act, s) in enumerate(config):
+        for i, (k, exp, c, se, act, s) in enumerate(cfgs):
             self.blocks.append(
                 ResidualUnit(
-                    in_c=_make_divisible(inplanes * self.scale),
+                    in_c=_make_divisible(inp_channel * self.scale),
                     mid_c=_make_divisible(self.scale * exp),
                     out_c=_make_divisible(self.scale * c),
                     filter_size=k,
@@ -438,7 +441,7 @@ class StackedMV3Block(nn.Layer):
                     use_se=se,
                     act=act,
                     dilation=1))
-            inplanes = _make_divisible(self.scale * c)
+            inp_channel = _make_divisible(self.scale * c)
 
     def forward(self, x):
         if self.stem:
@@ -711,12 +714,6 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
                     kernel_size=1,
                     lr_mult=lr_mult))
             self.act_list.append(HSigmoid())
-        self.pool1 = nn.AdaptiveAvgPool2D(output_size=1)
-        self.pool2 = nn.AdaptiveAvgPool2D(output_size=1)
-        self.pool3 = nn.AdaptiveAvgPool2D(output_size=1)
-        self.conv1 = nn.Conv2D(out_channels, out_channels, 1)
-        self.conv2 = nn.Conv2D(out_channels, out_channels, 1)
-        self.act_hs = Hardsigmoid(slope=0.2, offset=0.5)
 
     def forward(
             self, inputs
@@ -726,17 +723,12 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
         low_feat1_act = self.act_list[0](self.act_embedding_list[0](low_feat1))
         low_feat1 = self.embedding_list[0](low_feat1)
 
-        # low_feat2 = F.interpolate(
-        #     inputs[1], scale_factor=2, mode="bilinear")  # x16
-        low_feat2_act = F.interpolate(
-            self.act_list[1](self.act_embedding_list[1](inputs[1])),
-            size=low_feat1.shape[-2:],  # x16
-            mode='bilinear')
-        low_feat2 = self.embedding_list[1](inputs[1])
-        low_feat2_up = F.interpolate(
-            low_feat2, size=low_feat1.shape[-2:], mode='bilinear')
+        low_feat2 = F.interpolate(
+            inputs[1], size=low_feat1.shape[-2:], mode="bilinear")  # x16
+        low_feat2_act = self.act_list[1](
+            self.act_embedding_list[1](low_feat2))  # x16
+        low_feat2 = self.embedding_list[1](low_feat2)
 
-        # 输出的特征个数不一致，相应有维度和分辨率差异，这个模块最好重写。
         # low_feat3_act = F.interpolate(
         #     self.act_list[2](self.act_embedding_list[2](inputs[2])),
         #     size=low_feat2.shape[2:],
@@ -748,75 +740,15 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
 
         high_feat_act = F.interpolate(
             self.act_list[2](self.act_embedding_list[2](inputs[2])),
-            size=low_feat2_up.shape[2:],
+            size=low_feat2.shape[2:],
             mode="bilinear")
-        high_feat = self.embedding_list[2](inputs[2])
-        high_feat_up = F.interpolate(
-            high_feat, size=low_feat2_up.shape[2:], mode="bilinear")
+        high_feat = F.interpolate(
+            self.embedding_list[2](inputs[2]),
+            size=low_feat2.shape[2:],
+            mode="bilinear")
 
         res = low_feat1_act * low_feat2_act * high_feat_act * (
-            low_feat1 + low_feat2_up) + high_feat_up  # NCHW
-
-        res += res * self.act_hs(
-            self.conv2(
-                self.conv1(self.pool1(low_feat1) + self.pool2(low_feat2_up)) +
-                self.pool3(high_feat_up)))
-
-        return res
-
-
-class InjectionUnionMultiSumCompact(nn.Layer):
-    def __init__(
-            self,
-            in_channels=(64, 128, 256, 384),  # 先大图再小图
-            activations=None,
-            out_channels=160,
-            lr_mult=1.0):
-        super(InjectionUnionMultiSumCompact, self).__init__()
-        self.embedding_list = nn.LayerList()
-        self.act_embedding_list = nn.LayerList()
-        self.act_list = nn.LayerList()
-        self.out_channels = out_channels
-        for i in range(len(in_channels)):
-            self.embedding_list.append(
-                ConvBNAct(
-                    in_channels[i],
-                    out_channels,
-                    kernel_size=1,
-                    lr_mult=lr_mult))
-            if i != 0:
-                self.act_embedding_list.append(
-                    ConvBNAct(
-                        in_channels[i],
-                        out_channels,
-                        kernel_size=1,
-                        lr_mult=lr_mult))
-                self.act_list.append(HSigmoid())
-
-    def forward(
-            self, inputs
-    ):  # x_x8, x_x16, x_x32, x_x64 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
-
-        feat_x8 = self.embedding_list[0](inputs[0])
-
-        # x16
-        feat_x32_act = self.act_list[0](
-            self.act_embedding_list[0](inputs[1]))  # x16
-        feat_x32_act = F.interpolate(
-            feat_x32_act, scale_factor=4, mode='bilinear')
-        feat_x32_conv = self.embedding_list[1](inputs[1])
-        feat_x32_conv = F.interpolate(
-            feat_x32_conv, scale_factor=4, mode='bilinear')
-
-        feat_x64_act = self.act_list[1](self.act_embedding_list[1](inputs[2]))
-        feat_x64_act = F.interpolate(
-            feat_x64_act, scale_factor=8, mode='bilinear')
-        feat_x64_conv = self.embedding_list[2](inputs[2])
-        feat_x64_conv = F.interpolate(
-            feat_x64_conv, scale_factor=8, mode='bilinear')
-
-        res = (feat_x8 * feat_x32_act * feat_x64_act
-               ) + feat_x64_conv + feat_x32_conv
+            low_feat1 + low_feat2) + high_feat
 
         return res
 
