@@ -27,7 +27,7 @@ val_dataset:
       std: [0.229, 0.224, 0.225]
 
 optimizer:
-  type: sgd
+  type: SGD
   momentum: 0.9
   weight_decay: 0.0005
 

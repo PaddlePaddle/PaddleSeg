@@ -107,7 +107,7 @@ class PrepACDC():
                 i[:-7] + "_gt.nii.gz" for i in data_files_train
             ]
             for d, s in zip(data_files_train, corresponding_seg_files):
-                patient_identifier = d.split("/")[-1][:-7]
+                patient_identifier = os.path.split(d)[1][:-7]
                 all_train_files.append(patient_identifier + "_0000.nii.gz")
                 shutil.copy(d,
                             join(self.clean_folder, "imagesTr",
