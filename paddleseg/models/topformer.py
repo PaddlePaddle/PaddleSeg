@@ -79,40 +79,28 @@ class TopFormer(nn.Layer):
         x_hw = x.shape[2:]
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
-        import pdb
-        pdb.set_trace()
-        if self.upsample == 'intepolate':
+        if self.upsample == 'intepolate':  # cityscapes 15 classes on trained model
             x = F.interpolate(
                 x, x_hw, mode='bilinear', align_corners=self.align_corners)
         elif self.upsample == 'valid':
-            if not self.training:
-                labelset = paddle.unique(paddle.argmax(x, 1))
-                if not labelset.shape[
-                        -1] / self.num_classes < 0.2:  # shape will be -1
-                    x = F.interpolate(
-                        x,
-                        x_hw,
-                        mode='bilinear',
-                        align_corners=self.align_corners)
-                else:
-                    x = paddle.gather(x, labelset, axis=1)
-                    x = F.interpolate(
-                        x,
-                        x_hw,
-                        mode='bilinear',
-                        align_corners=self.align_corners)
+            labelset = paddle.unique(paddle.argmax(x, 1))
+            if not self.training and labelset.shape[
+                    -1] / self.num_classes < 0.4:
+                x = paddle.gather(x, labelset, axis=1)
+                x = F.interpolate(
+                    x, x_hw, mode='bilinear', align_corners=self.align_corners)
 
-                    pred = paddle.argmax(x, 1)
-                    pred_retrieve = paddle.zeros(pred.shape, dtype='int32')
-                    for i, val in enumerate(labelset):
-                        pred_retrieve[pred == i] = labelset[i].cast('int32')
+                pred = paddle.argmax(x, 1)
+                pred_retrieve = paddle.zeros(pred.shape, dtype='int32')
+                for i, val in enumerate(labelset):
+                    pred_retrieve[pred == i] = labelset[i].cast('int32')
 
-                    return [pred_retrieve]
+                x = pred_retrieve
             else:
                 x = F.interpolate(
                     x, x_hw, mode='bilinear', align_corners=self.align_corners)
         else:
-            raise NotImplementedError(self.upsample, "is not implemented")
+            raise NotImplementedError(self.upsample, " is not implemented")
 
         return [x]
 
