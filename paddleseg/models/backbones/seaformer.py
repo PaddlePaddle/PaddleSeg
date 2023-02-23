@@ -478,7 +478,9 @@ class Sea_Attention(nn.Layer):
                  num_heads,
                  attn_ratio=4,
                  activation=None,
-                 lr_mult=1.0):
+                 lr_mult=1.0,
+                 talking_locality=False,
+                 stride_attention=False):
         super().__init__()
         self.num_heads = num_heads
         self.scale = key_dim**-0.5
@@ -491,6 +493,16 @@ class Sea_Attention(nn.Layer):
         self.to_q = Conv2DBN(dim, nh_kd, 1, lr_mult=lr_mult)
         self.to_k = Conv2DBN(dim, nh_kd, 1, lr_mult=lr_mult)
         self.to_v = Conv2DBN(dim, self.dh, 1, lr_mult=lr_mult)
+
+        self.talking_locality = talking_locality
+        self.stride_attention = stride_attention
+
+        if self.stride_attention:
+            self.stride_conv = nn.Sequential(
+                nn.Conv2D(
+                    dim, dim, kernel_size=3, stride=2, padding=1, groups=dim),
+                nn.BatchNorm2D(dim), )
+            self.upsample = nn.Upsample(scale_factor=2, mode='bilinear')
 
         self.proj = paddle.nn.Sequential(
             activation(),
@@ -509,20 +521,58 @@ class Sea_Attention(nn.Layer):
         self.pos_emb_columnq = SqueezeAxialPositionalEmbedding(nh_kd, 16)
         self.pos_emb_columnk = SqueezeAxialPositionalEmbedding(nh_kd, 16)
 
-        self.dwconv = Conv2DBN(
-            2 * self.dh,
-            2 * self.dh,
-            ks=3,
-            stride=1,
-            pad=1,
-            dilation=1,
-            groups=2 * self.dh,
-            lr_mult=lr_mult)
-        self.act = activation()
-        self.pwconv = Conv2DBN(2 * self.dh, dim, ks=1, lr_mult=lr_mult)
-        self.sigmoid = HSigmoid()
+        if not self.talking_locality:
+            self.dwconv = Conv2DBN(
+                2 * self.dh,
+                2 * self.dh,
+                ks=3,
+                stride=1,
+                pad=1,
+                dilation=1,
+                groups=2 * self.dh,
+                lr_mult=lr_mult)
+            self.act = activation()
+            self.pwconv = Conv2DBN(2 * self.dh, dim, ks=1, lr_mult=lr_mult)
+            self.sigmoid = HSigmoid()
+        else:
+            self.v_local = nn.Sequential(
+                nn.Conv2D(
+                    self.dh,
+                    self.dh,
+                    kernel_size=3,
+                    stride=1,
+                    padding=1,
+                    groups=self.dh),
+                nn.BatchNorm2D(self.dh), )
+            # learn talking head
+            self.talking_head1 = nn.Conv2D(
+                self.num_heads,
+                self.num_heads,
+                kernel_size=1,
+                stride=1,
+                padding=0)
+            self.talking_head2 = nn.Conv2D(
+                self.num_heads,
+                self.num_heads,
+                kernel_size=1,
+                stride=1,
+                padding=0)
+            self.talking_head3 = nn.Conv2D(
+                self.num_heads,
+                self.num_heads,
+                kernel_size=1,
+                stride=1,
+                padding=0)
+            self.talking_head4 = nn.Conv2D(
+                self.num_heads,
+                self.num_heads,
+                kernel_size=1,
+                stride=1,
+                padding=0)
 
     def forward(self, x):  # x (B,N,C)
+        if self.stride_attention:
+            x = self.stride_conv(x)
         B, C, H, W = x.shape
 
         q = self.to_q(x)  # [B, nhead*dim, H, W]
@@ -532,9 +582,12 @@ class Sea_Attention(nn.Layer):
         )  # !!!v 的C维度还会乘以attention_ratio  这个维度可以随意调整，增加之后，所有特征输出通道会扩大倍数 # [B, nhead*dim*attn_ratio, H, W]
         # idea：对比实验，不增加这个维度，带来多少延时的减少，能否替换高通道注意力？
         # detail enhance
-        qkv = paddle.concat([q, k, v], axis=1)
-        qkv = self.act(self.dwconv(qkv))
-        qkv = self.pwconv(qkv)
+        if not self.talking_locality:
+            qkv = paddle.concat([q, k, v], axis=1)
+            qkv = self.act(self.dwconv(qkv))
+            qkv = self.pwconv(qkv)
+        else:
+            v_local = self.v_local(v)
 
         # squeeze axial attention 仅在部分head上进行横/纵的注意力，选择部分的时候采用全中覆盖的方式，create-parameter,index_select
         ## squeeze row ## ！！！压缩通道特征并在HW上做全局注意力会怎么样呢？ 但是C被看作是每个位置的特征dim
@@ -548,7 +601,14 @@ class Sea_Attention(nn.Layer):
             [0, 1, 3, 2])  # [B, nhead, H, dim*attn_ratio]
 
         attn_row = paddle.matmul(qrow, krow) * self.scale  # [B, nhead, H, H]
-        attn_row = F.softmax(attn_row, axis=-1)  # ！！！这之后少了attn_drop drop_rate=0
+        if not self.talking_locality:
+            attn_row = F.softmax(
+                attn_row, axis=-1)  # ！！！这之后少了attn_drop drop_rate=0
+        else:
+            attn_row = self.talking_head1(attn_row)
+            attn_row = F.softmax(attn_row, axis=-1)
+            attn_row = self.talking_head2(attn_row)
+
         xx_row = paddle.matmul(attn_row, vrow)  # [B, nhead, H, dim*attn_ratio]
         xx_row = self.proj_encode_row(
             xx_row.transpose([0, 1, 3, 2]).reshape([B, self.dh, H, 1]))
@@ -562,15 +622,29 @@ class Sea_Attention(nn.Layer):
             [B, self.num_heads, -1, W]).transpose([0, 1, 3, 2])
 
         attn_column = paddle.matmul(qcolumn, kcolumn) * self.scale
-        attn_column = F.softmax(attn_column, axis=-1)
+        if not self.talking_locality:
+            attn_column = F.softmax(attn_column, axis=-1)
+        else:
+            attn_column = self.talking_head3(attn_column)
+            attn_column = F.softmax(attn_column, axis=-1)
+            attn_column = self.talking_head4(attn_column)
         xx_column = paddle.matmul(attn_column, vcolumn)  # B nH W C
         xx_column = self.proj_encode_column(
             xx_column.transpose([0, 1, 3, 2]).reshape([B, self.dh, 1, W]))
 
         xx = paddle.add(xx_row, xx_column)  # [B, self.dh,H,W] 
         xx = paddle.add(v, xx)  # 和论文中多出的增加一个v的特征。相当于增加了原本x的一个本体，提升注意力的稳定性
-        xx = self.proj(xx)  # 多个特征之间交流，idea： k=3
-        xx = self.sigmoid(xx) * qkv  # 全局作为权重调节局部特征重要性， idea：试着+全局特征突出全局特征的重要性
+        if not self.talking_locality:
+            xx = self.proj(xx)  # 多个特征之间交流，idea： k=3
+            xx = self.sigmoid(
+                xx) * qkv  # 全局作为权重调节局部特征重要性， idea：试着+全局特征突出全局特征的重要性
+            if self.stride_attention:
+                xx = self.upsample(xx)
+        else:
+            xx = xx + v_local
+            if self.stride_attention:
+                xx = self.upsample(xx)
+            xx = self.proj(xx)
         return xx
 
 
@@ -584,7 +658,9 @@ class Block(nn.Layer):
                  drop=0.,
                  drop_path=0.,
                  act_layer=nn.ReLU,
-                 lr_mult=1.0):
+                 lr_mult=1.0,
+                 stride_attention=None,
+                 talking_locality=None):
         super().__init__()
         self.dim = dim
         self.num_heads = num_heads
@@ -597,7 +673,9 @@ class Block(nn.Layer):
             num_heads=num_heads,
             attn_ratio=attn_ratio,
             activation=act_layer,
-            lr_mult=lr_mult)
+            lr_mult=lr_mult,
+            stride_attention=stride_attention,
+            talking_locality=talking_locality)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity(
@@ -634,7 +712,9 @@ class BasicLayer(nn.Layer):
                  attn_drop=0.,
                  drop_path=0.,
                  lr_mult=1.0,
-                 act_layer=None):
+                 act_layer=None,
+                 talking_locality=None,
+                 stride_attention=None):
         super().__init__()
         self.block_num = block_num
 
@@ -651,7 +731,9 @@ class BasicLayer(nn.Layer):
                     drop_path=drop_path[i]
                     if isinstance(drop_path, list) else drop_path,
                     act_layer=act_layer,
-                    lr_mult=lr_mult))
+                    lr_mult=lr_mult,
+                    talking_locality=talking_locality,
+                    stride_attention=stride_attention))
 
     def forward(self, x):
         # token * N
@@ -749,6 +831,99 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
 
         res = low_feat1_act * low_feat2_act * high_feat_act * (
             low_feat1 + low_feat2) + high_feat
+
+        return res
+
+
+class LearnableFFM(nn.Layer):
+    def __init__(self,
+                 in_channels=(64, 128, 256, 384),
+                 activations=None,
+                 out_channels=160,
+                 lr_mult=1.0):
+        super(LearnableFFM, self).__init__()
+        self.embedding_list = nn.LayerList()
+        self.act_embedding_list = nn.LayerList()
+        self.act_list = nn.LayerList()
+        self.out_channels = out_channels
+        self.a1 = self.create_parameter(
+            shape=(7, ),
+            default_initializer=paddle.nn.initializer.Uniform(
+                low=0, high=1))
+        self.a2 = self.create_parameter(
+            shape=(7, ),
+            default_initializer=paddle.nn.initializer.Uniform(
+                low=0, high=1))
+        self.b1 = self.create_parameter(
+            shape=(7, ),
+            default_initializer=paddle.nn.initializer.Uniform(
+                low=0, high=1))
+        self.b2 = self.create_parameter(
+            shape=(7, ),
+            default_initializer=paddle.nn.initializer.Uniform(
+                low=0, high=1))
+        for i in range(len(in_channels)):
+            self.embedding_list.append(
+                ConvBNAct(
+                    in_channels[i],
+                    out_channels,
+                    kernel_size=1,
+                    lr_mult=lr_mult))
+            self.act_embedding_list.append(
+                ConvBNAct(
+                    in_channels[i],
+                    out_channels,
+                    kernel_size=1,
+                    lr_mult=lr_mult))
+            self.act_list.append(HSigmoid())
+
+        self.secinconv = ConvBNAct(
+            out_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
+
+        self.alignconv1 = ConvBNAct(
+            in_channels[0], out_channels, kernel_size=1, lr_mult=lr_mult)
+
+        self.alignconv2 = ConvBNAct(
+            in_channels[1], out_channels, kernel_size=1, lr_mult=lr_mult)
+
+    def forward(self, inputs):
+        low_feat1 = F.interpolate(inputs[0], scale_factor=0.5, mode="bilinear")
+        H, W = low_feat1.shape[-2:]
+        low_feat1_conv = self.embedding_list[0](low_feat1)
+        low_feat1_conv = self.a1[2] * low_feat1_conv + self.b1[
+            2] * self.alignconv1(low_feat1)
+
+        low_feat2 = F.interpolate(inputs[1], size=(H, W), mode="bilinear")
+        low_feat2_act = self.act_list[1](self.act_embedding_list[1](low_feat2))
+        low_feat2_conv = self.embedding_list[1](low_feat2)
+
+        low_feat2 = self.alignconv2(low_feat2)
+        low_feat2_act = self.a1[0] * low_feat2_act + self.b1[0] * low_feat2
+        low_feat2_conv = self.a1[5] * low_feat2_conv + self.b1[5] * low_feat2
+
+        t = self.a1[1] * (low_feat1_conv + low_feat2_act) + self.b1[1] * (
+            low_feat1_conv * low_feat2_act)
+        t = t + self.a1[6] * low_feat2_conv
+        t = t + self.a1[3] * low_feat1_conv
+        t = t + self.a1[4] * low_feat2_act
+
+        low_feat1_convn = self.secinconv(t)
+        low_feat1_convn = self.a2[2] * low_feat1_convn + self.b2[2] * t
+
+        high_feat = F.interpolate(
+            inputs[2], size=(H, W), mode='bilinear')  # 不需要align，本来就align了。
+        high_feat_act = self.act_list[2](self.act_embedding_list[2](high_feat))
+        high_feat_act = self.a2[0] * high_feat_act + self.b2[0] * high_feat
+        high_feat_conv = self.embedding_list[2](high_feat)
+        high_feat_conv = self.a2[5] * high_feat_conv + self.b2[5] * high_feat
+
+        tn = self.a2[1] * (low_feat1_convn + high_feat_act) + self.b2[1] * (
+            low_feat1_convn * high_feat_act)
+        tn = tn + self.a2[6] * high_feat_conv
+        tn = tn + self.a2[3] * low_feat1_convn
+        tn = tn + self.a2[4] * high_feat_act
+
+        res = tn + t
 
         return res
 
@@ -873,7 +1048,9 @@ class SeaFormer(nn.Layer):
                 attn_drop=0.0,
                 drop_path=dpr,
                 act_layer=act_layer,
-                lr_mult=lr_mult)
+                lr_mult=lr_mult,
+                stride_attention=False,
+                talking_locality=False)  # False
             setattr(self, f"trans{i+1}", trans)
 
         self.inj_type = inj_type
@@ -886,6 +1063,15 @@ class SeaFormer(nn.Layer):
             print('Using AAM')
             self.injection_out_channels = [self.inj_module.out_channels] * 3
             # self.injection_out_channels = [out_feat_chs[0], self.inj_module.out_channels, self.inj_module.out_channels]
+        elif self.inj_type == "LearnableFFM":
+            self.inj_module = LearnableFFM(
+                in_channels=out_feat_chs,
+                activations=act_layer,
+                out_channels=out_channels,
+                lr_mult=lr_mult)
+            print('Using LearnableFFM')
+            self.injection_out_channels = [self.inj_module.out_channels] * 3
+
         elif self.inj_type == 'AAM_cpt':
             self.inj_module = InjectionUnionMultiSumCompact(
                 in_channels=out_feat_chs,
@@ -924,15 +1110,9 @@ class SeaFormer(nn.Layer):
         num_smb_stage = len(self.cfgs)
         num_trans_stage = len(self.depths)
 
-        # import numpy
-        # numpy.random.seed(1234)
-        # x = numpy.random.randn(4,3,512,512)
-        # x = paddle.to_tensor(x, dtype='float32')
-
         for i in range(num_smb_stage):
             smb = getattr(self, f"smb{i + 1}")
             x = smb(x)
-            # x.register_hook(lambda grad: print('x{} grad'.format(i), grad.abs().sum()))
 
             # 1/8 shared feat
             if i == 1:
@@ -941,13 +1121,11 @@ class SeaFormer(nn.Layer):
                 trans = getattr(
                     self, f"trans{i + num_trans_stage - num_smb_stage + 1}")
                 x = trans(x)
-                # x.register_hook(lambda grad: print('x_trans{} grad'.format(i), grad.abs().sum()))
                 outputs.append(x)
 
-        if self.inj_type == "AAM" or self.inj_type == 'AAM_cpt' or self.inj_type == 'AAM_cpt_opt':
-            output = self.inj_module(
-                outputs
-            )  # 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
+        if self.inj_type == "AAM" or self.inj_type == 'AAM_cpt' or self.inj_type == 'AAM_cpt_opt' or self.inj_type == 'LearnableFFM':
+            output = self.inj_module(outputs)
+            # 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
         else:  # (1, 128, 64, 64) (1, 160, 64, 64)
             x_detail = outputs[0]
             for i in range(len(self.dims)):
@@ -1035,6 +1213,11 @@ def SeaFormer_Base(**kwargs):
     depths = [4, 4]
     key_dims = [16, 24]
     emb_dims = [192, 256]
+    mlp_ratios = [2, 4]
+    # depths = [3, 4, 4]
+    # key_dims = [8, 16, 24]
+    # emb_dims = [128, 192, 256]
+    # mlp_ratios=[2, 2, 4]
     num_heads = 8
     drop_path_rate = 0.1
 
@@ -1047,6 +1230,7 @@ def SeaFormer_Base(**kwargs):
         num_heads=num_heads,
         drop_path_rate=drop_path_rate,
         act_layer=nn.ReLU6,
+        mlp_ratios=mlp_ratios,
         **kwargs)
     return model
 
