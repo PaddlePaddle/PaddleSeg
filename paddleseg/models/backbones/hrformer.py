@@ -677,59 +677,59 @@ class HighResolutionTransformer(nn.Layer):
     (https://arxiv.org/pdf/1908.07919.pdf).
 
     Args:
-        drop_patth_rate (int): The rate of Drop Path.
-        stage1_num_blocks (list): Number of blocks per module for stage1.
-        stage1_num_channels (list): Number of channels per branch for stage1.
-        stage2_num_modules (int): Number of modules for stage2.
-        stage2_num_branches (int): Number of branches for stage2.
-        stage2_num_blocks (list): Number of blocks per module for stage2.
-        stage2_num_channels (list): Number of channels per branch for stage2.
-        stage2_num_heads (list): Number of heads per multi head attetion for stage2.
-        stage2_num_mlp_ratios (list): Number of ratio of mlp per multi head attetion for stage2.
-        stage2_num_window_sizes (list): Number of window sizes for stage2.
-        stage3_num_modules (int): Number of modules for stage3.
-        stage3_num_branches (int): Number of branches for stage3.
-        stage3_num_blocks (list): Number of blocks per module for stage3.
-        stage3_num_channels (list): Number of channels per branch for stage3.
-        stage3_num_heads (list): Number of heads per multi head attetion for stage3.
-        stage3_num_mlp_ratios (list): Number of ratio of mlp per multi head attetion for stage3.
-        stage3_num_window_sizes (list): Number of window sizes for stage3.
-        stage4_num_modules (int): Number of modules for stage4.
-        stage4_num_branches (int): Number of branches for stage4.
-        stage4_num_blocks (list): Number of blocks per module for stage4.
-        stage4_num_channels (list): Number of channels per branch for stage4.
-        stage4_num_heads (list): Number of heads per multi head attetion for stage4.
-        stage4_num_mlp_ratios (list): Number of ratio of mlp per multi head attetion for stage4.
-        stage4_num_window_sizes (list): Number of window sizes for stage4.
+        drop_path_rate (float, optional): The rate of Drop Path. Default: 0.2.
+        stage1_num_blocks (list[int], optional): Number of blocks per module for stage1. Default: [2].
+        stage1_num_channels (list[int], optional): Number of channels per branch for stage1. Default: [64].
+        stage2_num_modules (int, optional): Number of modules for stage2. Default: 1.
+        stage2_num_branches (int, optional): Number of branches for stage2. Default: 2.
+        stage2_num_blocks (list[int], optional): Number of blocks per module for stage2. Default: [2, 2].
+        stage2_num_channels (list[int], optional): Number of channels per branch for stage2. Default: [32, 64].
+        stage2_num_heads (list[int], optional): Number of heads per multi head attetion for stage2. Default: [1, 2].
+        stage2_num_mlp_ratios (list[int], optional): Number of ratio of mlp per multi head attetion for stage2. Default: [4, 4].
+        stage2_num_window_sizes (list[int], optional): Number of window sizes for stage2. Default: [7, 7].
+        stage3_num_modules (int, optional): Number of modules for stage3. Default: 4.
+        stage3_num_branches (int, optional): Number of branches for stage3. Default: 3.
+        stage3_num_blocks (list[int], optional): Number of blocks per module for stage3. Default: [2, 2, 2].
+        stage3_num_channels (list[int], optional): Number of channels per branch for stage3. Default: [32, 64, 128].
+        stage3_num_heads (list[int], optional): Number of heads per multi head attetion for stage3. Default: [1, 2, 4].
+        stage3_num_mlp_ratios (list[int], optional): Number of ratio of mlp per multi head attetion for stage3. Default: [4, 4, 4].
+        stage3_num_window_sizes (list[int], optional): Number of window sizes for stage3. Default: [7, 7, 7].
+        stage4_num_modules (int, optional): Number of modules for stage4. Default: 2.
+        stage4_num_branches (int, optional): Number of branches for stage4. Default: 4.
+        stage4_num_blocks (list[int], optional): Number of blocks per module for stage4. Default: [2, 2, 2, 2].
+        stage4_num_channels (list[int], optional): Number of channels per branch for stage4. Default: [32, 64, 128, 256].
+        stage4_num_heads (list[int], optional): Number of heads per multi head attetion for stage4. Default: [1, 2, 4, 8].
+        stage4_num_mlp_ratios (list[int], optional): Number of ratio of mlp per multi head attetion for stage4. Default: [4, 4, 4, 4].
+        stage4_num_window_sizes (list[int], optional): Number of window sizes for stage4. Default: [7, 7, 7, 7].
         in_channels (int, optional): The channels of input image. Default: 3.
         pretrained (str, optional): The path of pretrained model. Default: None.
     """
 
     def __init__(self,
-                 drop_path_rate,
-                 stage1_num_blocks,
-                 stage1_num_channels,
-                 stage2_num_modules,
-                 stage2_num_branches,
-                 stage2_num_blocks,
-                 stage2_num_channels,
-                 stage2_num_heads,
-                 stage2_num_mlp_ratios,
-                 stage2_num_window_sizes,
-                 stage3_num_modules,
-                 stage3_num_branches,
-                 stage3_num_blocks,
-                 stage3_num_channels,
-                 stage3_num_heads,
-                 stage3_num_mlp_ratios,
-                 stage3_num_window_sizes,
-                 stage4_num_modules,
-                 stage4_num_branches,
-                 stage4_num_blocks,
-                 stage4_num_channels,
-                 stage4_num_heads,
-                 stage4_num_mlp_ratios,
-                 stage4_num_window_sizes,
+                 drop_path_rate=0.2,
+                 stage1_num_blocks=[2],
+                 stage1_num_channels=[64],
+                 stage2_num_modules=1,
+                 stage2_num_branches=2,
+                 stage2_num_blocks=[2, 2],
+                 stage2_num_channels=[32, 64],
+                 stage2_num_heads=[1, 2],
+                 stage2_num_mlp_ratios=[4, 4],
+                 stage2_num_window_sizes=[7, 7],
+                 stage3_num_modules=4,
+                 stage3_num_branches=3,
+                 stage3_num_blocks=[2, 2, 2],
+                 stage3_num_channels=[32, 64, 128],
+                 stage3_num_heads=[1, 2, 4],
+                 stage3_num_mlp_ratios=[4, 4, 4],
+                 stage3_num_window_sizes=[7, 7, 7],
+                 stage4_num_modules=2,
+                 stage4_num_branches=4,
+                 stage4_num_blocks=[2, 2, 2, 2],
+                 stage4_num_channels=[32, 64, 128, 256],
+                 stage4_num_heads=[1, 2, 4, 8],
+                 stage4_num_mlp_ratios=[4, 4, 4, 4],
+                 stage4_num_window_sizes=[7, 7, 7, 7],
                  in_channels=3,
                  pretrained=None):
         super(HighResolutionTransformer, self).__init__()
