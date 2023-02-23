@@ -1027,32 +1027,7 @@ class HighResolutionTransformer(nn.Layer):
 
 @manager.BACKBONES.add_component
 def HRFormer_small(**kwargs):
-    arch_net = HighResolutionTransformer(
-        drop_path_rate=0.2,
-        stage1_num_blocks=[2],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_branches=2,
-        stage2_num_blocks=[2, 2],
-        stage2_num_channels=[32, 64],
-        stage2_num_heads=[1, 2],
-        stage2_num_mlp_ratios=[4, 4],
-        stage2_num_window_sizes=[7, 7],
-        stage3_num_modules=4,
-        stage3_num_branches=3,
-        stage3_num_blocks=[2, 2, 2],
-        stage3_num_channels=[32, 64, 128],
-        stage3_num_heads=[1, 2, 4],
-        stage3_num_mlp_ratios=[4, 4, 4],
-        stage3_num_window_sizes=[7, 7, 7],
-        stage4_num_modules=2,
-        stage4_num_branches=4,
-        stage4_num_blocks=[2, 2, 2, 2],
-        stage4_num_channels=[32, 64, 128, 256],
-        stage4_num_heads=[1, 2, 4, 8],
-        stage4_num_mlp_ratios=[4, 4, 4, 4],
-        stage4_num_window_sizes=[7, 7, 7, 7],
-        **kwargs)
+    arch_net = HighResolutionTransformer(**kwargs)
 
     return arch_net
 
@@ -1060,30 +1035,12 @@ def HRFormer_small(**kwargs):
 @manager.BACKBONES.add_component
 def HRFormer_base(**kwargs):
     arch_net = HighResolutionTransformer(
-        drop_path_rate=0.2,
-        stage1_num_blocks=[2],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_branches=2,
-        stage2_num_blocks=[2, 2],
         stage2_num_channels=[78, 156],
         stage2_num_heads=[2, 4],
-        stage2_num_mlp_ratios=[4, 4],
-        stage2_num_window_sizes=[7, 7],
-        stage3_num_modules=4,
-        stage3_num_branches=3,
-        stage3_num_blocks=[2, 2, 2],
         stage3_num_channels=[78, 156, 312],
         stage3_num_heads=[2, 4, 8],
-        stage3_num_mlp_ratios=[4, 4, 4],
-        stage3_num_window_sizes=[7, 7, 7],
-        stage4_num_modules=2,
-        stage4_num_branches=4,
-        stage4_num_blocks=[2, 2, 2, 2],
         stage4_num_channels=[78, 156, 312, 624],
         stage4_num_heads=[2, 4, 8, 16],
-        stage4_num_mlp_ratios=[4, 4, 4, 4],
-        stage4_num_window_sizes=[7, 7, 7, 7],
         **kwargs)
 
     return arch_net
@@ -1092,30 +1049,13 @@ def HRFormer_base(**kwargs):
 @manager.BACKBONES.add_component
 def HRFormer_base_win_13(**kwargs):
     arch_net = HighResolutionTransformer(
-        drop_path_rate=0.2,
-        stage1_num_blocks=[2],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_branches=2,
-        stage2_num_blocks=[2, 2],
         stage2_num_channels=[78, 156],
         stage2_num_heads=[2, 4],
-        stage2_num_mlp_ratios=[4, 4],
         stage2_num_window_sizes=[13, 13],
-        stage3_num_modules=4,
-        stage3_num_branches=3,
-        stage3_num_blocks=[2, 2, 2],
         stage3_num_channels=[78, 156, 312],
         stage3_num_heads=[2, 4, 8],
-        stage3_num_mlp_ratios=[4, 4, 4],
-        stage3_num_window_sizes=[13, 13, 13],
-        stage4_num_modules=2,
-        stage4_num_branches=4,
-        stage4_num_blocks=[2, 2, 2, 2],
         stage4_num_channels=[78, 156, 312, 624],
         stage4_num_heads=[2, 4, 8, 16],
-        stage4_num_mlp_ratios=[4, 4, 4, 4],
-        stage4_num_window_sizes=[13, 13, 13, 13],
         **kwargs)
 
     return arch_net
@@ -1124,29 +1064,14 @@ def HRFormer_base_win_13(**kwargs):
 @manager.BACKBONES.add_component
 def HRFormer_base_win_15(**kwargs):
     arch_net = HighResolutionTransformer(
-        drop_path_rate=0.2,
-        stage1_num_blocks=[2],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_branches=2,
-        stage2_num_blocks=[2, 2],
         stage2_num_channels=[78, 156],
         stage2_num_heads=[2, 4],
-        stage2_num_mlp_ratios=[4, 4],
         stage2_num_window_sizes=[15, 15],
-        stage3_num_modules=4,
-        stage3_num_branches=3,
-        stage3_num_blocks=[2, 2, 2],
         stage3_num_channels=[78, 156, 312],
         stage3_num_heads=[2, 4, 8],
-        stage3_num_mlp_ratios=[4, 4, 4],
         stage3_num_window_sizes=[15, 15, 15],
-        stage4_num_modules=2,
-        stage4_num_branches=4,
-        stage4_num_blocks=[2, 2, 2, 2],
         stage4_num_channels=[78, 156, 312, 624],
         stage4_num_heads=[2, 4, 8, 16],
-        stage4_num_mlp_ratios=[4, 4, 4, 4],
         stage4_num_window_sizes=[15, 15, 15, 15],
         **kwargs)
 
