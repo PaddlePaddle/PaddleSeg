@@ -48,6 +48,8 @@ def parse_args():
         help='Number of pictures per batch',
         type=int,
         default=1)
+    parser.add_argument(
+        '--opts', help='Update the key-value pairs of all options.', nargs='+')
 
     return parser.parse_args()
 
@@ -65,7 +67,7 @@ def main(args):
     fp32_model_dir = args.model_dir
     quant_output_dir = 'quant_model'
 
-    cfg = Config(args.cfg)
+    cfg = Config(args.cfg, opts=args.opts)
     builder = SegBuilder(cfg)
 
     val_dataset = builder.val_dataset

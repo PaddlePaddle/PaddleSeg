@@ -1,0 +1,12 @@
+Deploy:
+  input_shape:
+  - -1
+  - 3
+  - -1
+  - -1
+  model: model.pdmodel
+  output_dtype: int32
+  output_op: argmax
+  params: model.pdiparams
+  transforms:
+  - type: Normalize

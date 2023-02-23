@@ -9,7 +9,7 @@ model:
   seg_head_inter_chs: [32, 64, 64]
 
 optimizer:
-  type: sgd
+  type: SGD
   weight_decay: 0.0005
 
 loss:

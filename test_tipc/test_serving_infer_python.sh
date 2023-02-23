@@ -101,7 +101,7 @@ function func_serving(){
 
 # set cuda device
 GPUID=$3
-if [ ${#GPUID} -le 0 ];then
+if [ ${#GPUID} -le 0 ]; then
     env=" "
 else
     env="export CUDA_VISIBLE_DEVICES=${GPUID}"
