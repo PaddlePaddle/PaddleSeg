@@ -150,7 +150,7 @@ class BaseRunner(metaclass=abc.ABCMeta):
             return python, 'gpu'
         device, dev_ids = self.parse_device(device)
         if len(dev_ids) == 0:
-            return python, device
+            return python
         else:
             num_devices = len(dev_ids)
             dev_ids = ','.join(dev_ids)
@@ -162,7 +162,7 @@ class BaseRunner(metaclass=abc.ABCMeta):
         elif num_devices == 1:
             # TODO: Accommodate Windows system
             python = f"CUDA_VISIBLE_DEVICES={dev_ids} {python}"
-        return python, device
+        return python
 
     def parse_device(self, device):
         # According to https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/device/set_device_cn.html
@@ -173,7 +173,13 @@ class BaseRunner(metaclass=abc.ABCMeta):
             dev_ids = dev_ids.split(',')
             return device_type, dev_ids
 
-    def run_cmd(self, cmd, switch_wdir=False, silent=True, echo=False):
+    def run_cmd(self,
+                cmd,
+                switch_wdir=True,
+                silent=False,
+                echo=True,
+                pipe_stdout=False,
+                pipe_stderr=False):
         if switch_wdir:
             if isinstance(switch_wdir, str):
                 # In this case `switch_wdir` specifies a relative path
@@ -182,4 +188,10 @@ class BaseRunner(metaclass=abc.ABCMeta):
                 cwd = self.runner_root_path
         else:
             cwd = None
-        return _run_cmd(cmd, cwd=cwd, silent=silent, echo=echo)
+        return _run_cmd(
+            cmd,
+            cwd=cwd,
+            silent=silent,
+            echo=echo,
+            pipe_stdout=pipe_stdout,
+            pipe_stderr=pipe_stderr)

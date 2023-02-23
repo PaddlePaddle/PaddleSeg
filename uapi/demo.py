@@ -42,7 +42,7 @@ if __name__ == '__main__':
         dy2st=True,
         save_dir=save_dir)
 
-    model.evaluate(dataset=dataset_dir, device='gpu', amp='O2')
+    model.evaluate(weight_path=weight_path, dataset=dataset_dir, device='gpu:0')
 
     model.predict(
         weight_path=weight_path,

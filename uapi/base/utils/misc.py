@@ -17,7 +17,13 @@ import contextlib
 import subprocess
 
 
-def run_cmd(cmd, silent=True, cwd=None, timeout=None, echo=False):
+def run_cmd(cmd,
+            silent=True,
+            cwd=None,
+            timeout=None,
+            echo=False,
+            pipe_stdout=False,
+            pipe_stderr=False):
     """Wrap around `subprocess.run()` to execute a shell command."""
     # XXX: This function is not safe!!!
     cfg = dict(check=True, shell=True, timeout=timeout, cwd=cwd)
@@ -25,6 +31,14 @@ def run_cmd(cmd, silent=True, cwd=None, timeout=None, echo=False):
         cfg['stdout'] = subprocess.DEVNULL
     if echo:
         print(cmd)
+    if pipe_stdout or pipe_stderr:
+        cfg['text'] = True
+    if pipe_stdout:
+        cfg['stdout'] = subprocess.PIPE
+    if pipe_stderr:
+        cfg['stderr'] = subprocess.PIPE
+        cfg['check'] = False
+
     return subprocess.run(cmd, **cfg)
 
 

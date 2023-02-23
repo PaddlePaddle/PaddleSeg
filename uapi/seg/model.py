@@ -63,6 +63,9 @@ class SegModel(BaseModel):
             cli_args.append(CLIArgument('--learning_rate', learning_rate))
         if epochs_iters is not None:
             cli_args.append(CLIArgument('--iters', epochs_iters))
+        if device is not None:
+            device_type, _ = self.runner.parse_device(device)
+            cli_args.append(CLIArgument('--device', device_type))
         if resume_path is not None:
             model_dir = os.path.dirname(resume_path)
             cli_args.append(CLIArgument('--resume_path', model_dir))
@@ -101,6 +104,9 @@ class SegModel(BaseModel):
         if batch_size is not None:
             if batch_size != 1:
                 raise ValueError("Batch size other than 1 is not supported.")
+        if device is not None:
+            device_type, _ = self.runner.parse_device(device)
+            cli_args.append(CLIArgument('--device', device_type))
         if amp is not None:
             if amp != 'OFF':
                 cli_args.append(CLIArgument('--precision', 'fp16'))
@@ -129,6 +135,9 @@ class SegModel(BaseModel):
             cli_args.append(CLIArgument('--model_path', weight_path))
         if input_path is not None:
             cli_args.append(CLIArgument('--image_path', input_path))
+        if device is not None:
+            device_type, _ = self.runner.parse_device(device)
+            cli_args.append(CLIArgument('--device', device_type))
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
@@ -180,6 +189,9 @@ class SegModel(BaseModel):
         config_path = os.path.join(model_dir, 'deploy.yaml')
         if input_path is not None:
             cli_args.append(CLIArgument('--image_path', input_path))
+        if device is not None:
+            device_type, _ = self.runner.parse_device(device)
+            cli_args.append(CLIArgument('--device', device_type))
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
@@ -222,6 +234,9 @@ class SegModel(BaseModel):
             train_cli_args.append(CLIArgument('--learning_rate', learning_rate))
         if epochs_iters is not None:
             train_cli_args.append(CLIArgument('--iters', epochs_iters))
+        if device is not None:
+            device_type, _ = self.runner.parse_device(device)
+            train_cli_args.append(CLIArgument('--device', device_type))
         if weight_path is not None:
             train_cli_args.append(CLIArgument('--model_path', weight_path))
         if use_vdl:
