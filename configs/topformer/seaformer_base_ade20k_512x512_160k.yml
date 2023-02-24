@@ -76,5 +76,8 @@ model:
     out_channels: 256
     dims: [128, 160] # [128, 160, 192]
     out_feat_chs: [64, 192, 256] # [64, 128, 192, 256]
+    asub: False
+    talking_locality: False
+    stride_attention: True
   head_use_dw: True
-  upsample: valid
+  upsample: intepolate

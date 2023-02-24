@@ -15,6 +15,7 @@
 This file refers to https://github.com/hustvl/TopFormer and https://github.com/BR-IDL/PaddleViT
 """
 
+import math
 from tkinter import Scale
 import paddle
 from paddle import ParamAttr
@@ -216,9 +217,16 @@ class StackedMV2Block(nn.Layer):
                  inp_channel=16,
                  activation=nn.ReLU,
                  width_mult=1.,
-                 lr_mult=1.):
+                 lr_mult=1.,
+                 asub=False,
+                 dim=None,
+                 key_dim=None,
+                 num_heads=None,
+                 attn_ratio=None,
+                 act_layer=None):
         super().__init__()
         self.stem = stem
+        self.asub = asub
         if stem:
             self.stem_block = nn.Sequential(
                 Conv2DBN(3, inp_channel, 3, 2, 1), activation())
@@ -233,13 +241,24 @@ class StackedMV2Block(nn.Layer):
                 inp_channel,
                 output_channel,
                 kernel_size=k,
-                stride=s,
+                stride=s if not asub else 1,
                 expand_ratio=t,
                 activations=activation,
                 lr_mult=lr_mult)
             self.add_sublayer(layer_name, layer)
             inp_channel = output_channel
             self.layers.append(layer_name)
+            if asub:
+                self.attn_sub = nn.LayerList([
+                    Sea_Attention_Downsample(
+                        dim,
+                        key_dim=key_dim,
+                        num_heads=num_heads,
+                        attn_ratio=attn_ratio,
+                        activation=act_layer,
+                        lr_mult=lr_mult), nn.Conv2D(dim, dim, 3, 2, 1),
+                    nn.BatchNorm2D(dim)
+                ])
 
     def forward(self, x):
         if self.stem:
@@ -247,6 +266,10 @@ class StackedMV2Block(nn.Layer):
         for i, layer_name in enumerate(self.layers):
             layer = getattr(self, layer_name)
             x = layer(x)
+            if self.asub:
+                conv_out = self.attn_sub[2](self.attn_sub[1](x))
+                x = conv_out + self.attn_sub[0](x)
+
         return x
 
 
@@ -469,6 +492,216 @@ class SqueezeAxialPositionalEmbedding(nn.Layer):
             align_corners=False,
             data_format='NCW')
         return x
+
+
+class LGQuery(nn.Layer):
+    def __init__(self, in_dim, out_dim):
+        super().__init__()
+        self.pool = nn.AvgPool2D(1, 2, 0)
+        self.local = nn.Sequential(
+            nn.Conv2D(
+                in_dim,
+                in_dim,
+                kernel_size=3,
+                stride=2,
+                padding=1,
+                groups=in_dim), )
+        self.proj = nn.Sequential(
+            nn.Conv2D(in_dim, out_dim, 1),
+            nn.BatchNorm2D(out_dim), )
+
+    def forward(self, x):
+        local_q = self.local(x)
+        pool_q = self.pool(x)
+        q = local_q + pool_q
+        q = self.proj(q)
+        return q
+
+
+# class Attention4DDownsample(nn.Layer):
+#     def __init__(self, dim=384, key_dim=16, num_heads=8,
+#                  attn_ratio=4,
+#                  resolution=7,
+#                  out_dim=None,
+#                  activation=None,
+#                  ):
+#         super().__init__()
+#         self.num_heads = num_heads
+#         self.scale = key_dim ** -0.5
+#         self.key_dim = key_dim
+#         self.nh_kd = nh_kd = key_dim * num_heads
+
+#         self.resolution = resolution
+
+#         self.d = int(attn_ratio * key_dim)
+#         self.dh = int(attn_ratio * key_dim) * num_heads
+#         self.attn_ratio = attn_ratio
+#         h = self.dh + nh_kd * 2
+
+#         if out_dim is not None:
+#             self.out_dim = out_dim
+#         else:
+#             self.out_dim = dim
+#         self.resolution2 = math.ceil(self.resolution / 2)
+#         self.q = LGQuery(dim, self.num_heads * self.key_dim)
+
+#         self.N = self.resolution ** 2
+#         self.N2 = self.resolution2 ** 2
+
+#         self.k = nn.Sequential(nn.Conv2D(dim, self.num_heads * self.key_dim, 1),
+#                                nn.BatchNorm2D(self.num_heads * self.key_dim), )
+#         self.v = nn.Sequential(nn.Conv2D(dim, self.num_heads * self.d, 1),
+#                                nn.BatchNorm2D(self.num_heads * self.d),
+#                                )
+#         self.v_local = nn.Sequential(nn.Conv2D(self.num_heads * self.d, self.num_heads * self.d,
+#                                                kernel_size=3, stride=2, padding=1, groups=self.num_heads * self.d),
+#                                      nn.BatchNorm2D(self.num_heads * self.d), )
+
+#         self.proj = nn.Sequential(
+#             activation(),
+#             nn.Conv2D(self.dh, self.out_dim, 1),
+#             nn.BatchNorm2D(self.out_dim), )
+
+#         points = list(itertools.product(range(self.resolution), range(self.resolution)))
+#         points_ = list(itertools.product(
+#             range(self.resolution2), range(self.resolution2)))
+#         N = len(points)
+#         N_ = len(points_)
+#         attention_offsets = {}
+#         idxs = []
+#         for p1 in points_:
+#             for p2 in points:
+#                 size = 1
+#                 offset = (
+#                     abs(p1[0] * math.ceil(self.resolution / self.resolution2) - p2[0] + (size - 1) / 2),
+#                     abs(p1[1] * math.ceil(self.resolution / self.resolution2) - p2[1] + (size - 1) / 2))
+#                 if offset not in attention_offsets:
+#                     attention_offsets[offset] = len(attention_offsets)
+#                 idxs.append(attention_offsets[offset])
+#         self.attention_biases = torch.nn.Parameter(
+#             torch.zeros(num_heads, len(attention_offsets)))
+#         self.create_parameter('',shape=(N_, N))
+#         self.register_buffer('attention_bias_idxs',
+#                              torch.LongTensor(idxs).view(N_, N))
+
+#     def forward(self, x):  # x (B,N,C)
+#         B, C, H, W = x.shape
+
+#         q = self.q(x).flatten(2).reshape(B, self.num_heads, -1, self.N2).permute(0, 1, 3, 2)
+#         k = self.k(x).flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 2, 3)
+#         v = self.v(x)
+#         v_local = self.v_local(v)
+#         v = v.flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
+
+#         attn = (
+#                 (q @ k) * self.scale
+#                 +
+#                 (self.attention_biases[:, self.attention_bias_idxs]
+#                  if self.training else self.ab)
+#         )
+
+#         # attn = (q @ k) * self.scale
+#         attn = attn.softmax(dim=-1) # no talking head no stride and upsample
+#         x = (attn @ v).transpose(2, 3)
+#         out = x.reshape(B, self.dh, self.resolution2, self.resolution2) + v_local
+
+#         out = self.proj(out)
+#         return out
+
+
+class Sea_Attention_Downsample(nn.Layer):
+    def __init__(self,
+                 dim,
+                 key_dim,
+                 num_heads,
+                 attn_ratio=4,
+                 activation=None,
+                 lr_mult=1.0):
+        super().__init__()
+        self.num_heads = num_heads
+        self.scale = key_dim**-0.5
+        self.key_dim = key_dim
+        self.nh_kd = nh_kd = key_dim * num_heads  # num_head key_dim
+        self.d = int(attn_ratio * key_dim)
+        self.dh = int(attn_ratio * key_dim) * num_heads
+        self.attn_ratio = attn_ratio
+
+        self.to_q = LGQuery(dim, nh_kd)
+        self.to_k = Conv2DBN(dim, nh_kd, 1, lr_mult=lr_mult)
+        self.to_v = Conv2DBN(dim, self.dh, 1, lr_mult=lr_mult)
+
+        self.proj = paddle.nn.Sequential(
+            activation(),
+            Conv2DBN(
+                self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
+        self.proj_encode_row = paddle.nn.Sequential(
+            activation(),
+            Conv2DBN(
+                self.dh, self.dh, bn_weight_init=0, lr_mult=lr_mult))
+        self.pos_emb_rowq = SqueezeAxialPositionalEmbedding(nh_kd, 16)
+        self.pos_emb_rowk = SqueezeAxialPositionalEmbedding(nh_kd, 16)
+        self.proj_encode_column = paddle.nn.Sequential(
+            activation(),
+            Conv2DBN(
+                self.dh, self.dh, bn_weight_init=0, lr_mult=lr_mult))
+        self.pos_emb_columnq = SqueezeAxialPositionalEmbedding(nh_kd, 16)
+        self.pos_emb_columnk = SqueezeAxialPositionalEmbedding(nh_kd, 16)
+
+        self.v_local = nn.Sequential(
+            nn.Conv2D(
+                self.dh,
+                self.dh,
+                kernel_size=3,
+                stride=2,
+                padding=1,
+                groups=self.dh),
+            nn.BatchNorm2D(self.dh), )
+
+    def forward(self, x):  # x (B,N,C)
+        B, C, H, W = x.shape
+        H2, W2 = math.ceil(H / 2), math.ceil(W / 2)
+
+        q = self.to_q(x)  # [B, nhead*dim, H, W]
+        k = self.to_k(x)
+        v = self.to_v(x)  # [B, nhead*dim*attn_ratio, H, W]
+
+        v_local = self.v_local(v)
+
+        qrow = self.pos_emb_rowq(q.mean(-1)).reshape(
+            [B, self.num_heads, -1, H2]).transpose(
+                [0, 1, 3, 2])  # [B, nhead, H/2, dim] 选择部分去做全局attention？
+        krow = self.pos_emb_rowk(k.mean(-1)).reshape(
+            [B, self.num_heads, -1, H])  # [B, nhead, dim, H]
+        vrow = v.mean(-1).reshape([B, self.num_heads, -1, H]).transpose(
+            [0, 1, 3, 2])  # [B, nhead, H, dim*attn_ratio]
+
+        attn_row = paddle.matmul(qrow, krow) * self.scale  # [B, nhead, H/2, H]
+        attn_row = F.softmax(attn_row, axis=-1)
+
+        xx_row = paddle.matmul(attn_row,
+                               vrow)  # [B, nhead, H/2, dim*attn_ratio]
+        xx_row = self.proj_encode_row(
+            xx_row.transpose([0, 1, 3, 2]).reshape([B, self.dh, H2, 1]))
+
+        ## squeeze column
+        qcolumn = self.pos_emb_columnq(q.mean(-2)).reshape(
+            [B, self.num_heads, -1, W2]).transpose([0, 1, 3, 2])
+        kcolumn = self.pos_emb_columnk(k.mean(-2)).reshape(
+            [B, self.num_heads, -1, W])
+        vcolumn = paddle.mean(v, -2).reshape(
+            [B, self.num_heads, -1, W]).transpose([0, 1, 3, 2])
+
+        attn_column = paddle.matmul(qcolumn, kcolumn) * self.scale
+        attn_column = F.softmax(attn_column, axis=-1)
+
+        xx_column = paddle.matmul(attn_column, vcolumn)  # B nH W C
+        xx_column = self.proj_encode_column(
+            xx_column.transpose([0, 1, 3, 2]).reshape([B, self.dh, 1, W2]))
+
+        xx = paddle.add(xx_row, xx_column) + v_local  # [B, self.dh,H/2,W/2] 
+        xx = self.proj(xx)
+
+        return xx
 
 
 class Sea_Attention(nn.Layer):
@@ -1010,7 +1243,10 @@ class SeaFormer(nn.Layer):
                  out_channels=160,
                  dims=None,
                  out_feat_chs=None,
-                 mv3=False):
+                 mv3=False,
+                 asub=False,
+                 talking_locality=False,
+                 stride_attention=False):
         super().__init__()
         self.channels = channels
         self.depths = depths
@@ -1023,7 +1259,13 @@ class SeaFormer(nn.Layer):
                     cfgs=cfgs[i],
                     stem=True if i == 0 else False,
                     inp_channel=channels[i],
-                    lr_mult=lr_mult)
+                    lr_mult=lr_mult,
+                    asub=(i == (len(cfgs) - 1)) if asub else False,
+                    dim=embed_dims[-1],
+                    key_dim=key_dims[-1],
+                    num_heads=num_heads,
+                    attn_ratio=attn_ratios,
+                    act_layer=act_layer)
             else:
                 smb = StackedMV3Block(
                     cfgs=cfgs[i],
@@ -1049,8 +1291,8 @@ class SeaFormer(nn.Layer):
                 drop_path=dpr,
                 act_layer=act_layer,
                 lr_mult=lr_mult,
-                stride_attention=False,
-                talking_locality=False)  # False
+                stride_attention=(i == 0) if stride_attention else False,
+                talking_locality=talking_locality)  # False
             setattr(self, f"trans{i+1}", trans)
 
         self.inj_type = inj_type
@@ -1210,14 +1452,17 @@ def SeaFormer_Base(**kwargs):
     cfg4 = [[5, 4, 192, 2]]
     cfg5 = [[3, 6, 256, 2]]
     channels = [16, 32, 64, 128, 192, 256]
-    depths = [4, 4]
-    key_dims = [16, 24]
-    emb_dims = [192, 256]
-    mlp_ratios = [2, 4]
-    # depths = [3, 4, 4]
-    # key_dims = [8, 16, 24]
-    # emb_dims = [128, 192, 256]
-    # mlp_ratios=[2, 2, 4]
+    if not kwargs['stride_attention']:
+        depths = [4, 4]
+        key_dims = [16, 24]
+        emb_dims = [192, 256]
+        mlp_ratios = [2, 4]
+    else:
+        depths = [3, 4, 4]  # strided attention params
+        key_dims = [8, 16, 24]
+        emb_dims = [128, 192, 256]
+        mlp_ratios = [2, 2, 4]
+
     num_heads = 8
     drop_path_rate = 0.1
 
