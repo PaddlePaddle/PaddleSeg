@@ -78,6 +78,6 @@ model:
     out_feat_chs: [64, 192, 256] # [64, 128, 192, 256]
     asub: False
     talking_locality: False
-    stride_attention: True
+    stride_attention: False
   head_use_dw: True
   upsample: intepolate

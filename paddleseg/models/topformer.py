@@ -83,9 +83,8 @@ class TopFormer(nn.Layer):
             x = F.interpolate(
                 x, x_hw, mode='bilinear', align_corners=self.align_corners)
         elif self.upsample == 'valid':
-            labelset = paddle.unique(paddle.argmax(x, 1))
-            if not self.training and labelset.shape[
-                    -1] / self.num_classes < 0.4:
+            if not self.training and self.num_classes > 30:
+                labelset = paddle.unique(paddle.argmax(x, 1))
                 x = paddle.gather(x, labelset, axis=1)
                 x = F.interpolate(
                     x, x_hw, mode='bilinear', align_corners=self.align_corners)
