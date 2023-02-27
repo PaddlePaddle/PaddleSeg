@@ -18,8 +18,8 @@
 1. 将编译后的库拷贝到当前目录，可使用如下命令：
 ```bash
 git clone https://github.com/PaddlePaddle/PaddleSeg.git 
-# 注意：如果当前分支找不到测试代码 请切换到develop分支
-git checkout develop
+# 注意：如果当前分支找不到下面的fastdeploy测试代码，请切换到develop分支
+# git checkout develop
 
 cp -r FastDeploy/build/fastdeploy-timvx/ path/to/PaddleSeg/deploy/fastdeploy/semantic_segmentation/amlogic/a311d/cpp
 ```
