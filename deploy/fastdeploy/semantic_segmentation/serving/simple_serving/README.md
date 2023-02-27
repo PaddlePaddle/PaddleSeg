@@ -12,6 +12,7 @@ PaddleSeg Python Simple serving is an example of serving deployment built by Fas
 ```bash
 # Download demo code
 git clone https://github.com/PaddlePaddle/PaddleSeg.git 
+git checkout develop
 cd PaddleSeg/deploy/fastdeploy/semantic_segmentation/serving/simple_serving
 
 # Download PP_LiteSeg model

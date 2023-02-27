@@ -14,6 +14,8 @@
 ```bash
 # 下载部署示例代码
 git clone https://github.com/PaddlePaddle/PaddleSeg.git 
+# 注意：如果当前分支找不到测试代码 请切换到develop分支
+git checkout develop
 cd PaddleSeg/deploy/fastdeploy/semantic_segmentation/sophgo/python
 
 # 下载图片
