@@ -21,6 +21,7 @@
 </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
+* [2023-02-27] :fire:  PaddleSeg集成高性能、全场景模型部署方案FastDeploy，欢迎参考[指南](./deploy/fastdeploy)试用（注意切换成develop分支）。
 * [2022-11-30] :fire:  PaddleSeg 2.7版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
   * 发布实时人像抠图模型[PP-MattingV2](./Matting/)：推理速度提升44.6%，平均误差减小17.91%，完美超越此前SOTA模型，支持零成本开箱即用。
   * 发布3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)：涵盖3D医疗影像交互式标注工具EISeg-Med3D、3个高精分割模型，集成并优化前沿分割方案nnUNet-D。
