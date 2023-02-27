@@ -14,13 +14,15 @@
 ```bash
 # 下载部署示例代码
 git clone https://github.com/PaddlePaddle/PaddleSeg.git 
+# 注意：如果当前分支找不到下面的fastdeploy测试代码，请切换到develop分支
+# git checkout develop
 cd PaddleSeg/deploy/fastdeploy/semantic_segmentation/sophgo/python
 
 # 下载图片
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
 # PaddleSeg模型转换为bmodel模型
-将Paddle模型转换为SOPHGO bmodel模型，转换步骤参考[文档](../README_CN.md#将paddleseg推理模型转换为bmodel模型步骤)
+将Paddle模型转换为SOPHGO bmodel模型，转换步骤参考[文档](../README_CN.md)
 
 # 推理
 python3 infer.py --model_file ./bmodel/pp_liteseg_1684x_f32.bmodel --config_file ./bmodel/deploy.yaml --image cityscapes_demo.png

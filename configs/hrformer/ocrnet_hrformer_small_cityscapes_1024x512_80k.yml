@@ -1,0 +1,37 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 2
+iters: 80000
+
+model:
+  type: OCRNet
+  backbone:
+    type: HRFormer_small
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/hrformer_small_imagenet_pretrained.zip
+  backbone_indices: [0]
+
+optimizer:
+  _inherited_: False
+  type: AdamW
+  beta1: 0.9
+  beta2: 0.999
+  weight_decay: 0.01
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 1.0e-4
+  power: 0.9
+  warmup_iters: 1500
+  warmup_start_lr: 1.0e-6
+
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+      min_kept: 100000
+      thresh: 0.9
+    - type: CrossEntropyLoss
+      weight: [0.8373, 0.9180, 0.8660, 1.0345, 1.0166, 0.9969, 0.9754,
+               1.0489, 0.8786, 1.0023, 0.9539, 0.9843, 1.1116, 0.9037,
+               1.0865, 1.0955, 1.0865, 1.1529, 1.0507]
+  coef: [1, 0.4]
