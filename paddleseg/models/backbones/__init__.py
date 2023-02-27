@@ -26,4 +26,5 @@ from .shufflenetv2 import *
 from .ghostnet import *
 from .top_transformer import *
 from .uhrnet import *
+from .hrformer import *
 from .mscan import *

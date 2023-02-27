@@ -113,8 +113,8 @@ for params in ${extra_args[*]}; do
     fi
 done
 
-if [ "${MODE}" = 'benchmark_train' ];then
-    if [ "${autocast_key}" = 'Global.auto_cast' ];then
+if [ "${MODE}" = 'benchmark_train' ]; then
+    if [ "${autocast_key}" = 'Global.auto_cast' ]; then
         echo 'Replcace ${autocast_key}'"('${autocast_key}') with '--precision'"
         autocast_key="--precision"
     fi
@@ -211,7 +211,7 @@ function func_inference(){
 
 if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     GPUID=$3
-    if [ ${#GPUID} -le 0 ];then
+    if [ ${#GPUID} -le 0 ]; then
         env=" "
     else
         env="export CUDA_VISIBLE_DEVICES=${GPUID}"
@@ -225,7 +225,7 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     infer_quant_flag=(${infer_is_quant})
     for infer_model in ${infer_model_dir_list[*]}; do
         # run export
-        if [ ${infer_run_exports[Count]} != "null" ];then
+        if [ ${infer_run_exports[Count]} != "null" ]; then
             save_infer_dir=$(dirname $infer_model)
             set_export_weight=$(func_set_params "${export_weight}" "${infer_model}")
             set_save_infer_key=$(func_set_params "${save_infer_key}" "${save_infer_dir}")
@@ -253,12 +253,12 @@ else
         train_use_gpu=${USE_GPU_KEY[Count]}
         Count=$(($Count + 1))
         ips=""
-        if [ ${gpu} = "-1" ];then
+        if [ ${gpu} = "-1" ]; then
             env=""
-        elif [ ${#gpu} -le 1 ];then
+        elif [ ${#gpu} -le 1 ]; then
             env="export CUDA_VISIBLE_DEVICES=${gpu}"
             eval ${env}
-        elif [ ${#gpu} -le 15 ];then
+        elif [ ${#gpu} -le 15 ]; then
             IFS=","
             array=(${gpu})
             env="export CUDA_VISIBLE_DEVICES=${array[0]}"
@@ -274,7 +274,7 @@ else
         for autocast in ${autocast_list[*]}; do
             if [ ${autocast} = "amp" ]; then
                 set_amp_config="Global.use_amp=True Global.scale_loss=1024.0 Global.use_dynamic_loss_scaling=True"
-            elif [ "${autocast}" = 'fp16' ] && [ "${MODE}" = 'benchmark_train' ];then
+            elif [ "${autocast}" = 'fp16' ] && [ "${MODE}" = 'benchmark_train' ]; then
                 set_amp_config="--amp_level=O2"
             else
                 set_amp_config=" "
@@ -316,7 +316,7 @@ else
                 set_use_gpu=$(func_set_params "${train_use_gpu_key}" "${train_use_gpu}")
                 # if length of ips >= 15, then it is seen as multi-machine
                 # 15 is the min length of ips info for multi-machine: 0.0.0.0,0.0.0.0
-                if [ ${#ips} -le 15 ];then
+                if [ ${#ips} -le 15 ]; then
                     save_log="${LOG_PATH}/${trainer}_gpus_${gpu}_autocast_${autocast}"
                     nodes=1
                 else
@@ -334,23 +334,23 @@ else
                 fi
 
                 set_save_model=$(func_set_params "${save_model_key}" "${save_log}")
-                if [ ${#gpu} -le 2 ];then  # train with cpu or single gpu
+                if [ ${#gpu} -le 2 ]; then  # train with cpu or single gpu
                     cmd="${python} ${run_train} ${set_use_gpu}  ${set_save_model} ${set_epoch} ${set_pretrain} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
-                elif [ ${#ips} -le 15 ];then  # train with multi-gpu
+                elif [ ${#ips} -le 15 ]; then  # train with multi-gpu
                     cmd="${python} -m paddle.distributed.launch --devices=${gpu} ${run_train} ${set_use_gpu} ${set_save_model} ${set_epoch} ${set_pretrain} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                 else     # train with multi-machine
                     cmd="${python} -m paddle.distributed.launch --ips=${ips} --devices=${gpu} ${run_train} ${set_use_gpu} ${set_save_model} ${set_pretrain} ${set_epoch} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                 fi
                 
-                if [ "${MODE}" = 'benchmark_train' ] && [ -n "${log_iters}" ];then
+                if [ "${MODE}" = 'benchmark_train' ] && [ -n "${log_iters}" ]; then
                     cmd="${cmd} --log_iters ${log_iters}"
                 fi
 
-                if [ "${MODE}" = 'benchmark_train' ] && [ -n "${repeats}" ];then
+                if [ "${MODE}" = 'benchmark_train' ] && [ -n "${repeats}" ]; then
                     cmd="${cmd} --repeats ${repeats}"
                 fi
 
-                if [ -n "${amp_level}" ];then
+                if [ -n "${amp_level}" ]; then
                     cmd="${cmd} --amp_level ${amp_level}"
                 fi
 
@@ -359,7 +359,7 @@ else
                 run_command "${cmd}" "${log_path}"
                 status_check $? "${cmd}" "${status_log}" "${model_name}" "${log_path}"
 
-                if [[ "$cmd" == *'paddle.distributed.launch'* ]]; then
+                if [[ "$cmd" = *'paddle.distributed.launch'* ]]; then
                     cat log/workerlog.0 >> ${log_path} 
                 fi
                 

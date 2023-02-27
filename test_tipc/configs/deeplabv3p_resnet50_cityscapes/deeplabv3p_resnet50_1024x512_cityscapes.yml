@@ -36,7 +36,8 @@ model:
   aspp_ratios: [1, 12, 24, 36]
 
 optimizer:
-  type: sgd
+  type: SGD
+  momentum: 0.9
   weight_decay: 0.00004
 
 lr_scheduler:

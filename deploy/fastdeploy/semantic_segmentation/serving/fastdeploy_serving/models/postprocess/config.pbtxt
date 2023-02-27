@@ -1,0 +1,30 @@
+name: "postprocess"
+backend: "python"
+
+input [
+  {
+    name: "post_input_1"
+    data_type: TYPE_INT32
+    dims: [-1, -1, -1]
+  },
+  {
+    name: "post_input_2"
+    data_type: TYPE_STRING
+    dims: [ -1 ]
+  }
+]
+
+output [
+  {
+    name: "post_output"
+    data_type: TYPE_STRING
+    dims: [ -1 ]
+  }
+]
+
+instance_group [
+  {
+      count: 1
+      kind: KIND_CPU
+  }
+]
