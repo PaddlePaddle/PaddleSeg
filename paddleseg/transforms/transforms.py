@@ -581,7 +581,7 @@ class RandomPaddingCrop:
                 format(category_max_ratio))
         if loop_times <= 0:
             raise ValueError(
-                "The value of `category_max_ratio` must be greater than 0, but got {}".
+                "The value of `loop_times` must be greater than 0, but got {}".
                 format(loop_times))
         if isinstance(crop_size, int):
             crop_size = (crop_size, ) * 2
