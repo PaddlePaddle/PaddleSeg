@@ -90,7 +90,7 @@ class StemConv(nn.Layer):
 
     def forward(self, x):
         x = self.proj(x)
-        H, W = paddle.shape(x)[2:]
+        H, W = x.shape[2:]
         x = x.flatten(2).transpose([0, 2, 1])
         return x, H, W
 
@@ -199,7 +199,7 @@ class Block(nn.Layer):
             [dim, 1, 1], "float32", attr=Assign(layer_scale_init_value))
 
     def forward(self, x, H, W):
-        B, N, C = paddle.shape(x)
+        B, N, C = x.shape
         x = x.transpose([0, 2, 1]).reshape([B, C, H, W])
         x = x + self.drop_path(self.layer_scale_1 * self.attn(self.norm1(x)))
         x = x + self.drop_path(self.layer_scale_2 * self.mlp(self.norm2(x)))
@@ -232,7 +232,7 @@ class OverlapPatchEmbed(nn.Layer):
 
     def forward(self, x):
         x = self.proj(x)
-        H, W = paddle.shape(x)[2:]
+        H, W = x.shape[2:]
         x = self.norm(x)
 
         x = x.flatten(2).transpose([0, 2, 1])
@@ -338,7 +338,7 @@ class MSCAN(nn.Layer):
                     zeros_(sublayer.bias)
 
     def forward(self, x):
-        B = paddle.shape(x)[0]
+        B = x.shape[0]
         outs = []
 
         for i in range(self.num_stages):
