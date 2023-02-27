@@ -1,7 +1,6 @@
 _base_: '../_base_/cityscapes.yml'
 
-# for single gpu
-batch_size: 8 
+batch_size: 2 
 iters: 160000
 
 train_dataset:
@@ -51,8 +50,8 @@ lr_scheduler:
 model:
   type: SegNeXt
   backbone:
-    type: MSCAN_T
-    pretrained: 
+    type: MSCAN_B
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mscan_b_imagenet_pretrained.zip
   num_classes: 19
   decoder_cfg:
     channels: 256

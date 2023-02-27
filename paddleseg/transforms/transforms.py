@@ -583,7 +583,8 @@ class RandomPaddingCrop:
             raise ValueError(
                 "The value of `category_max_ratio` must be greater than 0, but got {}".
                 format(loop_times))
-
+        if isinstance(crop_size, int):
+            crop_size = (crop_size, ) * 2
         self.crop_size = tuple(reversed(crop_size))
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
