@@ -1,0 +1,34 @@
+_base_: '../_base_/ade20k.yml'
+
+batch_size: 8
+iters: 160000
+
+model:
+  num_classes: 150
+  pretrained: pretrained/seaformer_base_paddle_pretrained.pdparams
+
+
+optimizer:
+  type: AdamW
+  _inherited_: False
+  beta1: 0.9
+  beta2: 0.999
+  weight_decay: 0.01
+  custom_cfg:
+    - name: pos_emb
+      weight_decay_mult: 0.0
+    - name: head
+      lr_mult: 10.0
+    - name: norm
+      weight_decay_mult: 0.0
+
+lr_scheduler:
+  learning_rate: 0.00025
+  power: 1.0
+  warmup_iters: 1500
+  warmup_start_lr: 1.0e-6
+
+test_config:
+  is_slide: True
+  crop_size: [512, 512]
+  stride: [512, 512]
