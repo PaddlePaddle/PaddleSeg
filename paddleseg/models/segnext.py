@@ -35,6 +35,8 @@ class SegNeXt(nn.Layer):
         backbone (nn.Layer): The backbone must be an instance of MSCAN.
         decoder_cfg (dict): The arguments of decoder.
         num_classes (int): The unique number of target classes.
+        backbone_indices (list(int), optional): The values indicate the indices of backbone output 
+           used as the input of the SegNeXt head. Default: [1, 2, 3].
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
