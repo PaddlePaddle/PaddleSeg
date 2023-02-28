@@ -74,7 +74,7 @@ class _MatrixDecomposition2DBase(nn.Layer, metaclass=ABCMeta):
         return bases, coef
 
     def forward(self, x):
-        B, C, H, W = paddle.shape(x)
+        B, C, H, W = x.shape
 
         # (B, C, H, W) -> (B * S, D, N)
         if self.spatial:
