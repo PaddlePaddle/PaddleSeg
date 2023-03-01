@@ -49,7 +49,7 @@ class FocalLoss(nn.Layer):
         Args:
             logit (Tensor): Logit tensor, the data type is float32, float64. Shape is
                 (N, C, H, W), where C is number of classes.
-            label (Tensor): Label tensor, the data type is int64. Shape is (N, W, W),
+            label (Tensor): Label tensor, the data type is int64. Shape is (N, H, W),
                 where each value is 0 <= label[i] <= C-1.
         Returns:
             (Tensor): The average loss.
@@ -110,7 +110,7 @@ class MultiClassFocalLoss(nn.Layer):
         Args:
             logit (Tensor): Logit tensor, the data type is float32, float64. Shape is
                 (N, C, H, W), where C is number of classes.
-            label (Tensor): Label tensor, the data type is int64. Shape is (N, W, W),
+            label (Tensor): Label tensor, the data type is int64. Shape is (N, H, W),
                 where each value is 0 <= label[i] <= C-1.
         Returns:
             (Tensor): The average loss.
