@@ -1,0 +1,8 @@
+pyyaml >= 5.1
+visualdl >= 2.2.0
+opencv-python
+tqdm
+filelock
+scipy
+prettytable
+sklearn == 0.0
