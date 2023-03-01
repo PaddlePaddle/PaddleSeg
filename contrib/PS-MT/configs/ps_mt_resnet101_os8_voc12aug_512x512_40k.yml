@@ -1,0 +1,74 @@
+batch_size: 8
+iters: 98480
+
+ramp_up: 5
+unsupervised_w: 0.6
+use_weak_lables: false
+weakly_loss_w: 0.4
+gamma: 0.5
+warm_up_num: 2
+
+model:
+  type: EntireModel
+  backbone:
+    type: resnet101
+    bn_eps: 1.e-05
+    bn_momentum: 0.9
+    deep_stem: True
+    stem_width: 64
+    in_channels: 3
+  num_classes: 21
+  datashape: [512,512]
+  pretrained_model: ./paddleseg/models/resnet101_paddle.pdparams
+  sup_loss: CE
+  semi: True
+
+optimizer:
+  type: Momentum
+  learning_rate: 25.e-4
+  weight_decay: 1.e-4
+  momentum: 0.9
+
+lr_scheduler:
+  type: Poly
+  learning_rate: 25.e-4
+
+train_sup_dataset:
+  type: PascalVOC
+  dataset_root: ./VOCtrainval_11-May-2012/VOCdevkit
+  transforms:
+    - type: resize
+      base_size: 600
+    - type: RandomPaddingCrop
+      crop_size: [ 512, 512 ]
+    - type: RandomHorizontalFlip
+    - type: data_aug
+  mode: train_sup
+  n_label: 732
+
+train_unsup_dataset:
+  type: PascalVOC
+  dataset_root: ./VOCtrainval_11-May-2012/VOCdevkit
+  transforms:
+    - type: resize
+      base_size: 600
+    - type: RandomPaddingCrop
+      crop_size: [ 512, 512 ]
+    - type: RandomHorizontalFlip
+    - type: data_aug
+  mode: train_unsup
+  n_label: 732
+
+val_dataset:
+  type: PascalVOC
+  dataset_root: ./VOCtrainval_11-May-2012/VOCdevkit
+  transforms:
+    - type: Normalize
+      mean: [ 0.485, 0.456, 0.406 ]
+      std: [ 0.229, 0.224, 0.225 ]
+  mode: val
+
+loss:
+  types:
+    - type: SemiCeLoss
+  coef: [1]
