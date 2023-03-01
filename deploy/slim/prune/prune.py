@@ -18,14 +18,14 @@ import shutil
 from functools import partial
 
 import yaml
-
 import paddle
 from paddleslim.dygraph import L1NormFilterPruner
 from paddleslim.analysis import dygraph_flops
-from paddleseg.cvlibs.config import Config
+
+from paddleseg.cvlibs.config import Config, SegBuilder
 from paddleseg.core.val import evaluate
 from paddleseg.core.train import train
-from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils import logger, utils
 
 
 def parse_args():
@@ -77,6 +77,8 @@ def parse_args():
         help='Num workers for data loader',
         type=int,
         default=0)
+    parser.add_argument(
+        '--opts', help='Update the key-value pairs of all options.', nargs='+')
 
     return parser.parse_args()
 
@@ -87,9 +89,9 @@ def eval_fn(net, eval_dataset, num_workers):
     return miou
 
 
-def export_model(net, cfg, save_dir):
+def export_model(net, val_dataset, cfg, save_dir):
     net.forward = paddle.jit.to_static(net.forward)
-    input_shape = [1] + list(cfg.val_dataset[0]['img'].shape)
+    input_shape = [1] + list(val_dataset[0]['img'].shape)
     input_var = paddle.ones(input_shape)
     out = net(input_var)
 
@@ -98,7 +100,7 @@ def export_model(net, cfg, save_dir):
 
     yml_file = os.path.join(save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
-        transforms = cfg.dic['val_dataset']['transforms']
+        transforms = cfg.val_dataset_cfg['transforms']
         data = {
             'Deploy': {
                 'transforms': transforms,
@@ -110,11 +112,10 @@ def export_model(net, cfg, save_dir):
 
 
 def main(args):
-    env_info = get_sys_env()
+    env_info = utils.get_sys_env()
 
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
-    paddle.set_device(place)
+    place = 'gpu' if env_info['GPUs used'] else 'cpu'
+    utils.set_device(place)
 
     if not (0.0 < args.pruning_ratio < 1.0):
         raise RuntimeError(
@@ -123,24 +124,19 @@ def main(args):
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
+    os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
+
     cfg = Config(
         args.cfg,
         iters=args.retraining_iters,
         batch_size=args.batch_size,
-        learning_rate=args.learning_rate)
+        learning_rate=args.learning_rate,
+        opts=args.opts)
+    builder = SegBuilder(cfg)
 
-    train_dataset = cfg.train_dataset
-    if not train_dataset:
-        raise RuntimeError(
-            'The training dataset is not specified in the configuration file.')
-
-    val_dataset = cfg.val_dataset
-    if not val_dataset:
-        raise RuntimeError(
-            'The validation dataset is not specified in the c;onfiguration file.'
-        )
-    os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
-    net = cfg.model
+    train_dataset = builder.train_dataset
+    val_dataset = builder.val_dataset
+    net = builder.model
 
     if args.model_path:
         para_state_dict = paddle.load(args.model_path)
@@ -180,17 +176,17 @@ def main(args):
     train(
         net,
         train_dataset,
-        optimizer=cfg.optimizer,
+        optimizer=builder.optimizer,
         save_dir=args.save_dir,
         num_workers=args.num_workers,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
-        losses=cfg.loss)
+        losses=builder.loss)
 
     evaluate(net, val_dataset)
 
     if paddle.distributed.get_rank() == 0:
-        export_model(net, cfg, args.save_dir)
+        export_model(net, val_dataset, cfg, args.save_dir)
 
         ckpt = os.path.join(args.save_dir, f'iter_{args.retraining_iters}')
         if os.path.exists(ckpt):

@@ -67,7 +67,7 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
   * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
   * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
 <div align="center">
-<img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/30883834/216607378-94745b74-0ca1-4d39-a817-de94385496f1.jpg"  width = "200" />  
 </div>
 ## <img src="../docs/images/teach.png" width="20"/> 使用教程
 * [安装说明](docs/install.md)

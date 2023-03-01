@@ -5,7 +5,7 @@ iters: 60000
 
 
 optimizer:
-  type: sgd
+  type: SGD
   weight_decay: 0.0002
 
 loss:

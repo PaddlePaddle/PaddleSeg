@@ -18,7 +18,7 @@ model_name=$(func_parser_value "${lines[1]}")
 trainer_list=$(func_parser_value "${lines[14]}")
 
 # MODE be one of ['lite_train_lite_infer']
-if [ ${MODE} = "lite_train_lite_infer" ];then
+if [ ${MODE} = "lite_train_lite_infer" ]; then
     if [ ${model_name} = "UNETR" ]; then
         mkdir -p ./test_tipc/data
         rm -rf ./test_tipc/data/mini_levir_dataset

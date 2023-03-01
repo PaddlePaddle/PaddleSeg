@@ -10,4 +10,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|GSCNN|ResNet50_OS8|1024x512|80000|80.67%|80.88%|80.88%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/gscnn_resnet50_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/gscnn_resnet50_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=11b79b6a2899739c0d009b1ce34bad77)|
+|GSCNN|ResNet50_OS8|1024x512|80000|80.67%|80.88%|81.42%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/gscnn_resnet50_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/gscnn_resnet50_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=11b79b6a2899739c0d009b1ce34bad77)|
