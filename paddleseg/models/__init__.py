@@ -66,4 +66,5 @@ from .lraspp import LRASPP
 from .mscale_ocrnet import MscaleOCRNet
 from .topformer import TopFormer
 from .rtformer import RTFormer
+from .maskformer import MaskFormer
 from .lpsnet import LPSNet
