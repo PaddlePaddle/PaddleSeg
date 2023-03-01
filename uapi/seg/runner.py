@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import sys
 
 from ..base import BaseRunner
 
@@ -31,23 +30,18 @@ class SegRunner(BaseRunner):
         args = self._gather_opts_args(cli_args)
         args_str = ' '.join(str(arg) for arg in args)
         cmd = f"{python} tools/val.py --config {config_path} {args_str}"
+
         cp = self.run_cmd(
             cmd,
             switch_wdir=True,
             echo=True,
             silent=False,
             pipe_stdout=True,
-            pipe_stderr=True)
-
+            pipe_stderr=True,
+            blocking=False)
         if cp.returncode == 0:
-            sys.stdout.write(cp.stdout)
             metric_dict = _extract_eval_metrics(cp.stdout)
-            for k, v in metric_dict.items():
-                setattr(cp, k, v)
-        else:
-            sys.stderr.write(cp.stderr)
-            # XXX: This can get stuck in some cases?
-            cp.err_info = cp.stderr
+            cp.metrics = metric_dict
         return cp
 
     def predict(self, config_path, cli_args, device):
@@ -125,7 +119,7 @@ def _extract_eval_metrics(stdout):
 
     metric_dict = dict()
     pattern = re.compile(pattern)
-    # TODO: Use lazy operation to reduce cost for long outputs
+    # TODO: Use lazy version to make it more efficient
     lines = stdout.splitlines()
     for line in lines:
         match = pattern.search(line)

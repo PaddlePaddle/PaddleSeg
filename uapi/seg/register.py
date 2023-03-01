@@ -18,6 +18,7 @@ from ..base.register import register_model_info, register_suite_info
 from .model import SegModel
 from .runner import SegRunner
 from .config import SegConfig
+from .check_dataset import check_dataset
 
 # XXX: Hard-code relative path of repo root dir
 _file_path = osp.realpath(__file__)
@@ -27,6 +28,7 @@ register_suite_info({
     'model': SegModel,
     'runner': SegRunner,
     'config': SegConfig,
+    'dataset_checker': check_dataset,
     'runner_root_path': REPO_ROOT_PATH
 })
 
@@ -271,6 +273,78 @@ register_model_info({
     'suite': 'Seg',
     'config_path': SEGFORMER_B0_CFG_PATH,
     'auto_compression_config_path': SEGFORMER_B0_CFG_PATH,
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+})
+SEGFORMER_B1_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'segformer',
+                                 'segformer_b1_cityscapes_1024x512_160k.yml')
+register_model_info({
+    'model_name': 'segformer_b1',
+    'suite': 'Seg',
+    'config_path': SEGFORMER_B1_CFG_PATH,
+    'auto_compression_config_path': SEGFORMER_B1_CFG_PATH,
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+})
+SEGFORMER_B2_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'segformer',
+                                 'segformer_b2_cityscapes_1024x512_160k.yml')
+register_model_info({
+    'model_name': 'segformer_b2',
+    'suite': 'Seg',
+    'config_path': SEGFORMER_B2_CFG_PATH,
+    'auto_compression_config_path': SEGFORMER_B2_CFG_PATH,
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+})
+SEGFORMER_B3_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'segformer',
+                                 'segformer_b3_cityscapes_1024x512_160k.yml')
+register_model_info({
+    'model_name': 'segformer_b3',
+    'suite': 'Seg',
+    'config_path': SEGFORMER_B3_CFG_PATH,
+    'auto_compression_config_path': SEGFORMER_B3_CFG_PATH,
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+})
+SEGFORMER_B4_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'segformer',
+                                 'segformer_b4_cityscapes_1024x512_160k.yml')
+register_model_info({
+    'model_name': 'segformer_b4',
+    'suite': 'Seg',
+    'config_path': SEGFORMER_B4_CFG_PATH,
+    'auto_compression_config_path': SEGFORMER_B4_CFG_PATH,
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+})
+SEGFORMER_B5_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'segformer',
+                                 'segformer_b5_cityscapes_1024x512_160k.yml')
+register_model_info({
+    'model_name': 'segformer_b5',
+    'suite': 'Seg',
+    'config_path': SEGFORMER_B5_CFG_PATH,
+    'auto_compression_config_path': SEGFORMER_B5_CFG_PATH,
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+})
+
+# STDC
+STDC1_SEG50_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'stdcseg',
+                                'stdc1_seg_cityscapes_1024x512_80k.yml')
+register_model_info({
+    'model_name': 'stdc1_seg',
+    'suite': 'Seg',
+    'config_path': STDC1_SEG50_CFG_PATH,
+    'auto_compression_config_path': STDC1_SEG50_CFG_PATH,
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+})
+STDC2_SEG50_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'stdcseg',
+                                'stdc2_seg_cityscapes_1024x512_80k.yml')
+register_model_info({
+    'model_name': 'stdc2_seg',
+    'suite': 'Seg',
+    'config_path': STDC2_SEG50_CFG_PATH,
+    'auto_compression_config_path': STDC2_SEG50_CFG_PATH,
     'supported_apis':
     ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })

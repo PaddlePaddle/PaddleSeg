@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .model import SegModel
-from .runner import SegRunner
-from . import register
-from .check_dataset import check_dataset
+from uapi.tests.smoke.seg_testing_basic_template import test_model
+
+if __name__ == '__main__':
+    test_model('segformer_b3')

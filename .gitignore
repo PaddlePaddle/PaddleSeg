@@ -92,7 +92,6 @@ celerybeat-schedule
 # Environments
 .env
 .venv
-env/
 venv/
 ENV/
 env.bak/
@@ -118,3 +117,18 @@ test_tipc/web/models/
 
 # EISeg
 EISeg/eiseg/config/setting.txt
+
+# UAPI
+/uapi/tests/data/
+/uapi/tests/output/
+
+# TIPC
+/test_tipc/data
+/test_tipc/index
+/test_tipc/infer_models
+/test_tipc/output
+/test_tipc/scripts
+
+/data
+/log
+/output

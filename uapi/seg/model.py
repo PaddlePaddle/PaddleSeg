@@ -15,7 +15,7 @@
 import os
 
 from ..base import BaseModel
-from ..base.utils.path import get_cache_dir
+from ..base.utils.cache import get_cache_dir
 from ..base.utils.arg import CLIArgument
 from ..base.utils.misc import abspath
 
@@ -28,12 +28,12 @@ class SegModel(BaseModel):
               batch_size=None,
               learning_rate=None,
               epochs_iters=None,
+              ips=None,
               device='gpu',
               resume_path=None,
               dy2st=False,
-              amp=None,
+              amp='OFF',
               use_vdl=True,
-              ips=None,
               save_dir=None):
         if dataset is not None:
             # NOTE: We must use an absolute path here, 
@@ -84,9 +84,9 @@ class SegModel(BaseModel):
                  weight_path,
                  dataset=None,
                  batch_size=None,
+                 ips=None,
                  device='gpu',
-                 amp=None,
-                 ips=None):
+                 amp='OFF'):
         weight_path = abspath(weight_path)
         if dataset is not None:
             dataset = abspath(dataset)
@@ -263,13 +263,24 @@ class SegModel(BaseModel):
     def _create_dummy_dataset(self):
         # Create a PaddleSeg-style dataset
         # We will use this fake dataset to pass the config checks of PaddleSeg
+        from PIL import Image
+
         dir_ = os.path.abspath(self._DUMMY_DATASET_DIR)
         if os.path.exists(dir_):
             return dir_
         else:
             os.makedirs(dir_)
+
+            fake_im_filename = 'fake_im.jpg'
+            fake_mask_filename = 'fake_mask.png'
+
+            fake_im = Image.new('RGB', (256, 256))
+            fake_im.save(os.path.join(dir_, fake_im_filename))
+            fake_mask = Image.new('L', (256, 256))
+            fake_mask.save(os.path.join(dir_, fake_mask_filename))
+
             with open(os.path.join(dir_, 'train.txt'), 'w') as f:
-                f.write('fake_train_im_path fake_train_label_path')
+                f.write(f'{fake_im_filename} {fake_mask_filename}')
             with open(os.path.join(dir_, 'val.txt'), 'w') as f:
-                f.write('fake_val_im_path fake_val_label_path')
+                f.write(f'{fake_im_filename} {fake_mask_filename}')
             return dir_

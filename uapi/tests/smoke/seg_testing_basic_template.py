@@ -17,50 +17,12 @@ import os.path as osp
 from uapi import PaddleModel, Config
 
 
-def build_model(config):
-    # Set dataset params
-    config.update({
-        'train_dataset': {
-            'num_classes': 2,
-            'transforms': [{
-                'type': 'Resize',
-                'target_size': [398, 224]
-            }, {
-                'type': 'RandomHorizontalFlip'
-            }, {
-                'type': 'RandomDistort',
-                'brightness_range': 0.4,
-                'contrast_range': 0.4,
-                'saturation_range': 0.4
-            }, {
-                'type': 'Normalize'
-            }],
-        },
-        'val_dataset': {
-            'num_classes': 2,
-            'transforms': [{
-                'type': 'Resize',
-                'target_size': [398, 224]
-            }, {
-                'type': 'Normalize'
-            }],
-        },
-    })
-
-    # Set model params
-    if 'num_classes' in config.model:
-        config.model['num_classes'] = 2
-
-    model = PaddleModel(config=config)
-    return model
-
-
 def test_model(model_name, config=None, input_shape=None):
     if config is None:
         config = Config(model_name)
     else:
         assert model_name == config.model_name
-    model = build_model(config)
+    model = PaddleModel(config=config)
 
     # Hard-code paths
     save_dir = f"uapi/tests/output/{model_name}_res"

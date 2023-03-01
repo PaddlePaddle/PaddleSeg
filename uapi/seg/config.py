@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+from functools import lru_cache
 
 import yaml
 from paddleseg.utils import NoAliasDumper
@@ -41,9 +42,11 @@ class SegConfig(BaseConfig):
             dataset_type = 'Dataset'
         if dataset_type == 'Dataset':
             ds_cfg = self._make_custom_dataset_config(dataset_dir)
-            # For custom datasets, we do not reset the existing dataset configs.
-            # Note however that the user may have to manually set `num_classes`, etc.
+            # For custom datasets, we reset the existing dataset configs.
             self.update(ds_cfg)
+            if 'model' in self and 'num_classes' in self.model:
+                num_classes = ds_cfg['train_dataset']['num_classes']
+                self.model['num_classes'] = num_classes
         else:
             raise ValueError(f"{dataset_type} is not supported.")
 
@@ -61,25 +64,114 @@ class SegConfig(BaseConfig):
             raise ValueError(
                 f"Setting `batch_size` in '{mode}' mode is not supported.")
 
+    def _get_epochs_iters(self):
+        if 'iters' in self:
+            return self.iters
+        else:
+            # Default iters
+            return 1000
+
+    def _get_learning_rate(self):
+        if 'lr_scheduler' not in self or 'learning_rate' not in self.lr_scheduler:
+            # Default lr
+            return 0.0001
+        else:
+            return self.lr_scheduler['learning_rate']
+
+    def _get_batch_size(self, mode='train'):
+        if 'batch_size' in self:
+            return self.batch_size
+        else:
+            # Default batch size
+            return 4
+
+    def _get_qat_epochs_iters(self):
+        return self.get_epochs_iters()
+
+    def _get_qat_learning_rate(self):
+        return self.get_learning_rate()
+
     def _update_dy2st(self, dy2st):
         self.set_val('to_static_training', dy2st)
 
     def _make_custom_dataset_config(self, dataset_root_path):
         # TODO: Description of dataset protocol
+        def _calc_avg_size(sizes):
+            h_sum, w_sum = 0, 0
+            for h, w in sizes.keys():
+                h_sum += h
+                w_sum += w
+            return int(h_sum / len(sizes)), int(w_sum / len(sizes))
+
+        def _round(num, mult=32):
+            res = num + mult // 2
+            res -= res % mult
+            return res
+
+        # Step 1: Extract meta info
+        meta = self._extract_dataset_metadata(dataset_root_path, 'Dataset')
+
+        # Step 2: Construct transforms
+        if 'train.im_sizes' in meta:
+            h, w = _calc_avg_size(meta['train.im_sizes'])
+        else:
+            # Default crop size
+            h, w = 224, 224
+        train_transforms = [{
+            'type': 'RandomPaddingCrop',
+            'crop_size': [_round(w), _round(h)]
+        }, {
+            'type': 'RandomHorizontalFlip'
+        }, {
+            'type': 'Normalize'
+        }]
+        if 'val.im_sizes' in meta:
+            h, w = _calc_avg_size(meta['val.im_sizes'])
+        else:
+            # Default val target size
+            h, w = 224, 224
+        val_transforms = [{
+            'type': 'Resize',
+            'target_size': [_round(w), _round(h)]
+        }, {
+            'type': 'Normalize'
+        }]
+
+        # Step 3: Get number of classes
+        # By default we set the number of classes to 2
+        num_classes = meta.get('num_classes', 2)
+
+        # Step 4: Construct dataset config
         return {
             'train_dataset': {
                 'type': 'Dataset',
                 'dataset_root': dataset_root_path,
                 'train_path': os.path.join(dataset_root_path, 'train.txt'),
-                'mode': 'train'
+                'mode': 'train',
+                'num_classes': num_classes,
+                'transforms': train_transforms
             },
             'val_dataset': {
                 'type': 'Dataset',
                 'dataset_root': dataset_root_path,
                 'val_path': os.path.join(dataset_root_path, 'val.txt'),
-                'mode': 'val'
+                'mode': 'val',
+                'num_classes': num_classes,
+                'transforms': val_transforms
             },
         }
+
+    # TODO: A full scanning of dataset can be time-consuming. 
+    # Maybe we should cache the result to disk to avoid rescanning in another run?
+    @lru_cache(8)
+    def _extract_dataset_metadata(self, dataset_root_path, dataset_type):
+        from .check_dataset import check_dataset
+        meta = check_dataset(dataset_root_path, dataset_type)
+        if not meta:
+            # Return an empty dict
+            return dict()
+        else:
+            return meta
 
     def __repr__(self):
         # According to
