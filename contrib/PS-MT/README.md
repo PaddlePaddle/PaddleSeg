@@ -31,6 +31,7 @@ python -m pip install paddlepaddle-gpu==2.3.0 -i https://mirror.baidu.com/pypi/s
 
 1. Download [origion dataset](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar),[SegmentationClassAug](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip?dl=0)
 2. Download [pretrained model](https://onedrive.live.com/redir?resid=B71317D47B7AC1CB!895&authkey=!AGEiz96zF_Rougc&e=c5cZvF) on Pascal VOC12 and save it to paddleseg/models/.
+2. you should put the files in voc_split into /VOCtrainval_11-May-2012/VOCdevkit/VOC2012/ImageSets/Segmentation
 
 ### 3. Train and test
 
