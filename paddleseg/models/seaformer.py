@@ -1,4 +1,3 @@
-import math
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -35,13 +34,10 @@ class Mlp(nn.Layer):
                  hidden_features=None,
                  out_features=None,
                  act_layer=nn.ReLU,
-                 drop=0.,
-                 norm_cfg=dict(
-                     type='BN', requires_grad=True)):
+                 drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        # self.fc1 = Conv2d_BN(in_features, hidden_features, norm_cfg=norm_cfg)
         self.fc1 = layers.ConvBN(
             in_features, hidden_features, 1, bias_attr=False)
         self.dwconv = nn.Conv2D(
@@ -53,7 +49,6 @@ class Mlp(nn.Layer):
             bias_attr=True,
             groups=hidden_features)
         self.act = act_layer()
-        # self.fc2 = Conv2d_BN(hidden_features, out_features, norm_cfg=norm_cfg)
         self.fc2 = layers.ConvBN(
             hidden_features, out_features, 1, bias_attr=False)
         self.drop = nn.Dropout(drop)
@@ -89,13 +84,9 @@ class InvertedResidual(nn.Layer):
 
         modules = []
         if expand_ratio != 1:
-            # pw
-            # layers.append(Conv2d_BN(inp, hidden_dim, ks=1, norm_cfg=norm_cfg))
             modules.append(layers.ConvBN(inp, hidden_dim, 1, bias_attr=False))
             modules.append(activations())
         modules.extend([
-            # dw
-            # Conv2d_BN(hidden_dim, hidden_dim, ks=ks, stride=stride, pad=ks//2, groups=hidden_dim, norm_cfg=norm_cfg),
             layers.ConvBN(
                 hidden_dim,
                 hidden_dim,
@@ -103,12 +94,8 @@ class InvertedResidual(nn.Layer):
                 stride=stride,
                 padding=ks // 2,
                 groups=hidden_dim,
-                bias_attr=False),
-            activations(),
-            # pw-linear
-            # Conv2d_BN(hidden_dim, oup, ks=1, norm_cfg=norm_cfg)
-            layers.ConvBN(
-                hidden_dim, oup, 1, bias_attr=False)
+                bias_attr=False), activations(), layers.ConvBN(
+                    hidden_dim, oup, 1, bias_attr=False)
         ])
         self.conv = nn.Sequential(*modules)
         self.out_channels = oup
@@ -127,8 +114,6 @@ class StackedMV2Block(nn.Layer):
                  stem,
                  inp_channel=16,
                  activation=nn.ReLU,
-                 norm_cfg=dict(
-                     type='BN', requires_grad=True),
                  width_mult=1.):
         super().__init__()
         self.stem = stem
@@ -151,9 +136,7 @@ class StackedMV2Block(nn.Layer):
                 ks=k,
                 stride=s,
                 expand_ratio=t,
-                norm_cfg=norm_cfg,
                 activations=activation)
-            # self.add_module(layer_name, layer)
             self.add_sublayer(layer_name, layer)
             inp_channel = output_channel
             self.layers.append(layer_name)
@@ -161,7 +144,7 @@ class StackedMV2Block(nn.Layer):
     def forward(self, x):
         if self.stem:
             x = self.stem_block(x)
-        for i, layer_name in enumerate(self.layers):
+        for _, layer_name in enumerate(self.layers):
             layer = getattr(self, layer_name)
             x = layer(x)
         return x
@@ -190,53 +173,36 @@ class SqueezeAxialPositionalEmbedding(nn.Layer):
 
 
 class Sea_Attention(nn.Layer):
-    def __init__(
-            self,
-            dim,
-            key_dim,
-            num_heads,
-            attn_ratio=4,
-            activation=None,
-            norm_cfg=dict(
-                type='BN', requires_grad=True), ):
+    def __init__(self, dim, key_dim, num_heads, attn_ratio=4, activation=None):
         super().__init__()
         self.num_heads = num_heads
         self.scale = key_dim**-0.5
         self.key_dim = key_dim
-        self.nh_kd = nh_kd = key_dim * num_heads  # num_head key_dim
+        self.nh_kd = key_dim * num_heads  # num_head key_dim
         self.d = int(attn_ratio * key_dim)
         self.dh = int(attn_ratio * key_dim) * num_heads
         self.attn_ratio = attn_ratio
 
-        # self.to_q = Conv2d_BN(dim, nh_kd, 1, norm_cfg=norm_cfg)
-        self.to_q = layers.ConvBN(dim, nh_kd, 1, bias_attr=False)
+        self.to_q = layers.ConvBN(dim, self.nh_kd, 1, bias_attr=False)
 
-        self.to_k = layers.ConvBN(dim, nh_kd, 1, bias_attr=False)
+        self.to_k = layers.ConvBN(dim, self.nh_kd, 1, bias_attr=False)
 
         self.to_v = layers.ConvBN(dim, self.dh, 1, bias_attr=False)
 
         self.proj = nn.Sequential(
-            activation(),
-            #   Conv2d_BN(self.dh, dim, bn_weight_init=0, norm_cfg=norm_cfg)
-            layers.ConvBN(
+            activation(), layers.ConvBN(
                 self.dh, dim, 1, bias_attr=False))
         self.proj_encode_row = nn.Sequential(
-            activation(),
-            #   Conv2d_BN(self.dh, self.dh, bn_weight_init=0, norm_cfg=norm_cfg)
-            layers.ConvBN(
+            activation(), layers.ConvBN(
                 self.dh, self.dh, 1, bias_attr=False))
-        self.pos_emb_rowq = SqueezeAxialPositionalEmbedding(nh_kd, 16)
-        self.pos_emb_rowk = SqueezeAxialPositionalEmbedding(nh_kd, 16)
+        self.pos_emb_rowq = SqueezeAxialPositionalEmbedding(self.nh_kd, 16)
+        self.pos_emb_rowk = SqueezeAxialPositionalEmbedding(self.nh_kd, 16)
         self.proj_encode_column = nn.Sequential(
-            activation(),
-            # Conv2d_BN(self.dh, self.dh, bn_weight_init=0, norm_cfg=norm_cfg),
-            layers.ConvBN(
+            activation(), layers.ConvBN(
                 self.dh, self.dh, 1, bias_attr=False))
-        self.pos_emb_columnq = SqueezeAxialPositionalEmbedding(nh_kd, 16)
-        self.pos_emb_columnk = SqueezeAxialPositionalEmbedding(nh_kd, 16)
+        self.pos_emb_columnq = SqueezeAxialPositionalEmbedding(self.nh_kd, 16)
+        self.pos_emb_columnk = SqueezeAxialPositionalEmbedding(self.nh_kd, 16)
 
-        # self.dwconv = Conv2d_BN(2*self.dh, 2*self.dh, ks=3, stride=1, pad=1, dilation=1,
-        #          groups=2*self.dh, norm_cfg=norm_cfg)
         self.dwconv = layers.ConvBN(
             2 * self.dh,
             2 * self.dh,
@@ -248,7 +214,6 @@ class Sea_Attention(nn.Layer):
             bias_attr=False)
         self.act = activation()
 
-        # self.pwconv = Conv2d_BN(2*self.dh, dim, ks=1, norm_cfg=norm_cfg)
         self.pwconv = layers.ConvBN(2 * self.dh, dim, 1, bias_attr=False)
         self.sigmoid = h_sigmoid()
 
@@ -308,9 +273,7 @@ class Block(nn.Layer):
                  attn_ratio=2.,
                  drop=0.,
                  drop_path=0.,
-                 act_layer=nn.ReLU,
-                 norm_cfg=dict(
-                     type='BN2d', requires_grad=True)):
+                 act_layer=nn.ReLU):
         super().__init__()
         self.dim = dim
         self.num_heads = num_heads
@@ -321,8 +284,7 @@ class Block(nn.Layer):
             key_dim=key_dim,
             num_heads=num_heads,
             attn_ratio=attn_ratio,
-            activation=act_layer,
-            norm_cfg=norm_cfg)
+            activation=act_layer)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity(
@@ -331,8 +293,7 @@ class Block(nn.Layer):
         self.mlp = Mlp(in_features=dim,
                        hidden_features=mlp_hidden_dim,
                        act_layer=act_layer,
-                       drop=drop,
-                       norm_cfg=norm_cfg)
+                       drop=drop)
 
     def forward(self, x1):
         x1 = x1 + self.drop_path(self.attn(x1))
@@ -351,8 +312,6 @@ class BasicLayer(nn.Layer):
                  drop=0.,
                  attn_drop=0.,
                  drop_path=0.,
-                 norm_cfg=dict(
-                     type='BN2d', requires_grad=True),
                  act_layer=None):
         super().__init__()
         self.block_num = block_num
@@ -369,7 +328,6 @@ class BasicLayer(nn.Layer):
                     drop=drop,
                     drop_path=drop_path[i]
                     if isinstance(drop_path, list) else drop_path,
-                    norm_cfg=norm_cfg,
                     act_layer=act_layer))
 
     def forward(self, x):
@@ -378,40 +336,6 @@ class BasicLayer(nn.Layer):
             x = self.transformer_blocks[i](x)
         return x
 
-
-# class h_sigmoid(nn.Layer):
-#     def __init__(self, inplace=True):
-#         super(h_sigmoid, self).__init__()
-#         self.relu = nn.ReLU6()
-
-#     def forward(self, x):
-#         return self.relu(x + 3) / 6
-
-# class Fusion_block(nn.Layer):
-#     def __init__(
-#             self,
-#             inp: int,
-#             oup: int,
-#             embed_dim: int):
-#         super(Fusion_block, self).__init__()
-#         self.local_embedding = layers.ConvBN(inp, embed_dim, kernel_size=1, dilation=1, groups=1, bias_attr=False)
-#         self.global_act = layers.ConvBN(oup, embed_dim, kernel_size=1, dilation=1, groups=1, bias_attr=False)
-#         self.act = h_sigmoid()
-
-#     def forward(self, x_l, x_g):
-#         '''
-#         x_g: global features
-#         x_l: local features
-#         '''
-#         B, C, H, W = x_l.shape
-#         B, C_c, H_c, W_c = x_g.shape
-#         #x_l = self.local_dwconv(x_l)
-#         local_feat = self.local_embedding(x_l)
-#         global_act = self.global_act(x_g)
-#         sig_act = F.interpolate(self.act(global_act), size=(H, W), mode='bilinear', align_corners=False)
-#         out = local_feat * sig_act
-
-#         return out
 
 model_cfgs = dict(
     cfg1=[
@@ -423,13 +347,7 @@ model_cfgs = dict(
     cfg2=[[5, 3, 64, 2], [5, 3, 64, 1]],
     cfg3=[[3, 3, 128, 2], [3, 3, 128, 1]],
     cfg4=[[5, 4, 192, 2]],
-    cfg5=[[3, 6, 256, 2]],
-    channels=[16, 32, 64, 128, 192, 256],
-    depths=[4, 4],
-    key_dims=[16, 24],
-    emb_dims=[192, 256],
-    num_heads=8,
-    drop_path_rate=0.1, )
+    cfg5=[[3, 6, 256, 2]])
 
 
 class SeaFormer(nn.Layer):
@@ -447,8 +365,6 @@ class SeaFormer(nn.Layer):
                  attn_ratios=2,
                  mlp_ratios=[2, 4],
                  drop_path_rate=0.1,
-                 norm_cfg=dict(
-                     type='BN', requires_grad=True),
                  act_layer=nn.ReLU6,
                  num_classes=1000,
                  pretrained=None):
@@ -457,14 +373,12 @@ class SeaFormer(nn.Layer):
         self.channels = channels
         self.depths = depths
         self.cfgs = cfgs
-        self.norm_cfg = norm_cfg
 
         for i in range(len(cfgs)):
             smb = StackedMV2Block(
                 cfgs=cfgs[i],
                 stem=True if i == 0 else False,
-                inp_channel=channels[i],
-                norm_cfg=norm_cfg)
+                inp_channel=channels[i])
             setattr(self, f"smb{i + 1}", smb)
 
         for i in range(len(depths)):
@@ -481,31 +395,11 @@ class SeaFormer(nn.Layer):
                 drop=0,
                 attn_drop=0,
                 drop_path=dpr,
-                norm_cfg=norm_cfg,
                 act_layer=act_layer)
             setattr(self, f"trans{i + 1}", trans)
 
         if pretrained is not None:
             utils.load_pretrained_model(self, pretrained)
-
-    def init_weights(self):
-
-        for layer in self.sublayers():
-            if isinstance(layer, nn.Conv2D):
-                std = layer.kernel_size[0] * layer.kernel_size[
-                    1] * layer.out_channels
-                std //= layer.groups
-                param_init.normal_init(layer.weight, std=std)
-            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                param_init.constant_init(layer.weight, value=1.0)
-                param_init.constant_init(layer.bias, value=0.0)
-            elif isinstance(layer, nn.Linear):
-                param_init.normal_init(layer.weight, std=0.01)
-                if layer.bias is not None:
-                    zeros_(layer.bias)
-            elif isinstance(layer, nn.LayerNorm):
-                zeros_(layer.bias)
-                ones_(layer.weight)
 
     def forward(self, x):
         outputs = []
@@ -525,25 +419,37 @@ class SeaFormer(nn.Layer):
 
         return outputs
 
+    def init_weights(self):
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Conv2D):
+                std = layer.kernel_size[0] * layer.kernel_size[
+                    1] * layer.out_channels
+                std //= layer.groups
+                param_init.normal_init(layer.weight, std=std)
+            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(layer.weight, value=1.0)
+                param_init.constant_init(layer.bias, value=0.0)
+            elif isinstance(layer, nn.Linear):
+                param_init.normal_init(layer.weight, std=0.01)
+                if layer.bias is not None:
+                    zeros_(layer.bias)
+            elif isinstance(layer, nn.LayerNorm):
+                zeros_(layer.bias)
+                ones_(layer.weight)
+
 
 class Fusion_block(nn.Layer):
     def __init__(self, inp: int, oup: int, embed_dim: int):
         super(Fusion_block, self).__init__()
-        # self.local_embedding = ConvModule(inp, embed_dim, kernel_size=1, norm_cfg=self.norm_cfg, act_cfg=None)
         self.local_embedding = layers.ConvBN(
             inp, embed_dim, kernel_size=1, bias_attr=False)
-        # self.global_act = ConvModule(oup, embed_dim, kernel_size=1, norm_cfg=self.norm_cfg, act_cfg=None)
         self.global_act = layers.ConvBN(
             oup, embed_dim, kernel_size=1, bias_attr=False)
         self.act = h_sigmoid()
 
     def forward(self, x_l, x_g):
-        '''
-        x_g: global features
-        x_l: local features
-        '''
+
         B, C, H, W = x_l.shape
-        B, C_c, H_c, W_c = x_g.shape
 
         local_feat = self.local_embedding(x_l)
         global_act = self.global_act(x_g)
@@ -557,7 +463,7 @@ class Fusion_block(nn.Layer):
 
 
 class h_sigmoid(nn.Layer):
-    def __init__(self, inplace=True):
+    def __init__(self):
         super(h_sigmoid, self).__init__()
         self.relu = nn.ReLU6()
 
@@ -566,10 +472,6 @@ class h_sigmoid(nn.Layer):
 
 
 class LightHead(nn.Layer):
-    """
-    SEA-Former: Squeeze-enhanced Axial Transformer for Mobile Semantic Segmentation
-    """
-
     def __init__(self,
                  backbone,
                  in_channels=[64, 192, 256],
@@ -583,8 +485,7 @@ class LightHead(nn.Layer):
                  input_transform='multiple_select'):
         super(LightHead, self).__init__()
 
-        head_channels = channels
-        # in_channels = self.in_channels
+        self.head_channels = channels
         self.backbone = backbone
 
         self.in_index = in_index
@@ -594,11 +495,11 @@ class LightHead(nn.Layer):
         self.embed_dims = embed_dims
 
         self.linear_fuse = layers.ConvBNReLU(
-            head_channels,
-            head_channels,
+            self.head_channels,
+            self.head_channels,
             1,
             stride=1,
-            groups=head_channels if is_dw else 1,
+            groups=self.head_channels if is_dw else 1,
             bias_attr=False)
         if dropout_ratio > 0:
             self.dropout = nn.Dropout2D(dropout_ratio)
