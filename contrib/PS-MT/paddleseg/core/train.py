@@ -137,7 +137,7 @@ def train(model,
         return_list=True,
         worker_init_fn=worker_init_fn,
     )
-    
+
     # 预热训练
     if warm_up_num is not None:
         for num in range(0, warm_up_num):
@@ -160,7 +160,7 @@ def train(model,
         if os.path.exists(save_dir):
             os.remove(save_dir)
         os.makedirs(save_dir, exist_ok=True)
-    ddp=False  # 分布式训练
+    ddp = False  # 分布式训练
     if nranks > 1:
         ddp = True
         paddle.distributed.fleet.init(is_collective=True)
@@ -195,9 +195,7 @@ def train(model,
     save_models = deque()
     batch_start = time.time()
     iter = start_iter
-    curr_id = 2
     while iter < iters:
-        curr_id = 1 if curr_id ==2 else 1
         model.freeze_teachers_parameters()
         model.train()
         dataloader = (zip(cycle(sup_loader), unsup_loader))
@@ -223,6 +221,7 @@ def train(model,
                 input_ul_wk, input_ul_str, target_ul = None, None, None
             # strong aug for all the supervised images
             input_l, target_l = input_l.cuda(blocking=False), target_l.cuda(blocking=False).astype('int64')
+            curr_id = 1 if ((iter - 1) // iters_per_epoch) % 2 != 0 else 2
             if model.mode == "semi":
                 t1_prob, t2_prob = train_assit.predict_with_out_grad(model, input_ul_wk)
                 # calculate the assistance result from other teacher
@@ -252,7 +251,7 @@ def train(model,
                 output_l, output_ul = model(x_l=input_l, x_ul=input_ul_str, id=0, warm_up=False)
             # 有监督损失
             loss_sup = F.cross_entropy(output_l, target_l, ignore_index=255, axis=1)
-            logits_lists=[output_ul]
+            logits_lists = [output_ul]
             loss_list = loss_computation(
                 logits_list=logits_lists,
                 labels=predict_target_ul,
@@ -275,13 +274,14 @@ def train(model,
             lr = lr_scheduler_s.get_lr()
 
             train_profiler.add_profiler_step(profiler_options)
+
             with paddle.no_grad():
                 if curr_id == 1:
-                    train_assit.update_teachers(model,teacher_encoder=model.encoder1,
-                                         teacher_decoder=model.decoder1)
+                    train_assit.update_teachers(model, teacher_encoder=model.encoder1,
+                                                teacher_decoder=model.decoder1)
                 else:
-                    train_assit.update_teachers(model,teacher_encoder=model.encoder2,
-                                         teacher_decoder=model.decoder2)
+                    train_assit.update_teachers(model, teacher_encoder=model.encoder2,
+                                                teacher_decoder=model.decoder2)
                 if ddp:
                     paddle.distributed.barrier()
 
@@ -339,7 +339,7 @@ def train(model,
                     precision=precision,
                     amp_level=amp_level,
                     **test_config)
-                
+                model.freeze_teachers_parameters()
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
