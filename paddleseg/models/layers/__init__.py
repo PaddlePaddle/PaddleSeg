@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .layer_libs import ConvBNReLU, ConvBN, SeparableConvBNReLU, DepthwiseConvBN, AuxLayer, SyncBatchNorm, JPU, ConvBNPReLU, ConvBNAct, ConvBNLeakyReLU, ConvGNAct
+from .layer_libs import ConvBNReLU, ConvBN, SeparableConvBNReLU, DepthwiseConvBN, AuxLayer, SyncBatchNorm, JPU, ConvBNPReLU, ConvBNAct, ConvBNLeakyReLU, ConvNormAct, ConvGNAct
 from .activation import Activation
 from .pyramid_pool import ASPPModule, PPModule
 from .attention import AttentionBlock

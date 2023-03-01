@@ -133,6 +133,7 @@ class BCELoss(nn.Layer):
         if len(label.shape) != len(logit.shape):
             label = paddle.unsqueeze(label, 1)
         mask = (label != self.ignore_index)
+        label = paddle.where(mask, label, paddle.zeros_like(label))
         mask = paddle.cast(mask, 'float32')
         # label.shape should equal to the logit.shape
         if label.shape[1] != logit.shape[1]:
