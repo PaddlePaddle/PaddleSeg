@@ -24,6 +24,7 @@ import paddle.nn.functional as F
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager, param_init
 from paddleseg.utils import utils
+from paddleseg.core.train import check_logits_losses
 
 
 @manager.MODELS.add_component
@@ -128,6 +129,17 @@ class MaskFormer(nn.Layer):
             mode="bilinear",
             align_corners=False)[0]
         return result
+
+    def loss_computation(self, logits_list, losses, data):
+        check_logits_losses(logits_list, losses)
+        loss_list = []
+        for i in range(len(logits_list)):
+            logits = logits_list[i]
+            loss_i = losses['types'][i]
+            coef_i = losses['coef'][i]
+
+            loss_list.append(coef_i * loss_i(logits, data['instances']))
+        return loss_list
 
 
 class BasePixelDecoder(nn.Layer):

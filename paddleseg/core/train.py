@@ -34,7 +34,7 @@ def check_logits_losses(logits_list, losses):
             .format(len_logits, len_losses))
 
 
-def loss_computation(logits_list, labels, edges, losses, targets=None):
+def loss_computation(logits_list, labels, edges, losses):
     check_logits_losses(logits_list, losses)
     loss_list = []
     for i in range(len(logits_list)):
@@ -52,10 +52,7 @@ def loss_computation(logits_list, labels, edges, losses, targets=None):
             loss_list.append(coef_i *
                              loss_i(logits_list[0], logits_list[1].detach()))
         else:
-            if targets is not None:
-                loss_list.append(coef_i * loss_i(logits, targets))
-            else:
-                loss_list.append(coef_i * loss_i(logits, labels))
+            loss_list.append(coef_i * loss_i(logits, labels))
     return loss_list
 
 
@@ -193,12 +190,19 @@ def train(model,
                         custom_black_list={'bilinear_interp_v2'}):
                     logits_list = ddp_model(images) if nranks > 1 else model(
                         images)
-                    loss_list = loss_computation(
-                        logits_list=logits_list,
-                        labels=labels,
-                        edges=edges,
-                        losses=losses,
-                        targets=data.get('instances', None))
+                    if nranks > 1 and hasattr(ddp_model._layers,
+                                              'loss_computation'):
+                        loss_list = ddp_model._layers.loss_computation(
+                            logits_list, losses, data)
+                    elif nranks == 1 and hasattr(model, 'loss_computation'):
+                        loss_list = model.loss_computation(logits_list, losses,
+                                                           data)
+                    else:
+                        loss_list = loss_computation(
+                            logits_list=logits_list,
+                            labels=labels,
+                            edges=edges,
+                            losses=losses)
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss
@@ -209,12 +213,20 @@ def train(model,
                     scaler.minimize(optimizer, scaled)  # update parameters
             else:
                 logits_list = ddp_model(images) if nranks > 1 else model(images)
-                loss_list = loss_computation(
-                    logits_list=logits_list,
-                    labels=labels,
-                    edges=edges,
-                    losses=losses,
-                    targets=data.get('instances', None))
+
+                if nranks > 1 and hasattr(ddp_model._layers,
+                                          'loss_computation'):
+                    loss_list = ddp_model._layers.loss_computation(logits_list,
+                                                                   losses, data)
+                elif nranks == 1 and hasattr(model, 'loss_computation'):
+                    loss_list = model.loss_computation(logits_list, losses,
+                                                       data)
+                else:
+                    loss_list = loss_computation(
+                        logits_list=logits_list,
+                        labels=labels,
+                        edges=edges,
+                        losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
                 optimizer.step()
