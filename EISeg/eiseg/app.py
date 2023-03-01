@@ -1332,7 +1332,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     cv2.fillPoly(pesudo, pts=pts, color=idx)
         return pesudo.astype("uint8")
 
-    def getPolygon(self, mask):
+    def createPolygonFromMask(self, mask):
         m_shape = mask.shape
         for i_clas in np.unique(mask):
             if i_clas == 0:
@@ -1781,7 +1781,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.updateImage()
             current_mask = self.getVideoMask()
             if current_mask is not None and len(self.scene.polygon_items) == 0:
-                self.getPolygon(current_mask)
+                self.createPolygonFromMask(current_mask)
         # 状态改变
         if self.status == self.EDITING:
             self.status = self.ANNING
@@ -2993,7 +2993,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def getVideoMask(self):
         try:
             return self.video_masks[self.video.cursur]
-        except:
+        except (TypeError, KeyError):
             return None
 
     def on_propgation(self):
