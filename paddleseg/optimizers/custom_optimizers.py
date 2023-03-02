@@ -19,8 +19,6 @@ from functools import partial
 import paddle
 from paddle.optimizer import AdamW
 
-__all__ = ['AdamWDL', ]
-
 
 def layerwise_lr_decay(decay_rate, name_dict, n_layers, param):
     """
