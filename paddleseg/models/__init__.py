@@ -68,3 +68,4 @@ from .topformer import TopFormer
 from .rtformer import RTFormer
 from .maskformer import MaskFormer
 from .lpsnet import LPSNet
+from .knet import KNet

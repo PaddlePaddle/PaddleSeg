@@ -1,0 +1,63 @@
+_base_: '../_base_/ade20k.yml'
+
+batch_size: 4
+iters: 80000
+
+model:
+  type: KNet
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  backbone_indices: [0, 1, 2, 3]
+  kernel_update_head_params:
+    num_classes: 150
+    num_heads: 8
+    num_mask_fcs: 1
+    feedforward_channels: 2048
+    in_channels: 256
+    out_channels: 256
+    dropout: 0.0
+    conv_kernel_size: 1
+    with_ffn: True
+  num_stages: 3
+  kernel_generate_head_params:
+    head_layer: UPerKernelHead
+    num_classes: 150
+    fpn_inplanes: [256, 512, 1024, 2048]
+    channels: 256
+    dropout_prob: 0.1
+    enable_auxiliary_loss: False
+    align_corners: False
+  channels: 512
+  dropout_prob: 0.1
+  enable_auxiliary_loss: True
+
+optimizer:
+  _inherited_: False
+  type: AdamW
+  weight_decay: 0.0005
+  grad_clip_cfg:
+    name: ClipGradByNorm
+    clip_norm: 1
+
+lr_scheduler:
+  _inherited_: False
+  type: MultiStepDecay
+  milestones: [60000, 72000]
+  warmup_iters: 1000
+  warmup_start_lr: 1.0e-5
+  learning_rate: 0.0001
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  types:
+    - type: CrossEntropyLoss
+  types:
+    - type: CrossEntropyLoss
+  types:
+    - type: CrossEntropyLoss
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 1, 1, 1, 0.4]
