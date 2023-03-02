@@ -1279,7 +1279,7 @@ class SeaFormer(nn.Layer):
                 x.item() for x in paddle.linspace(0, drop_path_rate, depths[i])
             ]
             # dpr = [0 for _ in paddle.linspace(0, drop_path_rate, depths[i])]
-            trans = BasicLayer(
+            trans = BasicLayer(  # 每个是一个分辨率下的Attention
                 block_num=depths[i],
                 embedding_dim=embed_dims[i],
                 key_dim=key_dims[i],
@@ -1291,7 +1291,8 @@ class SeaFormer(nn.Layer):
                 drop_path=dpr,
                 act_layer=act_layer,
                 lr_mult=lr_mult,
-                stride_attention=(i == 0) if stride_attention else False,
+                # stride_attention=(i == 0) if stride_attention else False,
+                stride_attention=stride_attention,
                 talking_locality=talking_locality)  # False
             setattr(self, f"trans{i+1}", trans)
 
@@ -1427,6 +1428,60 @@ def SeaFormer_MV3_Base(**kwargs):
 
 
 @manager.BACKBONES.add_component
+def SeaFormer_MV3_Base_4stage(**kwargs):
+    cfg1 = [
+        # k t c, s
+        [3, 16, 16, True, "relu", 1],
+        [3, 64, 32, False, "relu", 2],
+        [3, 96, 32, False, "relu", 1]
+    ]
+    cfg2 = [[5, 128, 64, True, "hardswish", 2],
+            [5, 240, 64, True, "hardswish", 1]]
+    cfg3 = [[5, 384, 128, True, "hardswish", 2],
+            [5, 384, 128, True, "hardswish", 1]]
+    cfg4 = [[5, 768, 192, True, "hardswish", 2],
+            [5, 768, 192, True, "hardswish", 1]]
+
+    channels = [16, 32, 64, 128, 192]
+    depths = [3, 3]
+    key_dims = [16, 24]
+    emb_dims = [128, 192]
+    num_heads = 8
+    drop_path_rate = 0.1
+    # cfg1 = [
+    #     # k t c, s
+    #     [3, 16, 16, True, "relu", 1],
+    #     [3, 64, 32, False, "relu", 2],
+    #     [3, 96, 32, False, "relu", 1]
+    # ]
+    # cfg2 = [[5, 128, 64, True, "hardswish", 2],
+    #         [5, 192, 64, True, "hardswish", 1],
+    #         [5, 256, 128, True, "hardswish", 1],
+    #         [5, 384, 128, True, "hardswish", 1]]
+    # cfg3 = [[5, 512, 192, True, "hardswish", 2]]
+    # cfg4 = [[5, 768, 256, True, "hardswish", 2]]
+    # channels = [16, 32, 128, 192, 256]
+    # depths = [3, 3]
+    # key_dims = [16, 24]
+    # emb_dims = [192, 256]
+    # num_heads = 8
+    # drop_path_rate = 0.1
+
+    model = SeaFormer(
+        cfgs=[cfg1, cfg2, cfg3, cfg4],
+        channels=channels,
+        embed_dims=emb_dims,
+        key_dims=key_dims,
+        depths=depths,
+        num_heads=num_heads,
+        drop_path_rate=drop_path_rate,
+        act_layer=nn.ReLU6,
+        mv3=True,
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
 def SeaFormer_Base(**kwargs):
     # cfgs = [
     #     # ktc, s
@@ -1442,15 +1497,15 @@ def SeaFormer_Base(**kwargs):
     #     [3, 6, 160, 1]  #            
     # ]
     cfg1 = [
-        # ktc, s
+        # k t c, s
         [3, 1, 16, 1],
         [3, 4, 32, 2],
         [3, 3, 32, 1]
     ]
     cfg2 = [[5, 3, 64, 2], [5, 3, 64, 1]]
     cfg3 = [[3, 3, 128, 2], [3, 3, 128, 1]]
-    cfg4 = [[5, 4, 192, 2]]
-    cfg5 = [[3, 6, 256, 2]]
+    cfg4 = [[5, 4, 192, 2]]  # 256
+    cfg5 = [[3, 6, 256, 2]]  # 320
     channels = [16, 32, 64, 128, 192, 256]
     if not kwargs['stride_attention']:
         depths = [4, 4]
@@ -1459,9 +1514,9 @@ def SeaFormer_Base(**kwargs):
         mlp_ratios = [2, 4]
     else:
         depths = [3, 4, 4]  # strided attention params
-        key_dims = [8, 16, 24]
-        emb_dims = [128, 192, 256]
-        mlp_ratios = [2, 2, 4]
+        key_dims = [8, 16, 24]  # [16, 20, 24]
+        emb_dims = [128, 192, 256]  # [192, 256, 320]
+        mlp_ratios = [2, 2, 4]  # [2,4,6]
 
     num_heads = 8
     drop_path_rate = 0.1
