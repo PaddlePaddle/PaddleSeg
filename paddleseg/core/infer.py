@@ -208,12 +208,13 @@ def aug_inference(model,
     final_logit = 0
     h_input, w_input = im.shape[-2], im.shape[-1]
     flip_comb = flip_combination(flip_horizontal, flip_vertical)
+    num_augs = len(scales) * len(flip_comb)
     for scale in scales:
         h = int(h_input * scale + 0.5)
         w = int(w_input * scale + 0.5)
-        im = F.interpolate(im, [h, w], mode='bilinear')
+        im_scale = F.interpolate(im, [h, w], mode='bilinear')
         for flip in flip_comb:
-            im_flip = tensor_flip(im, flip)
+            im_flip = tensor_flip(im_scale, flip)
             logit = inference(
                 model,
                 im_flip,
@@ -222,10 +223,11 @@ def aug_inference(model,
                 stride=stride)
             logit = tensor_flip(logit, flip)
             logit = F.interpolate(logit, [h_input, w_input], mode='bilinear')
-
-            logit = F.softmax(logit, axis=1)
-            final_logit = final_logit + logit
-
+            # Accumulate final logits in place
+            final_logit += logit
+    # We average the accumulated logits to make the numeric values of `final_logit`
+    # comparable to single-scale logits
+    final_logit /= num_augs
     final_logit = reverse_transform(final_logit, trans_info, mode='bilinear')
     pred = paddle.argmax(final_logit, axis=1, keepdim=True, dtype='int32')
 

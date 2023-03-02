@@ -192,7 +192,7 @@ if [ ${MODE} = 'whole_infer' ]; then
     else
         env="export CUDA_VISIBLE_DEVICES=${GPUID}"
     fi
-    if [ ${infer_model_dir_list} == 'null' ]; then
+    if [ ${infer_model_dir_list} = 'null' ]; then
         echo -e "\033[33m No inference model is specified! \033[0m"
         exit 1
     fi
@@ -315,7 +315,7 @@ else
                 run_command "${cmd}" "${log_path}"
                 status_check $? "${cmd}" "${status_log}" "${model_name}"
 
-                if [[ "${cmd}" == *'paddle.distributed.launch'* ]]; then
+                if [[ "${cmd}" = *'paddle.distributed.launch'* ]]; then
                     cat log/workerlog.0 >> ${log_path} 
                 fi
 

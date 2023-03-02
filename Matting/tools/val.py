@@ -29,7 +29,7 @@ manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting
 from ppmatting.core import evaluate, evaluate_ml
-from ppmatting.utils import Config
+from ppmatting.utils import Config, MatBuilder
 
 
 def parse_args():
@@ -71,43 +71,33 @@ def parse_args():
         help='The metrics to evaluate, it may be the combination of ("sad", "mse", "grad", "conn")',
         type=str,
         default='sad')
+    parser.add_argument(
+        '--device',
+        dest='device',
+        help='Set the device type, which may be GPU, CPU or XPU.',
+        default='gpu',
+        type=str)
 
     return parser.parse_args()
 
 
 def main(args):
-    env_info = get_sys_env()
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
-
-    paddle.set_device(place)
-    if not args.cfg:
-        raise RuntimeError('No configuration file specified.')
-
+    assert args.cfg is not None, \
+        'No configuration file specified, please set --config'
     cfg = Config(args.cfg, opts=args.opts)
-    val_dataset = cfg.val_dataset
-    if val_dataset is None:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
-    elif len(val_dataset) == 0:
-        raise ValueError(
-            'The length of val_dataset is 0. Please check if your dataset is valid'
-        )
+    builder = MatBuilder(cfg)
 
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
+    paddleseg.utils.show_env_info()
+    paddleseg.utils.show_cfg_info(cfg)
+    paddleseg.utils.set_device(args.device)
 
-    model = cfg.model
+    model = builder.model
+    val_dataset = builder.val_dataset
 
     if isinstance(model, paddle.nn.Layer):
-
         if args.model_path:
             utils.load_entire_model(model, args.model_path)
             logger.info('Loaded trained params of model successfully')
-
         evaluate(
             model,
             val_dataset,
@@ -116,7 +106,6 @@ def main(args):
             save_results=args.save_results,
             metrics=args.metrics)
     else:
-
         evaluate_ml(
             model,
             val_dataset,
