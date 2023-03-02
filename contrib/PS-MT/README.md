@@ -14,7 +14,7 @@ In this project, we reproduce PS-MT [[Paper](https://arxiv.org/abs/2111.12903)|[
 
 | Model | Backbone  | Resolution | Training Iters | mIoU  |                            Links                             |
 | :---: | :-------: | :--------: | :------------: | :---: | :----------------------------------------------------------: |
-| PS-MT | resnet101 |  512*512   |     20000      | 78.05 | [model](链接: https://pan.baidu.com/s/1wWYxRdMSDvET2dUo1cxXgA?pwd=qyvp 提取码: qyvp 复制这段内容后打开百度网盘手机App，操作更方便哦) |
+| PS-MT | resnet101 |  512*512   |     20000      | 78.05 | [model](链接: https://pan.baidu.com/s/1wWYxRdMSDvET2dUo1cxXgA?pwd=qyvp 提取码: qyvp 复制这段内容后打开百度网盘手机App，操作更方便哦)\|[log](https://wandb.ai/ps-mt-2022/PS-MT(VOC12)?workspace=user-2275029710) |
 
 ## Prepare Work
 
