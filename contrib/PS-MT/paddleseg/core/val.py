@@ -21,7 +21,8 @@ import paddle.nn.functional as F
 
 from paddleseg.utils import metrics, TimeAverager, calculate_eta, logger, progbar
 from paddleseg.core import infer
-from paddleseg.utils.metrics import AverageMeter,eval_metrics,get_seg_metrics
+from paddleseg.utils.metrics import AverageMeter, eval_metrics, get_seg_metrics
+
 np.set_printoptions(suppress=True)
 
 
@@ -81,10 +82,10 @@ def evaluate(model,
         return_list=True)
 
     total_iters = len(loader)
-    intersect_area_all = paddle.zeros([1], dtype='int64')
-    union_area_all = paddle.zeros([1], dtype='int64')
-    pred_area_all = paddle.zeros([1], dtype='int64')
-    label_area_all = paddle.zeros([1], dtype='int64')
+    intersect_area_all = 0
+    union_area_all = 0
+    pred_area_all = 0
+    label_area_all = 0
 
     logits_all = None
     label_all = None
@@ -92,7 +93,6 @@ def evaluate(model,
     if print_detail:
         logger.info("Start evaluating (total_samples: {}, total_iters: {})...".
                     format(len(eval_dataset), total_iters))
-    #TODO(chenguowei): fix log print error with multi-gpus
     progbar_val = progbar.Progbar(
         target=total_iters, verbose=1 if nranks < 2 else 2)
     reader_cost_averager = TimeAverager()
@@ -124,7 +124,9 @@ def evaluate(model,
                     is_slide=is_slide,
                     stride=stride,
                     crop_size=crop_size)
-            batch_pix_correct, batch_pix_label, batch_inter, batch_union = eval_metrics(pred, label, eval_dataset.num_classes, eval_dataset.ignore_index)
+            batch_pix_correct, batch_pix_label, batch_inter, batch_union = eval_metrics(pred, label,
+                                                                                        eval_dataset.num_classes,
+                                                                                        eval_dataset.ignore_index)
 
             # Gather from all ranks
             if nranks > 1:
@@ -191,8 +193,8 @@ def evaluate(model,
 
     if print_detail:
         infor = "[EVAL] #Images: {} mIoU: {:.4f} Acc: {:.4f} ".format(
-            len(eval_dataset), mIou[0], pixAcc[0])
+            len(eval_dataset), mIou, pixAcc[0])
         infor = infor + auc_infor if auc_roc else infor
         logger.info(infor)
 
-    return pixAcc[0], Iou, mIou[0]
+    return pixAcc[0], Iou, mIou
