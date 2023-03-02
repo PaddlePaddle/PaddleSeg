@@ -69,5 +69,4 @@ from .rtformer import RTFormer
 from .lpsnet import LPSNet
 from .maskformer import MaskFormer
 from .segnext import SegNeXt
-from .lpsnet import LPSNet
 from .knet import KNet
