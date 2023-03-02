@@ -1,7 +1,6 @@
 _base_: '../_base_/cityscapes.yml'
 
-# for single gpu
-batch_size: 8
+batch_size: 2
 iters: 160000
 
 train_dataset:
@@ -29,11 +28,6 @@ optimizer:
   _inherited_: False
   type: AdamW
   weight_decay: 0.01
-  custom_cfg:
-    - name: head
-      lr_mult: 10.0
-    - name: norm
-      weight_decay_mult: 0.0
 
 loss:
   types:
@@ -44,7 +38,7 @@ lr_scheduler:
   type: PolynomialDecay
   warmup_iters: 1500
   warmup_start_lr: 1.0e-6
-  learning_rate: 0.00006
+  learning_rate: 0.0006
   end_lr: 0.0
   power: 1.0
 
