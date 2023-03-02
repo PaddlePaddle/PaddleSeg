@@ -167,9 +167,9 @@ class UPerKernelHead(UPerNetHead):
         if self.training:
             seg_kernels = self.conv_seg.weight.clone()
         else:
-            # Since tensor.clone() raises error when exporting static model, we use tensor.detach() instead,
+            # Since tensor.clone() raises error when exporting static model, we use tensor instead,
             # although this may cause little performance drop in mIoU.
-            seg_kernels = self.conv_seg.weight.detach()
+            seg_kernels = self.conv_seg.weight
         seg_kernels = seg_kernels[None].expand(
             [paddle.shape(feats)[0], *paddle.shape(seg_kernels)])
         return output, feats, seg_kernels
@@ -237,7 +237,7 @@ class FCNKernelHead(nn.Layer):
         else:
             # Since tensor.clone() raises error when exporting static model, we use tensor.detach() instead,
             # although this may cause little performance drop in mIoU.
-            seg_kernels = self.conv_seg.weight.detach()
+            seg_kernels = self.conv_seg.weight
         seg_kernels = seg_kernels[None].expand(
             [paddle.shape(feats)[0], *paddle.shape(seg_kernels)])
         return output, feats, seg_kernels
@@ -409,11 +409,11 @@ class KernelUpdateHead(nn.Layer):
         self.mask_transform_stride = mask_transform_stride
 
         self.attention = nn.MultiHeadAttention(
-            in_channels * conv_kernel_size ** 2,
+            in_channels * conv_kernel_size**2,
             num_heads,
             dropout,
             bias_attr=True)
-        self.attention_norm = nn.LayerNorm(in_channels * conv_kernel_size ** 2)
+        self.attention_norm = nn.LayerNorm(in_channels * conv_kernel_size**2)
 
         self.kernel_update_conv = KernelUpdator(**kernel_updator_cfg)
 
@@ -451,7 +451,7 @@ class KernelUpdateHead(nn.Layer):
         if self.feat_transform is not None:
             x = self.feat_transform(x)
 
-        C, H, W = paddle.shape(x)[-3:]
+        C, H, W = x.shape[-3:]
 
         mask_h, mask_w = paddle.shape(mask_preds)[-2:]
         if mask_h != H or mask_w != W:
@@ -463,7 +463,6 @@ class KernelUpdateHead(nn.Layer):
         sigmoid_masks = F.softmax(gather_mask, 1)
 
         # Group Feature Assembling. Eq.(3) in original paper.
-        # einsum is faster than bmm by 30%
         x_feat = paddle.einsum('bnhw,bchw->bnc', sigmoid_masks, x)
 
         # obj_feat in shape [B, N, C, K, K] -> [B, N, C, K*K] -> [B, N, K*K, C]
