@@ -73,6 +73,7 @@ PPM-100/
 
 The Matting project supports configurable direct drive, with model config files placed in [configs](../configs/) directory.
 You can select a config file based on the actual situation to perform training, prediction et al.
+The trimap-based methods (DIM) do not support video processing.
 
 This tutorial uses [configs/quick_start/ppmattingv2-stdc1-human_512.yml](../configs/quick_start/ppmattingv2-stdc1-human_512.yml) for teaching demonstrations.
 
@@ -100,6 +101,47 @@ python tools/train.py --help
 ```
 If you want to use multiple GPUs，please use `python -m paddle.distributed.launch` to run.
 
+## Finetune
+If you want to finetune from a pretrained model, you can set the `model.pretrained` field in config file, whose content is the URL or filepath of the pretrained model weights.Here we use the official PP-MattingV2 pretrained model for finetuning as an example.
+
+First, download the pretrained model in [Models](../README.md/#Models) to `pretrained_models`.
+```shell
+mkdir pretrained_models && cd pretrained_models
+wget https://paddleseg.bj.bcebos.com/matting/models/ppmattingv2-stdc1-human_512.pdparams
+cd ..
+```
+Then modify the `train_dataset.dataset_root`, `val_dataset.dataset_root`, `model.pretrained` fields in the config file, meanwhile the lr is recommended to be reduced, and you can leave the rest of the config file unchanged.
+```yaml
+train_dataset:
+  type: MattingDataset
+  dataset_root: path/to/your/dataset # Path to your own dataset
+  mode: train
+
+val_dataset:
+  type: MattingDataset
+  dataset_root: path/to/your/dataset # Path to your own dataset
+  mode: val
+
+model:
+  type: PPMattingV2
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+  decoder_channels: [128, 96, 64, 32, 16]
+  head_channel: 8
+  dpp_output_channel: 256
+  dpp_merge_type: add
+  pretrained: pretrained_models/ppmattingv2-stdc1-human_512.pdparams # The pretrained model file just downloaded
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.001  # lr is recommended to be reduced
+  end_lr: 0
+  power: 0.9
+  warmup_iters: 1000
+  warmup_start_lr: 1.0e-5
+```
+Finally, you can finetune the model with your dataset following the instructions in `Training`.
+
 ## Evaluation
 ```shell
 export CUDA_VISIBLE_DEVICES=0
@@ -119,6 +161,7 @@ python tools/val.py --help
 ```
 
 ## Prediction
+### Image Prediction
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python tools/predict.py \
@@ -139,8 +182,20 @@ Run the following command to view more parameters.
 python tools/predict.py --help
 ```
 
+### Video Prediction
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python tools/predict_video.py \
+    --config configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml \
+    --model_path output/best_model/model.pdparams \
+    --video_path path/to/video \
+    --save_dir ./output/results \
+    --fg_estimate True
+```
+
 
 ## Background Replacement
+### Image Background Replacement
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python tools/bg_replace.py \
@@ -166,13 +221,26 @@ Run the following command to view more parameters.
 python tools/bg_replace.py --help
 ```
 
+### Video Background Replacement
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python tools/bg_replace_video.py \
+    --config configs/ppmattingv2/ppmattingv2-stdc1-human_512.yml \
+    --model_path output/best_model/model.pdparams \
+    --video_path path/to/video \
+    --background 'g' \
+    --save_dir ./output/results \
+    --fg_estimate True
+```
+
 ## Export and Deployment
 ### Model Export
 ```shell
 python tools/export.py \
     --config configs/quick_start/ppmattingv2-stdc1-human_512.yml \
     --model_path output/best_model/model.pdparams \
-    --save_dir output/export
+    --save_dir output/export \
+    --input_shape 1 3 512 512
 ```
 If the model requires trimap information such as DIM, `--trimap` is need.
 
@@ -192,6 +260,8 @@ python deploy/python/infer.py \
 If the model requires trimap information, pass the trimap path through '--trimap_path'.
 
 `--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
+
+`--video_path` can pass a video path to have a video matting.
 
 Run the following command to view more parameters.
 ```shell

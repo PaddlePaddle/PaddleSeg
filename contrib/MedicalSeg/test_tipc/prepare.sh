@@ -18,7 +18,7 @@ model_name=$(func_parser_value "${lines[1]}")
 trainer_list=$(func_parser_value "${lines[14]}")
 
 # MODE be one of ['lite_train_lite_infer']
-if [ ${MODE} = "lite_train_lite_infer" ];then
+if [ ${MODE} = "lite_train_lite_infer" ]; then
     if [ ${model_name} = "UNETR" ]; then
         mkdir -p ./test_tipc/data
         rm -rf ./test_tipc/data/mini_levir_dataset
@@ -37,7 +37,13 @@ if [ ${MODE} = "lite_train_lite_infer" ];then
         cd ./test_tipc/data/
         wget https://paddleseg.bj.bcebos.com/dataset/mini_acdc.zip
         unzip mini_acdc.zip  && cd ../../
-    else
+    elif [ "${model_name}" = "VNet" ]; then
+        mkdir -p ./test_tipc/data
+        rm -rf ./test_tipc/data/mini_lung_coronavirus
+        cd ./test_tipc/data/
+        wget https://bj.bcebos.com/paddleseg/dataset/mini_lung_coronavirus.zip
+        unzip mini_lung_coronavirus.zip  && cd ../../
+    else 
         echo "Not added into TIPC yet."
     fi
 fi

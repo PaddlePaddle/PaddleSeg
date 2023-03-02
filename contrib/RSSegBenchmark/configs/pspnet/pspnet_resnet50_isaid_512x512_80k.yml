@@ -1,0 +1,16 @@
+_base_: '../_base_/isaid.yml'
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
+
+model:
+  type: PSPNet
+  backbone:
+    type: ResNet50
+    pretrained: https://paddle-hapi.bj.bcebos.com/models/resnet50.pdparams
+  num_classes: 16
+  enable_auxiliary_loss: True
+  align_corners: False
+  pretrained: null

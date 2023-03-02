@@ -91,13 +91,13 @@ PaddleLabel
 When a request arrives at backend
 
 1. connexion does integrity check on request parameters based on openapi spec
-2. connexion decides routing (ie: which function handles this request) based on openapi spec.
-3. If the request comes with a not null request_id in header, the request_id will be checked against all request_ids in the past request_id_timeout seconds. If the request_id already exists, this request will be rejected. This prevents the same action, especially create, from being executed more than once. Leave request_id blank if the request don't need such protection.
-4. path parameters are passed as parameters to the handler function, request body is available as connexion.request.json
-5. Models are de-serialized with marshmallow. Also provides integrity check
-6. Further checks are implemented as pre/post triggers for http actions. Like pre_add trigger that rejects creating label with duplicate name under a project.
-7. request is handled, data is persisted in database.
-8. returns
+1. connexion decides routing (ie: which function handles this request) based on openapi spec.
+1. If the request comes with a not null request_id in header, the request_id will be checked against all request_ids in the past request_id_timeout seconds. If the request_id already exists, this request will be rejected. This prevents the same action, especially create, from being executed more than once. Leave request_id blank if the request don't need such protection.
+1. path parameters are passed as parameters to the handler function, request body is available as connexion.request.json
+1. Models are de-serialized with marshmallow. Also provides integrity check
+1. Further checks are implemented as pre/post triggers for http actions. Like pre_add trigger that rejects creating label with duplicate name under a project.
+1. request is handled, data is persisted in database.
+1. returns
 
 ## Routing
 
@@ -140,7 +140,7 @@ Unit test is not yet implemented. For API and import/export testing see [paddlel
 
 ## Heroku
 
-There is a heroku backend for demo purpose at https://pplabel.herokuapp.com/api. The database will be wiped after each redeploy. Redeploy is triggered under two situations:
+There is a heroku backend for demo purpose at <https://pplabel.herokuapp.com/api>. The database will be wiped after each redeploy. Redeploy is triggered under two situations:
 
 - new commit to backend code
 - if there's no request to backend after certain time, the backend will be recycled. The first new request will take around a minute.

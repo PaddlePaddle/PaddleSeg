@@ -1,13 +1,16 @@
-简体中文|[English](train.md)
+简体中文 | [English](train.md)
 # 模型训练
 
-## 1、开启训练
-我们可以通过PaddleSeg提供的脚本对模型进行训练，在本文档中我们使用`PP-LiteSeg`模型与`optic_disc`数据集展示训练过程。 请确保已经完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
+## 1、单卡训练
+
+准备好配置文件后，我们使用`tools/train.py`脚本进行模型训练。
+
+在本文档中我们使用`PP-LiteSeg`模型与`optic_disc`数据集展示训练过程。请确保已经完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
 
 ```shell
-export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
-# windows下请执行以下命令
-# set CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=0 # Linux上设置1张可用的卡
+# set CUDA_VISIBLE_DEVICES=0  # Windows上设置1张可用的卡
+
 python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
@@ -16,7 +19,28 @@ python tools/train.py \
        --save_dir output
 ```
 
-### 训练参数解释
+上述训练命令解释：
+* `--config`指定配置文件。
+* `--save_interval`指定每训练特定轮数后，就进行一次模型保存或者评估（如果开启模型评估）。
+* `--do_eval`开启模型评估。具体而言，在训练save_interval指定的轮数后，会进行模型评估。
+* `--use_vdl`开启写入VisualDL日志信息，用于VisualDL可视化训练过程。
+* `--save_dir`指定模型和visualdl日志文件的保存根路径。
+
+在PP-LiteSeg示例中，训练的模型权重保存在output目录下，如下所示。总共训练1000轮，每500轮评估一次并保存模型信息，所以有`iter_500`和`iter_1000`文件夹。评估精度最高的模型权重，保存在`best_model`文件夹。后续模型的评估、测试和导出，都是使用保存在`best_model`文件夹下精度最高的模型权重。
+
+```
+output
+  ├── iter_500          #表示在500步保存一次模型
+    ├── model.pdparams  #模型参数
+    └── model.pdopt     #训练阶段的优化器参数
+  ├── iter_1000         #表示在1000步保存一次模型
+    ├── model.pdparams  #模型参数
+    └── model.pdopt     #训练阶段的优化器参数
+  └── best_model        #精度最高的模型权重
+    └── model.pdparams  
+```
+
+`train.py`脚本输入参数的详细说明如下。
 
 | 参数名              | 用途                                                         | 是否必选项 | 默认值           |
 | :------------------ | :----------------------------------------------------------- | :--------- | :--------------- |
@@ -33,10 +57,18 @@ python tools/train.py \
 | resume_model        | 恢复训练模型路径，如：`output/iter_1000`                     | 否         | None             |
 | keep_checkpoint_max | 最新模型保存个数                                             | 否         | 5                |
 
-## 2、多卡训练
-如果想要使用多卡训练的话，需要将环境变量CUDA_VISIBLE_DEVICES指定为多卡（不指定时默认使用所有的gpu)，并使用paddle.distributed.launch启动训练脚本（windows下由于不支持nccl，无法使用多卡训练）:
 
-```shell
+## 2、多卡训练
+
+使用多卡训练：首先通过环境变量`CUDA_VISIBLE_DEVICES`指定使用的多张显卡，如果不设置`CUDA_VISIBLE_DEVICES`，默认使用所有显卡进行训练；然后使用`paddle.distributed.launch`启动`train.py`脚本进行训练。
+
+多卡训练的`train.py`支持的输入参数和单卡训练相同。
+
+由于Windows环境下不支持nccl，所以无法使用多卡训练。
+
+举例如下，在PaddleSeg根目录下执行如下命令，进行多卡训练。
+
+```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
 python -m paddle.distributed.launch tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
@@ -46,8 +78,15 @@ python -m paddle.distributed.launch tools/train.py \
        --save_dir output
 ```
 
-## 3、恢复训练：
-```shell
+## 3、恢复训练
+
+如果训练中断，我们可以恢复训练，避免从头开始训练。
+
+具体而言，通过给`train.py`脚本设置`resume_model`输入参数，加载中断前最近一次保存的模型信息，恢复训练。
+
+在PP-LiteSeg示例中，总共需要训练1000轮。假如训练到750轮中断了，我们在`output`目录下，可以看到在`iter_500`文件夹中保存了第500轮的训练信息。执行如下命令，加载第500轮的训练信息恢复训练。
+
+```
 python tools/train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
@@ -57,21 +96,38 @@ python tools/train.py \
        --save_dir output
 ```
 
-## 4、训练可视化
+单卡和多卡训练都采用相同的方法设置`resume_model`输入参数，即可恢复训练。
 
-PaddleSeg会将训练过程中的数据写入VisualDL文件，并实时的查看训练过程中的日志，记录的数据包括：
-1. loss变化趋势
-2. 学习率变化趋势
-3. 训练时间
-4. 数据读取时间
-5. mean IoU变化趋势（当打开了`do_eval`开关后生效）
-6. mean pixel Accuracy变化趋势（当打开了`do_eval`开关后生效）
+## 4、模型微调
+如果想利用预训练模型进行微调（finetune），可以在配置文件中添加`model.pretained`字段，内容为预训练模型权重文件的URL地址或本地路径。PaddleSeg提供基于Cityscapes、ADE20K等公开数据集的预训练模型，可以在`PaddleSeg/configs`下面不同模型的页面中获取下载链接。
+```yaml
+model:
+  type: FCN
+  backbone:
+    type: HRNet_W18
+    pretrained: pretrained_model/hrnet_w18_ssld 
+  num_classes: 19
+  pretrained: FCN_pretrained.pdparams # 预训练模型权重文件的URL地址或本地路径
+```
 
-使用如下命令启动VisualDL查看日志
-```shell
-# 下述命令会在127.0.0.1上启动一个服务，支持通过前端web页面查看，可以通过--host这个参数指定实际ip地址
+## 5、训练可视化
+
+为了直观显示模型的训练过程，对训练过程进行分析从而快速的得到更好的模型，飞桨提供了可视化分析工具：VisualDL。
+
+当`train.py`脚本设置`use_vdl`输入参数后，PaddleSeg会将训练过程中的日志信息写入VisualDL文件，写入的日志信息包括：
+* loss
+* 学习率lr
+* 训练时间
+* 数据读取时间
+* 验证集上mIoU（当打开了`do_eval`开关后生效）
+* 验证集上mean Accuracy（当打开了`do_eval`开关后生效）
+
+在PP-LiteSeg示例中，在训练过程中或者训练结束后，我们都可以通过VisualDL来查看日志信息。
+
+首先执行如下命令，启动VisualDL；然后在浏览器输入提示的网址，效果如下图。
+
+```
 visualdl --logdir output/
 ```
 
-在浏览器输入提示的网址，效果如下：
-![](../images/quick_start_vdl.jpg)
+![](./images/fig4.png)

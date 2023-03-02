@@ -1,0 +1,141 @@
+num_classes: &num_classes 133
+ignore_index: &ignore_index 255
+label_divisor: &label_divisor 1000
+iters: &iters 90000
+batch_size: &batch_size 8
+
+train_dataset:
+  type: COCO
+  dataset_root: test_tipc/data/coco
+  transforms:
+    - type: ConvertRGBToID
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: &crop_size [1024, 1024]
+      im_padding_value: 0
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: GeneratePanopticDeepLabTrainTargets
+      ignore_index: *ignore_index
+      sigma: 8
+      ignore_stuff_in_offset: true
+      small_instance_area: 4096
+      small_instance_weight: 3
+      ignore_crowd_in_semantic: false
+      num_classes: *num_classes
+    - type: Normalize
+    - type: Collect
+      keys: 
+        - img
+        - label
+        - img_path
+        - lab_path
+        - sem_label
+        - img_h
+        - img_w
+        - center
+        - offset
+        - sem_seg_weights
+        - center_weights
+        - offset_weights
+  mode: train
+  file_list: test_tipc/data/coco/train_list.txt
+  json_path: test_tipc/data/coco/annotations/panoptic_train2017.json
+  label_divisor: *label_divisor
+  num_classes: *num_classes
+  ignore_index: *ignore_index
+
+val_dataset:
+  type: COCO
+  dataset_root: test_tipc/data/coco
+  transforms:
+    - type: ConvertRGBToID
+    - type: Resize
+      target_size: *crop_size
+    - type: DecodeLabels
+      label_divisor: *label_divisor
+      ignore_index: *ignore_index
+    - type: Normalize
+    - type: Collect
+      keys:
+        - img
+        - label
+        - ann
+        - image_id
+        - gt_fields
+        - trans_info
+        - img_path
+        - lab_path
+        - pan_label
+        - sem_label
+        - ins_label
+  mode: val
+  file_list: test_tipc/data/coco/val_list.txt
+  json_path: test_tipc/data/coco/annotations/panoptic_val2017.json
+  label_divisor: *label_divisor
+  num_classes: *num_classes
+
+model:
+  type: PanopticDeepLab
+  backbone:
+    type: ResNet50_vd
+    output_stride: 32
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  backbone_indices: [2, 1, 0, 3]
+  num_classes: *num_classes
+  aspp_ratios: [1, 3, 6, 9]
+  aspp_out_channels: 256
+  decoder_channels: 256
+  low_level_channels_projects: [128, 64, 32]
+  align_corners: True
+  # instance kwargs
+  instance_aspp_out_channels: 256
+  instance_decoder_channels: 128
+  instance_low_level_channels_projects: [64, 32, 16]
+  instance_num_classes: [1, 2]
+  instance_head_channels: 32
+
+optimizer:
+  type: adam
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.0005
+  power: 0.9
+  end_lr: 0.0
+  decay_steps: *iters
+  warmup_iters: 1000
+  warmup_start_lr: 5.e-7
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+      top_k_percent_pixels: 0.2
+    - type: CenterLoss
+    - type: OffsetLoss
+  coef: [1, 200, 0.01]
+
+postprocessor:
+  type: PanopticDeepLabPostprocessor
+  num_classes: *num_classes
+  label_divisor: *label_divisor
+  stuff_area: 2048
+  threshold: 0.1
+  nms_kernel: 7
+  top_k: 200
+  ignore_index: *ignore_index
+
+export:
+  transforms:
+    - type: Resize
+      target_size: *crop_size
+    - type: Normalize
+    - type: Collect
+      keys:
+        - img

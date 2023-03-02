@@ -19,18 +19,14 @@ visualize the annotated images:
 
 import argparse
 import os
-import sys
 import shutil
 
 import cv2
 import numpy as np
 from PIL import Image
 
-__dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../')))
-
 from paddleseg import utils
-from paddleseg.utils import logger, progbar, visualize
+from paddleseg.utils import progbar, visualize
 
 
 def parse_args():

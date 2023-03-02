@@ -8,7 +8,7 @@ lr_scheduler:
   learning_rate: 0.02
 
 optimizer:
-  type: sgd
+  type: SGD
   momentum: 0.9
   weight_decay: 5.0e-4
 

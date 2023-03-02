@@ -1,6 +1,6 @@
 # PaddleLabel
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PyPI version](https://badge.fury.io/py/pplabel.svg)](https://badge.fury.io/py/pplabel) [![Downloads](https://pepy.tech/badge/pplabel)](https://pepy.tech/project/pplabel) <a href=""><img src="https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-blue.svg"></a>
+[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/release/python-390/) ![PyPI](https://img.shields.io/pypi/v/paddlelabel?color=blue) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE) [![Start](https://img.shields.io/github/stars/PaddleCV-SIG/PaddleLabel?color=orange)](<>) [![Fork](https://img.shields.io/github/forks/PaddleCV-SIG/PaddleLabel?color=orange)](<>) ![PyPI - Downloads](https://img.shields.io/pypi/dm/paddlelabel?color=orange) [![OS](https://img.shields.io/badge/os-linux%2C%20windows%2C%20macos-green.svg)](<>)
 
 <!-- <a href=""><img src="https://img.shields.io/badge/QQ_Group-1234567-52B6EF?style=social&logo=tencent-qq&logoColor=000&logoWidth=20"></a> -->
 
@@ -76,7 +76,7 @@ PaddleLabel currently support image classification, object detection and image s
 
 ## Release Notes
 
-- 2022.5.31: v0.1.0 [1] Support image classification, detection and segmentations. [2] Interactive image segmentation with EISeg models
+- 2022.5.31: v0.1.0 \[1\] Support image classification, detection and segmentations. \[2\] Interactive image segmentation with EISeg models
 
 ## Contribute
 

@@ -79,5 +79,4 @@ def main():
     # 加载近期模型
     QApplication.processEvents()
     window.loadRecentModelParam()
-    window.loadVideoRecentModelParam()
     sys.exit(app.exec())

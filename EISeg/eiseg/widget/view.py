@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,21 +29,32 @@ class AnnotationView(QtWidgets.QGraphicsView):
         self.setResizeAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.point = QtCore.QPoint(0, 0)
         self.middle_click = False
+        self.det_mode = False
+        self.zoom_range = (0.02, 50)
         self.zoom_all = 1
-        # hint mouse
-        # self.setCursor(Qt.BlankCursor)
+
+    def setDetMode(self, det_mode=True):
+        # TODO: polygon的修改与这里有冲突
+        self.det_mode = det_mode
+        if self.det_mode:
+            self.setCursor(Qt.BlankCursor)  # hint mouse
+        else:
+            self.setCursor(Qt.ArrowCursor)  # nomal
 
     def wheelEvent(self, ev):
         if ev.modifiers() & QtCore.Qt.ControlModifier:
             zoom = 1 + ev.angleDelta().y() / 2880
             self.zoom_all *= zoom
             oldPos = self.mapToScene(ev.pos())
-            if self.zoom_all >= 0.02 and self.zoom_all <= 50:  # 限制缩放的倍数
+            if self.zoom_all >= self.zoom_range[0] and \
+               self.zoom_all <= self.zoom_range[1]:  # 限制缩放的倍数
                 self.scale(zoom, zoom)
             newPos = self.mapToScene(ev.pos())
             delta = newPos - oldPos
             self.translate(delta.x(), delta.y())
             ev.ignore()
+            self.zoom_all = sorted(
+                [self.zoom_range[0], self.zoom_all, self.zoom_range[1]])[1]
             self.zoomRequest.emit(self.zoom_all)
         else:
             super(AnnotationView, self).wheelEvent(ev)

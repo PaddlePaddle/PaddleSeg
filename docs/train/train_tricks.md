@@ -1,4 +1,4 @@
-English|[简体中文](train_tricks_cn.md)
+English | [简体中文](train_tricks_cn.md)
 
 # Training Tricks
 
