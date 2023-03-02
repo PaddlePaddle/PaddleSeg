@@ -21,6 +21,8 @@ from scipy.ndimage import binary_fill_holes
 from multiprocessing import Pool
 from collections import OrderedDict
 
+from .path_utils import join_paths
+
 
 def crop(raw_data_dir,
          cropped_output_dir,
@@ -42,7 +44,7 @@ def crop(raw_data_dir,
 
     imgcrop = ImageCropper(cropped_output_dir, num_threads)
     imgcrop.run_cropping(lists, overwrite_existing=override)
-    shutil.copy(os.path.join(raw_data_dir, data_json), cropped_output_dir)
+    shutil.copy(join_paths(raw_data_dir, data_json), cropped_output_dir)
 
 
 def create_lists_from_splitted_dataset(base_folder_splitted,
@@ -50,7 +52,7 @@ def create_lists_from_splitted_dataset(base_folder_splitted,
                                        train_images_dir="imagesTr",
                                        train_labels_dir="labelsTr"):
     lists = []
-    json_file = os.path.join(base_folder_splitted, data_json)
+    json_file = join_paths(base_folder_splitted, data_json)
     with open(json_file) as jsn:
         d = json.load(jsn)
         training_files = d['training']
@@ -59,12 +61,12 @@ def create_lists_from_splitted_dataset(base_folder_splitted,
         cur_pat = []
         for mod in range(num_modalities):
             cur_pat.append(
-                os.path.join(base_folder_splitted, train_images_dir, tr[
+                join_paths(base_folder_splitted, train_images_dir, tr[
                     'image'].split("/")[-1].split('.')[0] + "_%04.0d.nii.gz" %
-                             mod))
+                           mod))
         cur_pat.append(
-            os.path.join(base_folder_splitted, train_labels_dir, tr['label']
-                         .split("/")[-1]))
+            join_paths(base_folder_splitted, train_labels_dir, tr['label']
+                       .split("/")[-1]))
         lists.append(cur_pat)
     return lists, {int(i): d['modality'][str(i)] for i in d['modality'].keys()}
 
@@ -202,22 +204,21 @@ class ImageCropper:
     def load_crop_save(self, case, case_identifier, overwrite_existing=False):
         try:
             if overwrite_existing or (not os.path.isfile(
-                    os.path.join(self.output_folder, "%s.npz" %
-                                 case_identifier)) or not os.path.isfile(
-                                     os.path.join(self.output_folder, "%s.pkl" %
-                                                  case_identifier))):
+                    join_paths(self.output_folder, "%s.npz" % case_identifier)
+            ) or not os.path.isfile(
+                    join_paths(self.output_folder, "%s.pkl" % case_identifier))
+                                      ):
 
                 data, seg, properties = self.crop_from_list_of_files(case[:-1],
                                                                      case[-1])
 
                 all_data = np.vstack((data, seg))
                 np.savez_compressed(
-                    os.path.join(self.output_folder,
-                                 "%s.npz" % case_identifier),
+                    join_paths(self.output_folder, "%s.npz" % case_identifier),
                     data=all_data)
                 with open(
-                        os.path.join(self.output_folder,
-                                     "%s.pkl" % case_identifier), 'wb') as f:
+                        join_paths(self.output_folder,
+                                   "%s.pkl" % case_identifier), 'wb') as f:
                     pickle.dump(properties, f)
         except Exception as e:
             raise UserWarning(
@@ -231,7 +232,7 @@ class ImageCropper:
         if output_folder is not None:
             self.output_folder = output_folder
 
-        output_folder_gt = os.path.join(self.output_folder, "gt_segmentations")
+        output_folder_gt = join_paths(self.output_folder, "gt_segmentations")
         os.makedirs(output_folder_gt, exist_ok=True)
         for j, case in enumerate(list_of_files):
             if case[-1] is not None:

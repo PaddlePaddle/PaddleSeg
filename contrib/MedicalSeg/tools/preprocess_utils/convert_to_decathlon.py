@@ -17,6 +17,8 @@ import numpy as np
 import SimpleITK as sitk
 from multiprocessing import Pool
 
+from .path_utils import join_paths
+
 
 def convert_to_decathlon(input_folder,
                          output_folder='./',
@@ -51,22 +53,22 @@ def crawl_and_remove_hidden_from_decathlon(folder,
                                                      "folder that starts with TaskXX and has the subdirs imagesTr, " \
                                                      "labelsTr and imagesTs."
     _ = [
-        os.remove(os.path.join(folder, sub_file))
+        os.remove(join_paths(folder, sub_file))
         for sub_file in os.listdir(folder) if sub_file.startswith('.')
     ]
     _ = [
-        os.remove(os.path.join(folder, train_images_dir, sub_file))
-        for sub_file in os.listdir(os.path.join(folder, train_images_dir))
+        os.remove(join_paths(folder, train_images_dir, sub_file))
+        for sub_file in os.listdir(join_paths(folder, train_images_dir))
         if sub_file.startswith('.')
     ]
     _ = [
-        os.remove(os.path.join(folder, train_labels_dir, sub_file))
-        for sub_file in os.listdir(os.path.join(folder, train_labels_dir))
+        os.remove(join_paths(folder, train_labels_dir, sub_file))
+        for sub_file in os.listdir(join_paths(folder, train_labels_dir))
         if sub_file.startswith('.')
     ]
     _ = [
-        os.remove(os.path.join(folder, test_images_Tr, sub_file))
-        for sub_file in os.listdir(os.path.join(folder, test_images_Tr))
+        os.remove(join_paths(folder, test_images_Tr, sub_file))
+        for sub_file in os.listdir(join_paths(folder, test_images_Tr))
         if sub_file.startswith('.')
     ]
 
@@ -79,10 +81,9 @@ def split_4d_to_3d_and_save(img_itk: sitk.Image, output_folder, file_base_name):
     for i, slice_idx in enumerate(range(img_itk.GetSize()[-1])):
         slicer.SetIndex([0, 0, 0, slice_idx])
         sitk_volume = slicer.Execute(img_itk)
-        sitk.WriteImage(
-            sitk_volume,
-            os.path.join(output_folder,
-                         file_base_name[:-7] + "_%04.0d.nii.gz" % i))
+        sitk.WriteImage(sitk_volume,
+                        join_paths(output_folder,
+                                   file_base_name[:-7] + "_%04.0d.nii.gz" % i))
 
 
 def split_4d_nifti(filename, output_folder):
@@ -90,9 +91,8 @@ def split_4d_nifti(filename, output_folder):
     dim = img_itk.GetDimension()
     file_base = filename.split("/")[-1]
     if dim == 3:
-        shutil.copy(
-            filename,
-            os.path.join(output_folder, file_base[:-7] + "_0000.nii.gz"))
+        shutil.copy(filename,
+                    join_paths(output_folder, file_base[:-7] + "_0000.nii.gz"))
         return
     elif dim != 4:
         raise RuntimeError(
@@ -109,26 +109,26 @@ def split_4d(input_folder,
              train_labels_dir="labelsTr",
              test_images_dir="imagesTs",
              num_processes=8):
-    assert os.path.isdir(os.path.join(input_folder, train_images_dir)) and os.path.isdir(os.path.join(input_folder, train_labels_dir)) and \
-           os.path.isfile(os.path.join(input_folder, data_json)), "The input folder must be a valid Task folder from the Medical Segmentation Decathlon with at least the " \
+    assert os.path.isdir(join_paths(input_folder, train_images_dir)) and os.path.isdir(join_paths(input_folder, train_labels_dir)) and \
+           os.path.isfile(join_paths(input_folder, data_json)), "The input folder must be a valid Task folder from the Medical Segmentation Decathlon with at least the " \
         "{} and {} subdirs and the {} file.".format(train_images_dir, train_labels_dir, test_images_dir)
     if os.path.isdir(output_folder):
         shutil.rmtree(output_folder)
     shutil.copytree(
-        os.path.join(input_folder, train_labels_dir),
-        os.path.join(output_folder, train_labels_dir))
-    shutil.copy(os.path.join(input_folder, data_json), output_folder)
+        join_paths(input_folder, train_labels_dir),
+        join_paths(output_folder, train_labels_dir))
+    shutil.copy(join_paths(input_folder, data_json), output_folder)
 
     files = []
     output_dirs = []
     os.makedirs(output_folder, exist_ok=True)
     for subdir in [train_images_dir, test_images_dir]:
-        curr_out_dir = os.path.join(output_folder, subdir)
+        curr_out_dir = join_paths(output_folder, subdir)
         if not os.path.isdir(curr_out_dir):
             os.mkdir(curr_out_dir)
-        curr_dir = os.path.join(input_folder, subdir)
+        curr_dir = join_paths(input_folder, subdir)
         nii_files = [
-            os.path.join(curr_dir, i) for i in os.listdir(curr_dir)
+            join_paths(curr_dir, i) for i in os.listdir(curr_dir)
             if i.endswith(".nii.gz")
         ]
         nii_files.sort()

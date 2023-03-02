@@ -20,11 +20,13 @@ import nibabel as nib
 from multiprocessing import Pool
 from .load_image import load_series
 
+from .path_utils import join_paths
+
 
 def verify_all_same_orientation(folder):
     nii_files = [
-        os.path.join(folder, nii_path) for nii_path in os.listdir(folder)
-        if os.path.isfile(os.path.join(folder, nii_path)) and nii_path.endswith(
+        join_paths(folder, nii_path) for nii_path in os.listdir(folder)
+        if os.path.isfile(join_paths(folder, nii_path)) and nii_path.endswith(
             ".nii.gz")
     ]
     orientations = []
@@ -86,27 +88,27 @@ def verify_training_dataset(folder,
                             train_images_dir="imagesTr",
                             train_labels_dir="labelsTr",
                             default_num_threads=8):
-    imagesTr_folder = os.path.join(folder, train_images_dir)
+    imagesTr_folder = join_paths(folder, train_images_dir)
     nii_files_in_imagesTr = [
         nii_path for nii_path in os.listdir(imagesTr_folder)
-        if os.path.isfile(os.path.join(imagesTr_folder, nii_path)) and
+        if os.path.isfile(join_paths(imagesTr_folder, nii_path)) and
         nii_path.endswith(".nii.gz")
     ]
-    labelsTr_folder = os.path.join(folder, train_labels_dir)
+    labelsTr_folder = join_paths(folder, train_labels_dir)
     nii_files_in_labelsTr = [
         nii_path for nii_path in os.listdir(labelsTr_folder)
-        if os.path.isfile(os.path.join(labelsTr_folder, nii_path)) and
+        if os.path.isfile(join_paths(labelsTr_folder, nii_path)) and
         nii_path.endswith(".nii.gz")
     ]
 
     label_files = []
     for c in identifiers:
         # check if all files are present
-        expected_label_file = os.path.join(folder, train_labels_dir,
-                                           c + ".nii.gz")
+        expected_label_file = join_paths(folder, train_labels_dir,
+                                         c + ".nii.gz")
         label_files.append(expected_label_file)
         expected_image_files = [
-            os.path.join(folder, train_images_dir, c + "_%04.0d.nii.gz" % i)
+            join_paths(folder, train_images_dir, c + "_%04.0d.nii.gz" % i)
             for i in range(num_modalities)
         ]
         assert os.path.isfile(
@@ -158,16 +160,16 @@ def verify_test_dataset(folder,
                         num_modalities,
                         identifiers,
                         test_images_dir="imagesTs"):
-    imagesTs_folder = os.path.join(folder, test_images_dir)
+    imagesTs_folder = join_paths(folder, test_images_dir)
     nii_files_in_imagesTs = [
         nii_path for nii_path in os.listdir(imagesTs_folder)
-        if os.path.isfile(os.path.join(imagesTs_folder, nii_path)) and
+        if os.path.isfile(join_paths(imagesTs_folder, nii_path)) and
         nii_path.endswith(".nii.gz")
     ]
     for c in identifiers:
         # check if all files are present
         expected_image_files = [
-            os.path.join(folder, test_images_dir, c + "_%04.0d.nii.gz" % i)
+            join_paths(folder, test_images_dir, c + "_%04.0d.nii.gz" % i)
             for i in range(num_modalities)
         ]
         assert all(
@@ -198,19 +200,19 @@ def verify_dataset_integrity(folder,
                              test_images_dir="imagesTs",
                              default_num_threads=8):
     assert os.path.isfile(
-        os.path.join(folder, data_json)
+        join_paths(folder, data_json)
     ), "There needs to be a {} file in folder {}, but not found.".format(
         data_json, folder)
     assert os.path.isdir(
-        os.path.join(folder, train_images_dir)
+        join_paths(folder, train_images_dir)
     ), "There needs to be a {} subfolder in folder {}, but not found.".format(
         train_images_dir, folder)
     assert os.path.isdir(
-        os.path.join(folder, train_labels_dir)
+        join_paths(folder, train_labels_dir)
     ), "There needs to be a {} subfolder in folder {}, but not found.".format(
         train_labels_dir, folder)
 
-    with open(os.path.join(folder, data_json), 'r') as f:
+    with open(join_paths(folder, data_json), 'r') as f:
         dataset = json.load(f)
     training_cases = dataset['training']
     num_modalities = len(dataset['modality'].keys())
@@ -225,7 +227,7 @@ def verify_dataset_integrity(folder,
 
     # check training dataset orientation
     all_same, unique_orientations = verify_all_same_orientation(
-        os.path.join(folder, train_images_dir))
+        join_paths(folder, train_images_dir))
     assert all_same, "Not all images in the dataset have the same axis ordering. Please correct that by reorienting the data."
 
     # check duplicate label
