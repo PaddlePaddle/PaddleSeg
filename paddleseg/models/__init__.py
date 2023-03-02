@@ -61,6 +61,7 @@ from .ddrnet import DDRNet_23
 from .ccnet import CCNet
 from .mobileseg import MobileSeg
 from .upernet import UPerNet
+from .upernet_cae import UPerNetCAE
 from .sinet import SINet
 from .lraspp import LRASPP
 from .mscale_ocrnet import MscaleOCRNet
