@@ -18,6 +18,12 @@ from PIL import Image, ImageEnhance
 from scipy.ndimage import distance_transform_edt
 
 
+def crop(img, crop_coordinate):
+    x1, y1, x2, y2 = crop_coordinate
+    img = img[y1:y2, x1:x2, ...]
+    return img
+
+
 def rescale_size(img_size, target_size):
     scale = min(
         max(target_size) / max(img_size), min(target_size) / min(img_size))
