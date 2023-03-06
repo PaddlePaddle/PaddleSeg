@@ -11,4 +11,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|ESPNetV2|-|1024x512|120000|61.82%|62.20%|62.89%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/espnetv1_cityscapes_1024x512_120k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/espnetv1_cityscapes_1024x512_120k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=472e91a0600420c99a0dc3a1e6f80f87)
+|ESPNetV1|-|1024x512|120000|61.82%|62.20%|63.30%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/espnetv1_cityscapes_1024x512_120k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/espnetv1_cityscapes_1024x512_120k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=472e91a0600420c99a0dc3a1e6f80f87)
