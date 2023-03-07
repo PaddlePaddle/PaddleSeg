@@ -37,7 +37,10 @@ python -m pip install paddlepaddle-gpu==2.3.0 -i https://mirror.baidu.com/pypi/s
 
 1. Train on one GPU
 
+   put the pretrained model in the paddleseg/models/
+
    ```
+   python torch_to_paddle.py
    python train.py
    ```
 
