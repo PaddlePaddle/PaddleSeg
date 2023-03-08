@@ -3018,6 +3018,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             # return
         print('-------------start propgation----------------')
         self.statusbar.showMessage(self.tr("开始传播"))
+        self.btnPropagate.setEnabled(False)
         # set object
         self.video.set_objects(int(max(self.video.k, current_mask.max())))
         self.video.set_images(self.video_images)
@@ -3033,6 +3034,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         end = time.time()
         print("propagation time cost", end - start)
         self.statusbar.showMessage(self.tr("传播完成!"), 5000)
+        self.btnPropagate.setEnabled(True)
         self.video_first = False
         # 传播进度条重置
         self.proPropagete.setValue(0)
