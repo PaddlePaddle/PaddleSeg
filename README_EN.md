@@ -446,6 +446,9 @@ Note that:
 * [Learn Paddleseg in 10 Mins](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 * [Application of Interactive Segmentation Technology in Smart Mapping](https://aistudio.baidu.com/aistudio/projectdetail/5089472)
 * [Nail art preview machine based on PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/5156312)
+* [Overrun monitoring of steel bar length based on PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/5633532)
+
+For more examples, see [here](https://aistudio.baidu.com/aistudio/projectdetail/5436669).
 
 ## License
 
