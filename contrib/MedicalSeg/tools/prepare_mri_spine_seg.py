@@ -44,7 +44,7 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
 from prepare import Prep
-from preprocess_utils import resample, normalize, label_remap
+from tools.preprocess_utils import resample, normalize, label_remap, join_paths
 from medicalseg.utils import wrapped_partial
 
 urls = {
@@ -82,8 +82,8 @@ class Prep_mri_spine(Prep):
         """generate the train_list.txt and val_list.txt"""
 
         txtname = [
-            os.path.join(self.phase_path, 'train_list.txt'),
-            os.path.join(self.phase_path, 'val_list.txt')
+            join_paths(self.phase_path, 'train_list.txt'),
+            join_paths(self.phase_path, 'val_list.txt')
         ]
 
         image_files_npy = os.listdir(self.image_path)

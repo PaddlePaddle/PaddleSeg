@@ -19,6 +19,8 @@ from skimage.morphology import label
 from collections import OrderedDict
 from multiprocessing import Pool
 
+from .path_utils import join_paths
+
 
 class DatasetAnalyzer:
     def __init__(self,
@@ -31,14 +33,14 @@ class DatasetAnalyzer:
         self.overwrite = overwrite
         self.num_processes = num_processes
         self.folder_with_cropped_data = folder_with_cropped_data
-        self.dataset_property_pkl = os.path.join(folder_with_cropped_data,
-                                                 dataset_property_pkl)
-        self.data_json = os.path.join(self.folder_with_cropped_data, data_json)
+        self.dataset_property_pkl = join_paths(folder_with_cropped_data,
+                                               dataset_property_pkl)
+        self.data_json = join_paths(self.folder_with_cropped_data, data_json)
         assert os.path.isfile(
             self.data_json
         ), "{} needs to be in {} but not found. Please ensure your folder including cropped data.".format(
             data_json, folder_with_cropped_data)
-        self.intensityproperties_file = os.path.join(
+        self.intensityproperties_file = join_paths(
             self.folder_with_cropped_data, intensityproperties_file)
 
         self.sizes = self.spacings = None
@@ -48,15 +50,15 @@ class DatasetAnalyzer:
     def get_patient_identifiers_from_cropped_files(self, folder):
         file_list = []
         for file_name in os.listdir(folder):
-            if os.path.isfile(os.path.join(
+            if os.path.isfile(join_paths(
                     folder, file_name)) and file_name.endswith(".npz"):
-                file_list.append(os.path.join(folder, file_name))
+                file_list.append(join_paths(folder, file_name))
         return [i.split("/")[-1].split('.')[0] for i in file_list]
 
     def load_properties_of_cropped(self, case_identifier):
         with open(
-                os.path.join(self.folder_with_cropped_data,
-                             "%s.pkl" % case_identifier), 'rb') as f:
+                join_paths(self.folder_with_cropped_data,
+                           "%s.pkl" % case_identifier), 'rb') as f:
             properties = pickle.load(f)
         return properties
 
@@ -93,7 +95,7 @@ class DatasetAnalyzer:
 
     def _get_voxels_in_foreground(self, patient_identifier, modality_id):
         all_data = np.load(
-            os.path.join(self.folder_with_cropped_data, patient_identifier) +
+            join_paths(self.folder_with_cropped_data, patient_identifier) +
             ".npz")['data']
         modality = all_data[modality_id]
         mask = all_data[-1] > 0

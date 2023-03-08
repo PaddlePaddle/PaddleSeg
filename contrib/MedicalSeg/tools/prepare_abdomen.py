@@ -55,7 +55,7 @@ import numpy as np
 from tqdm import tqdm
 
 from prepare import Prep
-from preprocess_utils import HUnorm, ignore_label
+from preprocess_utils import HUnorm, ignore_label, join_paths
 from medicalseg.utils import wrapped_partial
 
 urls = {"Reg-Training-Training.zip": ""}
@@ -151,14 +151,14 @@ class Prep_abdomen(Prep):
                             f_np = op(f_np)
                         filename = osp.basename(f).split(".")[
                             0] + f"-{volume_idx:>04d}.npy"
-                        f_np_name = os.path.join(savepath, filename)
+                        f_np_name = join_paths(savepath, filename)
                         np.save(f_np_name, f_np)
                         target_files[i].append(filename)
                 else:
                     for op in pre:
                         f_nps = op(f_nps)
                     filename = osp.basename(f).split(".")[0] + ".npy"
-                    f_np_name = os.path.join(savepath, filename)
+                    f_np_name = join_paths(savepath, filename)
                     np.save(f_np_name, f_nps)
                     target_files[i].append(filename)
 
@@ -169,8 +169,8 @@ class Prep_abdomen(Prep):
         """generate the train_list.txt and val_list.txt"""
 
         txtname = [
-            os.path.join(self.phase_path, 'train_list.txt'),
-            os.path.join(self.phase_path, 'val_list.txt')
+            join_paths(self.phase_path, 'train_list.txt'),
+            join_paths(self.phase_path, 'val_list.txt')
         ]
         self.write_txt(txtname[0], self.train_image_files_npy,
                        self.train_label_files_npy)
