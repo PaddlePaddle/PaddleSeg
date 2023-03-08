@@ -1778,6 +1778,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     color = self.controller.labelList[self.currLabelIdx].color
                     self.createPoly(curr_polygon, color)
         if self.video_first is False:
+            self._video_pause()
             self.updateImage()
             current_mask = self.getVideoMask()
             if current_mask is not None and len(self.scene.polygon_items) == 0:
@@ -2979,16 +2980,22 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.warn(self.tr("图片格式无法播放"), self.tr("请先加载视频"))
             return
         if self.timer.isActive():
-            self.timer.stop()
-            self.image = self.video_images[self.video.cursur]
-            self.videoPlay.setText(self.tr("播放"))
-            self.videoPlay.setIcon(
-                QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
+            self._video_pause()
         else:
-            self.timer.start(1000 // self.ratio)
-            self.videoPlay.setText(self.tr("暂停"))
-            self.videoPlay.setIcon(
-                QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))
+            self._video_play()
+
+    def _video_pause(self):
+        self.timer.stop()
+        self.image = self.video_images[self.video.cursur]
+        self.videoPlay.setText(self.tr("播放"))
+        self.videoPlay.setIcon(
+            QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
+            
+    def _video_play(self):
+        self.timer.start(1000 // self.ratio)
+        self.videoPlay.setText(self.tr("暂停"))
+        self.videoPlay.setIcon(
+            QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))
 
     def getVideoMask(self):
         try:
