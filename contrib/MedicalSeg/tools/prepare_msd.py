@@ -54,14 +54,11 @@ support:
 import os
 import os.path as osp
 import sys
-import zipfile
-import functools
-import numpy as np
 
 sys.path.append(osp.join(osp.dirname(osp.realpath(__file__)), ".."))
 
 from prepare import Prep
-from preprocess_utils import HUNorm, resample, parse_msd_basic_info
+from preprocess_utils import HUNorm, resample, parse_msd_basic_info, join_paths
 from medicalseg.utils import wrapped_partial
 
 tasks = {
@@ -139,8 +136,8 @@ class Prep_msd(Prep):
         """generate the train_list.txt and val_list.txt"""
 
         txtname = [
-            osp.join(self.phase_path, 'train_list.txt'),
-            osp.join(self.phase_path, 'val_list.txt')
+            join_paths(self.phase_path, 'train_list.txt'),
+            join_paths(self.phase_path, 'val_list.txt')
         ]
 
         image_files_npy = os.listdir(self.image_path)
@@ -167,7 +164,7 @@ if __name__ == "__main__":
 
     prep = Prep_msd(task_id)
 
-    json_path = osp.join(osp.dirname(prep.image_dir), "dataset.json")
+    json_path = join_paths(osp.dirname(prep.image_dir), "dataset.json")
     prep.generate_dataset_json(**parse_msd_basic_info(json_path))
 
     prep.load_save()

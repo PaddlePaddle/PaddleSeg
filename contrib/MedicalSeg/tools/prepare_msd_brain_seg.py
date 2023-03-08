@@ -25,6 +25,7 @@ from tqdm import tqdm
 sys.path.append(osp.join(osp.dirname(osp.realpath(__file__)), ""))
 
 from prepare import Prep
+from tools.preprocess_utils import join_paths
 
 tasks = {
     1: {
@@ -54,9 +55,9 @@ class PrepMSDBrain(Prep):
     def generate_txt(self, train_split=0.8, test_split=0.95):
         """generate the train_list.txt and val_list.txt"""
         txtname = [
-            osp.join(self.phase_path, 'train_list.txt'),
-            osp.join(self.phase_path, 'val_list.txt'),
-            osp.join(self.phase_path, 'test_list.txt')
+            join_paths(self.phase_path, 'train_list.txt'),
+            join_paths(self.phase_path, 'val_list.txt'),
+            join_paths(self.phase_path, 'test_list.txt')
         ]
         image_files_npy = os.listdir(self.image_path)
         label_files_npy = os.listdir(self.label_path)
@@ -146,9 +147,9 @@ class PrepMSDBrain(Prep):
                         "int32")
                     volume_idx = "" if len(f_nps) == 1 else f"-{volume_idx}"
                     np.save(
-                        os.path.join(
-                            savepath,
-                            osp.basename(f).split(".")[0] + volume_idx), f_np)
+                        join_paths(savepath,
+                                   osp.basename(f).split(".")[0] + volume_idx),
+                        f_np)
         print("The preprocess time on {} is {}".format(self.gpu_tag,
                                                        time.time() - tic))
 
