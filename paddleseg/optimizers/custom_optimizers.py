@@ -165,13 +165,12 @@ class AdamWDL(AdamW):
 
     def _append_optimize_op(self, block, param_and_grad):
         if self.set_param_lr_fun is None:
-            return super(AdamLW, self)._append_optimize_op(block,
-                                                           param_and_grad)
+            return super(AdamWDL, self)._append_optimize_op(block,
+                                                            param_and_grad)
 
-        self._append_decoupled_weight_decay(block, param_and_grad)
         prev_lr = param_and_grad[0].optimize_attr["learning_rate"]
         self.set_param_lr_fun(param_and_grad[0])
         # excute Adam op
-        res = super(AdamW, self)._append_optimize_op(block, param_and_grad)
+        res = super(AdamWDL, self)._append_optimize_op(block, param_and_grad)
         param_and_grad[0].optimize_attr["learning_rate"] = prev_lr
         return res
