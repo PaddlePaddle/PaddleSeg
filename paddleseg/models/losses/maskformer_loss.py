@@ -407,7 +407,8 @@ class MaskFormerLoss(nn.Layer):
             start_idx = paddle.nonzero(
                 paddle.cast(item["labels"] == self.ignore_index, 'int64'))[
                     0].numpy()[0]
-            index = paddle.to_tensor([i for i in range(start_idx)])
+            index = paddle.cast(paddle.to_tensor([i for i in range(start_idx)]),
+                    'int64')
             item['labels'] = paddle.gather(
                 item['labels'], index, axis=0)  # [n] n<150
             item['masks'] = paddle.gather(
