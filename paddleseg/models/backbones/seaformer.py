@@ -518,97 +518,6 @@ class LGQuery(nn.Layer):
         return q
 
 
-# class Attention4DDownsample(nn.Layer):
-#     def __init__(self, dim=384, key_dim=16, num_heads=8,
-#                  attn_ratio=4,
-#                  resolution=7,
-#                  out_dim=None,
-#                  activation=None,
-#                  ):
-#         super().__init__()
-#         self.num_heads = num_heads
-#         self.scale = key_dim ** -0.5
-#         self.key_dim = key_dim
-#         self.nh_kd = nh_kd = key_dim * num_heads
-
-#         self.resolution = resolution
-
-#         self.d = int(attn_ratio * key_dim)
-#         self.dh = int(attn_ratio * key_dim) * num_heads
-#         self.attn_ratio = attn_ratio
-#         h = self.dh + nh_kd * 2
-
-#         if out_dim is not None:
-#             self.out_dim = out_dim
-#         else:
-#             self.out_dim = dim
-#         self.resolution2 = math.ceil(self.resolution / 2)
-#         self.q = LGQuery(dim, self.num_heads * self.key_dim)
-
-#         self.N = self.resolution ** 2
-#         self.N2 = self.resolution2 ** 2
-
-#         self.k = nn.Sequential(nn.Conv2D(dim, self.num_heads * self.key_dim, 1),
-#                                nn.BatchNorm2D(self.num_heads * self.key_dim), )
-#         self.v = nn.Sequential(nn.Conv2D(dim, self.num_heads * self.d, 1),
-#                                nn.BatchNorm2D(self.num_heads * self.d),
-#                                )
-#         self.v_local = nn.Sequential(nn.Conv2D(self.num_heads * self.d, self.num_heads * self.d,
-#                                                kernel_size=3, stride=2, padding=1, groups=self.num_heads * self.d),
-#                                      nn.BatchNorm2D(self.num_heads * self.d), )
-
-#         self.proj = nn.Sequential(
-#             activation(),
-#             nn.Conv2D(self.dh, self.out_dim, 1),
-#             nn.BatchNorm2D(self.out_dim), )
-
-#         points = list(itertools.product(range(self.resolution), range(self.resolution)))
-#         points_ = list(itertools.product(
-#             range(self.resolution2), range(self.resolution2)))
-#         N = len(points)
-#         N_ = len(points_)
-#         attention_offsets = {}
-#         idxs = []
-#         for p1 in points_:
-#             for p2 in points:
-#                 size = 1
-#                 offset = (
-#                     abs(p1[0] * math.ceil(self.resolution / self.resolution2) - p2[0] + (size - 1) / 2),
-#                     abs(p1[1] * math.ceil(self.resolution / self.resolution2) - p2[1] + (size - 1) / 2))
-#                 if offset not in attention_offsets:
-#                     attention_offsets[offset] = len(attention_offsets)
-#                 idxs.append(attention_offsets[offset])
-#         self.attention_biases = torch.nn.Parameter(
-#             torch.zeros(num_heads, len(attention_offsets)))
-#         self.create_parameter('',shape=(N_, N))
-#         self.register_buffer('attention_bias_idxs',
-#                              torch.LongTensor(idxs).view(N_, N))
-
-#     def forward(self, x):  # x (B,N,C)
-#         B, C, H, W = x.shape
-
-#         q = self.q(x).flatten(2).reshape(B, self.num_heads, -1, self.N2).permute(0, 1, 3, 2)
-#         k = self.k(x).flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 2, 3)
-#         v = self.v(x)
-#         v_local = self.v_local(v)
-#         v = v.flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
-
-#         attn = (
-#                 (q @ k) * self.scale
-#                 +
-#                 (self.attention_biases[:, self.attention_bias_idxs]
-#                  if self.training else self.ab)
-#         )
-
-#         # attn = (q @ k) * self.scale
-#         attn = attn.softmax(dim=-1) # no talking head no stride and upsample
-#         x = (attn @ v).transpose(2, 3)
-#         out = x.reshape(B, self.dh, self.resolution2, self.resolution2) + v_local
-
-#         out = self.proj(out)
-#         return out
-
-
 class Sea_Attention_Downsample(nn.Layer):
     def __init__(self,
                  dim,
@@ -712,7 +621,7 @@ class Sea_Attention(nn.Layer):
                  attn_ratio=4,
                  activation=None,
                  lr_mult=1.0,
-                 talking_locality=False,
+                 talking_head=False,
                  stride_attention=False):
         super().__init__()
         self.num_heads = num_heads
@@ -727,7 +636,7 @@ class Sea_Attention(nn.Layer):
         self.to_k = Conv2DBN(dim, nh_kd, 1, lr_mult=lr_mult)
         self.to_v = Conv2DBN(dim, self.dh, 1, lr_mult=lr_mult)
 
-        self.talking_locality = talking_locality
+        self.talking_head = talking_head
         self.stride_attention = stride_attention
 
         if self.stride_attention:
@@ -735,7 +644,6 @@ class Sea_Attention(nn.Layer):
                 nn.Conv2D(
                     dim, dim, kernel_size=3, stride=2, padding=1, groups=dim),
                 nn.BatchNorm2D(dim), )
-            self.upsample = nn.Upsample(scale_factor=2, mode='bilinear')
 
         self.proj = paddle.nn.Sequential(
             activation(),
@@ -754,29 +662,20 @@ class Sea_Attention(nn.Layer):
         self.pos_emb_columnq = SqueezeAxialPositionalEmbedding(nh_kd, 16)
         self.pos_emb_columnk = SqueezeAxialPositionalEmbedding(nh_kd, 16)
 
-        if not self.talking_locality:
-            self.dwconv = Conv2DBN(
-                2 * self.dh,
-                2 * self.dh,
-                ks=3,
-                stride=1,
-                pad=1,
-                dilation=1,
-                groups=2 * self.dh,
-                lr_mult=lr_mult)
-            self.act = activation()
-            self.pwconv = Conv2DBN(2 * self.dh, dim, ks=1, lr_mult=lr_mult)
-            self.sigmoid = HSigmoid()
-        else:
-            self.v_local = nn.Sequential(
-                nn.Conv2D(
-                    self.dh,
-                    self.dh,
-                    kernel_size=3,
-                    stride=1,
-                    padding=1,
-                    groups=self.dh),
-                nn.BatchNorm2D(self.dh), )
+        self.dwconv = Conv2DBN(
+            2 * self.dh,
+            2 * self.dh,
+            ks=3,
+            stride=1,
+            pad=1,
+            dilation=1,
+            groups=2 * self.dh,
+            lr_mult=lr_mult)
+        self.act = activation()
+        self.pwconv = Conv2DBN(2 * self.dh, dim, ks=1, lr_mult=lr_mult)
+        self.sigmoid = HSigmoid()
+
+        if self.talking_head:
             # learn talking head
             self.talking_head1 = nn.Conv2D(
                 self.num_heads,
@@ -804,6 +703,7 @@ class Sea_Attention(nn.Layer):
                 padding=0)
 
     def forward(self, x):  # x (B,N,C)
+        B, C, H_ori, W_ori = x.shape
         if self.stride_attention:
             x = self.stride_conv(x)
         B, C, H, W = x.shape
@@ -815,12 +715,9 @@ class Sea_Attention(nn.Layer):
         )  # !!!v 的C维度还会乘以attention_ratio  这个维度可以随意调整，增加之后，所有特征输出通道会扩大倍数 # [B, nhead*dim*attn_ratio, H, W]
         # idea：对比实验，不增加这个维度，带来多少延时的减少，能否替换高通道注意力？
         # detail enhance
-        if not self.talking_locality:
-            qkv = paddle.concat([q, k, v], axis=1)
-            qkv = self.act(self.dwconv(qkv))
-            qkv = self.pwconv(qkv)
-        else:
-            v_local = self.v_local(v)
+        qkv = paddle.concat([q, k, v], axis=1)
+        qkv = self.act(self.dwconv(qkv))
+        qkv = self.pwconv(qkv)
 
         # squeeze axial attention 仅在部分head上进行横/纵的注意力，选择部分的时候采用全中覆盖的方式，create-parameter,index_select
         ## squeeze row ## ！！！压缩通道特征并在HW上做全局注意力会怎么样呢？ 但是C被看作是每个位置的特征dim
@@ -834,7 +731,7 @@ class Sea_Attention(nn.Layer):
             [0, 1, 3, 2])  # [B, nhead, H, dim*attn_ratio]
 
         attn_row = paddle.matmul(qrow, krow) * self.scale  # [B, nhead, H, H]
-        if not self.talking_locality:
+        if not self.talking_head:
             attn_row = F.softmax(
                 attn_row, axis=-1)  # ！！！这之后少了attn_drop drop_rate=0
         else:
@@ -855,7 +752,7 @@ class Sea_Attention(nn.Layer):
             [B, self.num_heads, -1, W]).transpose([0, 1, 3, 2])
 
         attn_column = paddle.matmul(qcolumn, kcolumn) * self.scale
-        if not self.talking_locality:
+        if not self.talking_head:
             attn_column = F.softmax(attn_column, axis=-1)
         else:
             attn_column = self.talking_head3(attn_column)
@@ -867,17 +764,12 @@ class Sea_Attention(nn.Layer):
 
         xx = paddle.add(xx_row, xx_column)  # [B, self.dh,H,W] 
         xx = paddle.add(v, xx)  # 和论文中多出的增加一个v的特征。相当于增加了原本x的一个本体，提升注意力的稳定性
-        if not self.talking_locality:
-            xx = self.proj(xx)  # 多个特征之间交流，idea： k=3
-            xx = self.sigmoid(
-                xx) * qkv  # 全局作为权重调节局部特征重要性， idea：试着+全局特征突出全局特征的重要性
-            if self.stride_attention:
-                xx = self.upsample(xx)
-        else:
-            xx = xx + v_local
-            if self.stride_attention:
-                xx = self.upsample(xx)
-            xx = self.proj(xx)
+
+        xx = self.proj(xx)  # 多个特征之间交流，idea： k=3
+        xx = self.sigmoid(xx) * qkv  # 全局作为权重调节局部特征重要性， idea：试着+全局特征突出全局特征的重要性
+        if self.stride_attention:
+            xx = F.interpolate(xx, size=(H_ori, W_ori), mode='bilinear')
+
         return xx
 
 
@@ -893,7 +785,7 @@ class Block(nn.Layer):
                  act_layer=nn.ReLU,
                  lr_mult=1.0,
                  stride_attention=None,
-                 talking_locality=None):
+                 talking_head=None):
         super().__init__()
         self.dim = dim
         self.num_heads = num_heads
@@ -908,7 +800,7 @@ class Block(nn.Layer):
             activation=act_layer,
             lr_mult=lr_mult,
             stride_attention=stride_attention,
-            talking_locality=talking_locality)
+            talking_head=talking_head)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity(
@@ -946,7 +838,7 @@ class BasicLayer(nn.Layer):
                  drop_path=0.,
                  lr_mult=1.0,
                  act_layer=None,
-                 talking_locality=None,
+                 talking_head=None,
                  stride_attention=None):
         super().__init__()
         self.block_num = block_num
@@ -965,7 +857,7 @@ class BasicLayer(nn.Layer):
                     if isinstance(drop_path, list) else drop_path,
                     act_layer=act_layer,
                     lr_mult=lr_mult,
-                    talking_locality=talking_locality,
+                    talking_head=talking_head,
                     stride_attention=stride_attention))
 
     def forward(self, x):
@@ -1064,6 +956,126 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
 
         res = low_feat1_act * low_feat2_act * high_feat_act * (
             low_feat1 + low_feat2) + high_feat
+
+        return res
+
+
+class InjectionMultiSumallmultiallsumSimp(nn.Layer):
+    def __init__(self,
+                 in_channels=(64, 128, 256, 384),
+                 activations=None,
+                 out_channels=160,
+                 lr_mult=1.0):
+        super(InjectionMultiSumallmultiallsumSimp, self).__init__()
+        self.embedding_list = nn.LayerList()
+        self.act_embedding_list = nn.LayerList()
+        self.act_list = nn.LayerList()
+        self.out_channels = out_channels
+        for i in range(len(in_channels)):
+            if i != 1:
+                self.embedding_list.append(
+                    ConvBNAct(
+                        in_channels[i],
+                        out_channels,
+                        kernel_size=1,
+                        lr_mult=lr_mult))
+            if i != 0:
+                self.act_embedding_list.append(
+                    ConvBNAct(
+                        in_channels[i],
+                        out_channels,
+                        kernel_size=1,
+                        lr_mult=lr_mult))
+                self.act_list.append(HSigmoid())
+
+    def forward(
+            self, inputs
+    ):  # x_x8, x_x16, x_x32, x_x64 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
+        low_feat1 = F.interpolate(
+            inputs[0], scale_factor=0.5, mode="bilinear")  # x16
+        # low_feat1_act = self.act_list[0](self.act_embedding_list[0](low_feat1))
+        low_feat1 = self.embedding_list[0](low_feat1)
+
+        low_feat2 = F.interpolate(
+            inputs[1], size=low_feat1.shape[-2:], mode="bilinear")  # x16
+        low_feat2_act = self.act_list[0](
+            self.act_embedding_list[0](low_feat2))  # x16
+        # low_feat2 = self.embedding_list[1](low_feat2)
+
+        high_feat_act = F.interpolate(
+            self.act_list[1](self.act_embedding_list[1](inputs[2])),
+            size=low_feat2.shape[2:],
+            mode="bilinear")
+        high_feat = F.interpolate(
+            self.embedding_list[1](inputs[2]),
+            size=low_feat2.shape[2:],
+            mode="bilinear")
+
+        res = low_feat2_act * high_feat_act * low_feat1 + high_feat
+
+        return res
+
+
+class InjectionMultiSumallmultiallsumEnhance(nn.Layer):
+    def __init__(self,
+                 in_channels=(64, 128, 256, 384),
+                 activations=None,
+                 out_channels=160,
+                 lr_mult=1.0):
+        super(InjectionMultiSumallmultiallsumEnhance, self).__init__()
+        self.embedding_list = nn.LayerList()
+        self.act_embedding_list = nn.LayerList()
+        self.act_list = nn.LayerList()
+        self.out_channels = out_channels
+        for i in range(len(in_channels)):
+            self.embedding_list.append(
+                ConvBNAct(
+                    in_channels[i],
+                    out_channels,
+                    kernel_size=1,
+                    lr_mult=lr_mult))
+            self.act_embedding_list.append(
+                ConvBNAct(
+                    in_channels[i],
+                    out_channels,
+                    kernel_size=1,
+                    lr_mult=lr_mult))
+            self.act_list.append(HSigmoid())
+
+    def forward(
+            self, inputs
+    ):  # x_x8, x_x16, x_x32, x_x64 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
+        low_feat1 = F.interpolate(
+            inputs[0], scale_factor=0.5, mode="bilinear")  # x16
+        low_feat1_act = self.act_list[0](self.act_embedding_list[0](low_feat1))
+        low_feat1 = self.embedding_list[0](low_feat1)
+
+        low_feat2 = F.interpolate(
+            inputs[1], size=low_feat1.shape[-2:], mode="bilinear")  # x16
+        low_feat2_act = self.act_list[1](
+            self.act_embedding_list[1](low_feat2))  # x16
+        low_feat2 = self.embedding_list[1](low_feat2)
+
+        # low_feat3_act = F.interpolate(
+        #     self.act_list[2](self.act_embedding_list[2](inputs[2])),
+        #     size=low_feat2.shape[2:],
+        #     mode="bilinear")
+        # low_feat3 = F.interpolate(
+        #     self.embedding_list[2](inputs[2]),
+        #     size=low_feat2.shape[2:],
+        #     mode="bilinear")
+
+        high_feat_act = F.interpolate(
+            self.act_list[2](self.act_embedding_list[2](inputs[2])),
+            size=low_feat2.shape[2:],
+            mode="bilinear")
+        high_feat = F.interpolate(
+            self.embedding_list[2](inputs[2]),
+            size=low_feat2.shape[2:],
+            mode="bilinear")
+
+        res = (1 + low_feat1_act * low_feat2_act * high_feat_act) * (
+            low_feat1 + low_feat2 + high_feat)
 
         return res
 
@@ -1245,7 +1257,7 @@ class SeaFormer(nn.Layer):
                  out_feat_chs=None,
                  mv3=False,
                  asub=False,
-                 talking_locality=False,
+                 talking_head=False,
                  stride_attention=False):
         super().__init__()
         self.channels = channels
@@ -1278,7 +1290,6 @@ class SeaFormer(nn.Layer):
             dpr = [
                 x.item() for x in paddle.linspace(0, drop_path_rate, depths[i])
             ]
-            # dpr = [0 for _ in paddle.linspace(0, drop_path_rate, depths[i])]
             trans = BasicLayer(  # 每个是一个分辨率下的Attention
                 block_num=depths[i],
                 embedding_dim=embed_dims[i],
@@ -1286,14 +1297,14 @@ class SeaFormer(nn.Layer):
                 num_heads=num_heads,
                 mlp_ratio=mlp_ratios[i],
                 attn_ratio=attn_ratios,
-                drop=0,
+                drop=0,  # 没有设置MLP中的dropout
                 attn_drop=0.0,
                 drop_path=dpr,
                 act_layer=act_layer,
                 lr_mult=lr_mult,
                 # stride_attention=(i == 0) if stride_attention else False,
                 stride_attention=stride_attention,
-                talking_locality=talking_locality)  # False
+                talking_head=talking_head)  # False
             setattr(self, f"trans{i+1}", trans)
 
         self.inj_type = inj_type
@@ -1306,6 +1317,20 @@ class SeaFormer(nn.Layer):
             print('Using AAM')
             self.injection_out_channels = [self.inj_module.out_channels] * 3
             # self.injection_out_channels = [out_feat_chs[0], self.inj_module.out_channels, self.inj_module.out_channels]
+        elif self.inj_type == "AAME":
+            self.inj_module = InjectionMultiSumallmultiallsumEnhance(
+                in_channels=out_feat_chs,
+                activations=act_layer,
+                out_channels=out_channels,
+                lr_mult=lr_mult)
+            self.injection_out_channels = [self.inj_module.out_channels] * 3
+        elif self.inj_type == "AAMS":
+            self.inj_module = InjectionMultiSumallmultiallsumSimp(
+                in_channels=out_feat_chs,
+                activations=act_layer,
+                out_channels=out_channels,
+                lr_mult=lr_mult)
+            self.injection_out_channels = [self.inj_module.out_channels] * 3
         elif self.inj_type == "LearnableFFM":
             self.inj_module = LearnableFFM(
                 in_channels=out_feat_chs,
@@ -1314,15 +1339,6 @@ class SeaFormer(nn.Layer):
                 lr_mult=lr_mult)
             print('Using LearnableFFM')
             self.injection_out_channels = [self.inj_module.out_channels] * 3
-
-        elif self.inj_type == 'AAM_cpt':
-            self.inj_module = InjectionUnionMultiSumCompact(
-                in_channels=out_feat_chs,
-                activations=act_layer,
-                out_channels=out_channels,
-                lr_mult=lr_mult)
-            print('Using AAM_cpt')
-            self.injection_out_channels = [self.inj_module.out_channels, ] * 3
         elif self.inj_type == 'AAM_cpt_opt':
             self.inj_module = InjectionUnionMultiSumCpt_opt(
                 in_channels=out_feat_chs,
@@ -1331,7 +1347,7 @@ class SeaFormer(nn.Layer):
                 lr_mult=lr_mult)
             print('Using AAM_cpt_opt')
             self.injection_out_channels = [self.inj_module.out_channels, ] * 3
-        else:
+        elif self.inj_type == 'origin':
             for i in range(len(dims)):
                 fuse = Fusion_block(
                     out_feat_chs[0] if i == 0 else dims[i - 1],
@@ -1340,6 +1356,8 @@ class SeaFormer(nn.Layer):
                     lr_mult=lr_mult)
                 setattr(self, f"fuse{i + 1}", fuse)
             self.injection_out_channels = [dims[i]] * 3
+        else:
+            raise NotImplementedError(self.inj_module + ' is not implemented')
 
         self.pretrained = pretrained
         self.init_weight()
@@ -1366,16 +1384,15 @@ class SeaFormer(nn.Layer):
                 x = trans(x)
                 outputs.append(x)
 
-        if self.inj_type == "AAM" or self.inj_type == 'AAM_cpt' or self.inj_type == 'AAM_cpt_opt' or self.inj_type == 'LearnableFFM':
-            output = self.inj_module(outputs)
-            # 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
-        else:  # (1, 128, 64, 64) (1, 160, 64, 64)
+        if self.inj_type == "origin":  # (1, 128, 64, 64) (1, 160, 64, 64)
             x_detail = outputs[0]
             for i in range(len(self.dims)):
                 fuse = getattr(self, f'fuse{i+1}')
 
                 x_detail = fuse(x_detail, outputs[i + 1])
             output = x_detail
+        else:
+            output = self.inj_module(outputs)
 
         return output
 
@@ -1428,6 +1445,53 @@ def SeaFormer_MV3_Base(**kwargs):
 
 
 @manager.BACKBONES.add_component
+def SeaFormer_MV3_Base_4stage_oneattn(**kwargs):
+    # cfgs = [
+    #     # k exp c, s
+    #     [3, 16, 16, True, "relu", 1],
+    #     [3, 64, 32, False, "relu", 2],
+    #     [3, 96, 32, False, "relu", 1],
+    #     [5, 96, 64, True, "hardswish", 2],
+    #     [5, 240, 64, True, "hardswish", 1],
+    #     [5, 192, 128, True, "hardswish", 2],
+    #     [5, 384, 128, True, "hardswish", 1],
+    #     [5, 512, 192, True, "hardswish", 2],
+    #     [5, 1152, 256, True, "hardswish", 2],
+    # ]
+    cfg1 = [
+        # k t c, s
+        [3, 16, 16, True, "relu", 1],
+        [3, 64, 32, False, "relu", 2],
+        [3, 96, 32, False, "relu", 1]
+    ]
+    cfg2 = [[5, 96, 64, True, "hardswish", 2],
+            [5, 240, 64, True, "hardswish", 1]]
+    cfg3 = [[5, 192, 128, True, "hardswish", 2],
+            [5, 384, 128, True, "hardswish", 1]]
+    cfg4 = [[5, 512, 192, True, "hardswish", 2],
+            [5, 1152, 256, True, "hardswish", 1]]
+    channels = [16, 32, 64, 128, 256]
+    depths = [4, ]
+    key_dims = [24, ]
+    emb_dims = [256, ]
+    num_heads = 8
+    drop_path_rate = 0.1
+
+    model = SeaFormer(
+        cfgs=[cfg1, cfg2, cfg3, cfg4],
+        channels=channels,
+        embed_dims=emb_dims,
+        key_dims=key_dims,
+        depths=depths,
+        num_heads=num_heads,
+        drop_path_rate=drop_path_rate,
+        act_layer=nn.ReLU6,
+        mv3=True,
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
 def SeaFormer_MV3_Base_4stage(**kwargs):
     cfg1 = [
         # k t c, s
@@ -1448,24 +1512,42 @@ def SeaFormer_MV3_Base_4stage(**kwargs):
     emb_dims = [128, 192]
     num_heads = 8
     drop_path_rate = 0.1
-    # cfg1 = [
-    #     # k t c, s
-    #     [3, 16, 16, True, "relu", 1],
-    #     [3, 64, 32, False, "relu", 2],
-    #     [3, 96, 32, False, "relu", 1]
-    # ]
-    # cfg2 = [[5, 128, 64, True, "hardswish", 2],
-    #         [5, 192, 64, True, "hardswish", 1],
-    #         [5, 256, 128, True, "hardswish", 1],
-    #         [5, 384, 128, True, "hardswish", 1]]
-    # cfg3 = [[5, 512, 192, True, "hardswish", 2]]
-    # cfg4 = [[5, 768, 256, True, "hardswish", 2]]
-    # channels = [16, 32, 128, 192, 256]
-    # depths = [3, 3]
-    # key_dims = [16, 24]
-    # emb_dims = [192, 256]
-    # num_heads = 8
-    # drop_path_rate = 0.1
+
+    model = SeaFormer(
+        cfgs=[cfg1, cfg2, cfg3, cfg4],
+        channels=channels,
+        embed_dims=emb_dims,
+        key_dims=key_dims,
+        depths=depths,
+        num_heads=num_heads,
+        drop_path_rate=drop_path_rate,
+        act_layer=nn.ReLU6,
+        mv3=True,
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def SeaFormer_MV3_Base_4stage_new_chnadj(**kwargs):
+    cfg1 = [
+        # k t c, s
+        [3, 16, 16, True, "relu", 1],
+        [3, 64, 32, False, "relu", 2],
+        [3, 96, 32, False, "relu", 1]
+    ]
+    cfg2 = [[5, 96, 64, True, "hardswish", 2],
+            [5, 192, 64, True, "hardswish", 1],
+            [5, 192, 64, True, "hardswish", 1],
+            [5, 192, 64, True, "hardswish", 1]]  # x8
+    cfg3 = [[5, 256, 128, True, "hardswish", 2]]  # x16
+    cfg4 = [[5, 768, 192, True, "hardswish", 2]]
+
+    channels = [16, 32, 64, 128, 192]
+    depths = [3, 3]
+    key_dims = [16, 24]
+    emb_dims = [128, 192]
+    num_heads = 8
+    drop_path_rate = 0.1
 
     model = SeaFormer(
         cfgs=[cfg1, cfg2, cfg3, cfg4],
@@ -1497,15 +1579,15 @@ def SeaFormer_Base(**kwargs):
     #     [3, 6, 160, 1]  #            
     # ]
     cfg1 = [
-        # k t c, s
+        # ktc, s
         [3, 1, 16, 1],
         [3, 4, 32, 2],
         [3, 3, 32, 1]
     ]
     cfg2 = [[5, 3, 64, 2], [5, 3, 64, 1]]
     cfg3 = [[3, 3, 128, 2], [3, 3, 128, 1]]
-    cfg4 = [[5, 4, 192, 2]]  # 256
-    cfg5 = [[3, 6, 256, 2]]  # 320
+    cfg4 = [[5, 4, 192, 2]]
+    cfg5 = [[3, 6, 256, 2]]
     channels = [16, 32, 64, 128, 192, 256]
     if not kwargs['stride_attention']:
         depths = [4, 4]
@@ -1514,9 +1596,9 @@ def SeaFormer_Base(**kwargs):
         mlp_ratios = [2, 4]
     else:
         depths = [3, 4, 4]  # strided attention params
-        key_dims = [8, 16, 24]  # [16, 20, 24]
-        emb_dims = [128, 192, 256]  # [192, 256, 320]
-        mlp_ratios = [2, 2, 4]  # [2,4,6]
+        key_dims = [8, 16, 24]
+        emb_dims = [128, 192, 256]
+        mlp_ratios = [2, 2, 4]
 
     num_heads = 8
     drop_path_rate = 0.1
