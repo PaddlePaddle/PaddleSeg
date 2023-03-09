@@ -445,6 +445,9 @@
 * [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 * [车路协同：交互式分割技术在智慧建图中的应用和实践](https://aistudio.baidu.com/aistudio/projectdetail/5089472)
 * [基于PaddleSeg的美甲预览机](https://aistudio.baidu.com/aistudio/projectdetail/5156312)
+* [基于PaddleSeg的钢筋长度超限监控](https://aistudio.baidu.com/aistudio/projectdetail/5633532)
+
+更多范例项目可参考：[『图像分割经典项目集』用PaddleSeg能做什么？](https://aistudio.baidu.com/aistudio/projectdetail/5436669)
 
 ## 许可证书
 本项目的发布受Apache 2.0 license许可认证。
