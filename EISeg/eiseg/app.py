@@ -41,6 +41,7 @@ from util import COCO
 from util import check_cn, normcase
 from util.voc import VocAnnotations
 from util.jsencoder import JSEncoder
+from util.masktococo import saveMaskToCOCO
 
 import plugin.remotesensing as rs
 from plugin.medical import med
@@ -327,6 +328,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "open_folder",
             "OpenFolder",
             tr("打开一个文件夹下所有的图像进行标注"), )
+        convert_mask = action(
+            tr("&加载分割标签图像"),
+            self.loadMaskImage,
+            "convert_mask",
+            "Convert",
+            tr("将分割的图像和图像标签转换为EISeg可以读取多边形的格式"), )
         change_output_dir = action(
             tr("&改变标签保存路径"),
             partial(self.changeOutputDir, None),
@@ -702,6 +709,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             fileMenu=(
                 open_image,
                 open_folder,
+                convert_mask,
                 change_output_dir,
                 load_param,
                 clear_recent,
@@ -3393,3 +3401,28 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         with open(path, "w", encoding="utf-8") as f:
             for label in labelName:
                 f.write(label + "\n")
+
+    def loadMaskImage(self):
+        options = (QtWidgets.QFileDialog.ShowDirsOnly |
+                   QtWidgets.QFileDialog.DontResolveSymlinks)
+        if self.settings.value("use_qt_widget", False, type=bool):
+            options = options | QtWidgets.QFileDialog.DontUseNativeDialog
+        imgDir = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            self.tr("选择图片文件夹") + " - " + __APPNAME__,
+            "",
+            options, )
+        if not osp.exists(imgDir):
+            return
+        maskDir = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            self.tr("选择标签文件夹") + " - " + __APPNAME__,
+            "",
+            options, )
+        if not osp.exists(maskDir):
+            return
+        try:
+            saveMaskToCOCO(imgDir, maskDir)
+            self.statusbar.showMessage(self.tr("转换完成"), 10000)
+        except:
+            self.statusbar.showMessage(self.tr("转换失败"), 10000)
