@@ -61,10 +61,7 @@ lr_scheduler:
 loss:
   types:
     - type: CrossEntropyLoss
-    - type: CrossEntropyLoss
-    - type: FocalLoss
-    - type: KLLoss
-  coef: [1, 1, 0.3, 2]
+  coef: [1]
 
 model:
   type: PortraitNet

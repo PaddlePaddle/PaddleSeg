@@ -20,7 +20,9 @@ sys.path.append(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), "../.."))
 import pydicom
 import SimpleITK as sitk
+
 import tools.preprocess_utils.global_var as global_var
+from tools.preprocess_utils.path_utils import join_paths
 
 gpu_tag = global_var.get_value('USE_GPU')
 if gpu_tag:
@@ -35,7 +37,7 @@ def load_slices(dcm_dir):
     Return img array and [z,y,x]-ordered origin and spacing
     """
 
-    dcm_list = [os.path.join(dcm_dir, i) for i in os.listdir(dcm_dir)]
+    dcm_list = [join_paths(dcm_dir, i) for i in os.listdir(dcm_dir)]
     indices = np.array([pydicom.dcmread(i).InstanceNumber for i in dcm_list])
     dcm_list = np.array(dcm_list)[indices.argsort()]
 

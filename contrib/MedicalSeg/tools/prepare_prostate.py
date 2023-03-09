@@ -44,7 +44,7 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
 from prepare import Prep
-from preprocess_utils import resample, normalize, label_remap
+from tools.preprocess_utils import resample, normalize, label_remap, join_paths
 from medicalseg.utils import wrapped_partial
 
 urls = {
@@ -164,12 +164,12 @@ class Prep_prostate(Prep):
         """generate the train_list.txt and val_list.txt"""
 
         txtname = [
-            os.path.join(self.phase_path, 'train_list.txt'),
-            os.path.join(self.phase_path, 'val_list.txt')
+            join_paths(self.phase_path, 'train_list.txt'),
+            join_paths(self.phase_path, 'val_list.txt')
         ]
 
         if self.image_files_test:
-            txtname.append(os.path.join(self.phase_path, 'test_list.txt'))
+            txtname.append(join_paths(self.phase_path, 'test_list.txt'))
             test_file_npy = os.listdir(self.image_path_test)
 
         image_files_npy = os.listdir(self.image_path)
