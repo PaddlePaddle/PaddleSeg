@@ -21,6 +21,7 @@
 </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
+* [2023-02-27] :fire:  PaddleSeg集成高性能、全场景模型部署方案FastDeploy，欢迎参考[指南](./deploy/fastdeploy)试用（注意切换成develop分支）。
 * [2022-11-30] :fire:  PaddleSeg 2.7版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
   * 发布实时人像抠图模型[PP-MattingV2](./Matting/)：推理速度提升44.6%，平均误差减小17.91%，完美超越此前SOTA模型，支持零成本开箱即用。
   * 发布3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)：涵盖3D医疗影像交互式标注工具EISeg-Med3D、3个高精分割模型，集成并优化前沿分割方案nnUNet-D。
@@ -444,6 +445,9 @@
 * [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 * [车路协同：交互式分割技术在智慧建图中的应用和实践](https://aistudio.baidu.com/aistudio/projectdetail/5089472)
 * [基于PaddleSeg的美甲预览机](https://aistudio.baidu.com/aistudio/projectdetail/5156312)
+* [基于PaddleSeg的钢筋长度超限监控](https://aistudio.baidu.com/aistudio/projectdetail/5633532)
+
+更多范例项目可参考：[『图像分割经典项目集』用PaddleSeg能做什么？](https://aistudio.baidu.com/aistudio/projectdetail/5436669)
 
 ## 许可证书
 本项目的发布受Apache 2.0 license许可认证。

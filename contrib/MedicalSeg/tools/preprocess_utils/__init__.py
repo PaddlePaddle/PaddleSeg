@@ -23,3 +23,4 @@ from .preprocessing import GenericPreprocessor, PreprocessorFor2D, get_lowres_ax
 from .experiment_utils import *
 from .experiment_planner import ExperimentPlanner2D_v21, ExperimentPlanner3D_v21
 from .file_and_folder_operations import *
+from .path_utils import join_paths

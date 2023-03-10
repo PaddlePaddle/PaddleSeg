@@ -19,6 +19,7 @@ from scipy.ndimage.interpolation import map_coordinates
 from multiprocessing.pool import Pool
 from skimage.transform import resize
 from .image_crop import get_case_identifier_from_npz, ImageCropper
+from .path_utils import join_paths
 
 
 def resize_segmentation(segmentation, new_shape, order=3):
@@ -254,12 +255,11 @@ class GenericPreprocessor:
     @staticmethod
     def load_cropped(cropped_output_dir, case_identifier):
         all_data = np.load(
-            os.path.join(cropped_output_dir, "%s.npz" % case_identifier))[
-                'data']
+            join_paths(cropped_output_dir, "%s.npz" % case_identifier))['data']
         data = all_data[:-1].astype(np.float32)
         seg = all_data[-1:]
         with open(
-                os.path.join(cropped_output_dir, "%s.pkl" % case_identifier),
+                join_paths(cropped_output_dir, "%s.pkl" % case_identifier),
                 'rb') as f:
             properties = pickle.load(f)
         return data, seg, properties
@@ -404,12 +404,12 @@ class GenericPreprocessor:
         properties['class_locations'] = class_locs
 
         print("saving: ",
-              os.path.join(output_folder_stage, "%s.npz" % case_identifier))
+              join_paths(output_folder_stage, "%s.npz" % case_identifier))
         np.savez_compressed(
-            os.path.join(output_folder_stage, "%s.npz" % case_identifier),
+            join_paths(output_folder_stage, "%s.npz" % case_identifier),
             data=all_data.astype(np.float32))
         with open(
-                os.path.join(output_folder_stage, "%s.pkl" % case_identifier),
+                join_paths(output_folder_stage, "%s.pkl" % case_identifier),
                 'wb') as f:
             pickle.dump(properties, f)
 
@@ -424,10 +424,10 @@ class GenericPreprocessor:
         print("npz folder:", input_folder_with_cropped_npz)
         print("output_folder:", output_folder)
         list_of_cropped_npz_files = [
-            os.path.join(input_folder_with_cropped_npz, file_name)
+            join_paths(input_folder_with_cropped_npz, file_name)
             for file_name in os.listdir(input_folder_with_cropped_npz)
             if os.path.isfile(
-                os.path.join(input_folder_with_cropped_npz, file_name)) and
+                join_paths(input_folder_with_cropped_npz, file_name)) and
             file_name.endswith('.npz')
         ]
         list_of_cropped_npz_files.sort()
@@ -438,14 +438,14 @@ class GenericPreprocessor:
 
         assert len(num_threads) == num_stages
         with open(
-                os.path.join(input_folder_with_cropped_npz,
-                             'dataset_properties.pkl'), 'rb') as f:
+                join_paths(input_folder_with_cropped_npz,
+                           'dataset_properties.pkl'), 'rb') as f:
             all_classes = pickle.load(f)['all_classes']
 
         for i in range(num_stages):
             all_args = []
-            output_folder_stage = os.path.join(output_folder,
-                                               data_identifier + "_stage%d" % i)
+            output_folder_stage = join_paths(output_folder,
+                                             data_identifier + "_stage%d" % i)
             os.makedirs(output_folder_stage, exist_ok=True)
             spacing = target_spacings[i]
             for j, case in enumerate(list_of_cropped_npz_files):
@@ -479,10 +479,10 @@ class PreprocessorFor2D(GenericPreprocessor):
         print("npz folder:", input_folder_with_cropped_npz)
         print("output_folder:", output_folder)
         list_of_cropped_npz_files = [
-            os.path.join(input_folder_with_cropped_npz, file_name)
+            join_paths(input_folder_with_cropped_npz, file_name)
             for file_name in os.listdir(input_folder_with_cropped_npz)
             if os.path.isfile(
-                os.path.join(input_folder_with_cropped_npz, file_name)) and
+                join_paths(input_folder_with_cropped_npz, file_name)) and
             file_name.endswith('.npz')
         ]
         list_of_cropped_npz_files.sort()
@@ -492,13 +492,13 @@ class PreprocessorFor2D(GenericPreprocessor):
         num_stages = len(target_spacings)
 
         with open(
-                os.path.join(input_folder_with_cropped_npz,
-                             'dataset_properties.pkl'), 'rb') as f:
+                join_paths(input_folder_with_cropped_npz,
+                           'dataset_properties.pkl'), 'rb') as f:
             all_classes = pickle.load(f)['all_classes']
 
         for i in range(num_stages):
-            output_folder_stage = os.path.join(output_folder,
-                                               data_identifier + "_stage%d" % i)
+            output_folder_stage = join_paths(output_folder,
+                                             data_identifier + "_stage%d" % i)
             os.makedirs(output_folder_stage, exist_ok=True)
             spacing = target_spacings[i]
             for j, case in enumerate(list_of_cropped_npz_files):
