@@ -868,14 +868,23 @@ class BasicLayer(nn.Layer):
 
 
 class Fusion_block(nn.Layer):
-    def __init__(self, inp, oup, embed_dim, activations=None,
-                 lr_mult=1.0) -> None:
+    def __init__(self,
+                 inp,
+                 oup,
+                 embed_dim,
+                 activations=None,
+                 lr_mult=1.0,
+                 fuse_high=False) -> None:
         super(Fusion_block, self).__init__()
         self.local_embedding = ConvBNAct(
             inp, embed_dim, kernel_size=1, lr_mult=lr_mult)
         self.global_act = ConvBNAct(
             oup, embed_dim, kernel_size=1, lr_mult=lr_mult)
         self.act = HSigmoid()
+        self.fuse_high = fuse_high
+        if fuse_high:
+            self.local_embedding1 = ConvBNAct(
+                oup, embed_dim, kernel_size=1, lr_mult=lr_mult)
 
     def forward(self, x_l, x_g):
         '''
@@ -892,7 +901,14 @@ class Fusion_block(nn.Layer):
             size=(H, W),
             mode='bilinear',
             align_corners=False)
-        out = local_feat * sig_act
+        if self.fuse_high:
+            out = local_feat * sig_act + F.interpolate(
+                self.local_embedding1(x_g),
+                size=(H, W),
+                mode='bilinear',
+                align_corners=False)
+        else:
+            out = local_feat * sig_act
         return out
 
 
@@ -995,6 +1011,62 @@ class InjectionMultiSumallmultiallsumSimp(nn.Layer):
             inputs[0], scale_factor=0.5, mode="bilinear")  # x16
         # low_feat1_act = self.act_list[0](self.act_embedding_list[0](low_feat1))
         low_feat1 = self.embedding_list[0](low_feat1)
+
+        low_feat2 = F.interpolate(
+            inputs[1], size=low_feat1.shape[-2:], mode="bilinear")  # x16
+        low_feat2_act = self.act_list[0](
+            self.act_embedding_list[0](low_feat2))  # x16
+        # low_feat2 = self.embedding_list[1](low_feat2)
+
+        high_feat_act = F.interpolate(
+            self.act_list[1](self.act_embedding_list[1](inputs[2])),
+            size=low_feat2.shape[2:],
+            mode="bilinear")
+        high_feat = F.interpolate(
+            self.embedding_list[1](inputs[2]),
+            size=low_feat2.shape[2:],
+            mode="bilinear")
+
+        res = low_feat2_act * high_feat_act * low_feat1 + high_feat
+
+        return res
+
+
+class InjectionMultiSumallmultiallsumSimpx8(nn.Layer):
+    def __init__(self,
+                 in_channels=(64, 128, 256, 384),
+                 activations=None,
+                 out_channels=160,
+                 lr_mult=1.0):
+        super(InjectionMultiSumallmultiallsumSimpx8, self).__init__()
+        self.embedding_list = nn.LayerList()
+        self.act_embedding_list = nn.LayerList()
+        self.act_list = nn.LayerList()
+        self.out_channels = out_channels
+        for i in range(len(in_channels)):
+            if i != 1:
+                self.embedding_list.append(
+                    ConvBNAct(
+                        in_channels[i],
+                        out_channels,
+                        kernel_size=1,
+                        lr_mult=lr_mult))
+            if i != 0:
+                self.act_embedding_list.append(
+                    ConvBNAct(
+                        in_channels[i],
+                        out_channels,
+                        kernel_size=1,
+                        lr_mult=lr_mult))
+                self.act_list.append(HSigmoid())
+
+    def forward(
+            self, inputs
+    ):  # x_x8, x_x16, x_x32, x_x64 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
+        # low_feat1 = F.interpolate(
+        #     inputs[0], scale_factor=0.5, mode="bilinear")  # x16
+        # low_feat1_act = self.act_list[0](self.act_embedding_list[0](low_feat1))
+        low_feat1 = self.embedding_list[0](inputs[0])
 
         low_feat2 = F.interpolate(
             inputs[1], size=low_feat1.shape[-2:], mode="bilinear")  # x16
@@ -1331,6 +1403,13 @@ class SeaFormer(nn.Layer):
                 out_channels=out_channels,
                 lr_mult=lr_mult)
             self.injection_out_channels = [self.inj_module.out_channels] * 3
+        elif self.inj_type == "AAMSx8":
+            self.inj_module = InjectionMultiSumallmultiallsumSimpx8(
+                in_channels=out_feat_chs,
+                activations=act_layer,
+                out_channels=out_channels,
+                lr_mult=lr_mult)
+            self.injection_out_channels = [self.inj_module.out_channels] * 3
         elif self.inj_type == "LearnableFFM":
             self.inj_module = LearnableFFM(
                 in_channels=out_feat_chs,
@@ -1349,11 +1428,19 @@ class SeaFormer(nn.Layer):
             self.injection_out_channels = [self.inj_module.out_channels, ] * 3
         elif self.inj_type == 'origin':
             for i in range(len(dims)):
-                fuse = Fusion_block(
-                    out_feat_chs[0] if i == 0 else dims[i - 1],
-                    out_feat_chs[i + 1],
-                    embed_dim=dims[i],  # 多层通道时，输出变大
-                    lr_mult=lr_mult)
+                if i == (len(dims) - 1):
+                    fuse = Fusion_block(
+                        out_feat_chs[0] if i == 0 else dims[i - 1],
+                        out_feat_chs[i + 1],
+                        embed_dim=dims[i],  # 多层通道时，输出变大
+                        lr_mult=lr_mult,
+                        fuse_high=True)
+                else:
+                    fuse = Fusion_block(
+                        out_feat_chs[0] if i == 0 else dims[i - 1],
+                        out_feat_chs[i + 1],
+                        embed_dim=dims[i],  # 多层通道时，输出变大
+                        lr_mult=lr_mult)
                 setattr(self, f"fuse{i + 1}", fuse)
             self.injection_out_channels = [dims[i]] * 3
         else:
