@@ -7,7 +7,7 @@ model:
   type: UPerNetCAE
   backbone:
     type: CAE
-    img_size: 128
+    img_size: 512
     patch_size: 16
     embed_dim: 768
     depth: 12
@@ -34,7 +34,7 @@ train_dataset:
       max_scale_factor: 2.0
       scale_step_size: 0.0
     - type: RandomPaddingCrop
-      crop_size: [128, 128]
+      crop_size: [512, 512]
     - type: RandomHorizontalFlip
     - type: RandomDistort
     - type: Normalize
