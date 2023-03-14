@@ -98,8 +98,6 @@ def evaluate(model,
     batch_start = time.time()
     with paddle.no_grad():
         for iter, data in enumerate(loader):
-            if iter % 20 == 0:
-                print('({} / {}'.format(iter, total_iters))
             reader_cost_averager.record(time.time() - batch_start)
             label = data['label'].astype('int64')
 
