@@ -20,6 +20,7 @@ from collections import OrderedDict
 from .image_crop import get_case_identifier_from_npz
 from .preprocessing import GenericPreprocessor, PreprocessorFor2D
 from .experiment_utils import *
+from .path_utils import join_paths
 
 DEFAULT_BATCH_SIZE_3D = 2
 DEFAULT_PATCH_SIZE_3D = (64, 192, 160)
@@ -44,22 +45,21 @@ class ExperimentPlanner:
         self.folder_with_cropped_data = folder_with_cropped_data
         self.preprocessed_output_folder = preprocessed_output_folder
         self.list_of_cropped_npz_files = [
-            os.path.join(self.folder_with_cropped_data, file_name)
+            join_paths(self.folder_with_cropped_data, file_name)
             for file_name in os.listdir(self.folder_with_cropped_data)
             if file_name.endswith('.npz') and os.path.isfile(
-                os.path.join(self.folder_with_cropped_data, file_name))
+                join_paths(self.folder_with_cropped_data, file_name))
         ]
         self.list_of_cropped_npz_files.sort()
 
         self.preprocessor_name = GenericPreprocessor
 
         assert os.path.isfile(
-            os.path.join(self.folder_with_cropped_data,
-                         "dataset_properties.pkl")
+            join_paths(self.folder_with_cropped_data, "dataset_properties.pkl")
         ), "folder_with_cropped_data must contain dataset_properties.pkl"
         with open(
-                os.path.join(self.folder_with_cropped_data,
-                             "dataset_properties.pkl"), 'rb') as f:
+                join_paths(self.folder_with_cropped_data,
+                           "dataset_properties.pkl"), 'rb') as f:
             self.dataset_properties = pickle.load(f)
 
         self.plans_per_stage = OrderedDict()
@@ -343,14 +343,14 @@ class ExperimentPlanner:
 
     def save_properties_of_cropped(self, case_identifier, properties):
         with open(
-                os.path.join(self.folder_with_cropped_data,
-                             "%s.pkl" % case_identifier), 'wb') as f:
+                join_paths(self.folder_with_cropped_data,
+                           "%s.pkl" % case_identifier), 'wb') as f:
             pickle.dump(properties, f)
 
     def load_properties_of_cropped(self, case_identifier):
         with open(
-                os.path.join(self.folder_with_cropped_data,
-                             "%s.pkl" % case_identifier), 'rb') as f:
+                join_paths(self.folder_with_cropped_data,
+                           "%s.pkl" % case_identifier), 'rb') as f:
             properties = pickle.load(f)
         return properties
 
@@ -393,14 +393,13 @@ class ExperimentPlanner:
 
     def run_preprocessing(self, num_threads):
         if os.path.isdir(
-                os.path.join(self.preprocessed_output_folder,
-                             "gt_segmentations")):
+                join_paths(self.preprocessed_output_folder,
+                           "gt_segmentations")):
             shutil.rmtree(
-                os.path.join(self.preprocessed_output_folder,
-                             "gt_segmentations"))
+                join_paths(self.preprocessed_output_folder, "gt_segmentations"))
         shutil.copytree(
-            os.path.join(self.folder_with_cropped_data, "gt_segmentations"),
-            os.path.join(self.preprocessed_output_folder, "gt_segmentations"))
+            join_paths(self.folder_with_cropped_data, "gt_segmentations"),
+            join_paths(self.preprocessed_output_folder, "gt_segmentations"))
         normalization_schemes = self.plans['normalization_schemes']
         use_nonzero_mask_for_normalization = self.plans['use_mask_for_norm']
         intensityproperties = self.plans['dataset_properties'][
@@ -429,8 +428,8 @@ class ExperimentPlanner2D_v21(ExperimentPlanner):
         super(ExperimentPlanner2D_v21, self).__init__(
             folder_with_cropped_data, preprocessed_output_folder)
         self.data_identifier = "nnUNetData_plans_v2.1_2D"
-        self.plans_fname = os.path.join(self.preprocessed_output_folder,
-                                        "nnUNetPlansv2.1_plans_2D.pkl")
+        self.plans_fname = join_paths(self.preprocessed_output_folder,
+                                      "nnUNetPlansv2.1_plans_2D.pkl")
         self.unet_base_num_features = 32
         self.unet_max_num_filters = 512
         self.unet_max_numpool = 999
@@ -604,8 +603,8 @@ class ExperimentPlanner3D_v21(ExperimentPlanner):
         super(ExperimentPlanner3D_v21, self).__init__(
             folder_with_cropped_data, preprocessed_output_folder)
         self.data_identifier = "nnUNetData_plans_v2.1"
-        self.plans_fname = os.path.join(self.preprocessed_output_folder,
-                                        "nnUNetPlansv2.1_plans_3D.pkl")
+        self.plans_fname = join_paths(self.preprocessed_output_folder,
+                                      "nnUNetPlansv2.1_plans_3D.pkl")
         self.unet_base_num_features = 32
 
     def get_target_spacing(self):

@@ -24,12 +24,8 @@ support:
 import os
 import os.path as osp
 import sys
-import nrrd
 import time
 import glob
-import argparse
-import zipfile
-import collections
 import numpy as np
 import nibabel as nib
 import SimpleITK as sitk
@@ -39,7 +35,7 @@ import json
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
 from medicalseg.utils import get_image_list
-from tools.preprocess_utils import uncompressor, global_var, add_qform_sform
+from tools.preprocess_utils import uncompressor, global_var, add_qform_sform, join_paths
 
 
 class Prep:
@@ -78,13 +74,13 @@ class Prep:
         """
         # combine all paths
         self.dataset_root = dataset_root
-        self.phase_path = os.path.join(self.dataset_root, phase_dir)
-        self.raw_data_path = os.path.join(self.dataset_root, raw_dataset_dir)
-        self.dataset_json_path = os.path.join(
+        self.phase_path = join_paths(self.dataset_root, phase_dir)
+        self.raw_data_path = join_paths(self.dataset_root, raw_dataset_dir)
+        self.dataset_json_path = join_paths(
             self.raw_data_path,
             "dataset.json")  # save the dataset.json to raw path
-        self.image_path = os.path.join(self.phase_path, "images")
-        self.label_path = os.path.join(self.phase_path, "labels")
+        self.image_path = join_paths(self.phase_path, "images")
+        self.label_path = join_paths(self.phase_path, "labels")
         os.makedirs(self.dataset_root, exist_ok=True)
         os.makedirs(self.phase_path, exist_ok=True)
         os.makedirs(self.image_path, exist_ok=True)
@@ -105,10 +101,10 @@ class Prep:
         if len(images_dir_test
                ) != 0:  # test image filter is the same as training image
             self.image_files_test = get_image_list(
-                os.path.join(self.raw_data_path, images_dir_test),
+                join_paths(self.raw_data_path, images_dir_test),
                 valid_suffix[0], filter_key[0])
             self.image_files_test.sort()
-            self.image_path_test = os.path.join(self.phase_path, 'images_test')
+            self.image_path_test = join_paths(self.phase_path, 'images_test')
             os.makedirs(self.image_path_test, exist_ok=True)
 
         # Load the needed file with filter
@@ -117,17 +113,17 @@ class Prep:
             self.label_files = []
             for i in range(len(images_dir)):
                 self.image_files += get_image_list(
-                    os.path.join(self.raw_data_path, images_dir[i]),
+                    join_paths(self.raw_data_path, images_dir[i]),
                     valid_suffix[0], filter_key[0])
                 self.label_files += get_image_list(
-                    os.path.join(self.raw_data_path, labels_dir[i]),
+                    join_paths(self.raw_data_path, labels_dir[i]),
                     valid_suffix[1], filter_key[1])
         else:
             self.image_files = get_image_list(
-                os.path.join(self.raw_data_path, images_dir), valid_suffix[0],
+                join_paths(self.raw_data_path, images_dir), valid_suffix[0],
                 filter_key[0])
             self.label_files = get_image_list(
-                os.path.join(self.raw_data_path, labels_dir), valid_suffix[1],
+                join_paths(self.raw_data_path, labels_dir), valid_suffix[1],
                 filter_key[1])
 
         self.image_files.sort()
@@ -137,7 +133,7 @@ class Prep:
         uncompress_tool = uncompressor(
             download_params=(self.urls, self.dataset_root, True))
         """unzip all the file in the root directory"""
-        files = glob.glob(os.path.join(self.dataset_root, "*.{}".format(form)))
+        files = glob.glob(join_paths(self.dataset_root, "*.{}".format(form)))
 
         assert len(
             files
@@ -145,8 +141,8 @@ class Prep:
             num_files, len(files))
 
         for f in files:
-            extract_path = os.path.join(self.raw_data_path,
-                                        f.split("/")[-1].split('.')[0])
+            extract_path = join_paths(self.raw_data_path,
+                                      os.path.split(f)[1].split('.')[0])
             uncompress_tool._uncompress_file(
                 f, extract_path, delete_file=False, print_progress=True)
 
@@ -249,9 +245,9 @@ class Prep:
                         "int32")
                     volume_idx = "" if len(f_nps) == 1 else f"-{volume_idx}"
                     np.save(
-                        os.path.join(
-                            savepath,
-                            osp.basename(f).split(".")[0] + volume_idx), f_np)
+                        join_paths(savepath,
+                                   osp.basename(f).split(".")[0] + volume_idx),
+                        f_np)
 
                 if i == 0:
                     dataset_json_dict["training"][osp.basename(f).split(".")[
@@ -397,7 +393,7 @@ class Prep:
         """
 
         if save_path is not None:
-            self.dataset_json_path = os.path.join(
+            self.dataset_json_path = join_paths(
                 save_path, "dataset.json")  # save the dataset.json to raw path
 
         if osp.exists(self.dataset_json_path):
@@ -435,7 +431,7 @@ class Prep:
                 "label": self.label_files[i]
             }  # nii.gz filename
             infor_dict = self.set_image_infor(image_name, infor_dict)
-            json_dict['training'][image_name.split("/")[-1].split(".")[
+            json_dict['training'][os.path.split(image_name)[1].split(".")[
                 0]] = infor_dict
 
         json_dict['test'] = {}
@@ -447,7 +443,7 @@ class Prep:
                         desc="Load Test file information")):
                 infor_dict = {'image': image_name}
                 infor_dict = self.set_image_infor(image_name, infor_dict)
-                json_dict['test'][image_name.split("/")[-1].split(".")[
+                json_dict['test'][os.path.split(image_name)[1].split(".")[
                     0]] = infor_dict
 
         with open(self.dataset_json_path, 'w', encoding='utf-8') as f:

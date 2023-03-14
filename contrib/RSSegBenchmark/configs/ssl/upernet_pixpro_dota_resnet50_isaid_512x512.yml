@@ -1,0 +1,12 @@
+_base_: '../upernet/upernet_resnet50_isaid_512x512_80k.yml'
+
+model:
+  type: UPerNet
+  backbone:
+    type: ResNet50
+    ssl_pretrained: True
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/ssl/pixpro_dota_epoch_200.zip
+  backbone_indices: [0, 1, 2, 3]
+  channels: 512
+  dropout_prob: 0.1
+  enable_auxiliary_loss: True

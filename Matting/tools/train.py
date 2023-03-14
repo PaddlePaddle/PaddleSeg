@@ -21,7 +21,8 @@ import random
 import numpy as np
 import paddle
 import paddle.nn as nn
-from paddleseg.cvlibs import manager, Config
+import paddleseg
+from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -32,6 +33,7 @@ manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting
 from ppmatting.core import train
+from ppmatting.utils import Config, MatBuilder
 
 
 def parse_args():
@@ -56,6 +58,11 @@ def parse_args():
         help='Learning rate',
         type=float,
         default=None)
+    parser.add_argument(
+        '--opts',
+        help='Update the key-value pairs of all options.',
+        default=None,
+        nargs='+')
     parser.add_argument(
         '--save_interval',
         dest='save_interval',
@@ -160,63 +167,39 @@ def parse_args():
 
 
 def main(args):
+    assert args.cfg is not None, \
+        'No configuration file specified, please set --config'
+    cfg = Config(
+        args.cfg,
+        learning_rate=args.learning_rate,
+        iters=args.iters,
+        batch_size=args.batch_size,
+        opts=args.opts)
+    builder = MatBuilder(cfg)
+
+    paddleseg.utils.show_env_info()
+    paddleseg.utils.show_cfg_info(cfg)
+    paddleseg.utils.set_seed(args.seed)
+    paddleseg.utils.set_device(args.device)
+    paddleseg.utils.set_cv2_num_threads(args.num_workers)
+
+    model = paddleseg.utils.convert_sync_batchnorm(builder.model, args.device)
+    train_dataset = builder.train_dataset
+    if args.repeats > 1:
+        train_dataset.fg_bg_list *= args.repeats
+    val_dataset = builder.val_dataset if args.do_eval else None
+    optimizer = builder.optimizer
+
     if args.seed is not None:
         paddle.seed(args.seed)
         np.random.seed(args.seed)
         random.seed(args.seed)
 
-    env_info = get_sys_env()
-    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
-    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
-                     ['-' * 48])
-    logger.info(info)
-
-    place = args.device
-    if place == 'gpu' and env_info['Paddle compiled with cuda'] and env_info[
-            'GPUs used']:
-        paddle.set_device('gpu')
-    elif place == 'xpu' and paddle.is_compiled_with_xpu():
-        paddle.set_device('xpu')
-    else:
-        paddle.set_device('cpu')
-    if not args.cfg:
-        raise RuntimeError('No configuration file specified.')
-
-    cfg = Config(
-        args.cfg,
-        learning_rate=args.learning_rate,
-        iters=args.iters,
-        batch_size=args.batch_size)
-
-    train_dataset = cfg.train_dataset
-    if train_dataset is None:
-        raise RuntimeError(
-            'The training dataset is not specified in the configuration file.')
-    elif len(train_dataset) == 0:
-        raise ValueError(
-            'The length of train_dataset is 0. Please check if your dataset is valid'
-        )
-
-    if args.repeats > 1:
-        train_dataset.fg_bg_list *= args.repeats
-
-    val_dataset = cfg.val_dataset if args.do_eval else None
-
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
-
-    model = cfg.model
-    if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
-        # convert bn to sync_bn
-        model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-
     train(
         model,
         train_dataset=train_dataset,
         val_dataset=val_dataset,
-        optimizer=cfg.optimizer,
+        optimizer=optimizer,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
         num_workers=args.num_workers,

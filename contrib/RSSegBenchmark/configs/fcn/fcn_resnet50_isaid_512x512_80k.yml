@@ -1,0 +1,30 @@
+_base_: '../_base_/isaid.yml'
+
+train_dataset:
+  type: Dataset
+  dataset_root: data/iSAID
+  train_path: data/iSAID/train.txt
+  num_classes: 16
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+  mode: train
+
+model:
+  type: FCN
+  backbone:
+    type: ResNet50
+    pretrained: https://paddle-hapi.bj.bcebos.com/models/resnet50.pdparams
+  num_classes: 16
+  pretrained: Null
+  backbone_indices: [-1]

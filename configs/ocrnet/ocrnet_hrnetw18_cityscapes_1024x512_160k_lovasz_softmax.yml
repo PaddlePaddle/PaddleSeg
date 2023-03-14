@@ -11,7 +11,7 @@ model:
   backbone_indices: [0]
 
 optimizer:
-  type: sgd
+  type: SGD
 
 lr_scheduler:
   type: PolynomialDecay

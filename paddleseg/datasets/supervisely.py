@@ -42,6 +42,8 @@ class SUPERVISELY(Dataset):
         edge (bool, optional): Whether to compute edge while training. Default: False
     """
     NUM_CLASSES = 2
+    IGNORE_INDEX = 255
+    IMG_CHANNELS = 3
 
     def __init__(self,
                  common_transforms,
@@ -58,7 +60,7 @@ class SUPERVISELY(Dataset):
         if transforms2 is not None:
             self.transforms2 = Compose(transforms2, to_rgb=False)
         mode = mode.lower()
-        self.ignore_index = 255
+        self.ignore_index = self.IGNORE_INDEX
         self.mode = mode
         self.num_classes = self.NUM_CLASSES
         self.input_width = 224
@@ -104,15 +106,19 @@ class SUPERVISELY(Dataset):
         label[label > 0] = 1
 
         if self.mode == "val":
-            common_im, label = self.common_transforms(im=im, label=label)
+            common_data = self.common_transforms(dict(img=im, label=label))
+            common_im, label = common_data['img'], common_data['label']
             im = np.float32(common_im[::-1, :, :])  # RGB => BGR
             im_aug = copy.deepcopy(im)
         else:
-            common_im, label = self.common_transforms(im=im, label=label)
+            common_data = self.common_transforms(dict(img=im, label=label))
+            common_im, label = common_data['img'], common_data['label']
             common_im = np.transpose(common_im, [1, 2, 0])
             # add augmentation
-            im, _ = self.transforms1(common_im)
-            im_aug, _ = self.transforms2(common_im)
+            data = self.transforms1(dict(img=common_im))
+            im = data['img']
+            data = self.transforms2(dict(img=common_im))
+            im_aug = data['img']
 
             im = np.float32(im[::-1, :, :])  # RGB => BGR
             im_aug = np.float32(im_aug[::-1, :, :])  # RGB => BGR
@@ -129,8 +135,8 @@ class SUPERVISELY(Dataset):
         edge_mask = F.mask_to_binary_edge(
             label, radius=4, num_classes=self.num_classes)
         edge_mask = np.transpose(edge_mask, [1, 2, 0]).squeeze(axis=-1)
-        im = np.concatenate([im_aug, im])
+        #im = np.concatenate([im_aug, im])
         if self.mode == "train":
-            return im, label, edge_mask
+            return dict(img=im, label=label, edge=edge_mask)
         else:
-            return im, label
+            return dict(img=im, label=label)

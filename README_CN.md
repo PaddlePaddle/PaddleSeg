@@ -21,22 +21,21 @@
 </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
-* [2022-08-18] :fire: '飞标'--PaddleLabel智能标注工具内测版发布，具有分类、检测、分割等任务的标注功能，详细信息请参考[PaddleLabel](contrib/PaddleLabel/README.md)。
-* [2022-07-20] :fire: PaddleSeg 2.6版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
-  * 发布实时人像分割模型[PP-HumanSeg v2](./contrib/PP-HumanSeg)，推理速度提升45.5%，移动端达到64.26 FPS，分割精度更高、通用型更强、零成本开箱即用。
-  * 发布高性能智能标注工具[EISeg v1.0](./EISeg)正式版，实现一次训练万物可标，加速提升图像、视频、3D医疗影像等领域的分割标注效率。
-  * 发布120多万张ImageNet分割伪标签数据集，以及预训练方法[PSSL](./configs/pssl)，全面提升分割模型在下游任务上的性能。
-  * 开源[PP-Matting](./Matting)代码和预训练模型，并新增5种传统机器学习抠图方法，无需训练可直接使用。
-  * 发布产业级语义分割模型，包括高精度、轻量级和超轻量级系列。
-* [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-Matting，3D医疗影像开发套件[MedicalSeg](./contrib/MedicalSeg)，交互式分割工具EISeg v0.5。
-* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSeg，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
+* [2023-02-27] :fire:  PaddleSeg集成高性能、全场景模型部署方案FastDeploy，欢迎参考[指南](./deploy/fastdeploy)试用（注意切换成develop分支）。
+* [2022-11-30] :fire:  PaddleSeg 2.7版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
+  * 发布实时人像抠图模型[PP-MattingV2](./Matting/)：推理速度提升44.6%，平均误差减小17.91%，完美超越此前SOTA模型，支持零成本开箱即用。
+  * 发布3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)：涵盖3D医疗影像交互式标注工具EISeg-Med3D、3个高精分割模型，集成并优化前沿分割方案nnUNet-D。
+  * 官方发布轻量级语义分割模型[RTFormer](./configs/rtformer/)：由百度提出并发表于NeurIPS 2022，在公开数据集上实现SOTA性能。
+* [2022-07-20] PaddleSeg 2.6版本发布实时人像分割SOTA方案[PP-HumanSegV2](./contrib/PP-HumanSeg)、高性能智能标注工具[EISeg v1.0](./EISeg)正式版、ImageNet分割伪标签数据预训练方法PSSL，开源PP-MattingV1代码和预训练模型。
+* [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-MattingV1，3D医疗影像开发套件MedicalSegV1，交互式分割工具EISeg v0.5。
+* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSegV1，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
 
 
 
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> 简介
 
-**PaddleSeg**是基于飞桨PaddlePaddle的端到端图像分割套件，内置**40+模型算法**及**140+预训练模型**，支持**配置化驱动**和**API调用**开发方式，打通数据标注、模型开发、训练、压缩、部署的**全流程**，提供**语义分割、交互式分割、Matting、全景分割**四大分割能力，助力算法在医疗、工业、遥感、娱乐等场景落地应用。
+**PaddleSeg**是基于飞桨PaddlePaddle的端到端图像分割套件，内置**45+模型算法**及**140+预训练模型**，支持**配置化驱动**和**API调用**开发方式，打通数据标注、模型开发、训练、压缩、部署的**全流程**，提供**语义分割、交互式分割、Matting、全景分割**四大分割能力，助力算法在医疗、工业、遥感、娱乐等场景落地应用。
 
 <div align="center">
 <img src="https://github.com/shiyutang/files/raw/main/teasor_new.gif"  width = "800" />  
@@ -44,7 +43,7 @@
 
 ## <img src="./docs/images/feature.png" width="20"/> 特性
 
-* **高精度**：跟踪学术界的前沿分割技术，结合半监督标签知识蒸馏方案([SSLD](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))训练的骨干网络，提供40+主流分割网络、140+的高质量预训练模型，效果优于其他开源实现。
+* **高精度**：跟踪学术界的前沿分割技术，结合高精度训练的骨干网络，提供40+主流分割网络、140+的高质量预训练模型，效果优于其他开源实现。
 
 * **高性能**：使用多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
 
@@ -59,13 +58,14 @@
 ## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
 * 如果大家有PaddleSeg的使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
-* **欢迎大家加入PaddleSeg的微信用户群👫**（扫码填写问卷即可入群），和各界大佬交流学习，还可以**领取重磅大礼包🎁**
+* **欢迎加入PaddleSeg的微信用户群👫**（扫码填写简单问卷即可入群），大家可以**领取30G重磅学习大礼包🎁**，也可以和值班同学、各界大佬直接进行交流。
+  * 🔥 获取深度学习视频教程、图像分割论文合集
   * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
   * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
   * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
   * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/30883834/213601179-0813a896-11e1-4514-b612-d145e068ba86.jpeg"  width = "200" />  
 </div>
 
 ## <img src="./docs/images/model.png" width="20"/> 产品矩阵
@@ -135,6 +135,10 @@
             <li><a href="./configs/unet_plusplus">UNet++</a></li>
             <li><a href="./configs/unet_3plus">UNet3+</a></li>
             <li><a href="./configs/upernet">UperNet</a></li>
+            <li><a href="./configs/rtformer">RTFormer</a></li>
+            <li><a href="./configs/uhrnet">UHRNet</a></li>
+            <li><a href="./configs/topformer">TopFormer</a></li>
+            <li><a href="./configs/mscale_ocrnet">MscaleOCRNet-PSA</a></li>
           </ul>
         </details>
         <details><summary><b>交互式分割模型</b></summary>
@@ -146,7 +150,8 @@
         </details>
         <details><summary><b>图像抠图模型</b></summary>
           <ul>
-              <li><a href="./Matting/configs/ppmatting">PP-Matting</a></li>
+              <li><a href="./Matting/configs/ppmattingv2">PP-MattingV2</a></li>
+              <li><a href="./Matting/configs/ppmatting">PP-MattingV1</a></li>
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
@@ -267,6 +272,10 @@
           <ul>
             <li><a href="./contrib/MedicalSeg/configs/lung_coronavirus">VNet</a></li>
             <li><a href="./contrib/MedicalSeg/configs/msd_brain_seg">UNETR</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/acdc">nnFormer</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/nnunet/msd_lung">nnUNet-D</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/synapse">TransUNet</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/synapse">SwinUNet</a></li>
           </ul>
         </details>
         <details><summary><b>Cityscapes打榜模型</b></summary>
@@ -367,15 +376,16 @@
 * [安装说明](./docs/install_cn.md)
 * [快速体验](./docs/quick_start_cn.md)
 * [20分钟快速上手PaddleSeg](./docs/whole_process_cn.md)
+* [模型库](./docs/model_zoo_overview_cn.md)
 
 **基础教程**
 
-* 准备数据
+* 准备数据集
    * [准备公开数据集](./docs/data/pre_data_cn.md)
    * [准备自定义数据集](./docs/data/marker/marker_cn.md)
    * [EISeg 数据标注](./EISeg)
-
-* [模型训练](/docs/train/train_cn.md)
+* [准备配置文件](./docs/config/pre_config_cn.md)
+* [模型训练](./docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate_cn.md)
 * [模型预测](./docs/predict/predict_cn.md)
 
@@ -387,7 +397,7 @@
     * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference_cn.md)
     * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference_cn.md)
     * [Paddle Lite部署](./docs/deployment/lite/lite_cn.md)
-    * [Paddle Serving部署](./docs/deployment/serving/serving.md)
+    * [Paddle Serving部署](./docs/deployment/serving/serving_cn.md)
     * [Paddle JS部署](./docs/deployment/web/web_cn.md)
     * [推理Benchmark](./docs/deployment/inference/infer_benchmark_cn.md)
 
@@ -428,10 +438,16 @@
 * [使用PP-HumanSegV2进行人像分割](https://aistudio.baidu.com/aistudio/projectdetail/4504982?contributionType=1)
 * [使用PP-HumanSegV1进行人像分割](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
 * [使用PP-LiteSeg进行遥感道路分割](https://aistudio.baidu.com/aistudio/projectdetail/3873145?contributionType=1)
+* [PaddleSeg实战之人脸部件分割与变妆](https://aistudio.baidu.com/aistudio/projectdetail/5326422)
 * [PaddleSeg实战之小数据集3D椎骨分割](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
 * [PaddleSeg实战之车道线图像分割](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
 * [PaddleSeg动态图API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
 * [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
+* [车路协同：交互式分割技术在智慧建图中的应用和实践](https://aistudio.baidu.com/aistudio/projectdetail/5089472)
+* [基于PaddleSeg的美甲预览机](https://aistudio.baidu.com/aistudio/projectdetail/5156312)
+* [基于PaddleSeg的钢筋长度超限监控](https://aistudio.baidu.com/aistudio/projectdetail/5633532)
+
+更多范例项目可参考：[『图像分割经典项目集』用PaddleSeg能做什么？](https://aistudio.baidu.com/aistudio/projectdetail/5436669)
 
 ## 许可证书
 本项目的发布受Apache 2.0 license许可认证。

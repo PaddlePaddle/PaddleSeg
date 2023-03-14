@@ -3,11 +3,7 @@
 
 ## 1. 简介
 
-飞桨除了基本的模型训练和预测，还提供了支持多端多平台的高性能推理部署工具。本文档提供了PaddleOCR中所有模型的飞桨训推一体认证 (Training and Inference Pipeline Certification(TIPC)) 信息和测试工具，方便用户查阅每种模型的训练推理部署打通情况，并可以进行一键测试。
-
-<div align="center">
-    <img src="docs/guide.png" width="1000">
-</div>
+飞桨除了基本的模型训练和预测，还提供了支持多端多平台的高性能推理部署工具。本文档提供了MedicalSeg中所有模型的飞桨训推一体认证 (Training and Inference Pipeline Certification(TIPC)) 信息和测试工具，方便用户查阅每种模型的训练推理部署打通情况，并可以进行一键测试。
 
 
 ## 2. 测试工具简介
@@ -16,7 +12,7 @@
 ```shell
 test_tipc/
 ├── configs/  # 配置文件目录
-    ├── N2N   # N2N模型的测试配置文件目录
+    ├── unetr   # unetr模型的测试配置文件目录
         ├── train_infer_python.txt      # 测试Linux上python训练预测（基础训练预测）的配置文件
         ├── train_infer_python.md      # 测试Linux上python训练预测（基础训练预测）的使用文档
 ├── results/   # 预测结果
@@ -47,9 +43,19 @@ bash test_tipc/test_train_inference_python.sh configs/[model_name]/[params_file_
 ```shell
 # 功能：准备数据
 # 格式：bash + 运行脚本 + 参数1: 配置文件选择 + 参数2: 模式选择
-bash test_tipc/prepare.sh ./test_tipc/configs/N2N/train_infer_python.txt 'lite_train_lite_infer'
+bash test_tipc/prepare.sh ./test_tipc/configs/unetr/train_infer_python.txt 'lite_train_lite_infer'
 
 # 功能：运行测试
 # 格式：bash + 运行脚本 + 参数1: 配置文件选择 + 参数2: 模式选择
-bash test_tipc/test_train_inference_python.sh ./test_tipc/configs/N2N/train_infer_python.txt 'lite_train_lite_infer'
+bash test_tipc/test_train_inference_python.sh ./test_tipc/configs/unetr/train_infer_python.txt 'lite_train_lite_infer'
 ```
+
+## 3. 模型TIPC认证情况汇总
+
+| 算法论文 | 基础<br>训练预测导出部署 | 更多<br>训练方式 |
+| :--- |  :----:  |  :----  |  
+| TransUNet | 支持  | 不支持混合精度 |
+| nnFormer | 支持  | 不支持混合精度 |
+| VNet | 支持  | 不支持混合精度 |
+| UNETR | 支持  | 不支持混合精度 |
+| SwinUNet | 支持  | 不支持混合精度 |
