@@ -21,8 +21,9 @@ from copy import deepcopy
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
-                             worker_init_fn, train_profiler, op_flops_funs)
+from paddleseg.utils import (
+    TimeAverager, calculate_eta, resume, logger, worker_init_fn, train_profiler,
+    op_flops_funs, init_ema_params, update_ema_model, judge_params_equal)
 from paddleseg.core.val import evaluate
 
 
@@ -55,38 +56,6 @@ def loss_computation(logits_list, labels, edges, losses):
         else:
             loss_list.append(coef_i * loss_i(logits, labels))
     return loss_list
-
-
-def _params_equal(ema_model, model):
-    for ema_param, param in zip(ema_model.named_parameters(),
-                                model.named_parameters()):
-        if not paddle.equal_all(ema_param[1], param[1]):
-            # print("Difference in", ema_param[0])
-            return False
-    return True
-
-
-def init_ema_params(ema_model, model):
-    state = {}
-    msd = model.state_dict()
-    for k, v in ema_model.state_dict().items():
-        if paddle.is_floating_point(v):
-            v = msd[k].detach()
-        state[k] = v
-    ema_model.set_state_dict(state)
-
-
-def update_ema_model(ema_model, model, step=0, decay=0.999):
-    with paddle.no_grad():
-        state = {}
-        decay = min(1 - 1 / (step + 1), decay)
-        msd = model.state_dict()
-        for k, v in ema_model.state_dict().items():
-            if paddle.is_floating_point(v):
-                v *= decay
-                v += (1.0 - decay) * msd[k].detach()
-            state[k] = v
-        ema_model.set_state_dict(state)
 
 
 def train(model,
@@ -139,6 +108,8 @@ def train(model,
     if use_ema:
         ema_model = deepcopy(model)
         ema_model.eval()
+        for param in ema_model.parameters():
+            param.stop_gradient = True
 
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -192,21 +163,16 @@ def train(model,
     avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
     best_mean_iou = -1.0
+    best_ema_mean_iou = -1.0
     best_model_iter = -1
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     save_models = deque()
     batch_start = time.time()
-
-    if use_ema:
-        for param in ema_model.parameters():
-            param.stop_gradient = True
-
     iter = start_iter
     while iter < iters:
         if iter == start_iter and use_ema:
             init_ema_params(ema_model, model)
-            assert _params_equal(ema_model, model)
         for data in loader:
             iter += 1
             if iter > iters:
@@ -337,7 +303,6 @@ def train(model,
 
             if use_ema:
                 update_ema_model(ema_model, model, step=iter)
-                assert not _params_equal(ema_model, model)
 
             if (iter % save_interval == 0 or
                     iter == iters) and (val_dataset is not None):
@@ -386,22 +351,28 @@ def train(model,
                     shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
-                    if (mean_iou > best_mean_iou) or (use_ema and (
-                            ema_mean_iou > best_mean_iou)):
-                        best_mean_iou = mean_iou if not use_ema else max(
-                            mean_iou, ema_mean_iou)
+                    if mean_iou > best_mean_iou:
+                        best_mean_iou = mean_iou
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
-                        if use_ema:
-                            paddle.save(ema_model.state_dict(),
-                                        os.path.join(best_model_dir,
-                                                     'ema_model.pdparams'))
                     logger.info(
                         '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                         .format(best_mean_iou, best_model_iter))
+                    if use_ema:
+                        if ema_mean_iou > best_ema_mean_iou:
+                            best_ema_mean_iou = ema_mean_iou
+                            best_ema_model_iter = iter
+                            best_ema_model_dir = os.path.join(save_dir,
+                                                              "ema_best_model")
+                            paddle.save(ema_model.state_dict(),
+                                        os.path.join(best_ema_model_dir,
+                                                     'ema_model.pdparams'))
+                        logger.info(
+                            '[EVAL] The EMA model with the best validation mIoU ({:.4f}) was saved at iter {}.'
+                            .format(best_ema_mean_iou, best_ema_model_iter))
 
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
