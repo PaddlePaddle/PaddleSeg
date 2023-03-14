@@ -50,9 +50,9 @@ inference:deploy/python/infer.py
 --benchmark:True
 --save_dir:
 --model_name:maskformer
-===========================infer_benchmark_params==========================
+===========================disable_infer_benchmark==========================
 random_infer_input:[{float32,[3,1024,512]}]
-===========================train_benchmark_params==========================
+===========================disable_train_benchmark==========================
 batch_size:4
 fp_items:fp32|fp16
 epoch:400
