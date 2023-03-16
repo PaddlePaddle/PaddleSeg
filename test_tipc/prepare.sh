@@ -134,6 +134,7 @@ mkdir -p ./test_tipc/data
 if [ ${MODE} = "benchmark_train" ]; then
     if [ ${model_name} = 'fcn_hrnetw18_small' ] \
         || [ ${model_name} = 'pphumanseg_lite' ] \
+        || [ ${model_name} = 'pphumanseg_server' ] \
         || [ ${model_name} = 'deeplabv3p_resnet50' ] \
         || [ ${model_name} = 'pp_humanseg_lite_KL' ] \
         || [ ${model_name} = 'fcn_hrnetw18_small_KL' ] \
@@ -160,7 +161,7 @@ elif [ ${MODE} = "serving_infer" ]; then
     wget -nc -P ./test_tipc/data https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_small.png --no-check-certificate
 elif [ ${MODE} = "lite_train_lite_infer" ] || [ ${MODE} = "lite_train_whole_infer" ] || [ ${MODE} = "whole_train_whole_infer" ] || [ ${MODE} = "whole_infer" ]; then
 
-    if [ ${model_name} = "fcn_hrnetw18_small" ] || [ ${model_name} = "pphumanseg_lite" ] || [ ${model_name} = "deeplabv3p_resnet50" ] || [ ${model_name} = "pp_humanseg_lite_KL" ] || [ ${model_name} = "fcn_hrnetw18_small_KL" ] || [ ${model_name} = "deeplabv3p_resnet50_KL" ]; then
+    if [ ${model_name} = "fcn_hrnetw18_small" ] || [ ${model_name} = "pphumanseg_lite" ] || [ ${model_name} = "deeplabv3p_resnet50" ] || [ ${model_name} = "pp_humanseg_lite_KL" ] || [ ${model_name} = "fcn_hrnetw18_small_KL" ] || [ ${model_name} = "deeplabv3p_resnet50_KL" ] || [ ${model_name} = "pphumanseg_server" ]; then
         rm -rf ./test_tipc/data/mini_supervisely
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip mini_supervisely.zip && cd -
