@@ -23,7 +23,7 @@ import webbrowser
 from easydict import EasyDict as edict
 
 from qtpy import QtGui, QtCore, QtWidgets
-from qtpy.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QApplication
+from qtpy.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QApplication, QDialog
 from qtpy.QtGui import QImage, QPixmap
 from qtpy.QtCore import Qt, QByteArray, QVariant, QCoreApplication
 import cv2
@@ -33,7 +33,7 @@ import paddle
 import paddle.nn.functional as F
 
 from eiseg import pjpath, __APPNAME__, logger
-from widget import ShortcutWidget, PolygonAnnotation, LabelCorresWidget
+from widget import ShortcutWidget, PolygonAnnotation, LabelCorresWidget, CustomDialog
 from controller import InteractiveController
 from ui import Ui_EISeg
 import util
@@ -217,10 +217,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         self.formats = [
             img_ext,  # 自然图像
-            [".dcm"],  # 医学影像
+            [".dcm", ".tif", ".tiff"],  # 医学影像（tiff格式的X光数据）
             rs_ext,  # 遥感影像
             video_ext,  # 视频
         ]
+
+        self.rs_tiff_support = None
 
         # 遥感
         self.raster = None
@@ -1427,6 +1429,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.listFiles.clear()
 
         # 3. 扫描文件夹下所有图片
+        self.rs_tiff_support is None
         # 3.1 获取所有文件名
         imagePaths = os.listdir(inputDir)
         exts = tuple(f for fmts in self.formats for f in fmts)
@@ -1483,6 +1486,18 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         image = None
         self.video_first = None
 
+        # tiff数据判断类型
+        if path.lower().endswith((".tif", ".tiff")) and self.rs_tiff_support is None:
+            tiff_checked_dialog = CustomDialog(
+                self, 
+                self.tr("tiff格式检查"),
+                self.tr("检测到当前图像为tiff格式，请指定其为遥感数据还是医疗数据"),
+                self.tr("遥感数据"),
+                self.tr("医疗数据")
+            )
+            if (tiff_checked_dialog.exec_()):
+                self.rs_tiff_support = tiff_checked_dialog.rs_support
+
         # 直接if会报错，因为打开遥感图像后多波段不存在，现在把遥感图像的单独抽出来了
         # 自然图像
         if path.lower().endswith(tuple(self.formats[0])):
@@ -1499,7 +1514,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     image, _ = self.grid.getGrid(0, 0)
 
         # 医学影像
-        if path.lower().endswith(tuple(self.formats[1])):
+        if path.lower().endswith(tuple(self.formats[1])) and \
+            self.rs_tiff_support is not True:
             if not self.dockStatus[5]:
                 res = self.warn(
                     self.tr("未启用医疗组件"),
@@ -1533,7 +1549,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         # 遥感图像
         if path.lower().endswith(tuple(self.formats[
-                2])):  # imghdr.what(path) == "tiff":
+                2])) and self.rs_tiff_support:  # imghdr.what(path) == "tiff":
             if not self.dockStatus[4]:
                 res = self.warn(
                     self.tr("未打开遥感组件"),
