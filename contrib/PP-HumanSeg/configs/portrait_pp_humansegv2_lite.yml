@@ -71,3 +71,4 @@ model:
   arm_out_chs: [32, 64, 128]
   seg_head_inter_chs: [16, 32, 32]
   use_last_fuse: True
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_smaller/portrait_pp_humansegv2_lite_256x144_pretrained.zip
