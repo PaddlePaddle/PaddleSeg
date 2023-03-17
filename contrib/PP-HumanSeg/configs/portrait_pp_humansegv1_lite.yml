@@ -63,3 +63,4 @@ model:
   type: PPHumanSegLite
   align_corners: False
   num_classes: 2
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_pretrained.zip

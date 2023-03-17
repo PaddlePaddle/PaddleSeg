@@ -338,11 +338,6 @@ Run the following command to download `mini_supervisely` dataset. Refer to the "
 python src/download_data.py
 ```
 
-Run the following command to download pretrained models.
-```bash
-python src/download_pretrained_models.py
-```
-
 ### 6.2 Training
 
 The config files are saved in `./configs` as follows. We have set the path of pretrained weight in all config files.
