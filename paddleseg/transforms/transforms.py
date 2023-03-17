@@ -1159,3 +1159,61 @@ class RandomAffine:
                 borderMode=cv2.BORDER_CONSTANT,
                 borderValue=self.label_padding_value)
         return data
+
+
+@manager.TRANSFORMS.add_component
+class GenerateInstanceTargets:
+    """
+    Generate instance targets from ground-truth labels.
+
+    Args:
+        num_classes (int): The number of classes.
+        ignore_index (int, optional): Specifies a target value that is ignored. Default: 255.
+    """
+
+    def __init__(self, num_classes, ignore_index=255):
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+
+    def __call__(self, data):
+        if 'label' in data:
+            sem_seg_gt = data['label']
+            instances = {"image_shape": data['img'].shape[1:]}
+            classes = np.unique(sem_seg_gt)
+            classes = classes[classes != self.ignore_index]
+
+            # To make data compatible with dataloader
+            classes_cpt = np.array([
+                self.ignore_index
+                for _ in range(self.num_classes - len(classes))
+            ])
+            classes_cpt = np.append(classes, classes_cpt)
+            instances["gt_classes"] = np.asarray(classes_cpt).astype('int64')
+
+            masks = []
+            for cid in classes:
+                masks.append(sem_seg_gt == cid)  # [C, H, W] 
+
+            shape = [self.num_classes - len(masks)] + list(data['label'].shape)
+            masks_cpt = np.zeros(shape, dtype='int64')
+
+            if len(masks) == 0:
+                # Some images do not have annotation and will all be ignored
+                instances['gt_masks'] = np.zeros(
+                    (self.num_classes, sem_seg_gt.shape[-2],
+                     sem_seg_gt.shape[-1]),
+                    dtype='int64')
+
+            else:
+                instances['gt_masks'] = np.concatenate(
+                    [
+                        np.stack([
+                            np.ascontiguousarray(x).astype('float32')
+                            for x in masks
+                        ]), masks_cpt
+                    ],
+                    axis=0)
+
+            data['instances'] = instances
+
+        return data
