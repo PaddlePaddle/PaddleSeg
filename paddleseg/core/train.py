@@ -21,9 +21,9 @@ from copy import deepcopy
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import (
-    TimeAverager, calculate_eta, resume, logger, worker_init_fn, train_profiler,
-    op_flops_funs, init_ema_params, update_ema_model, judge_params_equal)
+from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
+                             worker_init_fn, train_profiler, op_flops_funs,
+                             init_ema_params, update_ema_model)
 from paddleseg.core.val import evaluate
 
 
