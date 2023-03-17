@@ -150,6 +150,10 @@ if [ ${MODE} = "benchmark_train" ]; then
         rm -rf ./test_tipc/data/cityscapes
         wget https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar -O ./test_tipc/data/cityscapes.tar --no-check-certificate
         tar -xf ./test_tipc/data/cityscapes.tar -C ./test_tipc/data/
+    elif [ ${model_name} = 'maskformer' ] || [ ${model_name} = 'mask2former' ]; then
+        rm -rf ./test_tipc/data/ADE20k-20
+        wget -nc -P  ./test_tipc/data/  https://bj.bcebos.com/paddleseg/tipc/data/ADE20k-20.zip --no-check-certificate
+        cd ./test_tipc/data/ && unzip ADE20k-20.zip && cd -
     else
         rm -rf ./test_tipc/data/cityscapes
         wget https://paddleseg.bj.bcebos.com/tipc/data/cityscapes_300imgs.tar.gz \
@@ -169,8 +173,8 @@ elif [ ${MODE} = "lite_train_lite_infer" ] || [ ${MODE} = "lite_train_whole_infe
         rm -rf ./test_tipc/data/PPM-100
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
-    elif [ ${model_name} == "maskformer" ]; then
-        rm -rf ./test_tipc/data/ADE20K-20
+    elif [ ${model_name} == "maskformer" ] || [ ${model_name} == "mask2former" ]; then
+        rm -rf ./test_tipc/data/ADE20k-20
         wget -nc -P  ./test_tipc/data/  https://bj.bcebos.com/paddleseg/tipc/data/ADE20k-20.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip ADE20k-20.zip && cd -
     else
