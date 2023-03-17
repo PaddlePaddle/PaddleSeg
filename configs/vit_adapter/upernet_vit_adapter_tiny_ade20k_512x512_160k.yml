@@ -1,0 +1,66 @@
+_base_: '../_base_/ade20k.yml'
+
+batch_size: 4  # total batch size is 16
+iters: 160000
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+val_dataset:
+  transforms:
+    - type: Resize
+      target_size: [2048, 512]
+      keep_ratio: True
+      size_divisor: 32
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  
+test_config:
+  is_slide: True
+  crop_size: [512, 512]
+  stride: [341, 341]
+
+optimizer:
+  _inherited_: False
+  type: AdamW
+  weight_decay: 0.01
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 6.0e-5
+  end_lr: 0
+  power: 1.0
+  warmup_iters: 1500
+  warmup_start_lr: 1.0e-6
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+      avg_non_ignore: False
+  coef: [1, 0.4]
+
+model:
+  type: UPerNetViTAdapter
+  backbone:
+    type: ViTAdapter_Tiny
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/deit_tiny_patch16_224.zip
+  backbone_indices: [0, 1, 2, 3]
+  channels: 512
+  pool_scales: [1, 2, 3, 6]
+  dropout_ratio: 0.1
+  aux_loss: True
+  aux_channels: 256
