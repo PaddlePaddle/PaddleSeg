@@ -4,6 +4,9 @@
 
 > Chen, Zhe, Yuchen Duan, Wenhai Wang, Junjun He, Tong Lu, Jifeng Dai, and Yu Qiao. "Vision Transformer Adapter for Dense Predictions." arXiv preprint arXiv:2205.08534 (2022).
 
+## Prerequesites
+
+Download the ms_deform_attn.zip (https://paddleseg.bj.bcebos.com/dygraph/customized_ops/ms_deform_attn.zip), and then refer to the readme to install ms_deform_attn lib.  
 ## Performance
 
 ### ADE20K
