@@ -21,6 +21,8 @@ import functools
 import requests
 import shutil
 
+from .path_utils import join_paths
+
 lasttime = time.time()
 FLUSH_INTERVAL = 0.1
 
@@ -33,7 +35,7 @@ class uncompressor:
                 if url:
                     self._download_file(
                         url,
-                        savepath=os.path.join(savepath, key),
+                        savepath=join_paths(savepath, key),
                         print_progress=print_progress)
 
     def _uncompress_file_zip(self, filepath, extrapath):

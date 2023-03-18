@@ -1,0 +1,63 @@
+_base_: '../_base_/cityscapes.yml'
+
+# for single gpu
+batch_size: 2
+iters: 160000
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 1024]
+      category_max_ratio: 0.75
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+val_dataset:
+  transforms:
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+optimizer:
+  _inherited_: False
+  type: AdamW
+  weight_decay: 0.01
+  custom_cfg:
+    - name: head
+      lr_mult: 10.0
+    - name: norm
+      weight_decay_mult: 0.0
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]
+
+lr_scheduler:
+  type: PolynomialDecay
+  warmup_iters: 1500
+  warmup_start_lr: 1.0e-6
+  learning_rate: 0.00006
+  end_lr: 0.0
+  power: 1.0
+
+model:
+  type: SegNeXt
+  backbone:
+    type: MSCAN_T
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mscan_t_imagenet_pretrained.zip
+  num_classes: 19
+  decoder_cfg:
+    channels: 256
+    ham_channels: 256
+    ham_kwargs:
+      MD_R: 16
+    dropout_rate: 0.1
+    align_corners: False

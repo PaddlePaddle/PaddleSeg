@@ -16,6 +16,7 @@ import paddle
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger
+import paddleseg.optimizers.custom_optimizers as custom_opt
 
 
 class BaseOptimizer(object):
@@ -230,5 +231,79 @@ class AdamW(BaseOptimizer):
     def __call__(self, model, lr):
         params = self._collect_params(model)
         opt = paddle.optimizer.AdamW(
+            learning_rate=lr, parameters=params, **self.args)
+        return opt
+
+
+@manager.OPTIMIZERS.add_component
+class AdamWDL(BaseOptimizer):
+    """
+    AdamW optimizer. 
+    """
+
+    def __init__(self,
+                 beta1=0.9,
+                 beta2=0.999,
+                 weight_decay=0.01,
+                 layerwise_decay=0.65,
+                 lazy_mode=False,
+                 grad_clip_cfg=None,
+                 custom_cfg=None):
+        super().__init__(weight_decay, grad_clip_cfg, custom_cfg)
+        self.args.update({
+            'beta1': beta1,
+            'beta2': beta2,
+            'weight_decay': weight_decay,
+            'layerwise_decay': layerwise_decay,
+            'lazy_mode': lazy_mode
+        })
+
+    def __call__(self, model, lr):
+        params = self._collect_params(model)
+        opt = custom_opt.AdamWDL(
+            learning_rate=lr, parameters=params, **self.args)
+        return opt
+
+
+@manager.OPTIMIZERS.add_component
+class AdamWDL_CAE(AdamWDL):
+    """
+    AdamW optimizer. 
+    """
+
+    def __init__(self,
+                 beta1=0.9,
+                 beta2=0.999,
+                 weight_decay=0.01,
+                 layerwise_decay=0.65,
+                 lazy_mode=False,
+                 grad_clip_cfg=None,
+                 custom_cfg=None):
+        super().__init__(weight_decay, grad_clip_cfg, custom_cfg)
+        self.args.update({
+            'beta1': beta1,
+            'beta2': beta2,
+            'weight_decay': weight_decay,
+            'layerwise_decay': layerwise_decay,
+            'lazy_mode': lazy_mode
+        })
+
+    def __call__(self, model, lr):
+        params = self._collect_params(model)
+        skip_list = model.backbone.no_weight_decay()
+
+        decay_dict = {
+            param.name: not (len(param.shape) == 1 or name.endswith(".bias") or
+                             name in skip_list)
+            for name, param in model.named_parameters()
+        }
+        self.args['n_layers'] = model.backbone.get_num_layers()
+        self.args['apply_decay_param_fun'] = lambda n: decay_dict[n]
+        name_dict = dict()
+        for n, p in model.named_parameters():
+            name_dict[p.name] = n
+        self.args['name_dict'] = name_dict
+
+        opt = custom_opt.AdamWDL(
             learning_rate=lr, parameters=params, **self.args)
         return opt
