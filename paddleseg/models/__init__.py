@@ -67,6 +67,7 @@ from .lraspp import LRASPP
 from .mscale_ocrnet import MscaleOCRNet
 from .topformer import TopFormer
 from .rtformer import RTFormer
+from .upernet_vit_adapter import UPerNetViTAdapter
 from .lpsnet import LPSNet
 from .maskformer import MaskFormer
 from .segnext import SegNeXt

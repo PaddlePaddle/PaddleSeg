@@ -66,4 +66,4 @@ model:
     align_corners: False
   num_classes: 2
   backbone_indices: [-1]
-  pretrained: pretrained_models/human_pp_humansegv1_mobile_192x192_pretrained/model.pdparams
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_mobile_192x192_pretrained.zip

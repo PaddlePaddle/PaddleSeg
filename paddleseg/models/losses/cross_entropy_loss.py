@@ -33,6 +33,7 @@ class CrossEntropyLoss(nn.Layer):
         top_k_percent_pixels (float, optional): the value lies in [0.0, 1.0].
             When its value < 1.0, only compute the loss for the top k percent pixels
             (e.g., the top 20% pixels). This is useful for hard pixel mining. Default ``1.0``.
+        avg_non_ignore (bool, optional): Whether the loss is only averaged over non-ignored value of pixels. Default: True.
         data_format (str, optional): The tensor format to use, 'NCHW' or 'NHWC'. Default ``'NCHW'``.
     """
 
@@ -40,10 +41,12 @@ class CrossEntropyLoss(nn.Layer):
                  weight=None,
                  ignore_index=255,
                  top_k_percent_pixels=1.0,
+                 avg_non_ignore=True,
                  data_format='NCHW'):
         super(CrossEntropyLoss, self).__init__()
         self.ignore_index = ignore_index
         self.top_k_percent_pixels = top_k_percent_pixels
+        self.avg_non_ignore = avg_non_ignore
         self.EPS = 1e-8
         self.data_format = data_format
         if weight is not None:
@@ -107,10 +110,12 @@ class CrossEntropyLoss(nn.Layer):
         Returns:
             (Tensor): The average loss.
         """
-        mask = label != self.ignore_index
-        mask = paddle.cast(mask, 'float32')
-        label.stop_gradient = True
+        if self.avg_non_ignore:
+            mask = paddle.cast(label != self.ignore_index, dtype='float32')
+        else:
+            mask = paddle.ones(label.shape, dtype='float32')
         mask.stop_gradient = True
+        label.stop_gradient = True
 
         if loss.ndim > mask.ndim:
             loss = paddle.squeeze(loss, axis=-1)

@@ -558,9 +558,11 @@ class RandomPaddingCrop:
         crop_size (tuple, optional): The target cropping size. Default: (512, 512).
         im_padding_value (float, optional): The padding value of raw image. Default: 127.5.
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
-        category_max_ratio (float, optional): The maximum ratio that single category could occupy. Default: 1.0.
-        ignore_index (int, optional): Specifies a target value that is ignored. Default: 255.
-        loop_times (int, optional): The maximum loop times. Default: 10.
+        category_max_ratio (float, optional): The maximum ratio that single category could occupy. 
+            Default: 1.0.
+        ignore_index (int, optional): The value that should be ignored in the annotation image. 
+            Default: 255.
+        loop_times (int, optional): The maximum number of attempts to crop an image. Default: 10.
 
     Raises:
         TypeError: When crop_size is neither list nor tuple.
@@ -577,28 +579,27 @@ class RandomPaddingCrop:
         if isinstance(crop_size, list) or isinstance(crop_size, tuple):
             if len(crop_size) != 2:
                 raise ValueError(
-                    'Type of `crop_size` is list or tuple. It should include 2 elements, but it is {}'
+                    'Type of `crop_size` is list or tuple. It should include 2 elements, but it is {}.'
                     .format(crop_size))
         else:
             raise TypeError(
-                "The type of `crop_size` is invalid. It should be list or tuple, but it is {}"
+                "The type of `crop_size` is invalid. It should be list or tuple, but it is {}."
                 .format(type(crop_size)))
         if category_max_ratio <= 0:
             raise ValueError(
-                "The value of `category_max_ratio` must be greater than 0, but got {}".
+                "The value of `category_max_ratio` must be greater than 0, but got {}.".
                 format(category_max_ratio))
         if loop_times <= 0:
             raise ValueError(
-                "The value of `loop_times` must be greater than 0, but got {}".
+                "The value of `loop_times` must be greater than 0, but got {}.".
                 format(loop_times))
-        if isinstance(crop_size, int):
-            crop_size = (crop_size, ) * 2
+
         self.crop_size = tuple(reversed(crop_size))
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
         self.category_max_ratio = category_max_ratio
         self.ignore_index = ignore_index
-        self.loop_times = loop_times if category_max_ratio != 1.0 else 1
+        self.loop_times = loop_times
 
     def _get_crop_coordinates(self, origin_size):
         margin_h = max(origin_size[0] - self.crop_size[0], 0)
@@ -645,16 +646,18 @@ class RandomPaddingCrop:
         img_shape = data['img'].shape[:2]
         crop_coordinates = self._get_crop_coordinates(img_shape)
 
-        for _ in range(self.loop_times):
-            seg_temp = functional.crop(data["label"], crop_coordinates)
-            labels, cnt = np.unique(seg_temp, return_counts=True)
-            cnt = cnt[labels != self.ignore_index]
-            if len(cnt) > 1 and np.max(cnt) / np.sum(
-                    cnt) < self.category_max_ratio:
-                break
-            crop_coordinates = self._get_crop_coordinates(img_shape)
-
-        data["img"] = functional.crop(data["img"], crop_coordinates)
+        if self.category_max_ratio < 1.0:
+            for _ in range(self.loop_times):
+                seg_temp = functional.crop(data["label"], crop_coordinates)
+                labels, cnt = np.unique(seg_temp, return_counts=True)
+                cnt = cnt[labels != self.ignore_index]
+                if len(cnt) > 1 and np.max(cnt) / np.sum(
+                        cnt) < self.category_max_ratio:
+                    data['img'] = seg_temp
+                    break
+                crop_coordinates = self._get_crop_coordinates(img_shape)
+        else:
+            data['img'] = functional.crop(data['img'], crop_coordinates)
         for key in data.get("gt_fields", []):
             data[key] = functional.crop(data[key], crop_coordinates)
 
@@ -1158,4 +1161,62 @@ class RandomAffine:
                 flags=cv2.INTER_NEAREST,
                 borderMode=cv2.BORDER_CONSTANT,
                 borderValue=self.label_padding_value)
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class GenerateInstanceTargets:
+    """
+    Generate instance targets from ground-truth labels.
+
+    Args:
+        num_classes (int): The number of classes.
+        ignore_index (int, optional): Specifies a target value that is ignored. Default: 255.
+    """
+
+    def __init__(self, num_classes, ignore_index=255):
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+
+    def __call__(self, data):
+        if 'label' in data:
+            sem_seg_gt = data['label']
+            instances = {"image_shape": data['img'].shape[1:]}
+            classes = np.unique(sem_seg_gt)
+            classes = classes[classes != self.ignore_index]
+
+            # To make data compatible with dataloader
+            classes_cpt = np.array([
+                self.ignore_index
+                for _ in range(self.num_classes - len(classes))
+            ])
+            classes_cpt = np.append(classes, classes_cpt)
+            instances["gt_classes"] = np.asarray(classes_cpt).astype('int64')
+
+            masks = []
+            for cid in classes:
+                masks.append(sem_seg_gt == cid)  # [C, H, W] 
+
+            shape = [self.num_classes - len(masks)] + list(data['label'].shape)
+            masks_cpt = np.zeros(shape, dtype='int64')
+
+            if len(masks) == 0:
+                # Some images do not have annotation and will all be ignored
+                instances['gt_masks'] = np.zeros(
+                    (self.num_classes, sem_seg_gt.shape[-2],
+                     sem_seg_gt.shape[-1]),
+                    dtype='int64')
+
+            else:
+                instances['gt_masks'] = np.concatenate(
+                    [
+                        np.stack([
+                            np.ascontiguousarray(x).astype('float32')
+                            for x in masks
+                        ]), masks_cpt
+                    ],
+                    axis=0)
+
+            data['instances'] = instances
+
         return data

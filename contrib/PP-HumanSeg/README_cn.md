@@ -340,11 +340,6 @@ python src/seg_demo.py \
 python src/download_data.py
 ```
 
-执行如下命令，下载预训练权重。
-```bash
-python src/download_pretrained_models.py
-```
-
 ### 6.2 训练
 
 配置文件保存在`./configs`目录下，如下。配置文件中，已经通过`pretrained`设置好预训练权重的路径。
