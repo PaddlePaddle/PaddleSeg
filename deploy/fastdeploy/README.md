@@ -30,7 +30,7 @@
 |ARM CPU|✅|[链接](semantic_segmentation/cpu-gpu)|✅|✅| 
 |Intel GPU(集成显卡)|✅|[链接](semantic_segmentation/cpu-gpu)|✅|✅|  
 |Intel GPU(独立显卡)|✅|[链接](semantic_segmentation/cpu-gpu)|✅|✅|    
-|昆仑|✅|[链接](semantic_segmentation/kunlun)|✅|✅|
+|昆仑|✅|[链接](semantic_segmentation/kunlunxin)|✅|✅|
 |昇腾|✅|[链接](semantic_segmentation/ascend)|✅|✅|
 |瑞芯微|✅|[链接](semantic_segmentation/rockchip)|✅|✅|  
 |晶晨|✅|[链接](semantic_segmentation/amlogic)|--|✅|✅|      
@@ -58,9 +58,9 @@
   - [Python部署示例](semantic_segmentation/cpu-gpu/python/) 
   - [C++部署示例](semantic_segmentation/cpu-gpu/cpp/)
 - 昆仑 XPU
-  - [部署模型准备](semantic_segmentation/kunlun)  
-  - [Python部署示例](semantic_segmentation/kunlun/python/) 
-  - [C++部署示例](semantic_segmentation/kunlun/cpp/)
+  - [部署模型准备](semantic_segmentation/kunlunxin)  
+  - [Python部署示例](semantic_segmentation/kunlunxin/python/) 
+  - [C++部署示例](semantic_segmentation/kunlunxin/cpp/)
 - 昇腾 Ascend
   - [部署模型准备](semantic_segmentation/ascend)  
   - [Python部署示例](semantic_segmentation/ascend/python/) 
@@ -97,7 +97,7 @@
 |ARM CPU|✅|[链接](matting/cpu-gpu)|✅|✅|     
 |Intel GPU(集成显卡)|✅|[链接](matting/cpu-gpu)|✅|✅|     
 |Intel GPU(独立显卡)|✅|[链接](matting/cpu-gpu)|✅|✅|    
-|昆仑|✅|[链接](matting/kunlun)|✅|✅|     
+|昆仑|✅|[链接](matting/kunlunxin)|✅|✅|     
 |昇腾|✅|[链接](matting/ascend)|✅|✅|     
 
 ### 3.2 详细使用文档
@@ -122,9 +122,9 @@
   - [Python部署示例](matting/cpu-gpu/python/) 
   - [C++部署示例](cpu-gpu/cpp/)
 - 昆仑 XPU
-  - [部署模型准备](matting/kunlun)  
-  - [Python部署示例](matting/kunlun/README.md) 
-  - [C++部署示例](matting/kunlun/README.md)
+  - [部署模型准备](matting/kunlunxin)  
+  - [Python部署示例](matting/kunlunxin/README.md) 
+  - [C++部署示例](matting/kunlunxin/README.md)
 - 昇腾 Ascend
   - [部署模型准备](matting/ascend)  
   - [Python部署示例](matting/ascend/README.md) 
