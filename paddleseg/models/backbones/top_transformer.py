@@ -22,7 +22,6 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 from paddleseg import utils
 from paddleseg.models.backbones.transformer_utils import Identity, DropPath
-from paddleseg.models.backbones.topformer_utils import *
 
 __all__ = ["TopTransformer_Base", "TopTransformer_Small", "TopTransformer_Tiny"]
 
@@ -100,28 +99,24 @@ class ConvBNAct(nn.Layer):
                  norm=nn.BatchNorm2D,
                  act=None,
                  bias_attr=False,
-                 lr_mult=1.0,
-                 use_conv=True):
+                 lr_mult=1.0):
         super(ConvBNAct, self).__init__()
         param_attr = paddle.ParamAttr(learning_rate=lr_mult)
-        self.use_conv = use_conv
-        if use_conv:
-            self.conv = nn.Conv2D(
-                in_channels=in_channels,
-                out_channels=out_channels,
-                kernel_size=kernel_size,
-                stride=stride,
-                padding=padding,
-                groups=groups,
-                weight_attr=param_attr,
-                bias_attr=param_attr if bias_attr else False)
+        self.conv = nn.Conv2D(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            groups=groups,
+            weight_attr=param_attr,
+            bias_attr=param_attr if bias_attr else False)
         self.act = act() if act is not None else Identity()
         self.bn = norm(out_channels, weight_attr=param_attr, bias_attr=param_attr) \
             if norm is not None else Identity()
 
     def forward(self, x):
-        if self.use_conv:
-            x = self.conv(x)
+        x = self.conv(x)
         x = self.bn(x)
         x = self.act(x)
         return x
@@ -281,21 +276,19 @@ class Attention(nn.Layer):
                 self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)  # NCHW
+        x_shape = paddle.shape(x)
         H, W = x_shape[2], x_shape[3]
 
         qq = self.to_q(x).reshape(
-            [0, self.num_heads, self.key_dim, -1]).transpose(
-                [0, 1, 3, 2])  # [N , nh,  HW, dim]
-        kk = self.to_k(x).reshape(
-            [0, self.num_heads, self.key_dim, -1])  # [N , nh, dim, HW]
+            [0, self.num_heads, self.key_dim, -1]).transpose([0, 1, 3, 2])
+        kk = self.to_k(x).reshape([0, self.num_heads, self.key_dim, -1])
         vv = self.to_v(x).reshape([0, self.num_heads, self.d, -1]).transpose(
-            [0, 1, 3, 2])  # [N , nh, HW, dh, ]
+            [0, 1, 3, 2])
 
-        attn = paddle.matmul(qq, kk)  # HW2 # [N , nh, HW ,HW] scale
+        attn = paddle.matmul(qq, kk)
         attn = F.softmax(attn, axis=-1)
 
-        xx = paddle.matmul(attn, vv)  # [N , nh, HW, dh]
+        xx = paddle.matmul(attn, vv)
 
         xx = xx.transpose([0, 1, 3, 2]).reshape([0, self.dh, H, W])
         xx = self.proj(xx)
@@ -318,8 +311,6 @@ class Block(nn.Layer):
         self.num_heads = num_heads
         self.mlp_ratios = mlp_ratios
 
-        # from paddleseg.models.rtformer import ExternalAttention 
-        # self.attn = ExternalAttention(dim, dim, 256, num_heads=8, use_cross_kv=False) 
         self.attn = Attention(
             dim,
             key_dim=key_dim,
@@ -329,7 +320,6 @@ class Block(nn.Layer):
             lr_mult=lr_mult)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
-
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
         mlp_hidden_dim = int(dim * mlp_ratios)
         self.mlp = MLP(in_features=dim,
@@ -418,20 +408,16 @@ class PyramidPoolAgg(nn.Layer):
 
 
 class InjectionMultiSum(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 activations=None,
-                 global_in_channels=None,
+    def __init__(self, in_channels, out_channels, activations=None,
                  lr_mult=1.0):
         super(InjectionMultiSum, self).__init__()
 
         self.local_embedding = ConvBNAct(
             in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
         self.global_embedding = ConvBNAct(
-            global_in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
+            in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
         self.global_act = ConvBNAct(
-            global_in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
+            in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
         self.act = HSigmoid()
 
     def forward(self, x_low, x_global):
@@ -450,61 +436,81 @@ class InjectionMultiSum(nn.Layer):
         return out
 
 
-class InjectionMultiSumallmultiallsum(nn.Layer):
-    def __init__(self,
-                 in_channels=(64, 128, 256, 384),
-                 activations=None,
-                 out_channels=256,
-                 lr_mult=1.0):
-        super(InjectionMultiSumallmultiallsum, self).__init__()
-        self.embedding_list = nn.LayerList()
-        self.act_embedding_list = nn.LayerList()
-        self.act_list = nn.LayerList()
-        for i in range(len(in_channels)):
-            self.embedding_list.append(
-                ConvBNAct(
-                    in_channels[i],
-                    out_channels,
-                    kernel_size=1,
-                    lr_mult=lr_mult))
-            self.act_embedding_list.append(
-                ConvBNAct(
-                    in_channels[i],
-                    out_channels,
-                    kernel_size=1,
-                    lr_mult=lr_mult))
-            self.act_list.append(HSigmoid())
+class InjectionMultiSumCBR(nn.Layer):
+    def __init__(self, in_channels, out_channels, activations=None):
+        '''
+        local_embedding: conv-bn-relu
+        global_embedding: conv-bn-relu
+        global_act: conv
+        '''
+        super(InjectionMultiSumCBR, self).__init__()
 
-    def forward(self, inputs):  # x_x8, x_x16, x_x32, x_x64
-        low_feat1 = F.interpolate(inputs[0], scale_factor=0.5, mode="bilinear")
-        low_feat1_act = self.act_list[0](self.act_embedding_list[0](low_feat1))
-        low_feat1 = self.embedding_list[0](low_feat1)
+        self.local_embedding = ConvBNAct(
+            in_channels, out_channels, kernel_size=1)
+        self.global_embedding = ConvBNAct(
+            in_channels, out_channels, kernel_size=1)
+        self.global_act = ConvBNAct(
+            in_channels, out_channels, kernel_size=1, norm=None, act=None)
+        self.act = HSigmoid()
 
-        low_feat2_act = self.act_list[1](self.act_embedding_list[1](inputs[1]))
-        low_feat2 = self.embedding_list[1](inputs[1])
+    def forward(self, x_low, x_global):
+        xl_hw = paddle.shape(x)[2:]
+        local_feat = self.local_embedding(x_low)
+        # kernel
+        global_act = self.global_act(x_global)
+        global_act = F.interpolate(
+            self.act(global_act), xl_hw, mode='bilinear', align_corners=False)
+        # feat_h
+        global_feat = self.global_embedding(x_global)
+        global_feat = F.interpolate(
+            global_feat, xl_hw, mode='bilinear', align_corners=False)
+        out = local_feat * global_act + global_feat
+        return out
 
-        low_feat3_act = F.interpolate(
-            self.act_list[2](self.act_embedding_list[2](inputs[2])),
-            size=low_feat2.shape[2:],
-            mode="bilinear")
-        low_feat3 = F.interpolate(
-            self.embedding_list[2](inputs[2]),
-            size=low_feat2.shape[2:],
-            mode="bilinear")
 
-        high_feat_act = F.interpolate(
-            self.act_list[3](self.act_embedding_list[3](inputs[3])),
-            size=low_feat2.shape[2:],
-            mode="bilinear")
-        high_feat = F.interpolate(
-            self.embedding_list[3](inputs[3]),
-            size=low_feat2.shape[2:],
-            mode="bilinear")
+class FuseBlockSum(nn.Layer):
+    def __init__(self, in_channels, out_channels, activations=None):
+        super(FuseBlockSum, self).__init__()
 
-        res = low_feat1_act * low_feat2_act * low_feat3_act * high_feat_act * (
-            low_feat1 + low_feat2 + low_feat3) + high_feat
+        self.fuse1 = ConvBNAct(
+            in_channels, out_channels, kernel_size=1, act=None)
+        self.fuse2 = ConvBNAct(
+            in_channels, out_channels, kernel_size=1, act=None)
 
-        return res
+    def forward(self, x_low, x_high):
+        xl_hw = paddle.shape(x)[2:]
+        inp = self.fuse1(x_low)
+        kernel = self.fuse2(x_high)
+        feat_h = F.interpolate(
+            kernel, xl_hw, mode='bilinear', align_corners=False)
+        out = inp + feat_h
+        return out
+
+
+class FuseBlockMulti(nn.Layer):
+    def __init__(
+            self,
+            in_channels,
+            out_channels,
+            stride=1,
+            activations=None, ):
+        super(FuseBlockMulti, self).__init__()
+        assert stride in [1, 2], "The stride should be 1 or 2."
+
+        self.fuse1 = ConvBNAct(
+            in_channels, out_channels, kernel_size=1, act=None)
+        self.fuse2 = ConvBNAct(
+            in_channels, out_channels, kernel_size=1, act=None)
+        self.act = HSigmoid()
+
+    def forward(self, x_low, x_high):
+        xl_hw = paddle.shape(x)[2:]
+        inp = self.fuse1(x_low)
+        sig_act = self.fuse2(x_high)
+        sig_act = F.interpolate(
+            self.act(sig_act), xl_hw, mode='bilinear', align_corners=False)
+        out = inp * sig_act
+        return out
 
 
 SIM_BLOCK = {
@@ -529,84 +535,25 @@ class TopTransformer(nn.Layer):
                  c2t_stride=2,
                  drop_path_rate=0.,
                  act_layer=nn.ReLU6,
-                 injection_type="InjectionMultiSumallmultiallsum",
+                 injection_type="muli_sum",
                  injection=True,
                  lr_mult=1.0,
                  in_channels=3,
-                 backbone='top_transformer',
                  pretrained=None):
         super().__init__()
-        print('The backbone is ', backbone)
-        if backbone == 'top_transformer':
-            self.feat_channels = [
-                c[2] for i, c in enumerate(cfgs) if i in encoder_out_indices
-            ]
-            self.tpm = TokenPyramidModule(
-                cfgs=cfgs,
-                out_indices=encoder_out_indices,
-                in_channels=in_channels,
-                lr_mult=lr_mult)
-            pretrained = "saved_model/topformer74.9.pdparams"
-        elif backbone == 'esnet':
-            self.feat_channels = [24, 56, 120, 232]
-            from .esnet import ESNet_x0_5
-            self.tpm = ESNet_x0_5()
-            pretrained = "saved_model/best_model_esnet.pdparams"
-        elif backbone == 'esnet0_75':
-            self.feat_channels = [24, 88, 176, 352]
-            from .esnet import ESNet_x0_75
-            self.tpm = ESNet_x0_75()
-            pretrained = "saved_model/best_model_esnet075.pdparams"
-        elif backbone == 'esnet1_0':
-            self.feat_channels = [24, 120, 232, 464]
-            from .esnet import ESNet_x1_0
-            self.tpm = ESNet_x1_0()
-            pretrained = None  # TODO add pretrain model
-        elif backbone == 'mobilenetv3':
-            self.feat_channels = [24, 40, 112, 160]
-            from .mobilenetv3 import MobileNetV3_large_x1_0
-            self.tpm = MobileNetV3_large_x1_0()
-            pretrained = 'saved_model/best_model_mbv3.pdparams'
-        elif backbone == 'mobilenetv3_large_075':
-            self.feat_channels = [24, 32, 88, 120]
-            from .mobilenetv3 import MobileNetV3_large_x0_75
-            self.tpm = MobileNetV3_large_x0_75()
-            pretrained = None
-        elif backbone == 'mobilenetv3_small_125':
-            self.feat_channels = [24, 32, 64, 120]
-            from .mobilenetv3 import MobileNetV3_small_x1_25
-            self.tpm = MobileNetV3_small_x1_25()
-            pretrained = None
-        elif backbone == 'mobilenetv3_edit':
-            self.feat_channels = [32, 64, 128, 160]
-            from .mobilenetv3 import MobileNetV3_large_x1_0_edit
-            self.tpm = MobileNetV3_large_x1_0_edit()
-            pretrained = 'saved_model/best_model_mbv3e.pdparams'
-        elif backbone == 'MobileNetV3_large_x1_0_edit_x0_75':
-            self.feat_channels = [24, 48, 96, 120]
-            from .mobilenetv3 import MobileNetV3_large_x1_0_edit_x0_75
-            self.tpm = MobileNetV3_large_x1_0_edit_x0_75()
-            pretrained = 'saved_model/best_model_mbv3edit075.pdparams'
-        elif backbone == "MobileNetV3_large_x1_25_edit":
-            self.feat_channels = [40, 80, 160, 200]
-            from .mobilenetv3 import MobileNetV3_large_x1_25_edit
-            self.tpm = MobileNetV3_large_x1_25_edit()
-            pretrained = 'saved_model/best_model_mbv3edit125.pdparams'
-        elif backbone == "MobileNetV2":
-            from .mobilenetv2 import MobileNetV2_x1_0
-            self.tpm = MobileNetV2_x1_0()
-            pretrained = None
-            self.injection = False
-        else:
-            raise NotImplementedError('Backbone {} is not supported.'.format(
-                backbone))
-
+        self.feat_channels = [
+            c[2] for i, c in enumerate(cfgs) if i in encoder_out_indices
+        ]
         self.injection_out_channels = injection_out_channels
         self.injection = injection
         self.embed_dim = sum(self.feat_channels)
         self.trans_out_indices = trans_out_indices
-        self.injection_type = injection_type
 
+        self.tpm = TokenPyramidModule(
+            cfgs=cfgs,
+            out_indices=encoder_out_indices,
+            in_channels=in_channels,
+            lr_mult=lr_mult)
         self.ppa = PyramidPoolAgg(stride=c2t_stride)
 
         dpr = [x.item() for x in \
@@ -624,30 +571,19 @@ class TopTransformer(nn.Layer):
             act_layer=act_layer,
             lr_mult=lr_mult)
 
+        self.SIM = nn.LayerList()
+        inj_module = SIM_BLOCK[injection_type]
         if self.injection:
-            print('Using {}'.format(self.injection_type))
-
-            if injection_type == 'InjectionMultiSumallmultiallsum':
-                self.inj_module = InjectionMultiSumallmultiallsum(
-                    in_channels=self.feat_channels[1:] + [self.embed_dim],
-                    activations=act_layer,
-                    lr_mult=lr_mult
-                )  # TODO whether injection module is also backbone? set to 0.1?
-            else:
-                self.SIM = nn.LayerList()
-                inj_module = SIM_BLOCK[injection_type]
-                # inj_module = InjectionMultiSumSimple
-                for i in range(len(self.feat_channels)):
-                    if i in trans_out_indices:
-                        self.SIM.append(
-                            inj_module(
-                                self.feat_channels[i],
-                                injection_out_channels[i],
-                                activations=act_layer,
-                                global_in_channels=self.embed_dim,
-                                lr_mult=lr_mult))
-                    else:
-                        self.SIM.append(Identity())
+            for i in range(len(self.feat_channels)):
+                if i in trans_out_indices:
+                    self.SIM.append(
+                        inj_module(
+                            self.feat_channels[i],
+                            injection_out_channels[i],
+                            activations=act_layer,
+                            lr_mult=lr_mult))
+                else:
+                    self.SIM.append(Identity())
 
         self.pretrained = pretrained
         self.init_weight()
@@ -657,32 +593,23 @@ class TopTransformer(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        # [4, 3, 512, 512] [512,3,224,224] channels [32,64,128,160]
-        outputs = self.tpm(
-            x
-        )  # 4 个输出 [4, 32, 128, 128] [4, 64, 64, 64] [4, 128, 32, 32][4, 160, 16, 16]        
-
-        out = self.ppa(outputs)
-
+        ouputs = self.tpm(x)
+        out = self.ppa(ouputs)
         out = self.trans(out)
 
         if self.injection:
-            if self.injection_type == 'InjectionMultiSumallmultiallsum':
-                return self.inj_module(
-                    [outputs[i] for i in self.trans_out_indices] + [out])
-            else:
-                # xx = out.split(self.feat_channels, axis=1)
-                results = []
-                for i in range(len(self.feat_channels)):
-                    if i in self.trans_out_indices:
-                        local_tokens = outputs[i]
-                        global_semantics = out  #xx[i]
-                        out_ = self.SIM[i](local_tokens, global_semantics)
-                        results.append(out_)  # 64, 128, 256
-                return results
+            xx = out.split(self.feat_channels, axis=1)
+            results = []
+            for i in range(len(self.feat_channels)):
+                if i in self.trans_out_indices:
+                    local_tokens = ouputs[i]
+                    global_semantics = xx[i]
+                    out_ = self.SIM[i](local_tokens, global_semantics)
+                    results.append(out_)
+            return results
         else:
-            outputs.append(out)
-            return outputs
+            ouputs.append(out)
+            return ouputs
 
 
 @manager.BACKBONES.add_component
@@ -700,25 +627,6 @@ def TopTransformer_Base(**kwargs):
         [5, 6, 160, 1],  #            
         [3, 6, 160, 1],  #            
     ]
-    prev_cfgs = [
-        [3, 1, 16, 1],  # 1/2        
-        [3, 6, 24, 2],  # 1/4 1    ->32  
-        [3, 6, 24, 1],  # 1/4 1    !  
-        [3, 6, 32, 2],  #            
-        [3, 6, 32, 1],  #            
-        [3, 6, 32, 1],  #          !  
-        [3, 6, 64, 2],  # 1/8 3      
-        [3, 6, 64, 1],  #            
-        [3, 6, 64, 1],  #           ! 
-        [3, 6, 64, 1],  #           ! 
-        [3, 6, 96, 1],  # 1/16 5     
-        [3, 6, 96, 1],  # 1/16 5     
-        [3, 6, 96, 1],  # 1/16 5    ! ->128 
-        [3, 6, 160, 2],  #            
-        [3, 6, 160, 1],  #            
-        [3, 6, 160, 1],  #            
-        [3, 6, 320, 1],  # 1/32 7 !    
-    ]
 
     model = TopTransformer(
         cfgs=cfgs,
@@ -733,8 +641,8 @@ def TopTransformer_Base(**kwargs):
         c2t_stride=2,
         drop_path_rate=0.,
         act_layer=nn.ReLU6,
+        injection_type="multi_sum",
         injection=True,
-        # injection_type="InjectionMultiSumallmultiallsum",
         **kwargs)
     return model
 

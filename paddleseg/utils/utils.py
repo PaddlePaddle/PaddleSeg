@@ -157,7 +157,7 @@ def load_pretrained_model(model, pretrained_model):
 
             model_state_dict = model.state_dict()
             keys = model_state_dict.keys()
-            num_params_loaded = 0  # 被删除的不能统计
+            num_params_loaded = 0
             for k in keys:
                 if k not in para_state_dict:
                     logger.warning("{} is not in pretrained model".format(k))

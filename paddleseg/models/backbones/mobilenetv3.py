@@ -33,9 +33,7 @@ __all__ = [
 MODEL_STAGES_PATTERN = {
     "MobileNetV3_small": ["blocks[0]", "blocks[2]", "blocks[7]", "blocks[10]"],
     "MobileNetV3_large":
-    ["blocks[0]", "blocks[2]", "blocks[5]", "blocks[11]", "blocks[14]"],
-    "MobileNetV3_large_edit":
-    ["blocks[0]", "blocks[2]", "blocks[4]", "blocks[6]", "blocks[9]"]
+    ["blocks[0]", "blocks[2]", "blocks[5]", "blocks[11]", "blocks[14]"]
 }
 
 # "large", "small" is just for MobinetV3_large, MobileNetV3_small respectively.
@@ -66,32 +64,6 @@ NET_CONFIG = {
         [5, 960, 160, True, "hardswish", 1],
         [5, 960, 160, True, "hardswish", 1],  # x32
     ],
-    "large_edit": [
-        # k, exp, c, se, act, s
-        [3, 16, 16, False, "relu", 1],
-        [3, 64, 32, False, "relu", 2],
-        [3, 72, 32, False, "relu", 1],  # 2
-        [5, 72, 64, True, "relu", 2],
-        [5, 128, 64, True, "relu", 1],  # 4
-        [3, 384, 128, False, "hardswish", 2],
-        [3, 480, 128, False, "hardswish", 1],  # 6
-        [5, 480, 160, True, "hardswish", 2],
-        [5, 960, 160, True, "hardswish", 1],
-        [5, 960, 160, True, "hardswish", 1],  # 9
-    ],
-    "large_edit_concat": [
-        # k, exp, c, se, act, s
-        [3, 16, 16, False, "relu", 1],
-        [3, 64, 16, False, "relu", 2],
-        [3, 72, 16, False, "relu", 1],  # 2
-        [5, 72, 32, True, "relu", 2],
-        [5, 128, 32, True, "relu", 1],  # 4
-        [3, 384, 64, False, "hardswish", 2],
-        [3, 480, 64, False, "hardswish", 1],  # 6
-        [5, 480, 64, True, "hardswish", 2],
-        [5, 960, 64, True, "hardswish", 1],
-        [5, 960, 64, True, "hardswish", 1],  # 9
-    ],
     "small": [
         # k, exp, c, se, act, s
         [3, 16, 16, True, "relu", 2],
@@ -99,19 +71,6 @@ NET_CONFIG = {
         [3, 88, 24, False, "relu", 1],
         [5, 96, 40, True, "hardswish", 2],
         [5, 240, 40, True, "hardswish", 1],
-        [5, 240, 40, True, "hardswish", 1],
-        [5, 120, 48, True, "hardswish", 1],
-        [5, 144, 48, True, "hardswish", 1],
-        [5, 288, 96, True, "hardswish", 2],
-        [5, 576, 96, True, "hardswish", 1],
-        [5, 576, 96, True, "hardswish", 1],
-    ],
-    "small_edit": [
-        # k, exp, c, se, act, s
-        [3, 16, 16, True, "relu", 2],
-        [3, 72, 32, False, "relu", 2],
-        [3, 88, 32, False, "relu", 1],
-        [5, 96, 40, True, "hardswish", 2],
         [5, 240, 40, True, "hardswish", 1],
         [5, 120, 48, True, "hardswish", 1],
         [5, 144, 48, True, "hardswish", 1],
@@ -194,15 +153,13 @@ class MobileNetV3(nn.Layer):
                  out_index,
                  in_channels=3,
                  scale=1.0,
-                 pretrained=None,
-                 mode='simple'):
+                 pretrained=None):
         super().__init__()
 
         self.cfg = config
         self.out_index = out_index
         self.scale = scale
         self.pretrained = pretrained
-        self.mode = mode
         inplanes = 16
 
         self.conv = ConvBNLayer(
@@ -214,7 +171,7 @@ class MobileNetV3(nn.Layer):
             num_groups=1,
             if_act=True,
             act="hardswish")
-        self.blocks = nn.Sequential(*[
+        self.blocks = nn.Sequential(* [
             ResidualUnit(
                 in_c=_make_divisible(inplanes * self.scale if i == 0 else
                                      self.cfg[i - 1][2] * self.scale),
@@ -267,20 +224,10 @@ class MobileNetV3(nn.Layer):
         x = self.conv(x)
 
         feat_list = []
-        if self.mode == 'simple':
-            for i, block in enumerate(self.blocks):
-                x = block(x)
-                if i in self.out_index:
-                    feat_list.append(x)
-        elif self.mode == 'concate':
-            tmp = []
-            for i, block in enumerate(self.blocks):
-                x = block(x)
-                if i != 0:
-                    tmp.append(x)
-                if i in self.out_index:
-                    feat_list.append(paddle.concat(tmp, axis=1))
-                    tmp = []
+        for idx, block in enumerate(self.blocks):
+            x = block(x)
+            if idx in self.out_index:
+                feat_list.append(x)
 
         return feat_list
 
@@ -519,57 +466,12 @@ def MobileNetV3_large_x1_0(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def MobileNetV3_large_x1_0_edit(**kwargs):
-    model = MobileNetV3(
-        config=NET_CONFIG["large_edit"],
-        scale=1.0,
-        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
-        out_index=[2, 4, 6, 9],
-        **kwargs)
-    return model
-
-
-@manager.BACKBONES.add_component
-def MobileNetV3_large_x1_0_edit_x0_75(**kwargs):
-    model = MobileNetV3(
-        config=NET_CONFIG["large_edit"],
-        scale=0.75,
-        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
-        out_index=[2, 4, 6, 9],
-        **kwargs)
-    return model
-
-
-@manager.BACKBONES.add_component
-def MobileNetV3_large_x1_0_edit_x0_75_concate(**kwargs):
-    model = MobileNetV3(
-        config=NET_CONFIG["large_edit_concat"],
-        scale=0.75,
-        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
-        out_index=[2, 4, 6, 9],
-        mode='concate',
-        **kwargs)
-    return model
-
-
-@manager.BACKBONES.add_component
 def MobileNetV3_large_x1_25(**kwargs):
     model = MobileNetV3(
         config=NET_CONFIG["large"],
         scale=1.25,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
         out_index=OUT_INDEX["large"],
-        **kwargs)
-    return model
-
-
-@manager.BACKBONES.add_component
-def MobileNetV3_large_x1_25_edit(**kwargs):
-    model = MobileNetV3(
-        config=NET_CONFIG["large_edit"],
-        scale=1.25,
-        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
-        out_index=[2, 4, 6, 9],
         **kwargs)
     return model
 

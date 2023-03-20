@@ -1,6 +1,6 @@
 _base_: '../_base_/ade20k.yml'
 
-batch_size: 4  # total batch size is 16
+batch_size: 8  # total batch size is 16
 iters: 160000
 
 train_dataset:
@@ -54,7 +54,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.00025
+  learning_rate: 0.0004
   end_lr: 0
   power: 1.0
   warmup_iters: 1500
@@ -62,22 +62,23 @@ lr_scheduler:
 
 loss:
   types:
-    - type: CrossEntropyLoss
-  coef: [1,]
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: LovaszSoftmaxLoss
+      coef: [0.8, 0.2]
+  coef: [1]
+
 
 model:
   type: TopFormer
   num_classes: 150
   backbone:
-    type: SeaFormer_MV3_Base_4stage
+    type: MobileSeg_Base
     lr_mult: 1.0
-    inj_type: origin
-    pretrained: saved_model/seaformer_MV3_strideattn_4stage.pdparams
+    pretrained: saved_model/SeaFormer_B_MV3_strideattn_4stageFix_best.pdparams
     out_channels: 256
-    dims: [128, 160] # [128, 160, 192]
-    out_feat_chs: [64, 128, 192] # [64, 128, 192, 256]  [64, 192, 256]
-    asub: False
-    talking_head: False
+    out_feat_chs: [64, 128, 192] 
     stride_attention: True
   head_use_dw: True
   upsample: intepolate

@@ -77,9 +77,9 @@ class TopFormer(nn.Layer):
 
     def forward(self, x):
         x_hw = x.shape[2:]
-        x = self.backbone(x)  # len=3, 1/8,1/16,1/32
+        x = self.backbone(x)  # 1/8, 1/16, 1/32
         x = self.decode_head(x)
-        if self.upsample == 'intepolate':  # cityscapes 15 classes on trained model
+        if self.upsample == 'intepolate':
             x = F.interpolate(
                 x, x_hw, mode='bilinear', align_corners=self.align_corners)
         elif self.upsample == 'valid':

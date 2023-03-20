@@ -167,14 +167,6 @@ def main(args):
     optimizer = builder.optimizer
     loss = builder.loss
 
-    import shutil
-    import os
-    os.makedirs(args.save_dir, exist_ok=True)
-    shutil.copyfile('paddleseg/models/backbones/seaformer.py',
-                    os.path.join(args.save_dir, 'seaformer.py'))
-    shutil.copyfile('paddleseg/models/topformer.py',
-                    os.path.join(args.save_dir, 'topformer.py'))
-
     train(
         model,
         train_dataset,
