@@ -53,10 +53,6 @@ def parse_args():
         '--use_vdl',
         help='Whether to record the data to VisualDL in training.',
         action='store_true')
-    parser.add_argument(
-        '--use_ema',
-        help='Whether to ema the model in training.',
-        action='store_true')
 
     # Runntime params
     parser.add_argument(
@@ -180,7 +176,6 @@ def main(args):
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
-        use_ema=args.use_ema,
         losses=loss,
         keep_checkpoint_max=args.keep_checkpoint_max,
         test_config=cfg.test_config,

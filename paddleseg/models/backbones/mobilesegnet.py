@@ -580,6 +580,37 @@ class BasicLayer(nn.Layer):
         return x
 
 
+class Fusion_block(nn.Layer):
+    def __init__(self, inp, oup, embed_dim, activations=None,
+                 lr_mult=1.0) -> None:
+        super(Fusion_block, self).__init__()
+        self.local_embedding = ConvBNAct(
+            inp, embed_dim, kernel_size=1, lr_mult=lr_mult)
+        self.global_act = ConvBNAct(
+            oup, embed_dim, kernel_size=1, lr_mult=lr_mult)
+        self.act = nn.Sigmoid()
+
+    def forward(self, x_l, x_g):
+        '''
+        x_g: global features
+        x_l: local features
+        '''
+        B, C, H, W = x_l.shape
+        B, C_c, H_c, W_c = x_g.shape
+
+        local_feat = self.local_embedding(x_l)
+        global_act = self.global_act(x_g)
+        sig_act = F.interpolate(
+            self.act(global_act),
+            size=(H, W),
+            mode='bilinear',
+            align_corners=False)
+
+        out = local_feat * sig_act
+
+        return out
+
+
 class InjectionMultiSumallmultiallsum(nn.Layer):
     def __init__(self,
                  in_channels=(64, 128, 256, 384),
@@ -761,6 +792,15 @@ class MobileSegNet(nn.Layer):
                 out_channels=out_channels,
                 lr_mult=lr_mult)
             self.injection_out_channels = [self.inj_module.out_channels] * 3
+        elif self.inj_type == 'origin':
+            for i in range(len(dims)):
+                fuse = Fusion_block(
+                    out_feat_chs[0] if i == 0 else dims[i - 1],
+                    out_feat_chs[i + 1],
+                    embed_dim=dims[i],
+                    lr_mult=lr_mult)
+                setattr(self, f"fuse{i + 1}", fuse)
+            self.injection_out_channels = [dims[i]] * 3
         else:
             raise NotImplementedError(self.inj_module + ' is not implemented')
 
@@ -789,7 +829,15 @@ class MobileSegNet(nn.Layer):
                 x = trans(x)
                 outputs.append(x)
 
-        output = self.inj_module(outputs)
+        if self.inj_type == "origin":
+            x_detail = outputs[0]
+            for i in range(len(self.dims)):
+                fuse = getattr(self, f'fuse{i+1}')
+
+                x_detail = fuse(x_detail, outputs[i + 1])
+            output = x_detail
+        else:
+            output = self.inj_module(outputs)
 
         return output
 

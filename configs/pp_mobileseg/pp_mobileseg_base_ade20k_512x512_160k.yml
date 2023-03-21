@@ -76,7 +76,7 @@ model:
   backbone:
     type: MobileSeg_Base
     lr_mult: 1.0
-    pretrained: saved_model/SeaFormer_B_MV3_strideattn_4stageFix_best.pdparams
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg/pretrain/model.pdparams
     out_channels: 256
     out_feat_chs: [64, 128, 192] 
     stride_attention: True

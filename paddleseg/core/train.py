@@ -16,7 +16,6 @@ import os
 import time
 from collections import deque
 import shutil
-from copy import deepcopy
 
 import paddle
 import paddle.nn.functional as F
@@ -57,38 +56,6 @@ def loss_computation(logits_list, labels, edges, losses):
     return loss_list
 
 
-def _params_equal(ema_model, model):
-    for ema_param, param in zip(ema_model.named_parameters(),
-                                model.named_parameters()):
-        if not paddle.equal_all(ema_param[1], param[1]):
-            # print("Difference in", ema_param[0])
-            return False
-    return True
-
-
-def init_ema_params(ema_model, model):
-    state = {}
-    msd = model.state_dict()
-    for k, v in ema_model.state_dict().items():
-        if paddle.is_floating_point(v):
-            v = msd[k].detach()
-        state[k] = v
-    ema_model.set_state_dict(state)
-
-
-def update_ema_model(ema_model, model, step=0, decay=0.999):
-    with paddle.no_grad():
-        state = {}
-        decay = min(1 - 1 / (step + 1), decay)
-        msd = model.state_dict()
-        for k, v in ema_model.state_dict().items():
-            if paddle.is_floating_point(v):
-                v *= decay
-                v += (1.0 - decay) * msd[k].detach()
-            state[k] = v
-        ema_model.set_state_dict(state)
-
-
 def train(model,
           train_dataset,
           val_dataset=None,
@@ -101,7 +68,6 @@ def train(model,
           log_iters=10,
           num_workers=0,
           use_vdl=False,
-          use_ema=False,
           losses=None,
           keep_checkpoint_max=5,
           test_config=None,
@@ -136,9 +102,6 @@ def train(model,
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
     """
-    if use_ema:
-        ema_model = deepcopy(model)
-        ema_model.eval()
 
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -198,15 +161,8 @@ def train(model,
     save_models = deque()
     batch_start = time.time()
 
-    if use_ema:
-        for param in ema_model.parameters():
-            param.stop_gradient = True
-
     iter = start_iter
     while iter < iters:
-        if iter == start_iter and use_ema:
-            init_ema_params(ema_model, model)
-            assert _params_equal(ema_model, model)
         for data in loader:
             iter += 1
             if iter > iters:
@@ -317,10 +273,6 @@ def train(model,
                 reader_cost_averager.reset()
                 batch_cost_averager.reset()
 
-            if use_ema:
-                update_ema_model(ema_model, model, step=iter)
-                assert not _params_equal(ema_model, model)
-
             if (iter % save_interval == 0 or
                     iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
@@ -336,15 +288,6 @@ def train(model,
                     amp_level=amp_level,
                     **test_config)
 
-                if use_ema:
-                    ema_mean_iou, ema_acc, _, _, _ = evaluate(
-                        ema_model,
-                        val_dataset,
-                        num_workers=num_workers,
-                        precision=precision,
-                        amp_level=amp_level,
-                        **test_config)
-
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
@@ -357,30 +300,19 @@ def train(model,
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
 
-                if use_ema:
-                    paddle.save(
-                        ema_model.state_dict(),
-                        os.path.join(current_save_dir, 'ema_model.pdparams'))
-
                 save_models.append(current_save_dir)
                 if len(save_models) > keep_checkpoint_max > 0:
                     model_to_remove = save_models.popleft()
                     shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
-                    if (mean_iou > best_mean_iou) or (use_ema and (
-                            ema_mean_iou > best_mean_iou)):
-                        best_mean_iou = mean_iou if not use_ema else max(
-                            mean_iou, ema_mean_iou)
+                    if mean_iou > best_mean_iou:
+                        best_mean_iou = mean_iou
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
-                        if use_ema:
-                            paddle.save(ema_model.state_dict(),
-                                        os.path.join(best_model_dir,
-                                                     'ema_model.pdparams'))
                     logger.info(
                         '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                         .format(best_mean_iou, best_model_iter))
@@ -388,11 +320,7 @@ def train(model,
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
-                        if use_ema:
-                            log_writer.add_scalar('Evaluate/Ema_mIoU',
-                                                  ema_mean_iou, iter)
-                            log_writer.add_scalar('Evaluate/Ema_Acc', ema_acc,
-                                                  iter)
+
             batch_start = time.time()
 
     # Calculate flops.
