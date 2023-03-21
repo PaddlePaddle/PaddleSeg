@@ -209,7 +209,6 @@ def aug_inference(model,
     h_input, w_input = im.shape[-2], im.shape[-1]
     flip_comb = flip_combination(flip_horizontal, flip_vertical)
     num_augs = len(scales) * len(flip_comb)
-    assert num_augs > 1
     for scale in scales:
         h = int(h_input * scale + 0.5)
         w = int(w_input * scale + 0.5)

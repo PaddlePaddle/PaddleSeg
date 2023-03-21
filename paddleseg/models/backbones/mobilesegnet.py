@@ -742,13 +742,14 @@ class MobileSegNet(nn.Layer):
                  inj_type='AAM',
                  pretrained=None,
                  out_channels=160,
-                 dims=None,
+                 dims=(128, 160),
                  out_feat_chs=None,
                  stride_attention=False):
         super().__init__()
         self.channels = channels
         self.depths = depths
         self.cfgs = cfgs
+        self.dims = dims
 
         for i in range(len(cfgs)):
             smb = StackedMV3Block(

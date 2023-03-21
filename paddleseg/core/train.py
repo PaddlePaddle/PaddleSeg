@@ -16,12 +16,14 @@ import os
 import time
 from collections import deque
 import shutil
+from copy import deepcopy
 
 import paddle
 import paddle.nn.functional as F
 
 from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
-                             worker_init_fn, train_profiler, op_flops_funs)
+                             worker_init_fn, train_profiler, op_flops_funs,
+                             init_ema_params, update_ema_model)
 from paddleseg.core.val import evaluate
 
 
@@ -68,6 +70,7 @@ def train(model,
           log_iters=10,
           num_workers=0,
           use_vdl=False,
+          use_ema=False,
           losses=None,
           keep_checkpoint_max=5,
           test_config=None,
@@ -102,6 +105,12 @@ def train(model,
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
     """
+
+    if use_ema:
+        ema_model = deepcopy(model)
+        ema_model.eval()
+        for param in ema_model.parameters():
+            param.stop_gradient = True
 
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -155,14 +164,16 @@ def train(model,
     avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
     best_mean_iou = -1.0
+    best_ema_mean_iou = -1.0
     best_model_iter = -1
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     save_models = deque()
     batch_start = time.time()
-
     iter = start_iter
     while iter < iters:
+        if iter == start_iter and use_ema:
+            init_ema_params(ema_model, model)
         for data in loader:
             iter += 1
             if iter > iters:
@@ -177,6 +188,7 @@ def train(model,
             edges = None
             if 'edge' in data.keys():
                 edges = data['edge'].astype('int64')
+
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':
                 images = images.transpose((0, 2, 3, 1))
 
@@ -190,11 +202,19 @@ def train(model,
                         custom_black_list={'bilinear_interp_v2'}):
                     logits_list = ddp_model(images) if nranks > 1 else model(
                         images)
-                    loss_list = loss_computation(
-                        logits_list=logits_list,
-                        labels=labels,
-                        edges=edges,
-                        losses=losses)
+                    if nranks > 1 and hasattr(ddp_model._layers,
+                                              'loss_computation'):
+                        loss_list = ddp_model._layers.loss_computation(
+                            logits_list, losses, data)
+                    elif nranks == 1 and hasattr(model, 'loss_computation'):
+                        loss_list = model.loss_computation(logits_list, losses,
+                                                           data)
+                    else:
+                        loss_list = loss_computation(
+                            logits_list=logits_list,
+                            labels=labels,
+                            edges=edges,
+                            losses=losses)
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss
@@ -205,11 +225,20 @@ def train(model,
                     scaler.minimize(optimizer, scaled)  # update parameters
             else:
                 logits_list = ddp_model(images) if nranks > 1 else model(images)
-                loss_list = loss_computation(
-                    logits_list=logits_list,
-                    labels=labels,
-                    edges=edges,
-                    losses=losses)
+
+                if nranks > 1 and hasattr(ddp_model._layers,
+                                          'loss_computation'):
+                    loss_list = ddp_model._layers.loss_computation(logits_list,
+                                                                   losses, data)
+                elif nranks == 1 and hasattr(model, 'loss_computation'):
+                    loss_list = model.loss_computation(logits_list, losses,
+                                                       data)
+                else:
+                    loss_list = loss_computation(
+                        logits_list=logits_list,
+                        labels=labels,
+                        edges=edges,
+                        losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
                 optimizer.step()
@@ -273,6 +302,9 @@ def train(model,
                 reader_cost_averager.reset()
                 batch_cost_averager.reset()
 
+            if use_ema:
+                update_ema_model(ema_model, model, step=iter)
+
             if (iter % save_interval == 0 or
                     iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
@@ -288,6 +320,15 @@ def train(model,
                     amp_level=amp_level,
                     **test_config)
 
+                if use_ema:
+                    ema_mean_iou, ema_acc, _, _, _ = evaluate(
+                        ema_model,
+                        val_dataset,
+                        num_workers=num_workers,
+                        precision=precision,
+                        amp_level=amp_level,
+                        **test_config)
+
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
@@ -299,6 +340,11 @@ def train(model,
                             os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
+
+                if use_ema:
+                    paddle.save(
+                        ema_model.state_dict(),
+                        os.path.join(current_save_dir, 'ema_model.pdparams'))
 
                 save_models.append(current_save_dir)
                 if len(save_models) > keep_checkpoint_max > 0:
@@ -316,11 +362,28 @@ def train(model,
                     logger.info(
                         '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                         .format(best_mean_iou, best_model_iter))
+                    if use_ema:
+                        if ema_mean_iou > best_ema_mean_iou:
+                            best_ema_mean_iou = ema_mean_iou
+                            best_ema_model_iter = iter
+                            best_ema_model_dir = os.path.join(save_dir,
+                                                              "ema_best_model")
+                            paddle.save(ema_model.state_dict(),
+                                        os.path.join(best_ema_model_dir,
+                                                     'ema_model.pdparams'))
+                        logger.info(
+                            '[EVAL] The EMA model with the best validation mIoU ({:.4f}) was saved at iter {}.'
+                            .format(best_ema_mean_iou, best_ema_model_iter))
 
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
 
+                        if use_ema:
+                            log_writer.add_scalar('Evaluate/Ema_mIoU',
+                                                  ema_mean_iou, iter)
+                            log_writer.add_scalar('Evaluate/Ema_Acc', ema_acc,
+                                                  iter)
             batch_start = time.time()
 
     # Calculate flops.

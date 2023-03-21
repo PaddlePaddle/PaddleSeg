@@ -67,7 +67,8 @@ def set_device(device):
         place = 'gpu'
     elif device == 'xpu' and paddle.is_compiled_with_xpu():
         place = 'xpu'
-    elif device == 'npu' and paddle.is_compiled_with_npu():
+    elif device == 'npu' and "npu" in paddle.device.get_all_custom_device_type(
+    ):
         place = 'npu'
     elif device == 'mlu' and paddle.is_compiled_with_mlu():
         place = 'mlu'
@@ -138,6 +139,7 @@ def download_pretrained_model(pretrained_model):
             pretrained_model = download_file_and_uncompress(
                 pretrained_model,
                 savepath=_dir,
+                cover=False,
                 extrapath=seg_env.PRETRAINED_MODEL_HOME,
                 extraname=savename,
                 filename=filename)

@@ -1,0 +1,79 @@
+_base_: '../_base_/ade20k.yml'
+
+batch_size: 4 # total is 16
+iters: 160000
+
+model:
+  type: UPerNetCAE
+  backbone:
+    type: CAE
+    img_size: 512
+    patch_size: 16
+    embed_dim: 768
+    depth: 12
+    num_heads: 12
+    mlp_ratio: 4
+    qkv_bias: True
+    drop_rate: 0.0
+    drop_path_rate: 0.1
+    init_values: 0.1
+    use_rel_pos_bias: True
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/upernet_caebase_ade20k_512x512_160k/pretrained/model.pdparams
+  backbone_indices: [3, 5, 7, 11]
+  channels: 768
+  fpn_channels: 768
+  head_channels: 768
+  channels_fpn: [768, 768, 768, 768]
+
+train_dataset:
+  type: ADE20K
+  dataset_root: data/ADEChallengeData2016/
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.0
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  mode: train
+
+val_dataset:
+  type: ADE20K
+  dataset_root: data/ADEChallengeData2016/
+  transforms:
+    - type: ResizeByShort
+      short_size: 512
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+test_config:
+  is_slide: True
+  crop_size: [512, 512]
+  stride: [341, 341]
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
+
+optimizer:
+  _inherited_: False
+  type: AdamWDL_CAE
+  beta1: 0.9
+  beta2: 0.999
+  weight_decay: 0.0
+  layerwise_decay: 0.65
+
+lr_scheduler:
+  type: PolynomialDecay
+  warmup_iters: 1500
+  warmup_start_lr: 0.0
+  learning_rate: 0.0002
+  end_lr: 0.0
+  power: 1.0
