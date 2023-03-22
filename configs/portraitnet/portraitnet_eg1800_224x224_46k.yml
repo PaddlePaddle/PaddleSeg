@@ -68,5 +68,5 @@ model:
   backbone:
     type: MobileNetV2_x1_0
     pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv2_x1_0_ssld.tar.gz
-  add_edge: True
+  add_edge: False
   num_classes: 2
