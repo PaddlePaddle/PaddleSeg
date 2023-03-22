@@ -1,4 +1,4 @@
-# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,76 +16,24 @@ This file refers to https://github.com/hustvl/TopFormer and https://github.com/f
 """
 
 import paddle
-from paddle import ParamAttr
-from paddle.regularizer import L2Decay
 import paddle.nn as nn
 import paddle.nn.functional as F
+from paddle import regularizer
 
 from paddleseg.cvlibs import manager
 from paddleseg import utils
-from paddleseg.models.backbones.transformer_utils import Identity, DropPath
-
-
-def _make_divisible(val, divisor=8, min_value=None):
-    """
-    This function is taken from the original tf repo.
-    It ensures that all layers have a channel number that is divisible by 8
-    It can be seen here:
-    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
-    """
-    if min_value is None:
-        min_value = divisor
-    new_v = max(min_value, int(val + divisor / 2) // divisor * divisor)
-    # Make sure that round down does not go down by more than 10%.
-    if new_v < 0.9 * val:
-        new_v += divisor
-    return new_v
+from paddleseg.models.backbones.transformer_utils import DropPath
+from paddleseg.models.backbones.mobilenetv3 import _make_divisible, _create_act, ResidualUnit
+from paddleseg.models.layers import layer_libs
 
 
 class HSigmoid(nn.Layer):
-    def __init__(self, inplace=True):
+    def __init__(self):
         super().__init__()
         self.relu = nn.ReLU6()
 
     def forward(self, x):
         return self.relu(x + 3) / 6
-
-
-class Conv2DBN(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 ks=1,
-                 stride=1,
-                 pad=0,
-                 dilation=1,
-                 groups=1,
-                 bn_weight_init=1,
-                 lr_mult=1.0):
-        super().__init__()
-        conv_weight_attr = paddle.ParamAttr(learning_rate=lr_mult)
-        self.c = nn.Conv2D(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=ks,
-            stride=stride,
-            padding=pad,
-            dilation=dilation,
-            groups=groups,
-            weight_attr=conv_weight_attr,
-            bias_attr=False)
-        bn_weight_attr = paddle.ParamAttr(
-            initializer=nn.initializer.Constant(bn_weight_init),
-            learning_rate=lr_mult)
-        bn_bias_attr = paddle.ParamAttr(
-            initializer=nn.initializer.Constant(0), learning_rate=lr_mult)
-        self.bn = nn.BatchNorm2D(
-            out_channels, weight_attr=bn_weight_attr, bias_attr=bn_bias_attr)
-
-    def forward(self, inputs):
-        out = self.c(inputs)
-        out = self.bn(out)
-        return out
 
 
 class ConvBNAct(nn.Layer):
@@ -99,71 +47,27 @@ class ConvBNAct(nn.Layer):
                  norm=nn.BatchNorm2D,
                  act=None,
                  bias_attr=False,
-                 lr_mult=1.0,
-                 use_conv=True):
+                 lr_mult=1.0):
         super(ConvBNAct, self).__init__()
         param_attr = paddle.ParamAttr(learning_rate=lr_mult)
-        self.use_conv = use_conv
-        if use_conv:
-            self.conv = nn.Conv2D(
-                in_channels=in_channels,
-                out_channels=out_channels,
-                kernel_size=kernel_size,
-                stride=stride,
-                padding=padding,
-                groups=groups,
-                weight_attr=param_attr,
-                bias_attr=param_attr if bias_attr else False)
-        self.act = act() if act is not None else Identity()
+        self.conv = nn.Conv2D(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            groups=groups,
+            weight_attr=param_attr,
+            bias_attr=param_attr if bias_attr else False)
+        self.act = act() if act is not None else nn.Identity()
         self.bn = norm(out_channels, weight_attr=param_attr, bias_attr=param_attr) \
-            if norm is not None else Identity()
+            if norm is not None else nn.Identity()
 
     def forward(self, x):
-        if self.use_conv:
-            x = self.conv(x)
+        x = self.conv(x)
         x = self.bn(x)
         x = self.act(x)
         return x
-
-
-class Hardsigmoid(nn.Layer):
-    def __init__(self, slope=0.2, offset=0.5):
-        super().__init__()
-        self.slope = slope
-        self.offset = offset
-
-    def forward(self, x):
-        return nn.functional.hardsigmoid(
-            x, slope=self.slope, offset=self.offset)
-
-
-class SEModule(nn.Layer):
-    def __init__(self, channel, reduction=4):
-        super().__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2D(1)
-        self.conv1 = nn.Conv2D(
-            in_channels=channel,
-            out_channels=channel // reduction,
-            kernel_size=1,
-            stride=1,
-            padding=0)
-        self.relu = nn.ReLU()
-        self.conv2 = nn.Conv2D(
-            in_channels=channel // reduction,
-            out_channels=channel,
-            kernel_size=1,
-            stride=1,
-            padding=0)
-        self.hardsigmoid = Hardsigmoid(slope=0.2, offset=0.5)
-
-    def forward(self, x):
-        identity = x
-        x = self.avg_pool(x)
-        x = self.conv1(x)
-        x = self.relu(x)
-        x = self.conv2(x)
-        x = self.hardsigmoid(x)
-        return paddle.multiply(x=identity, y=x)
 
 
 class ConvBNLayer(nn.Layer):
@@ -179,17 +83,6 @@ class ConvBNLayer(nn.Layer):
                  dilation=1):
         super().__init__()
 
-        def _create_act(act):
-            if act == "hardswish":
-                return nn.Hardswish()
-            elif act == "relu":
-                return nn.ReLU()
-            elif act is None:
-                return None
-            else:
-                raise RuntimeError(
-                    "The activation function is not supported: {}".format(act))
-
         self.c = nn.Conv2D(
             in_channels=in_c,
             out_channels=out_c,
@@ -202,8 +95,8 @@ class ConvBNLayer(nn.Layer):
         self.bn = nn.BatchNorm(
             num_channels=out_c,
             act=None,
-            param_attr=ParamAttr(regularizer=L2Decay(0.0)),
-            bias_attr=ParamAttr(regularizer=L2Decay(0.0)))
+            param_attr=paddle.ParamAttr(regularizer=regularizer.L2Decay(0.0)),
+            bias_attr=paddle.ParamAttr(regularizer=regularizer.L2Decay(0.0)))
         self.if_act = if_act
         self.act = _create_act(act)
 
@@ -215,80 +108,21 @@ class ConvBNLayer(nn.Layer):
         return x
 
 
-class ResidualUnit(nn.Layer):
-    def __init__(self,
-                 in_c,
-                 mid_c,
-                 out_c,
-                 filter_size,
-                 stride,
-                 use_se,
-                 act=None,
-                 dilation=1):
-        super().__init__()
-        self.if_shortcut = stride == 1 and in_c == out_c
-        self.if_se = use_se
-
-        self.expand_conv = ConvBNLayer(
-            in_c=in_c,
-            out_c=mid_c,
-            filter_size=1,
-            stride=1,
-            padding=0,
-            if_act=True,
-            act=act)
-        self.bottleneck_conv = ConvBNLayer(
-            in_c=mid_c,
-            out_c=mid_c,
-            filter_size=filter_size,
-            stride=stride,
-            padding=int((filter_size - 1) // 2) * dilation,
-            num_groups=mid_c,
-            if_act=True,
-            act=act,
-            dilation=dilation)
-        if self.if_se:
-            self.mid_se = SEModule(mid_c)
-        self.linear_conv = ConvBNLayer(
-            in_c=mid_c,
-            out_c=out_c,
-            filter_size=1,
-            stride=1,
-            padding=0,
-            if_act=False,
-            act=None)
-
-    def forward(self, x):
-        identity = x
-        x = self.expand_conv(x)
-        x = self.bottleneck_conv(x)
-        if self.if_se:
-            x = self.mid_se(x)
-        x = self.linear_conv(x)
-        if self.if_shortcut:
-            x = paddle.add(identity, x)
-        return x
-
-
 class StackedMV3Block(nn.Layer):
     """
-    MobileNetV3
+    The MobileNetV3 block.
+
     Args:
-        config: list. MobileNetV3 depthwise blocks config.
+        cfgs (list): The MobileNetV3 config list of a stage.
+        stem (bool): Whether is the first stage or not.
         in_channels (int, optional): The channels of input image. Default: 3.
         scale: float=1.0. The coefficient that controls the size of network parameters. 
+    
     Returns:
-        model: nn.Layer. Specific MobileNetV3 model depends on args.
+        model: nn.Layer. A stage of specific MobileNetV3 model depends on args.
     """
 
-    def __init__(self,
-                 cfgs,
-                 stem,
-                 inp_channel,
-                 in_channels=3,
-                 scale=1.0,
-                 lr_mult=1.0,
-                 pretrained=None):
+    def __init__(self, cfgs, stem, inp_channel, scale=1.0):
         super().__init__()
 
         self.scale = scale
@@ -359,14 +193,35 @@ class Sea_Attention(nn.Layer):
         self.num_heads = num_heads
         self.scale = key_dim**-0.5
         self.key_dim = key_dim
-        self.nh_kd = nh_kd = key_dim * num_heads  # num_head key_dim
+        self.nh_kd = nh_kd = key_dim * num_heads
         self.d = int(attn_ratio * key_dim)
         self.dh = int(attn_ratio * key_dim) * num_heads
         self.attn_ratio = attn_ratio
 
-        self.to_q = Conv2DBN(dim, nh_kd, 1, lr_mult=lr_mult)
-        self.to_k = Conv2DBN(dim, nh_kd, 1, lr_mult=lr_mult)
-        self.to_v = Conv2DBN(dim, self.dh, 1, lr_mult=lr_mult)
+        self.to_q = layer_libs.ConvBN(
+            dim,
+            nh_kd,
+            1,
+            padding=0,
+            lr_mult=lr_mult,
+            conv_bias_attr=False,
+            init_bn=True)
+        self.to_k = layer_libs.ConvBN(
+            dim,
+            nh_kd,
+            1,
+            padding=0,
+            lr_mult=lr_mult,
+            conv_bias_attr=False,
+            init_bn=True)
+        self.to_v = layer_libs.ConvBN(
+            dim,
+            self.dh,
+            1,
+            padding=0,
+            lr_mult=lr_mult,
+            conv_bias_attr=False,
+            init_bn=True)
 
         self.stride_attention = stride_attention
 
@@ -378,35 +233,61 @@ class Sea_Attention(nn.Layer):
 
         self.proj = paddle.nn.Sequential(
             activation(),
-            Conv2DBN(
-                self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
+            layer_libs.ConvBN(
+                self.dh,
+                dim,
+                padding=0,
+                bn_weight_init=0,
+                lr_mult=lr_mult,
+                conv_bias_attr=False,
+                init_bn=True))
         self.proj_encode_row = paddle.nn.Sequential(
             activation(),
-            Conv2DBN(
-                self.dh, self.dh, bn_weight_init=0, lr_mult=lr_mult))
+            layer_libs.ConvBN(
+                self.dh,
+                self.dh,
+                padding=0,
+                bn_weight_init=0,
+                lr_mult=lr_mult,
+                conv_bias_attr=False,
+                init_bn=True))
         self.pos_emb_rowq = SqueezeAxialPositionalEmbedding(nh_kd, 16)
         self.pos_emb_rowk = SqueezeAxialPositionalEmbedding(nh_kd, 16)
         self.proj_encode_column = paddle.nn.Sequential(
             activation(),
-            Conv2DBN(
-                self.dh, self.dh, bn_weight_init=0, lr_mult=lr_mult))
+            layer_libs.ConvBN(
+                self.dh,
+                self.dh,
+                padding=0,
+                bn_weight_init=0,
+                lr_mult=lr_mult,
+                conv_bias_attr=False,
+                init_bn=True))
         self.pos_emb_columnq = SqueezeAxialPositionalEmbedding(nh_kd, 16)
         self.pos_emb_columnk = SqueezeAxialPositionalEmbedding(nh_kd, 16)
 
-        self.dwconv = Conv2DBN(
+        self.dwconv = layer_libs.ConvBN(
             2 * self.dh,
             2 * self.dh,
-            ks=3,
-            stride=1,
-            pad=1,
-            dilation=1,
+            kernel_size=3,
+            padding=1,
             groups=2 * self.dh,
-            lr_mult=lr_mult)
+            lr_mult=lr_mult,
+            conv_bias_attr=False,
+            init_bn=True)
+
         self.act = activation()
-        self.pwconv = Conv2DBN(2 * self.dh, dim, ks=1, lr_mult=lr_mult)
+        self.pwconv = layer_libs.ConvBN(
+            2 * self.dh,
+            dim,
+            kernel_size=1,
+            lr_mult=lr_mult,
+            padding=0,
+            conv_bias_attr=False,
+            init_bn=True)
         self.sigmoid = HSigmoid()
 
-    def forward(self, x):  # x (B,N,C)
+    def forward(self, x):
         B, C, H_ori, W_ori = x.shape
         if self.stride_attention:
             x = self.stride_conv(x)
@@ -472,7 +353,13 @@ class MLP(nn.Layer):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        self.fc1 = Conv2DBN(in_features, hidden_features, lr_mult=lr_mult)
+        self.fc1 = layer_libs.ConvBN(
+            in_features,
+            hidden_features,
+            lr_mult=lr_mult,
+            padding=0,
+            conv_bias_attr=False,
+            init_bn=True)
         param_attr = paddle.ParamAttr(learning_rate=lr_mult)
         self.dwconv = nn.Conv2D(
             hidden_features,
@@ -484,7 +371,13 @@ class MLP(nn.Layer):
             weight_attr=param_attr,
             bias_attr=param_attr)
         self.act = act_layer()
-        self.fc2 = Conv2DBN(hidden_features, out_features, lr_mult=lr_mult)
+        self.fc2 = layer_libs.ConvBN(
+            hidden_features,
+            out_features,
+            lr_mult=lr_mult,
+            padding=0,
+            conv_bias_attr=False,
+            init_bn=True)
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
@@ -637,28 +530,16 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
                     lr_mult=lr_mult))
             self.act_list.append(nn.Sigmoid())
 
-    def forward(
-            self, inputs
-    ):  # x_x8, x_x16, x_x32, x_x64 3 outputs: [4, 64, 64, 64] [4, 192, 16, 16] [4, 256, 8, 8]
-        low_feat1 = F.interpolate(
-            inputs[0], scale_factor=0.5, mode="bilinear")  # x16
+    def forward(self, inputs):  # x_x8, x_x16, x_x32, x_x64 
+        low_feat1 = F.interpolate(inputs[0], scale_factor=0.5, mode="bilinear")
         low_feat1_act = self.act_list[0](self.act_embedding_list[0](low_feat1))
         low_feat1 = self.embedding_list[0](low_feat1)
 
         low_feat2 = F.interpolate(
-            inputs[1], size=low_feat1.shape[-2:], mode="bilinear")  # x16
+            inputs[1], size=low_feat1.shape[-2:], mode="bilinear")
         low_feat2_act = self.act_list[1](
             self.act_embedding_list[1](low_feat2))  # x16
         low_feat2 = self.embedding_list[1](low_feat2)
-
-        # low_feat3_act = F.interpolate(
-        #     self.act_list[2](self.act_embedding_list[2](inputs[2])),
-        #     size=low_feat2.shape[2:],
-        #     mode="bilinear")
-        # low_feat3 = F.interpolate(
-        #     self.embedding_list[2](inputs[2]),
-        #     size=low_feat2.shape[2:],
-        #     mode="bilinear")
 
         high_feat_act = F.interpolate(
             self.act_list[2](self.act_embedding_list[2](inputs[2])),
