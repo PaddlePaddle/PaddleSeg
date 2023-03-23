@@ -24,34 +24,34 @@ Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy
 
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190044217-8f6befc2-7f20-473d-b356-148e06265205.png" width="25"/> Performance
+
 ### ADE20K
 | Model | Backbone | Training Iters | Batchsize | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
 |-|-|-|-|-|-|-|-|-|
-|PP-MobileSeg-B|MobileSegNet-B|80000|32|512x512|41.24%|265.5|5.62|[config](./pp_mobileseg_base_ade20k_512x512_160k.yml)\|[model]()\|[log]()\|[vdl]()|
-|PP-MobileSeg-T|MobileSegNet-T|80000|32|512x512|36.70%|215.3|1.61|[config](./pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=215793e45f9ace46b63b74abbaaa862c)|
-
+|PP-MobileSeg-Base|MobileSegNet-B|80000|32|512x512|41.57%|265.5|5.62|[config](./pp_mobileseg_base_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
+|PP-MobileSeg-Tiny|MobileSegNet-T|80000|32|512x512|36.70%|215.3|1.61|[config](./pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=8b48fc0ada781be47468bdeb6941eb99)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
 
 
 ### Ablation
 | Model | Backbone | Training Iters | Batchsize | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
 |-|-|-|-|-|-|-|-|-|
-|baseline|Seaformer-B|160000|16|512x512|40.00%|465.6|8.27|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/model.pdprams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ac4847bef689ecd4e2c91d8e2674bfdb)\|[exported model]()|
-|+VIM|Seaformer-B|160000|16|512x512|40.00%|234.6|8.17|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/model.pdprams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ac4847bef689ecd4e2c91d8e2674bfdb)\|[exported model]()|
-|+VIM+MobileSegnet|MobileSegNet-B|80000|32|512x512|40.98%|235.1|5.54|[model]()\|[log]()\|[vdl]()\|[exported model]()|
-|+VIM+MobileSegnet+AAM|MobileSegNet-B|80000|32|512x512|41.50%|265.5|5.62|[model]()\|[log]()\|[vdl]()\|[exported model]()|
+|baseline|Seaformer-B|160000|16|512x512|40.00%|465.6|8.27|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/model.pdprams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ac4847bef689ecd4e2c91d8e2674bfdb)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/export_model.zip)|
+|+VIM|Seaformer-B|160000|16|512x512|40.07%|234.6|8.17|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/model.pdprams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ac4847bef689ecd4e2c91d8e2674bfdb)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_VIM_ablation/export_model.zip)|
+|+VIM+MobileSegnet|MobileSegNet-B|80000|32|512x512|40.98%|235.1|5.54|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/MV3_4stage_base_ablation/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/MV3_4stage_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/MV3_4stage_base_ablation/export_model.zip)|
+|+VIM+MobileSegnet+AAM|MobileSegNet-B|80000|32|512x512|41.57%|265.5|5.62|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=8b48fc0ada781be47468bdeb6941eb99)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
 
 
 ### Compare with SOTA
 | Model | Backbone | mIoU(%) | latency(ms)* | params(M) |
 |-|-|-|-|-|
-|LR-ASPP|MobileNetV3_large_x1_0|33.10|730.9|3.2|
+|LR-ASPP|MobileNetV3_large_x1_0|33.10|730.9|3.20|
 |MobileSeg-Base|MobileNetV3_large_x1_0|33.26|391.5|2.85|
-|TopFormer-Tiny|TopTransformer-T|32.46|450.27|1.41|
-|SeaFormer-Tiny|SeaFormer-T|35.0|459.0|1.61|
+|TopFormer-Tiny|TopTransformer-T|32.46|490.3|1.41|
+|SeaFormer-Tiny|SeaFormer-T|35.00|459.0|1.61|
 |PP-MobileSeg-Tiny|MobileSegNet-T|36.70（**+1.7**）|215.3（**-48.2%**）|1.44(**-10.6%**)|
 |TopFormer-Base|TopTransformer-T|38.28|480.6|5.13|
-|SeaFormer-Base**|SeaFormer-B|40.0|465.4|8.64|
-|PP-MobileSeg-Base|MobileSegNet-B|41.57(**+1.57**)|265.5(**-42.3%**)|5.62(**-34.9%**)|
+|SeaFormer-Base**|SeaFormer-B|40.07|465.4|8.64|
+|PP-MobileSeg-Base|MobileSegNet-B|41.57(**+1.5**)|265.5(**-42.3%**)|5.62(**-34.9%**)|
 
 \* The latency is test with the final argmax operator on Snapdragon 855.
 
@@ -90,7 +90,7 @@ python3  -m paddle.distributed.launch tools/train.py \
 With the trained model on hand, you can verify the model's accuracy through evaluation. Details about evaluation are under [evaluation guide](../../docs/evaluation/evaluate.md).
 
 ```bash
-python tools/val.py --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
+python  -m paddle.distributed.launch tools/val.py --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
        --model_path output/pp_mobileseg_base/best_model/model.pdparams \
        # the configs below this line is augmentation during evaluation which is not used in our reported result.
        --aug_eval \  

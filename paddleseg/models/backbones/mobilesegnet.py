@@ -23,7 +23,7 @@ from paddle import regularizer
 from paddleseg.cvlibs import manager
 from paddleseg import utils
 from paddleseg.models.backbones.transformer_utils import DropPath
-from paddleseg.models.backbones.mobilenetv3 import _make_divisible, _create_act, ResidualUnit
+from paddleseg.models.backbones.mobilenetv3 import _make_divisible, _create_act, Hardsigmoid
 from paddleseg.models.layers import layer_libs
 
 
@@ -46,10 +46,8 @@ class ConvBNAct(nn.Layer):
                  groups=1,
                  norm=nn.BatchNorm2D,
                  act=None,
-                 bias_attr=False,
-                 lr_mult=1.0):
+                 bias_attr=False):
         super(ConvBNAct, self).__init__()
-        param_attr = paddle.ParamAttr(learning_rate=lr_mult)
         self.conv = nn.Conv2D(
             in_channels=in_channels,
             out_channels=out_channels,
@@ -57,10 +55,9 @@ class ConvBNAct(nn.Layer):
             stride=stride,
             padding=padding,
             groups=groups,
-            weight_attr=param_attr,
-            bias_attr=param_attr if bias_attr else False)
+            bias_attr=None if bias_attr else False)
         self.act = act() if act is not None else nn.Identity()
-        self.bn = norm(out_channels, weight_attr=param_attr, bias_attr=param_attr) \
+        self.bn = norm(out_channels, bias_attr=None) \
             if norm is not None else nn.Identity()
 
     def forward(self, x):
@@ -68,6 +65,38 @@ class ConvBNAct(nn.Layer):
         x = self.bn(x)
         x = self.act(x)
         return x
+
+
+class Conv2DBN(nn.Layer):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 ks=1,
+                 stride=1,
+                 pad=0,
+                 dilation=1,
+                 groups=1,
+                 bn_weight_init=1):
+        super().__init__()
+        self.c = nn.Conv2D(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=ks,
+            stride=stride,
+            padding=pad,
+            dilation=dilation,
+            groups=groups,
+            bias_attr=False)
+        bn_weight_attr = paddle.ParamAttr(
+            initializer=nn.initializer.Constant(bn_weight_init))
+        bn_bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(0))
+        self.bn = nn.BatchNorm2D(
+            out_channels, weight_attr=bn_weight_attr, bias_attr=bn_bias_attr)
+
+    def forward(self, inputs):
+        out = self.c(inputs)
+        out = self.bn(out)
+        return out
 
 
 class ConvBNLayer(nn.Layer):
@@ -106,6 +135,90 @@ class ConvBNLayer(nn.Layer):
         if self.if_act:
             x = self.act(x)
         return x
+
+
+class ResidualUnit(nn.Layer):
+    def __init__(self,
+                 in_c,
+                 mid_c,
+                 out_c,
+                 filter_size,
+                 stride,
+                 use_se,
+                 act=None,
+                 dilation=1):
+        super().__init__()
+        self.if_shortcut = stride == 1 and in_c == out_c
+        self.if_se = use_se
+
+        self.expand_conv = ConvBNLayer(
+            in_c=in_c,
+            out_c=mid_c,
+            filter_size=1,
+            stride=1,
+            padding=0,
+            if_act=True,
+            act=act)
+        self.bottleneck_conv = ConvBNLayer(
+            in_c=mid_c,
+            out_c=mid_c,
+            filter_size=filter_size,
+            stride=stride,
+            padding=int((filter_size - 1) // 2) * dilation,
+            num_groups=mid_c,
+            if_act=True,
+            act=act,
+            dilation=dilation)
+        if self.if_se:
+            self.mid_se = SEModule(mid_c)
+        self.linear_conv = ConvBNLayer(
+            in_c=mid_c,
+            out_c=out_c,
+            filter_size=1,
+            stride=1,
+            padding=0,
+            if_act=False,
+            act=None)
+
+    def forward(self, x):
+        identity = x
+        x = self.expand_conv(x)
+        x = self.bottleneck_conv(x)
+        if self.if_se:
+            x = self.mid_se(x)
+        x = self.linear_conv(x)
+        if self.if_shortcut:
+            x = paddle.add(identity, x)
+        return x
+
+
+class SEModule(nn.Layer):
+    def __init__(self, channel, reduction=4):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2D(1)
+        self.conv1 = nn.Conv2D(
+            in_channels=channel,
+            out_channels=channel // reduction,
+            kernel_size=1,
+            stride=1,
+            padding=0)
+        self.relu = nn.ReLU()
+        self.conv2 = nn.Conv2D(
+            in_channels=channel // reduction,
+            out_channels=channel,
+            kernel_size=1,
+            stride=1,
+            padding=0)
+        self.hardsigmoid = Hardsigmoid(slope=0.2, offset=0.5)
+
+    def forward(self, x):
+        identity = x
+        x = self.avg_pool(x)
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.conv2(x)
+        x = self.hardsigmoid(x)
+        return paddle.multiply(x=identity, y=x)
 
 
 class StackedMV3Block(nn.Layer):
@@ -187,7 +300,6 @@ class Sea_Attention(nn.Layer):
                  num_heads,
                  attn_ratio=4,
                  activation=None,
-                 lr_mult=1.0,
                  stride_attention=False):
         super().__init__()
         self.num_heads = num_heads
@@ -198,30 +310,9 @@ class Sea_Attention(nn.Layer):
         self.dh = int(attn_ratio * key_dim) * num_heads
         self.attn_ratio = attn_ratio
 
-        self.to_q = layer_libs.ConvBN(
-            dim,
-            nh_kd,
-            1,
-            padding=0,
-            lr_mult=lr_mult,
-            conv_bias_attr=False,
-            init_bn=True)
-        self.to_k = layer_libs.ConvBN(
-            dim,
-            nh_kd,
-            1,
-            padding=0,
-            lr_mult=lr_mult,
-            conv_bias_attr=False,
-            init_bn=True)
-        self.to_v = layer_libs.ConvBN(
-            dim,
-            self.dh,
-            1,
-            padding=0,
-            lr_mult=lr_mult,
-            conv_bias_attr=False,
-            init_bn=True)
+        self.to_q = Conv2DBN(dim, nh_kd, 1)
+        self.to_k = Conv2DBN(dim, nh_kd, 1)
+        self.to_v = Conv2DBN(dim, self.dh, 1)
 
         self.stride_attention = stride_attention
 
@@ -232,59 +323,29 @@ class Sea_Attention(nn.Layer):
                 nn.BatchNorm2D(dim), )
 
         self.proj = paddle.nn.Sequential(
-            activation(),
-            layer_libs.ConvBN(
-                self.dh,
-                dim,
-                padding=0,
-                bn_weight_init=0,
-                lr_mult=lr_mult,
-                conv_bias_attr=False,
-                init_bn=True))
+            activation(), Conv2DBN(
+                self.dh, dim, bn_weight_init=0))
         self.proj_encode_row = paddle.nn.Sequential(
-            activation(),
-            layer_libs.ConvBN(
-                self.dh,
-                self.dh,
-                padding=0,
-                bn_weight_init=0,
-                lr_mult=lr_mult,
-                conv_bias_attr=False,
-                init_bn=True))
+            activation(), Conv2DBN(
+                self.dh, self.dh, bn_weight_init=0))
         self.pos_emb_rowq = SqueezeAxialPositionalEmbedding(nh_kd, 16)
         self.pos_emb_rowk = SqueezeAxialPositionalEmbedding(nh_kd, 16)
         self.proj_encode_column = paddle.nn.Sequential(
-            activation(),
-            layer_libs.ConvBN(
-                self.dh,
-                self.dh,
-                padding=0,
-                bn_weight_init=0,
-                lr_mult=lr_mult,
-                conv_bias_attr=False,
-                init_bn=True))
+            activation(), Conv2DBN(
+                self.dh, self.dh, bn_weight_init=0))
         self.pos_emb_columnq = SqueezeAxialPositionalEmbedding(nh_kd, 16)
         self.pos_emb_columnk = SqueezeAxialPositionalEmbedding(nh_kd, 16)
 
-        self.dwconv = layer_libs.ConvBN(
+        self.dwconv = Conv2DBN(
             2 * self.dh,
             2 * self.dh,
-            kernel_size=3,
-            padding=1,
-            groups=2 * self.dh,
-            lr_mult=lr_mult,
-            conv_bias_attr=False,
-            init_bn=True)
-
+            ks=3,
+            stride=1,
+            pad=1,
+            dilation=1,
+            groups=2 * self.dh)
         self.act = activation()
-        self.pwconv = layer_libs.ConvBN(
-            2 * self.dh,
-            dim,
-            kernel_size=1,
-            lr_mult=lr_mult,
-            padding=0,
-            conv_bias_attr=False,
-            init_bn=True)
+        self.pwconv = Conv2DBN(2 * self.dh, dim, ks=1)
         self.sigmoid = HSigmoid()
 
     def forward(self, x):
@@ -348,36 +409,15 @@ class MLP(nn.Layer):
                  hidden_features=None,
                  out_features=None,
                  act_layer=nn.ReLU,
-                 drop=0.,
-                 lr_mult=1.0):
+                 drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        self.fc1 = layer_libs.ConvBN(
-            in_features,
-            hidden_features,
-            lr_mult=lr_mult,
-            padding=0,
-            conv_bias_attr=False,
-            init_bn=True)
-        param_attr = paddle.ParamAttr(learning_rate=lr_mult)
+        self.fc1 = Conv2DBN(in_features, hidden_features)
         self.dwconv = nn.Conv2D(
-            hidden_features,
-            hidden_features,
-            3,
-            1,
-            1,
-            groups=hidden_features,
-            weight_attr=param_attr,
-            bias_attr=param_attr)
+            hidden_features, hidden_features, 3, 1, 1, groups=hidden_features)
         self.act = act_layer()
-        self.fc2 = layer_libs.ConvBN(
-            hidden_features,
-            out_features,
-            lr_mult=lr_mult,
-            padding=0,
-            conv_bias_attr=False,
-            init_bn=True)
+        self.fc2 = Conv2DBN(hidden_features, out_features)
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
@@ -400,7 +440,6 @@ class Block(nn.Layer):
                  drop=0.,
                  drop_path=0.,
                  act_layer=nn.ReLU,
-                 lr_mult=1.0,
                  stride_attention=None):
         super().__init__()
         self.dim = dim
@@ -413,7 +452,6 @@ class Block(nn.Layer):
             num_heads=num_heads,
             attn_ratio=attn_ratio,
             activation=act_layer,
-            lr_mult=lr_mult,
             stride_attention=stride_attention)
 
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity(
@@ -422,8 +460,7 @@ class Block(nn.Layer):
         self.mlp = MLP(in_features=dim,
                        hidden_features=mlp_hidden_dim,
                        act_layer=act_layer,
-                       drop=drop,
-                       lr_mult=lr_mult)
+                       drop=drop)
 
     def forward(self, x1):
         # 多头注意力
@@ -445,7 +482,6 @@ class BasicLayer(nn.Layer):
                  drop=0.,
                  attn_drop=0.,
                  drop_path=0.,
-                 lr_mult=1.0,
                  act_layer=None,
                  stride_attention=None):
         super().__init__()
@@ -464,7 +500,6 @@ class BasicLayer(nn.Layer):
                     drop_path=drop_path[i]
                     if isinstance(drop_path, list) else drop_path,
                     act_layer=act_layer,
-                    lr_mult=lr_mult,
                     stride_attention=stride_attention))
 
     def forward(self, x):
@@ -474,13 +509,10 @@ class BasicLayer(nn.Layer):
 
 
 class Fusion_block(nn.Layer):
-    def __init__(self, inp, oup, embed_dim, activations=None,
-                 lr_mult=1.0) -> None:
+    def __init__(self, inp, oup, embed_dim, activations=None) -> None:
         super(Fusion_block, self).__init__()
-        self.local_embedding = ConvBNAct(
-            inp, embed_dim, kernel_size=1, lr_mult=lr_mult)
-        self.global_act = ConvBNAct(
-            oup, embed_dim, kernel_size=1, lr_mult=lr_mult)
+        self.local_embedding = ConvBNAct(inp, embed_dim, kernel_size=1)
+        self.global_act = ConvBNAct(oup, embed_dim, kernel_size=1)
         self.act = nn.Sigmoid()
 
     def forward(self, x_l, x_g):
@@ -508,8 +540,7 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
     def __init__(self,
                  in_channels=(64, 128, 256, 384),
                  activations=None,
-                 out_channels=160,
-                 lr_mult=1.0):
+                 out_channels=160):
         super(InjectionMultiSumallmultiallsum, self).__init__()
         self.embedding_list = nn.LayerList()
         self.act_embedding_list = nn.LayerList()
@@ -518,16 +549,10 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
         for i in range(len(in_channels)):
             self.embedding_list.append(
                 ConvBNAct(
-                    in_channels[i],
-                    out_channels,
-                    kernel_size=1,
-                    lr_mult=lr_mult))
+                    in_channels[i], out_channels, kernel_size=1))
             self.act_embedding_list.append(
                 ConvBNAct(
-                    in_channels[i],
-                    out_channels,
-                    kernel_size=1,
-                    lr_mult=lr_mult))
+                    in_channels[i], out_channels, kernel_size=1))
             self.act_list.append(nn.Sigmoid())
 
     def forward(self, inputs):  # x_x8, x_x16, x_x32, x_x64 
@@ -560,8 +585,7 @@ class InjectionMultiSumallmultiallsumSimpx8(nn.Layer):
     def __init__(self,
                  in_channels=(64, 128, 256, 384),
                  activations=None,
-                 out_channels=160,
-                 lr_mult=1.0):
+                 out_channels=160):
         super(InjectionMultiSumallmultiallsumSimpx8, self).__init__()
         self.embedding_list = nn.LayerList()
         self.act_embedding_list = nn.LayerList()
@@ -571,17 +595,11 @@ class InjectionMultiSumallmultiallsumSimpx8(nn.Layer):
             if i != 1:
                 self.embedding_list.append(
                     ConvBNAct(
-                        in_channels[i],
-                        out_channels,
-                        kernel_size=1,
-                        lr_mult=lr_mult))
+                        in_channels[i], out_channels, kernel_size=1))
             if i != 0:
                 self.act_embedding_list.append(
                     ConvBNAct(
-                        in_channels[i],
-                        out_channels,
-                        kernel_size=1,
-                        lr_mult=lr_mult))
+                        in_channels[i], out_channels, kernel_size=1))
                 self.act_list.append(nn.Sigmoid())
 
     def forward(self, inputs):
@@ -618,7 +636,6 @@ class MobileSegNet(nn.Layer):
                  mlp_ratios=[2, 4],
                  drop_path_rate=0.,
                  act_layer=nn.ReLU6,
-                 lr_mult=1.0,
                  in_channels=3,
                  inj_type='AAM',
                  pretrained=None,
@@ -636,8 +653,7 @@ class MobileSegNet(nn.Layer):
             smb = StackedMV3Block(
                 cfgs=cfgs[i],
                 stem=True if i == 0 else False,
-                inp_channel=channels[i],
-                lr_mult=lr_mult)
+                inp_channel=channels[i])
             setattr(self, f'smb{i+1}', smb)
 
         for i in range(len(depths)):
@@ -655,7 +671,6 @@ class MobileSegNet(nn.Layer):
                 attn_drop=0.0,
                 drop_path=dpr,
                 act_layer=act_layer,
-                lr_mult=lr_mult,
                 stride_attention=stride_attention)
             setattr(self, f"trans{i+1}", trans)
 
@@ -664,23 +679,20 @@ class MobileSegNet(nn.Layer):
             self.inj_module = InjectionMultiSumallmultiallsum(
                 in_channels=out_feat_chs,
                 activations=act_layer,
-                out_channels=out_channels,
-                lr_mult=lr_mult)
+                out_channels=out_channels)
             self.injection_out_channels = [self.inj_module.out_channels] * 3
         elif self.inj_type == "AAMSx8":
             self.inj_module = InjectionMultiSumallmultiallsumSimpx8(
                 in_channels=out_feat_chs,
                 activations=act_layer,
-                out_channels=out_channels,
-                lr_mult=lr_mult)
+                out_channels=out_channels)
             self.injection_out_channels = [self.inj_module.out_channels] * 3
         elif self.inj_type == 'origin':
             for i in range(len(dims)):
                 fuse = Fusion_block(
                     out_feat_chs[0] if i == 0 else dims[i - 1],
                     out_feat_chs[i + 1],
-                    embed_dim=dims[i],
-                    lr_mult=lr_mult)
+                    embed_dim=dims[i])
                 setattr(self, f"fuse{i + 1}", fuse)
             self.injection_out_channels = [dims[i]] * 3
         else:

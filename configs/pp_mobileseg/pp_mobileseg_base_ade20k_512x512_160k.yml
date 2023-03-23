@@ -65,7 +65,6 @@ model:
   num_classes: 150
   backbone:
     type: MobileSeg_Base
-    lr_mult: 1.0
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg/pretrain/model.pdparams
     out_channels: 256
     out_feat_chs: [64, 128, 192] 
