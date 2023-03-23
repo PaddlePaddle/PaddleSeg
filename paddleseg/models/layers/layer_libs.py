@@ -154,85 +154,21 @@ class ConvBNAct(nn.Layer):
         return x
 
 
-class Conv2DBN(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 ks=1,
-                 stride=1,
-                 pad=0,
-                 dilation=1,
-                 groups=1,
-                 bn_weight_init=1,
-                 lr_mult=1.0):
-        super().__init__()
-        conv_weight_attr = paddle.ParamAttr(learning_rate=lr_mult)
-        self.c = nn.Conv2D(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=ks,
-            stride=stride,
-            padding=pad,
-            dilation=dilation,
-            groups=groups,
-            weight_attr=conv_weight_attr,
-            bias_attr=False)
-        bn_weight_attr = paddle.ParamAttr(
-            initializer=nn.initializer.Constant(bn_weight_init),
-            learning_rate=lr_mult)
-        bn_bias_attr = paddle.ParamAttr(
-            initializer=nn.initializer.Constant(0), learning_rate=lr_mult)
-        self.bn = nn.BatchNorm2D(
-            out_channels, weight_attr=bn_weight_attr, bias_attr=bn_bias_attr)
-
-    def forward(self, inputs):
-        out = self.c(inputs)
-        out = self.bn(out)
-        return out
-
-
 class ConvBN(nn.Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 kernel_size=1,
+                 kernel_size,
                  padding='same',
-                 lr_mult=1.0,
-                 bn_weight_init=1,
-                 bn_bias_init=0,
-                 init_bn=False,
-                 conv_bias_attr=None,
                  **kwargs):
         super().__init__()
-        conv_weight_attr = paddle.ParamAttr(learning_rate=lr_mult)
         self._conv = nn.Conv2D(
-            in_channels,
-            out_channels,
-            kernel_size,
-            padding=padding,
-            weight_attr=conv_weight_attr,
-            bias_attr=conv_bias_attr,
-            **kwargs)
+            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
         if 'data_format' in kwargs:
             data_format = kwargs['data_format']
         else:
             data_format = 'NCHW'
-
-        if init_bn:
-            bn_weight_attr = paddle.ParamAttr(
-                initializer=nn.initializer.Constant(bn_weight_init),
-                learning_rate=lr_mult)
-            bn_bias_attr = paddle.ParamAttr(
-                initializer=nn.initializer.Constant(bn_bias_init),
-                learning_rate=lr_mult)
-
-            self._batch_norm = SyncBatchNorm(
-                out_channels,
-                weigth_attr=bn_weight_init,
-                bias_attr=bn_bias_attr)
-        else:
-            self._batch_norm = SyncBatchNorm(
-                out_channels, data_format=data_format)
+        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
 
     def forward(self, x):
         x = self._conv(x)
