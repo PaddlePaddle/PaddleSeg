@@ -5,6 +5,7 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
+from paddle.fluid.dygraph.base import in_declarative_mode
 import numpy as np
 
 from paddleseg.cvlibs import manager
@@ -84,10 +85,10 @@ class SegFormer(nn.Layer):
         c1, c2, c3, c4 = feats
 
         ############## MLP decoder on C1-C4 ###########
-        c1_shape = paddle.shape(c1)
-        c2_shape = paddle.shape(c2)
-        c3_shape = paddle.shape(c3)
-        c4_shape = paddle.shape(c4)
+        c1_shape = c1.shape if in_declarative_mode() else paddle.shape(c1)
+        c2_shape = c2.shape if in_declarative_mode() else paddle.shape(c2)
+        c3_shape = c3.shape if in_declarative_mode() else paddle.shape(c3)
+        c4_shape = c4.shape if in_declarative_mode() else paddle.shape(c4)
 
         _c4 = self.linear_c4(c4).transpose([0, 2, 1]).reshape(
             [0, 0, c4_shape[2], c4_shape[3]])
@@ -123,7 +124,7 @@ class SegFormer(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                size=paddle.shape(x)[2:],
+                size=x.shape[2:] if in_declarative_mode() else paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
         ]
