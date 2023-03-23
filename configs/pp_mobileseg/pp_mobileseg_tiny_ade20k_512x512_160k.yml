@@ -1,6 +1,6 @@
 _base_: '../_base_/ade20k.yml'
 
-batch_size: 16  # total batch size is 16
+batch_size: 16  # total batch size is 32
 iters: 80000
 
 train_dataset:
@@ -57,18 +57,18 @@ loss:
         - type: CrossEntropyLoss
         - type: LovaszSoftmaxLoss
       coef: [0.8, 0.2]
-  coef: [1]
-
+  coef: [1,]
 
 model:
   type: PPMobileSeg
   num_classes: 150
   backbone:
-    type: MobileSeg_Base
+    type: MobileSeg_Tiny
     lr_mult: 1.0
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg/pretrain/model.pdparams
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/pretrain/model.pdparams
     out_channels: 256
-    out_feat_chs: [64, 128, 192] 
+    out_feat_chs: [32, 64, 128]
     stride_attention: True
   head_use_dw: True
   upsample: intepolate
+
