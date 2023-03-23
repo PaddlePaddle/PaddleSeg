@@ -27,6 +27,192 @@ from paddleseg.models.backbones.mobilenetv3 import _make_divisible, _create_act,
 from paddleseg.models.layers import layer_libs
 
 
+class MobileSegNet(nn.Layer):
+    def __init__(self,
+                 cfgs,
+                 channels,
+                 embed_dims,
+                 key_dims,
+                 depths=[2, 2],
+                 num_heads=8,
+                 attn_ratios=2,
+                 mlp_ratios=[2, 4],
+                 drop_path_rate=0.,
+                 act_layer=nn.ReLU6,
+                 in_channels=3,
+                 inj_type='AAM',
+                 pretrained=None,
+                 out_channels=160,
+                 dims=(128, 160),
+                 out_feat_chs=None,
+                 stride_attention=False):
+        super().__init__()
+        self.channels = channels
+        self.depths = depths
+        self.cfgs = cfgs
+        self.dims = dims
+
+        for i in range(len(cfgs)):
+            smb = StackedMV3Block(
+                cfgs=cfgs[i],
+                stem=True if i == 0 else False,
+                inp_channel=channels[i])
+            setattr(self, f'smb{i+1}', smb)
+
+        for i in range(len(depths)):
+            dpr = [
+                x.item() for x in paddle.linspace(0, drop_path_rate, depths[i])
+            ]
+            trans = BasicLayer(
+                block_num=depths[i],
+                embedding_dim=embed_dims[i],
+                key_dim=key_dims[i],
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratios[i],
+                attn_ratio=attn_ratios,
+                drop=0,
+                attn_drop=0.0,
+                drop_path=dpr,
+                act_layer=act_layer,
+                stride_attention=stride_attention)
+            setattr(self, f"trans{i+1}", trans)
+
+        self.inj_type = inj_type
+        if self.inj_type == "AAM":
+            self.inj_module = InjectionMultiSumallmultiallsum(
+                in_channels=out_feat_chs,
+                activations=act_layer,
+                out_channels=out_channels)
+            self.injection_out_channels = [self.inj_module.out_channels] * 3
+        elif self.inj_type == "AAMSx8":
+            self.inj_module = InjectionMultiSumallmultiallsumSimpx8(
+                in_channels=out_feat_chs,
+                activations=act_layer,
+                out_channels=out_channels)
+            self.injection_out_channels = [self.inj_module.out_channels] * 3
+        elif self.inj_type == 'origin':
+            for i in range(len(dims)):
+                fuse = Fusion_block(
+                    out_feat_chs[0] if i == 0 else dims[i - 1],
+                    out_feat_chs[i + 1],
+                    embed_dim=dims[i])
+                setattr(self, f"fuse{i + 1}", fuse)
+            self.injection_out_channels = [dims[i]] * 3
+        else:
+            raise NotImplementedError(self.inj_module + ' is not implemented')
+
+        self.pretrained = pretrained
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
+    def forward(self, x):
+        outputs = []
+        num_smb_stage = len(self.cfgs)
+        num_trans_stage = len(self.depths)
+
+        for i in range(num_smb_stage):
+            smb = getattr(self, f"smb{i + 1}")
+            x = smb(x)
+
+            # 1/8 shared feat
+            if i == 1:
+                outputs.append(x)
+            if num_trans_stage + i >= num_smb_stage:
+                trans = getattr(
+                    self, f"trans{i + num_trans_stage - num_smb_stage + 1}")
+                x = trans(x)
+                outputs.append(x)
+
+        if self.inj_type == "origin":
+            x_detail = outputs[0]
+            for i in range(len(self.dims)):
+                fuse = getattr(self, f'fuse{i+1}')
+
+                x_detail = fuse(x_detail, outputs[i + 1])
+            output = x_detail
+        else:
+            output = self.inj_module(outputs)
+
+        return output
+
+
+@manager.BACKBONES.add_component
+def MobileSeg_Base(**kwargs):
+    cfg1 = [
+        # k t c, s
+        [3, 16, 16, True, "relu", 1],
+        [3, 64, 32, False, "relu", 2],
+        [3, 96, 32, False, "relu", 1]
+    ]
+    cfg2 = [[5, 128, 64, True, "hardswish", 2],
+            [5, 240, 64, True, "hardswish", 1]]
+    cfg3 = [[5, 384, 128, True, "hardswish", 2],
+            [5, 384, 128, True, "hardswish", 1]]
+    cfg4 = [[5, 768, 192, True, "hardswish", 2],
+            [5, 768, 192, True, "hardswish", 1]]
+
+    channels = [16, 32, 64, 128, 192]
+    depths = [3, 3]
+    key_dims = [16, 24]
+    emb_dims = [128, 192]
+    num_heads = 8
+    drop_path_rate = 0.1
+
+    model = MobileSegNet(
+        cfgs=[cfg1, cfg2, cfg3, cfg4],
+        channels=channels,
+        embed_dims=emb_dims,
+        key_dims=key_dims,
+        depths=depths,
+        num_heads=num_heads,
+        drop_path_rate=drop_path_rate,
+        act_layer=nn.ReLU6,
+        inj_type='AAMSx8',
+        **kwargs)
+
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileSeg_Tiny(**kwargs):
+    cfg1 = [
+        # k t c, s
+        [3, 16, 16, True, "relu", 1],
+        [3, 64, 32, False, "relu", 2],
+        [3, 48, 24, False, "relu", 1]
+    ]
+    cfg2 = [[5, 96, 32, True, "hardswish", 2],
+            [5, 96, 32, True, "hardswish", 1]]
+    cfg3 = [[5, 160, 64, True, "hardswish", 2],
+            [5, 160, 64, True, "hardswish", 1]]
+    cfg4 = [[3, 384, 128, True, "hardswish", 2],
+            [3, 384, 128, True, "hardswish", 1]]
+
+    channels = [16, 24, 32, 64, 128]
+    depths = [2, 2]
+    key_dims = [16, 24]
+    emb_dims = [64, 128]
+    num_heads = 4
+    drop_path_rate = 0.1
+
+    model = MobileSegNet(
+        cfgs=[cfg1, cfg2, cfg3, cfg4],
+        channels=channels,
+        embed_dims=emb_dims,
+        key_dims=key_dims,
+        depths=depths,
+        num_heads=num_heads,
+        drop_path_rate=drop_path_rate,
+        act_layer=nn.ReLU6,
+        inj_type='AAM',
+        **kwargs)
+
+    return model
+
+
 class HSigmoid(nn.Layer):
     def __init__(self):
         super().__init__()
@@ -622,189 +808,3 @@ class InjectionMultiSumallmultiallsumSimpx8(nn.Layer):
         res = low_feat2_act * high_feat_act * low_feat1 + high_feat
 
         return res
-
-
-class MobileSegNet(nn.Layer):
-    def __init__(self,
-                 cfgs,
-                 channels,
-                 embed_dims,
-                 key_dims,
-                 depths=[2, 2],
-                 num_heads=8,
-                 attn_ratios=2,
-                 mlp_ratios=[2, 4],
-                 drop_path_rate=0.,
-                 act_layer=nn.ReLU6,
-                 in_channels=3,
-                 inj_type='AAM',
-                 pretrained=None,
-                 out_channels=160,
-                 dims=(128, 160),
-                 out_feat_chs=None,
-                 stride_attention=False):
-        super().__init__()
-        self.channels = channels
-        self.depths = depths
-        self.cfgs = cfgs
-        self.dims = dims
-
-        for i in range(len(cfgs)):
-            smb = StackedMV3Block(
-                cfgs=cfgs[i],
-                stem=True if i == 0 else False,
-                inp_channel=channels[i])
-            setattr(self, f'smb{i+1}', smb)
-
-        for i in range(len(depths)):
-            dpr = [
-                x.item() for x in paddle.linspace(0, drop_path_rate, depths[i])
-            ]
-            trans = BasicLayer(
-                block_num=depths[i],
-                embedding_dim=embed_dims[i],
-                key_dim=key_dims[i],
-                num_heads=num_heads,
-                mlp_ratio=mlp_ratios[i],
-                attn_ratio=attn_ratios,
-                drop=0,
-                attn_drop=0.0,
-                drop_path=dpr,
-                act_layer=act_layer,
-                stride_attention=stride_attention)
-            setattr(self, f"trans{i+1}", trans)
-
-        self.inj_type = inj_type
-        if self.inj_type == "AAM":
-            self.inj_module = InjectionMultiSumallmultiallsum(
-                in_channels=out_feat_chs,
-                activations=act_layer,
-                out_channels=out_channels)
-            self.injection_out_channels = [self.inj_module.out_channels] * 3
-        elif self.inj_type == "AAMSx8":
-            self.inj_module = InjectionMultiSumallmultiallsumSimpx8(
-                in_channels=out_feat_chs,
-                activations=act_layer,
-                out_channels=out_channels)
-            self.injection_out_channels = [self.inj_module.out_channels] * 3
-        elif self.inj_type == 'origin':
-            for i in range(len(dims)):
-                fuse = Fusion_block(
-                    out_feat_chs[0] if i == 0 else dims[i - 1],
-                    out_feat_chs[i + 1],
-                    embed_dim=dims[i])
-                setattr(self, f"fuse{i + 1}", fuse)
-            self.injection_out_channels = [dims[i]] * 3
-        else:
-            raise NotImplementedError(self.inj_module + ' is not implemented')
-
-        self.pretrained = pretrained
-        self.init_weight()
-
-    def init_weight(self):
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
-
-    def forward(self, x):
-        outputs = []
-        num_smb_stage = len(self.cfgs)
-        num_trans_stage = len(self.depths)
-
-        for i in range(num_smb_stage):
-            smb = getattr(self, f"smb{i + 1}")
-            x = smb(x)
-
-            # 1/8 shared feat
-            if i == 1:
-                outputs.append(x)
-            if num_trans_stage + i >= num_smb_stage:
-                trans = getattr(
-                    self, f"trans{i + num_trans_stage - num_smb_stage + 1}")
-                x = trans(x)
-                outputs.append(x)
-
-        if self.inj_type == "origin":
-            x_detail = outputs[0]
-            for i in range(len(self.dims)):
-                fuse = getattr(self, f'fuse{i+1}')
-
-                x_detail = fuse(x_detail, outputs[i + 1])
-            output = x_detail
-        else:
-            output = self.inj_module(outputs)
-
-        return output
-
-
-@manager.BACKBONES.add_component
-def MobileSeg_Base(**kwargs):
-    cfg1 = [
-        # k t c, s
-        [3, 16, 16, True, "relu", 1],
-        [3, 64, 32, False, "relu", 2],
-        [3, 96, 32, False, "relu", 1]
-    ]
-    cfg2 = [[5, 128, 64, True, "hardswish", 2],
-            [5, 240, 64, True, "hardswish", 1]]
-    cfg3 = [[5, 384, 128, True, "hardswish", 2],
-            [5, 384, 128, True, "hardswish", 1]]
-    cfg4 = [[5, 768, 192, True, "hardswish", 2],
-            [5, 768, 192, True, "hardswish", 1]]
-
-    channels = [16, 32, 64, 128, 192]
-    depths = [3, 3]
-    key_dims = [16, 24]
-    emb_dims = [128, 192]
-    num_heads = 8
-    drop_path_rate = 0.1
-
-    model = MobileSegNet(
-        cfgs=[cfg1, cfg2, cfg3, cfg4],
-        channels=channels,
-        embed_dims=emb_dims,
-        key_dims=key_dims,
-        depths=depths,
-        num_heads=num_heads,
-        drop_path_rate=drop_path_rate,
-        act_layer=nn.ReLU6,
-        inj_type='AAMSx8',
-        **kwargs)
-
-    return model
-
-
-@manager.BACKBONES.add_component
-def MobileSeg_Tiny(**kwargs):
-    cfg1 = [
-        # k t c, s
-        [3, 16, 16, True, "relu", 1],
-        [3, 64, 32, False, "relu", 2],
-        [3, 48, 24, False, "relu", 1]
-    ]
-    cfg2 = [[5, 96, 32, True, "hardswish", 2],
-            [5, 96, 32, True, "hardswish", 1]]
-    cfg3 = [[5, 160, 64, True, "hardswish", 2],
-            [5, 160, 64, True, "hardswish", 1]]
-    cfg4 = [[3, 384, 128, True, "hardswish", 2],
-            [3, 384, 128, True, "hardswish", 1]]
-
-    channels = [16, 24, 32, 64, 128]
-    depths = [2, 2]
-    key_dims = [16, 24]
-    emb_dims = [64, 128]
-    num_heads = 4
-    drop_path_rate = 0.1
-
-    model = MobileSegNet(
-        cfgs=[cfg1, cfg2, cfg3, cfg4],
-        channels=channels,
-        embed_dims=emb_dims,
-        key_dims=key_dims,
-        depths=depths,
-        num_heads=num_heads,
-        drop_path_rate=drop_path_rate,
-        act_layer=nn.ReLU6,
-        inj_type='AAM',
-        **kwargs)
-
-    return model
