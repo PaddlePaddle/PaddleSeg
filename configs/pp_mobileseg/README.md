@@ -53,7 +53,6 @@ Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy
 |SeaFormer-Base**|SeaFormer-B|40.0|465.4|8.64|
 |PP-MobileSeg-Base|MobileSegNet-B|41.57(**+1.57**)|265.5(**-42.3%**)|5.62(**-34.9%**)|
 
-
 \* The latency is test with the final argmax operator on Snapdragon 855.
 
 \** The accuracy is reported based on self-trained reproduced result.
@@ -151,18 +150,18 @@ The test result on our PP-MobileSeg-Base is as following:
 -----------------Model=MV3_4stage_AAMSx8_valid_0321 Threads=1-------------------------
 Delete previous optimized model: /data/local/tmp/seg_benchmark/models_0321/MV3_4stage_AAMSx8_valid_0321/opt.nb
 
-======= Opt Info =======
+---------- Opt Info ----------
 Load paddle model from /data/local/tmp/seg_benchmark/models_0321/MV3_4stage_AAMSx8_valid_0321/model.pdmodel and /data/local/tmp/seg_benchmark/models_0321/MV3_4stage_AAMSx8_valid_0321/model.pdiparams
 Save optimized model to /data/local/tmp/seg_benchmark/models_0321/MV3_4stage_AAMSx8_valid_0321/opt.nb
 
-======= Device Info =======
+---------- Device Info ----------
 Brand: Xiaomi
 Device: cepheus
 Model: MI 9
 Android Version: 9
 Android API Level: 28
 
-======= Model Info =======
+---------- Model Info ----------
 optimized_model_file: /data/local/tmp/seg_benchmark/models_0321/MV3_4stage_AAMSx8_valid_0321/opt.nb
 input_data_path: /data/local/tmp/seg_benchmark/image1_norm.txt
 input_shape: 1,3,512,512
@@ -173,7 +172,7 @@ output tensor 0 elem num: 262144
 output tensor 0 mean value: 1.18468e-44
 output tensor 0 standard deviation: 2.52949e-44
 
-======= Runtime Info =======
+---------- Runtime Info ----------
 benchmark_bin version: e79b4b6
 threads: 1
 power_mode: 0
@@ -181,11 +180,11 @@ warmup: 20
 repeats: 50
 result_path:
 
-======= Backend Info =======
+---------- Backend Info ----------
 backend: arm
 cpu precision: fp32
 
-======= Perf Info =======
+---------- Perf Info ----------
 Time(unit: ms):
 init  = 33.071  
 first = 314.619  
