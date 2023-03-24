@@ -13,10 +13,10 @@ QualityInspect目前发布V0.5预览版本，主要特性包括：
 * 丰富的视觉模型库：集成飞桨视觉套件的成熟模型库，覆盖图像分割、目标检测、场景分类等任务。
 * 可快速上手的案例：基于公开数据的解决方案的方法评测，帮助用户使用、分析和选择pipeline。
 * 此外，还包括针对工业质检领域的特色支持：
-* * 数据层面：支持数据格式转化工具，快速完成检测，分割/RoI分割任务数据格式转化和数据可视化和类别统计等工具。
-* * 后处理模块：针对得分，长度，面积等可配置的参数，降低过杀。
-* * 评测分析工具：工业项目指标，badcase分析，后处理参数调优。
-* * 冷启动：集成无监督异常检测算法。
+   * 数据层面：支持数据格式转化工具，快速完成检测，分割/RoI分割任务数据格式转化和数据可视化和类别统计等工具。
+   * 后处理模块：针对得分，长度，面积等可配置的参数，降低过杀。
+   * 评测分析工具：工业项目指标，badcase分析，后处理参数调优。
+   * 冷启动：集成无监督异常检测算法。
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043516-eed25535-10e8-4853-8601-6bcf7ff58197.png" width="25"/> 最新消息
 
@@ -26,26 +26,14 @@ QualityInspect目前发布V0.5预览版本，主要特性包括：
   * 提供工业质检场景使用的数据通用工具脚本。
   * 支持全流程工业指标评测，后处理调优。
 
-## <img src="../../docs/images/chat.png" width="25"/> 技术交流
-* 如果大家有使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
-* **欢迎加入PaddleSeg的微信用户群👫**（扫码填写简单问卷即可入群），大家可以**领取30G重磅学习大礼包🎁**，也可以和值班同学、各界大佬直接进行交流。
-  * 🔥 获取深度学习视频教程、图像分割论文合集
-  * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
-  * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
-  * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
-  * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
-<div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
-</div>
-
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043857-bfbdaf8b-d2dc-4fff-81c7-e0aac50851f9.png" width="25"/> 快速开始
 
 ### 1. [安装说明](./docs/install.md)
 ### 2. 数据准备
-   * [准备数据集](./docs/data/prepare_data.md)
-   * [数据集格式转换工具](./docs/data/conver_tools.md)
-   * [数据分析工具](./docs/data/parse_tools.md)
+   * [准备数据集](./docs/tools_data/prepare_data.md)
+   * [数据集格式转换工具](./docs/tools_data/conver_tools.md)
+   * [数据分析工具](./docs/tools_data/parse_tools.md)
    * [EISeg 数据标注](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.7/EISeg)
 
 ### 3. 训练/推理
@@ -61,12 +49,24 @@ QualityInspect目前发布V0.5预览版本，主要特性包括：
    * [badcase可视化分析](./docs/end2end/eval.md)
    * [后处理参数调优](./docs/end2end/eval.md)
 
+## <img src="../../docs/images/chat.png" width="25"/> 技术交流
+* 如果大家有使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
+* **欢迎加入PaddleSeg的微信用户群👫**（扫码填写简单问卷即可入群），大家可以**领取30G重磅学习大礼包🎁**，也可以和值班同学、各界大佬直接进行交流。
+  * 🔥 获取深度学习视频教程、图像分割论文合集
+  * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
+  * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
+  * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
+  * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+</div>
+
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190046674-53e22678-7345-4bf1-ac0c-0cc99718b3dd.png" width="25"/> TODO
 未来，我们想在这几个方面来发展 QualityInspector，欢迎加入我们的开发者小组。
 - [✔️] 图像配准对齐。
 - [✔️] 小目标，长尾分布，少样本等问题的研究。
-- [ ] ...
+- [✔️] ...
 
 
 ## <img src="https://user-images.githubusercontent.com/34859558/188446853-6e32659e-8939-4e65-9282-68909a38edd7.png" width="25"/> License
