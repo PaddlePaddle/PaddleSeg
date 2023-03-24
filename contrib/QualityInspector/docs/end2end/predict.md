@@ -1,6 +1,6 @@
 # 全流程预测
 
-除了分析模型的检测AP,分割mIoU指标，质检需要进行全流程的零件过杀/漏检分析，通过全流程预测能够得到零件的NG/OK（缺陷或正常）信息，以及预测框/分割的实例级别NG/OK（缺陷或正常）信息, 保存完整的预测结果，并对齐进行可视化，从而进行分析和指标优化。
+除了分析模型的检测AP, 分割mIoU指标，质检需要进行全流程的零件过杀/漏检分析，通过全流程预测能够得到零件的NG/OK（缺陷或正常）信息，以及预测框/分割的实例级别NG/OK（缺陷或正常）信息, 保存完整的预测结果，并对齐进行可视化，从而进行分析和指标优化。
 
 ## 预测用法
 使用`tools/end2end/predict.py`脚本，执行如下命令，完成预测：
@@ -81,6 +81,5 @@ Pipeline INFO: Visualize prediction to ./output_det/show/
 
 以Magnetic-tile-defect-datasets检测结果为例：
 
-![](../images/exp5_num_3247.png)
 ![](../images/exp5_num_9549.png)
 ![](../images/exp5_num_3746.png)
