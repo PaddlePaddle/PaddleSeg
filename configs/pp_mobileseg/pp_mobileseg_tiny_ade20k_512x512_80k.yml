@@ -1,4 +1,4 @@
-_base_: './pp_mobileseg_base_ade20k_512x512_160k.yml'
+_base_: './pp_mobileseg_base_ade20k_512x512_80k.yml'
 
 model:
   type: PPMobileSeg

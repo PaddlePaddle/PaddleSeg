@@ -780,7 +780,6 @@ def MobileSeg_Base(**kwargs):
         embed_dims=emb_dims,
         depths=depths,
         num_heads=num_heads,
-        drop_path_rate=drop_path_rate,
         act_layer=nn.ReLU6,
         **kwargs)
 

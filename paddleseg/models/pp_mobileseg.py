@@ -100,8 +100,6 @@ class PPMobileSegHead(nn.Layer):
                  dropout_ratio=0.1,
                  align_corners=False):
         super().__init__()
-
-        self.in_transform = in_transform
         self.align_corners = align_corners
         self.last_channels = in_channels
 
