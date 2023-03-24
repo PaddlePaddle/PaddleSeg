@@ -345,6 +345,8 @@ class MaskFormerLoss(nn.Layer):
         tgt_idx = self._get_tgt_permutation_idx(indices_cpt)
         src_masks = outputs["pred_masks"]
         src_masks = src_masks[src_idx]
+        if src_masks.ndim == 2:
+            src_masks = src_masks.unsqueeze(0)
         masks = [t["masks"] for t in targets_cpt]
 
         target_masks, valid = nested_tensor_from_tensor_list(masks)
@@ -403,12 +405,15 @@ class MaskFormerLoss(nn.Layer):
 
         targets = []
         for item in targets_cpt:
-            paddle.cast(item['masks'], 'bool')
-            start_idx = paddle.nonzero(
-                paddle.cast(item["labels"] == self.ignore_index, 'int64'))[
-                    0].numpy()[0]
-            index = paddle.cast(paddle.to_tensor([i for i in range(start_idx)]),
-                    'int64')
+            item['masks'] = paddle.cast(item['masks'], 'bool')
+            invalid_indices = paddle.nonzero(
+                paddle.cast(item['labels'] == self.ignore_index, 'int64'))
+            if len(invalid_indices) > 0:
+                start_idx = int(invalid_indices[0].numpy())
+            else:
+                start_idx = len(item['labels'])
+            index = paddle.cast(
+                paddle.to_tensor([i for i in range(start_idx)]), 'int64')
             item['labels'] = paddle.gather(
                 item['labels'], index, axis=0)  # [n] n<150
             item['masks'] = paddle.gather(
