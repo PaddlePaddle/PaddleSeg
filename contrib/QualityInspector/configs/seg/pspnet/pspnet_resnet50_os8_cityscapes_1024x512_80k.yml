@@ -1,0 +1,25 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 2
+iters: 80000
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
+  end_lr: 1.0e-5
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
+
+model:
+  type: PSPNet
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  enable_auxiliary_loss: True
+  align_corners: False
+  pretrained: null

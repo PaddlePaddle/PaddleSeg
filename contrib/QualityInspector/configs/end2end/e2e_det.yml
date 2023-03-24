@@ -1,0 +1,19 @@
+ENV:
+  device: gpu
+  output_dir: ./output_det/
+  save: True
+  visualize: True
+
+PipeLine:
+  - Detection:
+      config_path: ./configs/det/hrnet/faster_rcnn_hrnetv2p_w18_3x_defect.yml
+      model_path: ./output/faster_rcnn_hrnetv2p_w18_3x_defect/best_model.pdparams
+      score_threshold: 0.01
+  - PostProcess:
+      - JudgeDetByScores:
+          score_threshold: 
+            1: 0.2
+            2: 0.0
+            5: 0.3
+      - JudgeByLengthWidth:
+          len_thresh: 0    # smaller than it as OK sample
