@@ -21,7 +21,7 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils
-from paddleseg.models.backbones.mobilesegnet import ConvBNAct
+from paddleseg.models.backbones.strideformer import ConvBNAct
 
 
 @manager.MODELS.add_component
@@ -33,12 +33,12 @@ class PPMobileSeg(nn.Layer):
 
 
     Args:
-        num_classes(int,optional): The unique number of target classes.
+        num_classes(int): The unique number of target classes.
         backbone(nn.Layer): Backbone network.
         head_use_dw (bool, optional): Whether the head use depthwise convolutions. Default: True.
         align_corners (bool, optional): Set the align_corners in resizing. Default: False.
-        pretrained (str, optional): The path or url of pretrained model. Default: None.
         upsample (str, optional): The type of upsample module, valid for VIM is recommend to be used during inference. Default: intepolate.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,
@@ -53,13 +53,9 @@ class PPMobileSeg(nn.Layer):
         self.upsample = upsample
         self.num_classes = num_classes
 
-        head_in_channels = [
-            i for i in backbone.injection_out_channels if i is not None
-        ]
-        self.decode_head = MobileSegHead(
-            in_transform='only_one',
+        self.decode_head = PPMobileSegHead(
             num_classes=num_classes,
-            in_channels=head_in_channels,
+            in_channels=backbone.feat_channels[0],
             use_dw=head_use_dw,
             align_corners=align_corners)
 
@@ -75,47 +71,40 @@ class PPMobileSeg(nn.Layer):
         x_hw = x.shape[2:]
         x = self.backbone(x)  # 1/8, 1/16, 1/32
         x = self.decode_head(x)
-        if self.upsample == 'intepolate':
+        if self.upsample == 'intepolate' or self.training or self.num_classes < 30:
             x = F.interpolate(
                 x, x_hw, mode='bilinear', align_corners=self.align_corners)
-        elif self.upsample == 'valid':
-            if not self.training and self.num_classes > 30:
-                labelset = paddle.unique(paddle.argmax(x, 1))
-                x = paddle.gather(x, labelset, axis=1)
-                x = F.interpolate(
-                    x, x_hw, mode='bilinear', align_corners=self.align_corners)
+        elif self.upsample == 'vim':
+            labelset = paddle.unique(paddle.argmax(x, 1))
+            x = paddle.gather(x, labelset, axis=1)
+            x = F.interpolate(
+                x, x_hw, mode='bilinear', align_corners=self.align_corners)
 
-                pred = paddle.argmax(x, 1)
-                pred_retrieve = paddle.zeros(pred.shape, dtype='int32')
-                for i, val in enumerate(labelset):
-                    pred_retrieve[pred == i] = labelset[i].cast('int32')
+            pred = paddle.argmax(x, 1)
+            pred_retrieve = paddle.zeros(pred.shape, dtype='int32')
+            for i, val in enumerate(labelset):
+                pred_retrieve[pred == i] = labelset[i].cast('int32')
 
-                x = pred_retrieve
-            else:
-                x = F.interpolate(
-                    x, x_hw, mode='bilinear', align_corners=self.align_corners)
+            x = pred_retrieve
         else:
             raise NotImplementedError(self.upsample, " is not implemented")
 
         return [x]
 
 
-class MobileSegHead(nn.Layer):
+class PPMobileSegHead(nn.Layer):
     def __init__(self,
                  num_classes,
                  in_channels,
-                 in_index=[0, 1, 2],
-                 in_transform='multiple_select',
                  use_dw=False,
                  dropout_ratio=0.1,
                  align_corners=False):
         super().__init__()
 
-        self.in_index = in_index
         self.in_transform = in_transform
         self.align_corners = align_corners
+        self.last_channels = in_channels
 
-        self._init_inputs(in_channels, in_index, in_transform)
         self.linear_fuse = ConvBNAct(
             in_channels=self.last_channels,
             out_channels=self.last_channels,
@@ -127,51 +116,7 @@ class MobileSegHead(nn.Layer):
         self.conv_seg = nn.Conv2D(
             self.last_channels, num_classes, kernel_size=1)
 
-    def _init_inputs(self, in_channels, in_index, in_transform):
-        assert in_transform in [
-            None, 'resize_concat', 'multiple_select', 'only_one'
-        ]
-        if in_transform is not None:
-            assert len(in_channels) == len(in_index)
-            if in_transform == 'resize_concat':
-                self.last_channels = sum(in_channels)
-            else:
-                self.last_channels = in_channels[0]
-        else:
-            assert isinstance(in_channels, int)
-            assert isinstance(in_index, int)
-            self.last_channels = in_channels
-
-    def _transform_inputs(self, inputs):
-        if self.in_transform == 'resize_concat':
-            inputs = [inputs[i] for i in self.in_index]
-            inputs = [
-                F.interpolate(
-                    input_data=x,
-                    size=paddle.shape(inputs[0])[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners) for x in inputs
-            ]
-            inputs = paddle.concat(inputs, axis=1)
-        elif self.in_transform == 'multiple_select':
-            inputs_tmp = [inputs[i] for i in self.in_index]
-            inputs = inputs_tmp[0]
-            for x in inputs_tmp[1:]:
-                x = F.interpolate(
-                    x,
-                    size=paddle.shape(inputs)[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners)
-                inputs += x
-        elif self.in_transform == 'only_one':
-            pass
-        else:
-            inputs = inputs[self.in_index]
-
-        return inputs
-
     def forward(self, x):
-        x = self._transform_inputs(x)
         x = self.linear_fuse(x)
         x = self.dropout(x)
         x = self.conv_seg(x)

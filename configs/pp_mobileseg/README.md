@@ -11,14 +11,15 @@
 ## <img src="https://user-images.githubusercontent.com/34859558/190043857-bfbdaf8b-d2dc-4fff-81c7-e0aac50851f9.png" width="25"/> Overview
 With the success of transformers in computer vision, several attempts have been made to adapt transformers to mobile devices. However, there still is room for optimization. Therefore, we propose PP-MobileSeg, a SOTA semantic segmentation model for mobile devices.
 
-It is composed of three newly proposed parts, the mobilesegnet backbone, the Aggregated Attention Module(AAM) and the Valid Intepolate Moduel(VIM):
-* With the four-stage mobilesegent as a efficient and effective backbone with little parameter overhead, we mange to extract rich semantic and detail features.
-* To futher empower the feature, we use AAM to filter detail feature with ensemble voting and add the sematic feature in the end to presever it to the most content.
-* At last, we use VIM to upsample the downsampled feature to the original resolution and greatly decrease latency. It only interpolates classes present in the final prediction which only takes around 10% in ADE20K dataset. This is a common scenario for datasets with large classes. Therefore it greatly decrease the latency of the final upsample process which takes the greatest part of the model's overall latency.
+It is composed of three newly proposed parts, the strideformer backbone, the Aggregated Attention Module(AAM) and the Valid Interpolate Module(VIM):
+* With the four-stage MobileNetV3 block as feature extractor, we manage to extract rich local features of different receptive field with little parameter overhead. Also, we further efficiently empower features from the last two stage with global view using strided sea attention.
+* To effectively fuse the features, we use AAM to filter the detail features with ensemble voting and add the semantic feature to it to enhance the semantic information to the most content.
+* At last, we use VIM to upsample the downsampled feature to the original resolution and significantly decrease latency. It only interpolates classes present in the final prediction which only takes around 10\% in the ADE20K dataset. This is a common scenario for datasets with large classes. Therefore it significantly decreases the latency of the final upsample process which takes the greatest part of the model's overall latency.
+
 
 Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy-latency tradeoff compared to other SOTA methods.
 <div align="center">
-<img src="https://user-images.githubusercontent.com/34859558/227126592-40317f2e-2d57-48de-8f32-b46a67c414d7.png"  width = "1000" />  
+<img src="https://user-images.githubusercontent.com/34859558/227450728-1338fcb1-3b8a-4453-a155-da60abcacb88.png"  width = "1000" />  
 </div>
 
 
@@ -28,32 +29,31 @@ Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy
 ### ADE20K
 | Model | Backbone | Training Iters | Batchsize | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
 |-|-|-|-|-|-|-|-|-|
-|PP-MobileSeg-Base|MobileSegNet-B|80000|32|512x512|41.57%|265.5|5.62|[config](./pp_mobileseg_base_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
-|PP-MobileSeg-Tiny|MobileSegNet-T|80000|32|512x512|36.70%|215.3|1.61|[config](./pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=8b48fc0ada781be47468bdeb6941eb99)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
-
-
-### Ablation
-| Model | Backbone | Training Iters | Batchsize | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
-|-|-|-|-|-|-|-|-|-|
-|baseline|Seaformer-B|160000|16|512x512|40.00%|465.6|8.27|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/model.pdprams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ac4847bef689ecd4e2c91d8e2674bfdb)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/export_model.zip)|
-|+VIM|Seaformer-B|160000|16|512x512|40.07%|234.6|8.17|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/model.pdprams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ac4847bef689ecd4e2c91d8e2674bfdb)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_VIM_ablation/export_model.zip)|
-|+VIM+MobileSegnet|MobileSegNet-B|80000|32|512x512|40.98%|235.1|5.54|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/MV3_4stage_base_ablation/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/MV3_4stage_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/MV3_4stage_base_ablation/export_model.zip)|
-|+VIM+MobileSegnet+AAM|MobileSegNet-B|80000|32|512x512|41.57%|265.5|5.62|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=8b48fc0ada781be47468bdeb6941eb99)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
-
+|PP-MobileSeg-Base|StrideFormer-Base|80000|32|512x512|41.57%|265.5|5.62|[config](./pp_mobileseg_base_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
+|PP-MobileSeg-Tiny|StrideFormer-Tiny|80000|32|512x512|36.70%|215.3|1.61|[config](./pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=8b48fc0ada781be47468bdeb6941eb99)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
 
 ### Compare with SOTA
 | Model | Backbone | mIoU(%) | latency(ms)* | params(M) |
 |-|-|-|-|-|
 |LR-ASPP|MobileNetV3_large_x1_0|33.10|730.9|3.20|
 |MobileSeg-Base|MobileNetV3_large_x1_0|33.26|391.5|2.85|
-|TopFormer-Tiny|TopTransformer-T|32.46|490.3|1.41|
-|SeaFormer-Tiny|SeaFormer-T|35.00|459.0|1.61|
-|PP-MobileSeg-Tiny|MobileSegNet-T|36.70（**+1.7**）|215.3（**-48.2%**）|1.44(**-10.6%**)|
-|TopFormer-Base|TopTransformer-T|38.28|480.6|5.13|
-|SeaFormer-Base**|SeaFormer-B|40.07|465.4|8.64|
-|PP-MobileSeg-Base|MobileSegNet-B|41.57(**+1.5**)|265.5(**-42.3%**)|5.62(**-34.9%**)|
+|TopFormer-Tiny|TopTransformer-Tiny|32.46|490.3|1.41|
+|SeaFormer-Tiny|SeaFormer-Tiny|35.00|459.0|1.61|
+|PP-MobileSeg-Tiny|StrideFormer-Tiny|36.70（**+1.7**）|215.3（**-48.2%**）|1.44(**-10.6%**)|
+|TopFormer-Base|TopTransformer-Base|38.28|480.6|5.13|
+|SeaFormer-Base**|SeaFormer-Base|40.07|465.4|8.64|
+|PP-MobileSeg-Base|StrideFormer-Base|41.57(**+1.5**)|265.5(**-42.3%**)|5.62(**-34.9%**)|
 
-\* The latency is test with the final argmax operator on Snapdragon 855.
+
+### Ablation
+| Model | Backbone | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
+|-|-|-|-|-|-|-|
+|baseline|Seaformer-Base|512x512|40.00%|465.6|8.27|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/model.pdprams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ac4847bef689ecd4e2c91d8e2674bfdb)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/export_model.zip)|
+|+VIM|Seaformer-Base|512x512|40.07%|234.6|8.17|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/model.pdprams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ac4847bef689ecd4e2c91d8e2674bfdb)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_VIM_ablation/export_model.zip)|
+|+VIM+StrideFormer|StrideFormer-Base|512x512|40.98%|235.1|5.54|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/MV3_4stage_base_ablation/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/MV3_4stage_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/MV3_4stage_base_ablation/export_model.zip)|
+|+VIM+StrideFormer+AAM|StrideFormer-Base|512x512|41.57%|265.5|5.62|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=8b48fc0ada781be47468bdeb6941eb99)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
+
+\* Note that the latency is test with the final argmax operator using [PaddleLite](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/README_en.md) on xiaomi9 (Snapdragon 855 CPU) with single thread and 512x512 as input shape. Therefore the output of model is the segment result with single channel rather then probability logits. Inspired by the ineffectiveness of the final argmax operator that greatly increase the overall latency, we designed VIM to significantly decrease the latency.
 
 \** The accuracy is reported based on self-trained reproduced result.
 
@@ -82,8 +82,14 @@ You can start training by assign the ```tools/train.py``` with config files, the
 export CUDA_VISIBLE_DEVICES=0,1
 
 python3  -m paddle.distributed.launch tools/train.py \
-    --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml --use_ema \
-    --do_eval  --use_vdl --save_interval 1000 --save_dir output/pp_mobileseg_base --num_workers 4  --log_iters 100
+    --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
+    --save_dir output/pp_mobileseg_base \
+    --save_interval 1000 \
+    --num_workers 4 \
+    --log_iters 100 \
+    --use_ema \
+    --do_eval \
+    --use_vdl
 ```
 
 ### Validation
@@ -91,11 +97,7 @@ With the trained model on hand, you can verify the model's accuracy through eval
 
 ```bash
 python  -m paddle.distributed.launch tools/val.py --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
-       --model_path output/pp_mobileseg_base/best_model/model.pdparams \
-       # the configs below this line is augmentation during evaluation which is not used in our reported result.
-       --aug_eval \  
-       --scales 0.75 1.0 1.25 \
-       --flip_horizontal
+       --model_path output/pp_mobileseg_base/best_model/model.pdparams
 ```
 
 
@@ -105,11 +107,20 @@ We deploy the model on mobile devices for inference. To do that, we need to expo
 
 #### 0. Preparation
 * An android mobile phone with usb debugger mode on and are already linked to your PC.
+* Install the [adb tool](https://developer.android.com/studio/command-line/adb?hl=zh-cn).
 
+Run the following command to make sure you are ready:
+
+```bash
+adb devices
+# The following information will show if you are good to go:
+List of devices attached
+017QXM19C1000664    device
+```
 
 #### 1. Model exportation
 
-The model need to be transfer from dynamic graph to static gradph for PaddleLite inference. You can find the exported model on the `PaddleSeg/save/dir`
+The model need to be transfer from dynamic graph to static gradph for PaddleLite inference. In this step, we can use ```VIM``` to speed the model up. You only need to change ```model::upsample``` to ```vim``` in the config file and the exported model can be found on the `PaddleSeg/save/dir`
 
 ```bash
 python tools/export.py --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \

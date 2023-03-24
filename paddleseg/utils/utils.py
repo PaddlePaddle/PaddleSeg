@@ -139,7 +139,7 @@ def download_pretrained_model(pretrained_model):
             pretrained_model = download_file_and_uncompress(
                 pretrained_model,
                 savepath=_dir,
-                cover=False,
+                cover=True,
                 extrapath=seg_env.PRETRAINED_MODEL_HOME,
                 extraname=savename,
                 filename=filename)

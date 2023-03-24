@@ -27,27 +27,50 @@ from paddleseg.models.backbones.mobilenetv3 import _make_divisible, _create_act,
 from paddleseg.models.layers import layer_libs
 
 
-class MobileSegNet(nn.Layer):
+class StrideFormer(nn.Layer):
     def __init__(self,
                  cfgs,
                  channels,
                  embed_dims,
-                 key_dims,
+                 key_dims=[16, 24],
                  depths=[2, 2],
                  num_heads=8,
                  attn_ratios=2,
                  mlp_ratios=[2, 4],
-                 drop_path_rate=0.,
-                 act_layer=nn.ReLU6,
-                 in_channels=3,
+                 drop_path_rate=0.1,
+                 act_layer=nn.Sigmoid,
                  inj_type='AAM',
-                 pretrained=None,
-                 out_channels=160,
+                 out_channels=256,
                  dims=(128, 160),
                  out_feat_chs=None,
-                 stride_attention=False):
+                 stride_attention=True,
+                 in_channels=3,
+                 pretrained=None):
+        """
+        The StrideFormer implementation based on PaddlePaddle.
+
+        The original article refers to:
+
+        Args:
+            cfgs(list): Each sublist describe the config for a MobileNetV3 block.
+            channels(list): The input channels for each MobileNetV3 block.
+            embed_dims(list): The channels of the features input to the sea attention block.  
+            key_dims(list, optional): The embeding dims for each head in attention.
+            depths(list, optional): describes the depth of the attention block. i,e: M,N.
+            num_heads(int, optional): The number of heads of the attention blocks.
+            attn_ratios(int, optional): The exapend ratio of V.
+            mlp_ratios(list, optional): The ratio of mlp blocks.
+            drop_path_rate(float, optional): The drop path rate in attention block.
+            act_layer(nn.Layer, optional): The activation layer of AAM.
+            inj_type(string, optional): The type of injection/AAM.
+            out_channels(int, optional): The output channels of the AAM.
+            dims(list, optional): The dimension of the fusion block.
+            out_feat_chs(list, optional): The input channels of the AAM.
+            stride_attention(bool, optioal): whether to stride attention in each attention layer.
+            in_channels (int, optional): The channels of input image. Default: 3.
+            pretrained(str, optional): the path of pretrained model.
+        """
         super().__init__()
-        self.channels = channels
         self.depths = depths
         self.cfgs = cfgs
         self.dims = dims
@@ -83,13 +106,13 @@ class MobileSegNet(nn.Layer):
                 in_channels=out_feat_chs,
                 activations=act_layer,
                 out_channels=out_channels)
-            self.injection_out_channels = [self.inj_module.out_channels] * 3
+            self.feat_channels = [out_channels, ]
         elif self.inj_type == "AAMSx8":
             self.inj_module = InjectionMultiSumallmultiallsumSimpx8(
                 in_channels=out_feat_chs,
                 activations=act_layer,
                 out_channels=out_channels)
-            self.injection_out_channels = [self.inj_module.out_channels] * 3
+            self.feat_channels = [out_channels, ]
         elif self.inj_type == 'origin':
             for i in range(len(dims)):
                 fuse = Fusion_block(
@@ -97,7 +120,7 @@ class MobileSegNet(nn.Layer):
                     out_feat_chs[i + 1],
                     embed_dim=dims[i])
                 setattr(self, f"fuse{i + 1}", fuse)
-            self.injection_out_channels = [dims[i]] * 3
+            self.feat_channels = [dims[i], ]
         else:
             raise NotImplementedError(self.inj_module + ' is not implemented')
 
@@ -416,7 +439,6 @@ class Sea_Attention(nn.Layer):
         super().__init__()
         self.num_heads = num_heads
         self.scale = key_dim**-0.5
-        self.key_dim = key_dim
         self.nh_kd = nh_kd = key_dim * num_heads
         self.d = int(attn_ratio * key_dim)
         self.dh = int(attn_ratio * key_dim) * num_heads
@@ -575,9 +597,7 @@ class Block(nn.Layer):
                        drop=drop)
 
     def forward(self, x1):
-        # 多头注意力
         x1 = x1 + self.drop_path(self.attn(x1))
-        # 线性组合多头注意力
         x1 = x1 + self.drop_path(self.mlp(x1))
 
         return x1
@@ -625,7 +645,7 @@ class Fusion_block(nn.Layer):
         super(Fusion_block, self).__init__()
         self.local_embedding = ConvBNAct(inp, embed_dim, kernel_size=1)
         self.global_act = ConvBNAct(oup, embed_dim, kernel_size=1)
-        self.act = nn.Sigmoid()
+        self.act = activations()
 
     def forward(self, x_l, x_g):
         '''
@@ -652,12 +672,11 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
     def __init__(self,
                  in_channels=(64, 128, 256, 384),
                  activations=None,
-                 out_channels=160):
+                 out_channels=256):
         super(InjectionMultiSumallmultiallsum, self).__init__()
         self.embedding_list = nn.LayerList()
         self.act_embedding_list = nn.LayerList()
         self.act_list = nn.LayerList()
-        self.out_channels = out_channels
         for i in range(len(in_channels)):
             self.embedding_list.append(
                 ConvBNAct(
@@ -665,7 +684,7 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
             self.act_embedding_list.append(
                 ConvBNAct(
                     in_channels[i], out_channels, kernel_size=1))
-            self.act_list.append(nn.Sigmoid())
+            self.act_list.append(activations())
 
     def forward(self, inputs):  # x_x8, x_x16, x_x32, x_x64 
         low_feat1 = F.interpolate(inputs[0], scale_factor=0.5, mode="bilinear")
@@ -697,12 +716,11 @@ class InjectionMultiSumallmultiallsumSimpx8(nn.Layer):
     def __init__(self,
                  in_channels=(64, 128, 256, 384),
                  activations=None,
-                 out_channels=160):
+                 out_channels=256):
         super(InjectionMultiSumallmultiallsumSimpx8, self).__init__()
         self.embedding_list = nn.LayerList()
         self.act_embedding_list = nn.LayerList()
         self.act_list = nn.LayerList()
-        self.out_channels = out_channels
         for i in range(len(in_channels)):
             if i != 1:
                 self.embedding_list.append(
@@ -712,7 +730,7 @@ class InjectionMultiSumallmultiallsumSimpx8(nn.Layer):
                 self.act_embedding_list.append(
                     ConvBNAct(
                         in_channels[i], out_channels, kernel_size=1))
-                self.act_list.append(nn.Sigmoid())
+                self.act_list.append(activations())
 
     def forward(self, inputs):
         # x_x8, x_x16, x_x32
@@ -753,21 +771,17 @@ def MobileSeg_Base(**kwargs):
 
     channels = [16, 32, 64, 128, 192]
     depths = [3, 3]
-    key_dims = [16, 24]
     emb_dims = [128, 192]
     num_heads = 8
-    drop_path_rate = 0.1
 
-    model = MobileSegNet(
+    model = StrideFormer(
         cfgs=[cfg1, cfg2, cfg3, cfg4],
         channels=channels,
         embed_dims=emb_dims,
-        key_dims=key_dims,
         depths=depths,
         num_heads=num_heads,
         drop_path_rate=drop_path_rate,
         act_layer=nn.ReLU6,
-        inj_type='AAMSx8',
         **kwargs)
 
     return model
@@ -790,21 +804,16 @@ def MobileSeg_Tiny(**kwargs):
 
     channels = [16, 24, 32, 64, 128]
     depths = [2, 2]
-    key_dims = [16, 24]
     emb_dims = [64, 128]
     num_heads = 4
-    drop_path_rate = 0.1
 
-    model = MobileSegNet(
+    model = StrideFormer(
         cfgs=[cfg1, cfg2, cfg3, cfg4],
         channels=channels,
         embed_dims=emb_dims,
-        key_dims=key_dims,
         depths=depths,
         num_heads=num_heads,
-        drop_path_rate=drop_path_rate,
         act_layer=nn.ReLU6,
-        inj_type='AAM',
         **kwargs)
 
     return model
