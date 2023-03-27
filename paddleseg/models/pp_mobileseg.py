@@ -69,7 +69,7 @@ class PPMobileSeg(nn.Layer):
 
     def forward(self, x):
         x_hw = x.shape[2:]
-        x = self.backbone(x)  # 1/8, 1/16, 1/32
+        x = self.backbone(x)
         x = self.decode_head(x)
         if self.upsample == 'intepolate' or self.training or self.num_classes < 30:
             x = F.interpolate(
