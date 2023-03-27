@@ -24,7 +24,7 @@ def square(bbox, img_shape):
     return [x1, y1, x2, y2]
 
 
-def pad(bbox, img_shape, pad_scale=0.0):
+def padding(bbox, img_shape, pad_scale=0.0):
     """pad bbox with scale
     Args:
         bbox (list):[x1, y1, x2, y2]
@@ -54,7 +54,7 @@ def adjust_bbox(bbox, img_shape, pad_scale=0.0):
         bbox (list)
     """
     bbox = square(bbox, img_shape)
-    bbox = pad(bbox, img_shape, pad_scale)
+    bbox = padding(bbox, img_shape, pad_scale)
     return bbox
 
 
