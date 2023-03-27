@@ -32,13 +32,13 @@ from scipy.spatial.distance import mahalanobis
 from scipy.ndimage import gaussian_filter
 from skimage import morphology
 from skimage.segmentation import mark_boundaries
+
 import paddle
 import paddle.nn.functional as F
 from paddle.io import DataLoader
 
 parent_path = os.path.abspath(os.path.join(__file__, *(['..'] * 4)))
 sys.path.insert(0, parent_path)
-
 import qinspector.uad.datasets.mvtec as mvtec
 from qinspector.uad.models.padim import ResNet_PaDiM
 from qinspector.cvlib.uad_configs import *
