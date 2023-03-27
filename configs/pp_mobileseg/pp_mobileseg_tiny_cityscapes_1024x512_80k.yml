@@ -7,6 +7,6 @@ model:
     type: MobileSeg_Tiny
     inj_type: AAM
     out_feat_chs: [32, 64, 128]
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/pretrain/model.pdparams
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny_pretrain/model.pdparams
   upsample: intepolate  # During exportation, you need to change it to vim for using VIM
 
