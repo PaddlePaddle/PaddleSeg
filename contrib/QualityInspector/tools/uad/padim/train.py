@@ -21,19 +21,20 @@ import datetime
 from random import sample
 from collections import OrderedDict
 
-parent_path = os.path.abspath(os.path.join(__file__, *(['..'] * 4)))
-sys.path.insert(0, parent_path)
-
 import numpy as np
 import pandas as pd
+
 import paddle
 import paddle.nn.functional as F
 from paddle.io import DataLoader
 
+parent_path = os.path.abspath(os.path.join(__file__, *(['..'] * 4)))
+sys.path.insert(0, parent_path)
 import qinspector.uad.datasets.mvtec as mvtec
 from qinspector.uad.models.padim import ResNet_PaDiM
 from qinspector.cvlib.uad_configs import ConfigParser
 from val import val
+
 
 textures = ['carpet', 'grid', 'leather', 'tile', 'wood']
 objects = [
@@ -41,9 +42,7 @@ objects = [
     'toothbrush', 'transistor', 'zipper'
 ]
 CLASS_NAMES = textures + objects
-
 fins = {"resnet18": 448, "resnet50": 1792, "wide_resnet50_2": 1792}
-
 
 def argsparser():
     parser = argparse.ArgumentParser('PaDiM')
