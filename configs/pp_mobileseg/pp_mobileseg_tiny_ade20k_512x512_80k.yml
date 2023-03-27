@@ -1,6 +1,6 @@
 _base_: './pp_mobileseg_base_ade20k_512x512_80k.yml'
 
-batch_size: 8  # total batch size is 16
+batch_size: 16  # total batch size is 16
 iters: 160000
 
 lr_scheduler:
