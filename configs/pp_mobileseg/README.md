@@ -30,9 +30,16 @@ Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy
 | Model | Backbone | Training Iters | Batchsize | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
 |-|-|-|-|-|-|-|-|-|
 |PP-MobileSeg-Base|StrideFormer-Base|80000|32|512x512|41.57%|265.5|5.62|[config](./pp_mobileseg_base_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
-|PP-MobileSeg-Tiny|StrideFormer-Tiny|80000|32|512x512|36.70%|215.3|1.61|[config](./pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=8b48fc0ada781be47468bdeb6941eb99)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
+|PP-MobileSeg-Tiny|StrideFormer-Tiny|160000|16|512x512|36.70%|215.3|1.61|[config](./pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=8b48fc0ada781be47468bdeb6941eb99)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
 
-### Compare with SOTA
+
+### Cityscapes
+| Model | Backbone | Training Iters | Batchsize | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
+|-|-|-|-|-|-|-|-|-|
+|PP-MobileSeg-Base|StrideFormer-Base|80000|32|1024x512|77.83%|326.3|5.68|[config](./pp_mobileseg_base_cityscapes_1024x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=735db0e47ddf783e6896f00bbb804819)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/pp_mobileseg_base/export_model.zip)|
+
+
+### Compare with SOTA on ADE20Ks
 | Model | Backbone | mIoU(%) | latency(ms)* | params(M) |
 |-|-|-|-|-|
 |LR-ASPP|MobileNetV3_large_x1_0|33.10|730.9|3.20|
@@ -45,7 +52,7 @@ Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy
 |PP-MobileSeg-Base|StrideFormer-Base|41.57(**+1.5**)|265.5(**-42.3%**)|5.62(**-34.9%**)|
 
 
-### Ablation
+### Ablation study of PP-MobileSeg-Base on ADE20K
 | Model | Backbone | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
 |-|-|-|-|-|-|-|
 |baseline|Seaformer-Base|512x512|40.00%|465.6|8.27|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/model.pdprams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ac4847bef689ecd4e2c91d8e2674bfdb)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/seaformer_base_ablation/export_model.zip)|
