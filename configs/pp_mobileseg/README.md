@@ -11,8 +11,8 @@
 ## <img src="https://user-images.githubusercontent.com/34859558/190043857-bfbdaf8b-d2dc-4fff-81c7-e0aac50851f9.png" width="25"/> Overview
 With the success of transformers in computer vision, several attempts have been made to adapt transformers to mobile devices. However, there still is room for optimization. Therefore, we propose PP-MobileSeg, a SOTA semantic segmentation model for mobile devices.
 
-It is composed of three newly proposed parts, the strideformer backbone, the Aggregated Attention Module(AAM) and the Valid Interpolate Module(VIM):
-* With the four-stage MobileNetV3 block as feature extractor, we manage to extract rich local features of different receptive field with little parameter overhead. Also, we further efficiently empower features from the last two stage with global view using strided sea attention.
+It is composed of three newly proposed parts, the strideformer backbone, the Aggregated Attention Module(AAM), and the Valid Interpolate Module(VIM):
+* With the four-stage MobileNetV3 block as the feature extractor, we manage to extract rich local features of different receptive fields with little parameter overhead. Also, we further efficiently empower features from the last two stages with the global view using strided sea attention.
 * To effectively fuse the features, we use AAM to filter the detail features with ensemble voting and add the semantic feature to it to enhance the semantic information to the most content.
 * At last, we use VIM to upsample the downsampled feature to the original resolution and significantly decrease latency. It only interpolates classes present in the final prediction which only takes around 10\% in the ADE20K dataset. This is a common scenario for datasets with large classes. Therefore it significantly decreases the latency of the final upsample process which takes the greatest part of the model's overall latency.
 
@@ -69,7 +69,7 @@ Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy
 ### Preparation
 * Install PaddlePaddle and relative environments based on the [installation guide](https://www.paddlepaddle.org.cn/en/install/quick?docurl=/documentation/docs/en/install/pip/linux-pip_en.html).
 * Install PaddleSeg based on the [reference](../../docs/install.md).
-* Download the ADE20k dataset and link to PaddleSeg/data, or you can directly run, it will be automatically downloaded.
+* Download the ADE20k dataset and link to PaddleSeg/data, or you can directly run the training script. The dataset will be automatically downloaded.
 
 ```
 PaddleSeg/data
@@ -110,7 +110,7 @@ python  -m paddle.distributed.launch tools/val.py --config configs/pp_mobileseg/
 
 ### Deployment
 
-We deploy the model on mobile devices for inference. To do that, we need to export the model and use [PaddleLite](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/README_en.md) to inference on mobile devices. You can also refer to [lite deply guide](../../docs/deployment/lite/lite.md) for details of PaddleLite deployment.
+We deploy the model on mobile devices for inference. To do that, we need to export the model and use [PaddleLite](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/README_en.md) to inference on mobile devices. You can also refer to [lite deploy guide](../../docs/deployment/lite/lite.md) for details of PaddleLite deployment.
 
 #### 0. Preparation
 * An android mobile phone with usb debugger mode on and are already linked to your PC.
@@ -127,7 +127,7 @@ List of devices attached
 
 #### 1. Model exportation
 
-The model need to be transfer from dynamic graph to static gradph for PaddleLite inference. In this step, we can use ```VIM``` to speed the model up. You only need to change ```model::upsample``` to ```vim``` in the config file and the exported model can be found on the `PaddleSeg/save/dir`
+The model needs to be transferred from dynamic graph to static graph for PaddleLite inference. In this step, we can use ```VIM``` to speed the model up. You only need to change ```model::upsample``` to ```vim``` in the config file, and the exported model can be found on the `PaddleSeg/save/dir`
 
 ```bash
 python tools/export.py --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
