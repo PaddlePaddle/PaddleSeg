@@ -32,7 +32,6 @@ import qinspector.uad.datasets.mvtec as mvtec
 from qinspector.uad.models.patchcore import get_model
 from qinspector.uad.utils.utils import str2bool
 from qinspector.cvlib.uad_configs import ConfigParser
-
 from val import val
 
 textures = ['carpet', 'grid', 'leather', 'tile', 'wood']
