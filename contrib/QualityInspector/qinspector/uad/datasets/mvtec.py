@@ -17,6 +17,7 @@ import os
 import cv2
 import numpy as np
 from PIL import Image
+
 import paddle
 from paddle.io import Dataset
 from paddle.vision import transforms as T
