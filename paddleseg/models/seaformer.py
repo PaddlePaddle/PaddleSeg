@@ -1,3 +1,17 @@
+# copyright (c) 2023 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -9,16 +23,7 @@ from paddleseg.utils import utils
 
 
 def _make_divisible(v, divisor, min_value=None):
-    """
-    This function is taken from the original tf repo.
-    It ensures that all layers have a channel number that is divisible by 8
-    It can be seen here:
-    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
-    :param v:
-    :param divisor:
-    :param min_value:
-    :return:
-    """
+
     if min_value is None:
         min_value = divisor
     new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
@@ -36,6 +41,7 @@ class Mlp(nn.Layer):
                  act_layer=nn.ReLU,
                  drop=0.):
         super().__init__()
+
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         self.fc1 = layers.ConvBN(
@@ -71,7 +77,8 @@ class InvertedResidual(nn.Layer):
                  stride: int,
                  expand_ratio: int,
                  activations=None):
-        super(InvertedResidual, self).__init__()
+        super().__init__()
+
         self.stride = stride
         self.expand_ratio = expand_ratio
         assert stride in [1, 2]
@@ -116,6 +123,7 @@ class StackedMV2Block(nn.Layer):
                  activation=nn.ReLU,
                  width_mult=1.):
         super().__init__()
+
         self.stem = stem
         if stem:
             self.stem_block = nn.Sequential(
@@ -172,9 +180,10 @@ class SqueezeAxialPositionalEmbedding(nn.Layer):
         return x
 
 
-class Sea_Attention(nn.Layer):
+class SeaAttention(nn.Layer):
     def __init__(self, dim, key_dim, num_heads, attn_ratio=4, activation=None):
         super().__init__()
+
         self.num_heads = num_heads
         self.scale = key_dim**-0.5
         self.key_dim = key_dim
@@ -184,9 +193,7 @@ class Sea_Attention(nn.Layer):
         self.attn_ratio = attn_ratio
 
         self.to_q = layers.ConvBN(dim, self.nh_kd, 1, bias_attr=False)
-
         self.to_k = layers.ConvBN(dim, self.nh_kd, 1, bias_attr=False)
-
         self.to_v = layers.ConvBN(dim, self.dh, 1, bias_attr=False)
 
         self.proj = nn.Sequential(
@@ -215,9 +222,9 @@ class Sea_Attention(nn.Layer):
         self.act = activation()
 
         self.pwconv = layers.ConvBN(2 * self.dh, dim, 1, bias_attr=False)
-        self.sigmoid = h_sigmoid()
+        self.sigmoid = nn.Hardsigmoid()
 
-    def forward(self, x):  # x (B,N,C)
+    def forward(self, x):
         B, C, H, W = x.shape
 
         q = self.to_q(x)
@@ -275,11 +282,12 @@ class Block(nn.Layer):
                  drop_path=0.,
                  act_layer=nn.ReLU):
         super().__init__()
+
         self.dim = dim
         self.num_heads = num_heads
         self.mlp_ratio = mlp_ratio
 
-        self.attn = Sea_Attention(
+        self.attn = SeaAttention(
             dim,
             key_dim=key_dim,
             num_heads=num_heads,
@@ -287,8 +295,7 @@ class Block(nn.Layer):
             activation=act_layer)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity(
-        )
+        self.drop_path = DropPath(drop_path) if drop_path > 0 else nn.Identity()
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = Mlp(in_features=dim,
                        hidden_features=mlp_hidden_dim,
@@ -314,6 +321,7 @@ class BasicLayer(nn.Layer):
                  drop_path=0.,
                  act_layer=None):
         super().__init__()
+
         self.block_num = block_num
 
         self.transformer_blocks = nn.LayerList()
@@ -369,10 +377,12 @@ class SeaFormer(nn.Layer):
                  num_classes=1000,
                  pretrained=None):
         super().__init__()
+
         self.num_classes = num_classes
         self.channels = channels
         self.depths = depths
         self.cfgs = cfgs
+        self.pretrained = pretrained
 
         for i in range(len(cfgs)):
             smb = StackedMV2Block(
@@ -397,9 +407,6 @@ class SeaFormer(nn.Layer):
                 drop_path=dpr,
                 act_layer=act_layer)
             setattr(self, f"trans{i + 1}", trans)
-
-        if pretrained is not None:
-            utils.load_pretrained_model(self, pretrained)
 
     def forward(self, x):
         outputs = []
@@ -437,20 +444,22 @@ class SeaFormer(nn.Layer):
                 zeros_(layer.bias)
                 ones_(layer.weight)
 
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
-class Fusion_block(nn.Layer):
+
+class FusionBlock(nn.Layer):
     def __init__(self, inp: int, oup: int, embed_dim: int):
-        super(Fusion_block, self).__init__()
+        super().__init__()
+
         self.local_embedding = layers.ConvBN(
             inp, embed_dim, kernel_size=1, bias_attr=False)
         self.global_act = layers.ConvBN(
             oup, embed_dim, kernel_size=1, bias_attr=False)
-        self.act = h_sigmoid()
+        self.act = nn.Hardsigmoid()
 
     def forward(self, x_l, x_g):
-
         B, C, H, W = x_l.shape
-
         local_feat = self.local_embedding(x_l)
         global_act = self.global_act(x_g)
         sig_act = F.interpolate(
@@ -462,16 +471,7 @@ class Fusion_block(nn.Layer):
         return out
 
 
-class h_sigmoid(nn.Layer):
-    def __init__(self):
-        super(h_sigmoid, self).__init__()
-        self.relu = nn.ReLU6()
-
-    def forward(self, x):
-        return self.relu(x + 3) / 6
-
-
-class LightHead(nn.Layer):
+class SeaFormerHead(nn.Layer):
     def __init__(self,
                  backbone,
                  in_channels=[64, 192, 256],
@@ -483,7 +483,7 @@ class LightHead(nn.Layer):
                  dropout_ratio=0.1,
                  align_corners=False,
                  input_transform='multiple_select'):
-        super(LightHead, self).__init__()
+        super().__init__()
 
         self.head_channels = channels
         self.backbone = backbone
@@ -507,7 +507,7 @@ class LightHead(nn.Layer):
         self.cls_seg = nn.Conv2D(channels, num_classes, kernel_size=1)
 
         for i in range(len(embed_dims)):
-            fuse = Fusion_block(
+            fuse = FusionBlock(
                 in_channels[0] if i == 0 else embed_dims[i - 1],
                 in_channels[i + 1],
                 embed_dim=embed_dims[i])
@@ -550,12 +550,11 @@ class LightHead(nn.Layer):
                 mode='bilinear',
                 align_corners=self.align_corners)
         ]
-
         return x
 
 
 @manager.MODELS.add_component
 def SeaFormer_base(pretrained, num_classes, **kwags):
     backbone = SeaFormer(pretrained=pretrained, **kwags)
-    seg_model = LightHead(backbone, num_classes=num_classes)
+    seg_model = SeaFormerHead(backbone, num_classes=num_classes)
     return seg_model

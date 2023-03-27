@@ -9,8 +9,8 @@ model:
 
 
 optimizer:
-  type: AdamW
   _inherited_: False
+  type: AdamW
   beta1: 0.9
   beta2: 0.999
   weight_decay: 0.01

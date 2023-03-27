@@ -38,6 +38,7 @@ from .dnlnet import *
 from .setr import *
 from .sfnet import *
 from .pphumanseg_lite import *
+from .seaformer import *
 from .mla_transformer import MLATransformer
 from .portraitnet import PortraitNet
 from .stdcseg import STDCSeg
@@ -69,10 +70,6 @@ from .topformer import TopFormer
 from .rtformer import RTFormer
 from .upernet_vit_adapter import UPerNetViTAdapter
 from .lpsnet import LPSNet
-<<<<<<< HEAD
-from .seaformer import *
-=======
 from .maskformer import MaskFormer
 from .segnext import SegNeXt
 from .knet import KNet
->>>>>>> 574be6fd86c5aa99dd7b60c746d4166def5698e0
