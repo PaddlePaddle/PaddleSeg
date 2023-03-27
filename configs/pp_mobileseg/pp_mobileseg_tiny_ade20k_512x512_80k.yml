@@ -1,15 +1,7 @@
 _base_: './pp_mobileseg_base_ade20k_512x512_80k.yml'
 
-batch_size: 16  # total batch size is 16
-iters: 160000
-
-lr_scheduler:
-  type: PolynomialDecay
-  learning_rate: 0.0004
-  end_lr: 0
-  power: 1.0
-  warmup_iters: 1500
-  warmup_start_lr: 1.0e-6
+batch_size: 16  # total batch size is 32
+iters: 80000
 
 model:
   type: PPMobileSeg

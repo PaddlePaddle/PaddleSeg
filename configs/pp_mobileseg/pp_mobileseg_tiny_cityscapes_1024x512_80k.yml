@@ -1,4 +1,4 @@
-_base_: './pp_mobileseg_base_cityscapes_ade20k_1024x512_80k.yml'
+_base_: './pp_mobileseg_base_cityscapes_1024x512_80k.yml'
 
 model:
   type: PPMobileSeg

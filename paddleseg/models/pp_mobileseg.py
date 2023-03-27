@@ -37,8 +37,8 @@ class PPMobileSeg(nn.Layer):
         backbone(nn.Layer): Backbone network.
         head_use_dw (bool, optional): Whether the head use depthwise convolutions. Default: True.
         align_corners (bool, optional): Set the align_corners in resizing. Default: False.
-        upsample (str, optional): The type of upsample module, valid for VIM is recommend to be used during inference. Default: intepolate.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
+        upsample (str, optional): The type of upsample module, valid for VIM is recommend to be used during inference. Default: intepolate.
     """
 
     def __init__(self,

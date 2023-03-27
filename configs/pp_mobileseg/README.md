@@ -1,20 +1,17 @@
 # PP-MobileSeg: Exploring Transformer Blocks for Efficient Mobile Segmentation.
 
-## Reference
->
-
 ## Contents
 1. Overview
 2. Performance
 3. Reproduction
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043857-bfbdaf8b-d2dc-4fff-81c7-e0aac50851f9.png" width="25"/> Overview
-With the success of transformers in computer vision, several attempts have been made to adapt transformers to mobile devices. However, there still is room for optimization. Therefore, we propose PP-MobileSeg, a SOTA semantic segmentation model for mobile devices.
+With the success of transformers in computer vision, several attempts have been made to adapt transformers to mobile devices. However, their performance is not satisfied for some real world applications. Therefore, we propose PP-MobileSeg, a SOTA semantic segmentation model for mobile devices.
 
 It is composed of three newly proposed parts, the strideformer backbone, the Aggregated Attention Module(AAM), and the Valid Interpolate Module(VIM):
 * With the four-stage MobileNetV3 block as the feature extractor, we manage to extract rich local features of different receptive fields with little parameter overhead. Also, we further efficiently empower features from the last two stages with the global view using strided sea attention.
 * To effectively fuse the features, we use AAM to filter the detail features with ensemble voting and add the semantic feature to it to enhance the semantic information to the most content.
-* At last, we use VIM to upsample the downsampled feature to the original resolution and significantly decrease latency. It only interpolates classes present in the final prediction which only takes around 10\% in the ADE20K dataset. This is a common scenario for datasets with large classes. Therefore it significantly decreases the latency of the final upsample process which takes the greatest part of the model's overall latency.
+* At last, we use VIM to upsample the downsampled feature to the original resolution and significantly decrease latency in model inference stage. It only interpolates classes present in the final prediction which only takes around 10\% in the ADE20K dataset. This is a common scenario for datasets with large classes. Therefore it significantly decreases the latency of the final upsample process which takes the greatest part of the model's overall latency.
 
 
 Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy-latency tradeoff compared to other SOTA methods.
@@ -30,13 +27,8 @@ Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy
 | Model | Backbone | Training Iters | Batchsize | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
 |-|-|-|-|-|-|-|-|-|
 |PP-MobileSeg-Base|StrideFormer-Base|80000|32|512x512|41.57%|265.5|5.62|[config](./pp_mobileseg_base_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
-|PP-MobileSeg-Tiny|StrideFormer-Tiny|160000|16|512x512|36.70%|215.3|1.61|[config](./pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=8b48fc0ada781be47468bdeb6941eb99)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
+|PP-MobileSeg-Tiny|StrideFormer-Tiny|80000|32|512x512|36.39%|215.3|1.61|[config](./pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ffba08f700424b9d526c138df4426f4c)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
 
-
-### Cityscapes
-| Model | Backbone | Training Iters | Batchsize | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
-|-|-|-|-|-|-|-|-|-|
-|PP-MobileSeg-Base|StrideFormer-Base|80000|32|1024x512|77.83%|326.3|5.68|[config](./pp_mobileseg_base_cityscapes_1024x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=735db0e47ddf783e6896f00bbb804819)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/pp_mobileseg_base/export_model.zip)|
 
 
 ### Compare with SOTA on ADE20Ks
@@ -46,7 +38,7 @@ Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy
 |MobileSeg-Base|MobileNetV3_large_x1_0|33.26|391.5|2.85|
 |TopFormer-Tiny|TopTransformer-Tiny|32.46|490.3|1.41|
 |SeaFormer-Tiny|SeaFormer-Tiny|35.00|459.0|1.61|
-|PP-MobileSeg-Tiny|StrideFormer-Tiny|**36.70**|**215.3**|**1.44**|
+|PP-MobileSeg-Tiny|StrideFormer-Tiny|**36.39**|**215.3**|**1.44**|
 |TopFormer-Base|TopTransformer-Base|38.28|480.6|5.13|
 |SeaFormer-Base|SeaFormer-Base|40.07**|465.4|8.64|
 |PP-MobileSeg-Base|StrideFormer-Base|**41.57**|**265.5**|**5.62**|
@@ -103,7 +95,8 @@ python3  -m paddle.distributed.launch tools/train.py \
 With the trained model on hand, you can verify the model's accuracy through evaluation. Details about evaluation are under [evaluation guide](../../docs/evaluation/evaluate.md).
 
 ```bash
-python  -m paddle.distributed.launch tools/val.py --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
+python  -m paddle.distributed.launch tools/val.py \
+       --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
        --model_path output/pp_mobileseg_base/best_model/model.pdparams
 ```
 
@@ -130,7 +123,8 @@ List of devices attached
 The model needs to be transferred from dynamic graph to static graph for PaddleLite inference. In this step, we can use ```VIM``` to speed the model up. You only need to change ```model::upsample``` to ```vim``` in the config file, and the exported model can be found on the `PaddleSeg/save/dir`
 
 ```bash
-python tools/export.py --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
+python tools/export.py \
+      --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
       --save_dir output/pp_mobileseg_base  \
       --input_shape 1 3 512 512 \ # The model is set to infer one image with this input shape, feel free to suit this to your dataset.
       --output_op none   # If do not use VIM, you need to set this to argmax to get the final prediction rather than logits.
