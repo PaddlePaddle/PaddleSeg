@@ -20,7 +20,7 @@ PaddleSeg中所有语义分割模型都针对公开数据集，提供了对应�
 
 数据预处理方式transforms模块，支持的transform类在`PaddleSeg/paddleseg/transforms/transforms.py`[文件](../../paddleseg/transforms/transforms.py)中，使用`@manager.TRANSFORMS.add_component`进行注册。
 
-优化器optimizer模块，支持Paddle提供的所有优化器类，具体参考[文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html#api)。
+优化器optimizer模块，支持的optimizer类在`PaddleSeg/paddleseg/optimizers`[目录](../../paddleseg/optimizers/)下，使用`@manager.OPTIMIZERS.add_component`进行注册。
 
 学习率衰减lr_scheduler模块，支持Paddle提供的所有lr_scheduler类，具体参考[文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html#about-lr)。
 
@@ -66,7 +66,7 @@ val_dataset:  #验证数据设置
     - type: Normalize #对原始图像进行归一化，标注图像保持不变
 
 optimizer: #设定优化器的类型
-  type: sgd #采用SGD（Stochastic Gradient Descent）随机梯度下降方法为优化器
+  type: SGD #采用SGD（Stochastic Gradient Descent）随机梯度下降方法为优化器
   momentum: 0.9 #设置SGD的动量
   weight_decay: 4.0e-5 #权值衰减，使用的目的是防止过拟合
 
