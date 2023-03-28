@@ -19,7 +19,7 @@ For dataset config module,  the supported classes in `PaddleSeg/paddleseg/datase
 
 For data transforms config module, the supported classes in `PaddleSeg/paddleseg/transforms/transforms.py` are registered by `@manager.TRANSFORMS.add_component`.
 
-For optimizer config module, it supports all optimizer provided by PaddlePaddle. Please refer to the [document](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html#api).
+For optimizer config module, the supported classes in `PaddleSeg/paddleseg/optimizers` are registered by `@manager.OPTIMIZERS.add_component`.
 
 For lr_scheduler config module, it supports all lr_scheduler provided by PaddlePaddle. Please refer to the [document](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html#about-lr).
 
@@ -64,7 +64,7 @@ val_dataset:
     - type: Normalize
 
 optimizer:
-  type: sgd
+  type: SGD
   momentum: 0.9
   weight_decay: 4.0e-5
 

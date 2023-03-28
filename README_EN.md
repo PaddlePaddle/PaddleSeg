@@ -47,7 +47,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 
 ## <img src="./docs/images/feature.png" width="20"/> Features
 
-* **High-Performance Model**: Following the state of the art segmentation methods and using high-performance backbone networks, we provide 40+ models and 140+ high-quality pre-training models, which are better than other open-source implementations.
+* **High-Performance Model**: Following the state of the art segmentation methods and using high-performance backbone networks, we provide 45+ models and 150+ high-quality pre-training models, which are better than other open-source implementations.
 
 * **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all these allowing developers to train image segmentation models more efficiently and at a lower cost.
 
@@ -139,6 +139,13 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li><a href="./configs/uhrnet">UHRNet</a></li>
             <li><a href="./configs/topformer">TopFormer</a></li>
             <li><a href="./configs/mscale_ocrnet">MscaleOCRNet-PSA</a></li>
+            <li><a href="./configs/cae">CAE</a></li>
+            <li><a href="./configs/maskformer">MaskFormer</a></li>
+            <li><a href="./configs/vit_adapter">ViT-Adapter</a></li>
+            <li><a href="./configs/hrformer">HRFormer</a></li>
+            <li><a href="./configs/lpsnet">LPSNet</a></li>
+            <li><a href="./configs/segnext">SegNeXt</a></li>
+            <li><a href="./configs/knet">K-Net</a></li>
           </ul>
         </details>
         <details><summary><b>Interactive Segmentation</b></summary>
@@ -155,11 +162,13 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
+              <li><a href="./Matting/configs/rvm">RVM</a></li>
           </ul>
         </details>
         <details><summary><b>Panoptic Segmentation</b></summary>
           <ul>
-            <li><a href="./contrib/PanopticDeepLab/README_CN.md">Panoptic-DeepLab</a></li>
+            <li><a href="./contrib/PanopticSeg/configs/mask2former">Mask2Former</a></li>
+            <li><a href="./contrib/PanopticSeg/configs/panoptic_deeplab">Panoptic-DeepLab</a></li>
           </ul>
         </details>
       </td>
@@ -178,6 +187,9 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li><a href="./paddleseg/models/backbones/vision_transformer.py">VIT</a></li>
             <li><a href="./paddleseg/models/backbones/mix_transformer.py">MixVIT</a></li>
             <li><a href="./paddleseg/models/backbones/swin_transformer.py">Swin Transformer</a></li>
+            <li><a href="./paddleseg/models/backbones/top_transformer.py">TopTransformer</a></li>
+            <li><a href="./paddleseg/models/backbones/hrformer.py">HRTransformer</a></li>
+            <li><a href="./paddleseg/models/backbones/mscan.py">MSCAN</a></li>
           </ul>
         </details>
         <details><summary><b>Losses</b></summary>
@@ -395,6 +407,7 @@ Note that:
     * [Export ONNX Model](./docs/model_export_onnx.md)
 
 * Model Deployment
+    * [FastDeploy](./deploy/fastdeploy)
     * [Paddle Inference (Python)](./docs/deployment/inference/python_inference.md)
     * [Paddle Inference (C++)](./docs/deployment/inference/cpp_inference.md)
     * [Paddle Lite](./docs/deployment/lite/lite.md)
