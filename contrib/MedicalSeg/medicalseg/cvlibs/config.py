@@ -322,9 +322,9 @@ class Config(object):
         env_info = get_sys_env()
         if paddle.get_device() == 'gpu' and env_info['Paddle compiled with cuda'] \
             and env_info['GPUs used'] and paddle.distributed.ParallelEnv().nranks > 1:
-
             self._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(
                 self._model)
+            logger.info("Convert bn to sync_bn")
 
         return self._model
 
