@@ -21,7 +21,7 @@ import paddle
 import yaml
 
 from medicalseg.cvlibs import manager
-from medicalseg.utils import logger
+from medicalseg.utils import logger, get_sys_env
 
 # todo: check and edit the unnecessary components
 
@@ -318,7 +318,11 @@ class Config(object):
 
         if not self._model:
             self._model = self._load_object(model_cfg)
-        if paddle.get_device() != 'cpu':
+
+        env_info = get_sys_env()
+        if paddle.get_device() == 'gpu' and env_info['Paddle compiled with cuda'] \
+            and env_info['GPUs used'] and paddle.distributed.ParallelEnv().nranks > 1:
+
             self._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(
                 self._model)
 
