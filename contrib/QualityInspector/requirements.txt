@@ -11,7 +11,7 @@ PyYAML
 tqdm
 scikit-learn
 Pillow  
-matplotlib
+matplotlib==3.7.1
 scikit-image
 
 # for uad
