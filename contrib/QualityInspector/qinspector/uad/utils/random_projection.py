@@ -15,11 +15,10 @@
 import warnings
 from typing import Optional
 
-import numpy as np
-from sklearn.utils.random import sample_without_replacement
-
 import paddle
 from paddle import Tensor
+import numpy as np
+from sklearn.utils.random import sample_without_replacement
 
 
 class NotFittedError(ValueError, AttributeError):
