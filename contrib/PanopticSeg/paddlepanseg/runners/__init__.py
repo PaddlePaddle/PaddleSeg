@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .maskformer import GenerateMaskFormerTrainTargets
-from .panoptic_deeplab import GeneratePanopticDeepLabTrainTargets
+from .maskformer_runner import MaskFormerRunner
+from .panoptic_deeplab_runner import PanopticDeepLabRunner

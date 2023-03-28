@@ -118,10 +118,13 @@ lr_scheduler:
 
 loss:
   types:
+    # Classification loss
     - type: CrossEntropyLoss
       top_k_percent_pixels: 0.2
-    - type: CenterLoss
-    - type: OffsetLoss
+    # Center loss
+    - type: L1Loss
+    # Offset loss
+    - type: L1Loss
   coef: [1, 200, 0.01]
 
 postprocessor:
@@ -133,6 +136,9 @@ postprocessor:
   nms_kernel: 7
   top_k: 200
   ignore_index: *ignore_index
+
+runner: 
+  type: PanopticDeepLabRunner
 
 export:
   transforms:

@@ -1,4 +1,4 @@
-# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,23 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Adapted from https://github.com/facebookresearch/Mask2Former/blob/main/mask2former/modeling/criterion.py , 
-# https://github.com/facebookresearch/Mask2Former/blob/main/mask2former/modeling/matcher.py , 
-# and https://github.com/facebookresearch/detectron2/blob/main/projects/PointRend/point_rend/point_features.py
-# 
-# Original copyright info: 
-
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by Bowen Cheng from https://github.com/facebookresearch/detr/blob/master/models/detr.py
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 from scipy.optimize import linear_sum_assignment
 
-from paddlepanseg.cvlibs.info_dicts import build_info_dict
-from paddlepanseg.cvlibs import manager
-from paddlepanseg.models.losses import PanLoss
+from paddlepanseg.cvlibs import manager, build_info_dict
+from paddlepanseg.core.runner import PanSegRunner
 
 
 def point_sample(input, point_coords, **grid_sample_kwargs):
@@ -218,177 +208,6 @@ def nested_tensor_from_tensor_list(tensor_list):
     return NestedTensor(tensor, mask)
 
 
-@manager.LOSSES.add_component
-class MaskFormerCombinedLoss(PanLoss):
-    def __init__(self,
-                 num_classes,
-                 weight_ce,
-                 weight_mask,
-                 weight_dice,
-                 eos_coef,
-                 num_points,
-                 oversample_ratio,
-                 importance_sample_ratio,
-                 ignore_index=255):
-        super().__init__(ignore_index)
-        self.num_classes = num_classes
-        self.weight_ce = weight_ce
-        self.weight_mask = weight_mask
-        self.weight_dice = weight_dice
-        # Use a Hungarian matcher
-        self.matcher = HungarianMatcher(
-            cost_class=weight_ce,
-            cost_mask=weight_mask,
-            cost_dice=weight_dice,
-            num_points=num_points)
-        self.eos_coef = eos_coef
-        self.empty_weight = paddle.ones((self.num_classes + 1, ))
-        self.empty_weight[-1] = self.eos_coef
-
-        # Pointwise mask loss parameters
-        self.num_points = num_points
-        self.oversample_ratio = oversample_ratio
-        self.importance_sample_ratio = importance_sample_ratio
-
-    def loss_labels(self, sample_dict, net_out_dict, indices, num_masks):
-        src_logits = net_out_dict['logits'].astype('float32')
-
-        idx = self._get_src_permutation_idx(indices)
-        target_classes_o = paddle.concat(
-            [t[J] for t, (_, J) in zip(sample_dict['gt_ids'], indices)])
-        target_classes = paddle.full(
-            src_logits.shape[:2], self.num_classes, dtype='int64')
-        target_classes[idx] = target_classes_o
-
-        loss_ce = F.cross_entropy(
-            src_logits.transpose((0, 2, 1)),
-            target_classes,
-            self.empty_weight,
-            axis=1)
-        return self.weight_ce * loss_ce
-
-    def loss_masks(self, sample_dict, net_out_dict, indices, num_masks):
-        src_idx = self._get_src_permutation_idx(indices)
-        tgt_idx = self._get_tgt_permutation_idx(indices)
-        src_masks = net_out_dict['masks']
-        src_masks = src_masks[src_idx]
-        if src_masks.dim() == 2:
-            src_masks = src_masks.unsqueeze(0)
-        masks = sample_dict['gt_masks']
-        target_masks, _ = nested_tensor_from_tensor_list(masks).decompose()
-        target_masks = target_masks[tgt_idx]
-        if target_masks.dim() == 2:
-            target_masks = target_masks.unsqueeze(0)
-
-        # No need to upsample predictions as we are using normalized coordinates :)
-        # N x 1 x H x W
-        src_masks = src_masks[:, None]
-        target_masks = target_masks[:, None]
-
-        with paddle.no_grad():
-            # Sample point_coords
-            point_coords = d2_get_uncertain_point_coords_with_randomness(
-                src_masks,
-                lambda logits: calculate_uncertainty(logits),
-                self.num_points,
-                self.oversample_ratio,
-                self.importance_sample_ratio, )
-            # Get gt labels
-            point_labels = point_sample(
-                target_masks,
-                point_coords,
-                align_corners=False, ).squeeze(1)
-
-        point_logits = point_sample(
-            src_masks,
-            point_coords,
-            align_corners=False, ).squeeze(1)
-
-        loss_ce = sigmoid_ce_loss(point_logits, point_labels, num_masks)
-        loss_dice = dice_loss(point_logits, point_labels, num_masks)
-        return self.weight_mask * loss_ce + self.weight_dice * loss_dice
-
-    def _get_src_permutation_idx(self, indices):
-        # Permute predictions following indices
-        batch_idx = paddle.concat(
-            [paddle.full_like(src, i) for i, (src, _) in enumerate(indices)])
-        src_idx = paddle.concat([src for (src, _) in indices])
-        return batch_idx, src_idx
-
-    def _get_tgt_permutation_idx(self, indices):
-        # Permute targets following indices
-        batch_idx = paddle.concat(
-            [paddle.full_like(tgt, i) for i, (_, tgt) in enumerate(indices)])
-        tgt_idx = paddle.concat([tgt for (_, tgt) in indices])
-        return batch_idx, tgt_idx
-
-    def _compute(self, sample_dict, net_out_dict):
-        # Check if 'gt_ids' and 'gt_masks' exist and convert the values to tensor
-        if 'gt_ids' not in sample_dict:
-            raise ValueError("Sample dict does not contain the key 'gt_ids'.")
-        if 'gt_masks' not in sample_dict:
-            raise ValueError("Sample dict does not contain the key 'gt_masks'.")
-        nonzero_len_idcs = [
-            i for i, gt_ids in enumerate(sample_dict['gt_ids'])
-            if len(gt_ids) > 0
-        ]
-        nonzero_len_idcs = paddle.to_tensor(nonzero_len_idcs, dtype='int64')
-        # If there are no gt targets, return zero loss.
-        if len(nonzero_len_idcs) == 0:
-            return (net_out_dict['logits'] - net_out_dict['logits']).mean()
-        # XXX: Inplace modification
-        sample_dict['gt_ids'] = [
-            paddle.to_tensor(
-                gt_ids, dtype='int64')
-            for i, gt_ids in enumerate(sample_dict['gt_ids'])
-            if i in nonzero_len_idcs
-        ]
-        sample_dict['gt_masks'] = [
-            paddle.to_tensor(
-                gt_masks, dtype='float32')
-            for i, gt_masks in enumerate(sample_dict['gt_masks'])
-            if i in nonzero_len_idcs
-        ]
-        if len(nonzero_len_idcs) < net_out_dict['logits'].shape[0]:
-            net_out_dict['logits'] = paddle.index_select(
-                net_out_dict['logits'], nonzero_len_idcs, axis=0)
-            net_out_dict['masks'] = paddle.index_select(
-                net_out_dict['masks'], nonzero_len_idcs, axis=0)
-
-        # Retrieve the matching between the outputs and the targets
-        indices = self.matcher(sample_dict, net_out_dict)
-
-        # Compute the average number of target boxes across all nodes, for normalization purposes
-        num_masks = sum(len(gt_ids) for gt_ids in sample_dict['gt_ids'])
-        num_masks = paddle.to_tensor([num_masks], dtype='float32')
-        n_ranks = paddle.distributed.get_world_size()
-        if n_ranks > 1:
-            paddle.distributed.all_reduce(num_masks)
-        num_masks = int(paddle.clip(num_masks / n_ranks, min=1))
-
-        l1 = self.loss_labels(sample_dict, net_out_dict, indices, num_masks)
-        l2 = self.loss_masks(sample_dict, net_out_dict, indices, num_masks)
-        loss = l1 + l2
-
-        # Calculate auxiliary losses
-        if 'aux_masks' in net_out_dict and 'aux_logits' in net_out_dict:
-            for i, (aux_logit, aux_mask) in enumerate(
-                    zip(net_out_dict['aux_logits'], net_out_dict['aux_masks'])):
-                aux_dict = build_info_dict(
-                    _type_='net_out', logits=aux_logit, masks=aux_mask)
-                if len(nonzero_len_idcs) < aux_dict['logits'].shape[0]:
-                    aux_dict['logits'] = paddle.index_select(
-                        aux_dict['logits'], nonzero_len_idcs, axis=0)
-                    aux_dict['masks'] = paddle.index_select(
-                        aux_dict['masks'], nonzero_len_idcs, axis=0)
-                indices = self.matcher(sample_dict, aux_dict)
-                l1 = self.loss_labels(sample_dict, aux_dict, indices, num_masks)
-                l2 = self.loss_masks(sample_dict, aux_dict, indices, num_masks)
-                loss += l1 + l2
-
-        return loss
-
-
 class HungarianMatcher(nn.Layer):
     """
     This class computes an assignment between the targets and the predictions of the network
@@ -479,3 +298,167 @@ class HungarianMatcher(nn.Layer):
     @paddle.no_grad()
     def forward(self, sample_dict, net_out_dict):
         return self.memory_efficient_forward(sample_dict, net_out_dict)
+
+
+@manager.RUNNERS.add_component
+class MaskFormerRunner(PanSegRunner):
+    def __init__(self, num_classes, weight_ce, weight_mask, weight_dice,
+                 eos_coef, num_points, oversample_ratio,
+                 importance_sample_ratio):
+        super().__init__()
+        self.num_classes = num_classes
+        self.weight_ce = weight_ce
+        self.weight_mask = weight_mask
+        self.weight_dice = weight_dice
+
+        # Use a Hungarian matcher
+        self.matcher = HungarianMatcher(
+            cost_class=weight_ce,
+            cost_mask=weight_mask,
+            cost_dice=weight_dice,
+            num_points=num_points)
+        self.eos_coef = eos_coef
+        self.empty_weight = paddle.ones((self.num_classes + 1, ))
+        self.empty_weight[-1] = self.eos_coef
+
+        # Pointwise mask loss parameters
+        self.num_points = num_points
+        self.oversample_ratio = oversample_ratio
+        self.importance_sample_ratio = importance_sample_ratio
+
+    def loss_labels(self, sample_dict, net_out_dict, indices, num_masks):
+        src_logits = net_out_dict['logits'].astype('float32')
+
+        idx = self._get_src_permutation_idx(indices)
+        target_classes_o = paddle.concat(
+            [t[J] for t, (_, J) in zip(sample_dict['gt_ids'], indices)])
+        target_classes = paddle.full(
+            src_logits.shape[:2], self.num_classes, dtype='int64')
+        target_classes[idx] = target_classes_o
+
+        loss_ce = F.cross_entropy(
+            src_logits.transpose((0, 2, 1)),
+            target_classes,
+            self.empty_weight,
+            axis=1)
+        return self.weight_ce * loss_ce
+
+    def loss_masks(self, sample_dict, net_out_dict, indices, num_masks):
+        src_idx = self._get_src_permutation_idx(indices)
+        tgt_idx = self._get_tgt_permutation_idx(indices)
+        src_masks = net_out_dict['masks']
+        src_masks = src_masks[src_idx]
+        if src_masks.dim() == 2:
+            src_masks = src_masks.unsqueeze(0)
+        masks = sample_dict['gt_masks']
+        target_masks, _ = nested_tensor_from_tensor_list(masks).decompose()
+        target_masks = target_masks[tgt_idx]
+        if target_masks.dim() == 2:
+            target_masks = target_masks.unsqueeze(0)
+
+        # No need to upsample predictions as we are using normalized coordinates :)
+        # N x 1 x H x W
+        src_masks = src_masks[:, None]
+        target_masks = target_masks[:, None]
+
+        with paddle.no_grad():
+            # Sample point_coords
+            point_coords = d2_get_uncertain_point_coords_with_randomness(
+                src_masks,
+                lambda logits: calculate_uncertainty(logits),
+                self.num_points,
+                self.oversample_ratio,
+                self.importance_sample_ratio, )
+            # Get gt labels
+            point_labels = point_sample(
+                target_masks,
+                point_coords,
+                align_corners=False, ).squeeze(1)
+
+        point_logits = point_sample(
+            src_masks,
+            point_coords,
+            align_corners=False, ).squeeze(1)
+
+        loss_ce = sigmoid_ce_loss(point_logits, point_labels, num_masks)
+        loss_dice = dice_loss(point_logits, point_labels, num_masks)
+        return self.weight_mask * loss_ce + self.weight_dice * loss_dice
+
+    def _get_src_permutation_idx(self, indices):
+        # Permute predictions following indices
+        batch_idx = paddle.concat(
+            [paddle.full_like(src, i) for i, (src, _) in enumerate(indices)])
+        src_idx = paddle.concat([src for (src, _) in indices])
+        return batch_idx, src_idx
+
+    def _get_tgt_permutation_idx(self, indices):
+        # Permute targets following indices
+        batch_idx = paddle.concat(
+            [paddle.full_like(tgt, i) for i, (_, tgt) in enumerate(indices)])
+        tgt_idx = paddle.concat([tgt for (_, tgt) in indices])
+        return batch_idx, tgt_idx
+
+    def compute_losses(self, net_out, data):
+        # Check if 'gt_ids' and 'gt_masks' exist and convert the values to tensor
+        if 'gt_ids' not in data:
+            raise ValueError("Sample dict does not contain the key 'gt_ids'.")
+        if 'gt_masks' not in data:
+            raise ValueError("Sample dict does not contain the key 'gt_masks'.")
+        nonzero_len_idcs = [
+            i for i, gt_ids in enumerate(data['gt_ids']) if len(gt_ids) > 0
+        ]
+        nonzero_len_idcs = paddle.to_tensor(nonzero_len_idcs, dtype='int64')
+        # If there are no gt targets, return zero loss.
+        if len(nonzero_len_idcs) == 0:
+            return (data['logits'] - data['logits']).mean()
+        # XXX: Inplace modification
+        data['gt_ids'] = [
+            paddle.to_tensor(
+                gt_ids, dtype='int64')
+            for i, gt_ids in enumerate(data['gt_ids']) if i in nonzero_len_idcs
+        ]
+        data['gt_masks'] = [
+            paddle.to_tensor(
+                gt_masks, dtype='float32')
+            for i, gt_masks in enumerate(data['gt_masks'])
+            if i in nonzero_len_idcs
+        ]
+        if len(nonzero_len_idcs) < net_out['logits'].shape[0]:
+            net_out['logits'] = paddle.index_select(
+                net_out['logits'], nonzero_len_idcs, axis=0)
+            net_out['masks'] = paddle.index_select(
+                net_out['masks'], nonzero_len_idcs, axis=0)
+
+        # Retrieve the matching between the outputs and the targets
+        indices = self.matcher(data, net_out)
+
+        # Compute the average number of target boxes accross all nodes, for normalization purposes
+        num_masks = sum(len(gt_ids) for gt_ids in data['gt_ids'])
+        num_masks = paddle.to_tensor([num_masks], dtype='float32')
+        n_ranks = paddle.distributed.get_world_size()
+        if n_ranks > 1:
+            paddle.distributed.all_reduce(num_masks)
+        num_masks = int(paddle.clip(num_masks / n_ranks, min=1))
+
+        l1 = self.loss_labels(data, net_out, indices, num_masks)
+        l2 = self.loss_masks(data, net_out, indices, num_masks)
+        loss = l1 + l2
+
+        # Calculate auxiliary losses
+        if 'aux_masks' in net_out and 'aux_logits' in net_out:
+            for i, (
+                    aux_logit, aux_mask
+            ) in enumerate(zip(net_out['aux_logits'], net_out['aux_masks'])):
+                aux_dict = build_info_dict(
+                    _type_='net_out', logits=aux_logit, masks=aux_mask)
+                if len(nonzero_len_idcs) < aux_dict['logits'].shape[0]:
+                    aux_dict['logits'] = paddle.index_select(
+                        aux_dict['logits'], nonzero_len_idcs, axis=0)
+                    aux_dict['masks'] = paddle.index_select(
+                        aux_dict['masks'], nonzero_len_idcs, axis=0)
+                indices = self.matcher(data, aux_dict)
+                l1 = self.loss_labels(data, aux_dict, indices, num_masks)
+                l2 = self.loss_masks(data, aux_dict, indices, num_masks)
+                loss += l1 + l2
+
+        return [loss]
