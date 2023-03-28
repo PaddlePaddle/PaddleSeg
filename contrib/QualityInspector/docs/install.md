@@ -11,10 +11,10 @@
 
 ## 2 本地安装说明
 
-下载PaddleSeg, 进入IInspection目录
+下载PaddleSeg, 进入./contrib/QualityInspector/目录
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
-cd contrib/IInspection/
+cd contrib/QualityInspector/
 ```
 
 执行如下命令，完成PaddleDetection，PaddleSeg等其他第三方库的安装：

@@ -14,16 +14,15 @@
 
 import numpy as np
 from tqdm import tqdm
-from scipy.ndimage import gaussian_filter
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 from paddle.vision.models.resnet import resnet18, resnet50, wide_resnet50_2
 
+from scipy.ndimage import gaussian_filter
 from qinspector.cvlib.workspace import register
-from qinspector.uad.utils.k_center_greedy import KCenterGreedy
 from qinspector.uad.utils.utils import cdist, cholesky_inverse, mahalanobis, mahalanobis_einsum, orthogonal, svd_orthogonal
+from qinspector.uad.utils.k_center_greedy import KCenterGreedy
 
 models = {
     "resnet18": resnet18,
