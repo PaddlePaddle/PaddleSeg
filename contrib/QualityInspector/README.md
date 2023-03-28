@@ -9,7 +9,7 @@
 **QualityInspector全流程工业质检开发工具，致力于帮助开发者快速完成算法的研发、验证和调优，端到端完成从数据标注到模型部署的全流程工业质检应用**
 
 <div align="center">
-<img src="https://github.com/Sunting78/images/blob/master/ezgif.com-video-to-gif.gif"  width="400" />
+<img src="https://github.com/Sunting78/images/blob/master/ezgif.com-video-to-gif.gif"  width="600" />
 </div>
 
 QualityInspector目前发布V0.5预览版本，主要特性包括：
