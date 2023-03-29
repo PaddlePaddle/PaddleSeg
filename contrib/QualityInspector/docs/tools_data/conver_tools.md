@@ -2,7 +2,7 @@
 
 ## 1 工具说明
 
-convert_tools是PaddleIndustry提供的用于处理标注文件格式转换的工具集，位于`tools/convert_tools/`目录。由于工业质检可能采用检测，分割或者检测结合RoI分割的解决方案, 为了便于进行PPL的对比和尝试，进行一些简单的任务输入格式的文件处理工作。
+convert_tools是QualityInspector提供的用于处理标注文件格式转换的工具集，位于`tools/convert_tools/`目录。由于工业质检可能采用检测，分割或者检测结合RoI分割的解决方案, 为了便于进行PPL的对比和尝试，进行一些简单的任务输入格式的文件处理工作。
 
 *请注意，convert_tools目前为一项实验性功能，若您在使用过程中遇到问题，请及时向我们反馈。*
 
