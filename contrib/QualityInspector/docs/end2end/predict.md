@@ -3,10 +3,23 @@
 除了分析模型的检测AP, 分割mIoU指标，质检需要进行全流程的零件过杀/漏检分析，通过全流程预测能够得到零件的NG/OK（缺陷或正常）信息，以及预测框/分割的实例级别NG/OK（缺陷或正常）信息, 保存完整的预测结果，并对齐进行可视化，从而进行分析和指标优化。
 
 ## 预测用法
-使用`tools/end2end/predict.py`脚本，执行如下命令，完成预测：
+使用`tools/end2end/predict.py`脚本，执行如下命令，完成`./dataset/MT_dataset/images/val`路径下所有图像的预测：
 
 ```
 python3 tools/end2end/predict.py --config ./configs/end2end/e2e_det.yml --input ./dataset/MT_dataset/images/val --output_dir ./output_det/
+```
+
+也可以通过`--input ./dataset/MT_dataset/images/val/exp5_num_10250.jpg`进行单张图像预测，如下：
+
+```
+python3 tools/end2end/predict.py --config ./configs/end2end/e2e_det.yml --input ./dataset/MT_dataset/images/val/exp5_num_10250.jpg --output_dir ./output_det/
+```
+
+得到输出结果：
+
+```
+Pipeline INFO: Save prediction to ./output_det/output.json
+{'./dataset/MT_dataset/images/val/exp5_num_10250.jpg': {'pred': [], 'isNG': 0}}
 ```
 
 具体参数说明如下：
