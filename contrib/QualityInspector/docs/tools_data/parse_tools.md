@@ -4,10 +4,13 @@
 
 ### 1.1 coco格式json数据可视化
 
-如果想检查coco格式的数据是否正确转换，可以使用以下命令进行简单的可视化，其中`json_path`是上面生成的json文件，`root_path`是图像目录，`save_path`是保存可视化图像的路径
+如果想检查coco格式的数据是否正确转换，可以使用以下命令进行简单的可视化：
+
 ```shell
 python3 tools/dataset/visualize_coco.py --json_path ./dataset/MT_dataset/train.json --root_path ./ --save_path ./show/
 ```
+
+其中`json_path`是coco格式的json文件，`root_path`是数据集根目录，`save_path`是保存可视化图像的路径
 
 ### 1.2 分割标签可视化
 
@@ -35,4 +38,4 @@ CalClassWeights INFO: Overall Class Frequency Matrix:
 +-----------+------+------+-------+--------+---------+----------+
 ```
 
-其中anno_path是要输入的标签图像存放路径，temperature越大，权重越平滑。
+其中`anno_path`是要输入的标签图像存放路径，`temperature`越大，权重越平滑。

@@ -1,6 +1,6 @@
 # 1 准备数据集
 
-对于工业的数据集，大家只需要下载并存按照[PaddleDetection数据准备](https://github.com/PaddlePaddle/PaddleDetection/blob/release/2.6/docs/tutorials/data/PrepareDetDataSet.md)或[PaddleSeg数据准备](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/data/marker/marker_cn.md)的指引放到特定目录，就可以进行模型训练和全流程预测。
+对于工业的数据集，大家只需要下载并按照[PaddleDetection数据准备](https://github.com/PaddlePaddle/PaddleDetection/blob/release/2.6/docs/tutorials/data/PrepareDetDataSet.md)或[PaddleSeg数据准备](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/data/marker/marker_cn.md)的指引放到特定目录，就可以进行模型训练和全流程预测。
 
 # 2 举例：Magnetic tile defect datasets
 
@@ -11,7 +11,7 @@
 ![](../images/dataset.png)
 
 
-保存到`dataset`路径，数据集结构如下：
+下载保存到`dataset`路径，数据集结构如下：
 
 ```
     Magnetic-Tile-Defect
@@ -35,7 +35,7 @@
 
 ## 2.2 转换为全图分割训练数据格式
 
-下载原始数据集后，运行下面命令进行转换，其中`dataset_path`是数据集保存的根目录，`output_path`是保存路径，执行完成后，转换后的数据集依旧保存在该目录下，保存为标准的PaddleSeg数据训练格式。
+下载原始数据集后，运行下面命令进行转换，其中`dataset_path`是数据集保存的目录，`output_path`是保存路径，执行完成后，转换后的数据集保存在`dataset/MT_dataset/`路径下，保存为标准的PaddleSeg数据训练格式。
 
 ```shell
 python3 tools/dataset/MT_dataset.py --dataset_path ./dataset/Magnetic-Tile-Defect --output_path ./dataset/MT_dataset/
@@ -86,4 +86,4 @@ python3 tools/convert_tools/convert_mask_to_roi.py --image_path dataset/MT_datas
 python3 tools/convert_tools/convert_mask_to_coco.py --image_path dataset/MT_dataset/images/train --anno_path dataset/MT_dataset/annos/train --class_num 5 --label_file dataset/MT_dataset/mt_catIDs.json --output_name dataset/MT_dataset/train.json --suffix .png
 ```
 
-其中由于除去背景是5类缺陷，因此class_num是5，保存了train的coco格式检测训练文件。
+其中由于除去背景是5类缺陷，因此class_num是5，执行该命令后，在`dataset/MT_dataset/train.json`中保存了train数据的coco格式检测训练文件。

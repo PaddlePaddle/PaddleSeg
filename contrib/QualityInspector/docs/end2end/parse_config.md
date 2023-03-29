@@ -4,9 +4,9 @@
 
 配置文件保存在`./configs/end2end/`目录下, 提供了三种常用的工业质检PPL，分别是：
 
-* [检测+后处理](../../configs/end2end/e2e_det.yml)
-* [分割+后处理](../../configs/end2end/e2e_seg.yml)
-* [检测+RoI分割+后处理](../../configs/end2end/e2e_det_RoI_seg.yml)
+* [检测+后处理](../../configs/end2end/e2e_det.yml): `e2e_det.yml`
+* [分割+后处理](../../configs/end2end/e2e_seg.yml): `e2e_seg.yml`
+* [检测+RoI分割+后处理](../../configs/end2end/e2e_det_RoI_seg.yml): `e2e_det_RoI_seg.yml`
 
 ## 详细解读
 
@@ -22,7 +22,7 @@ PipeLine:
   - Detection: # 检测模块
       config_path: ./configs/det/hrnet/faster_rcnn_hrnetv2p_w18_3x_defect.yml  # 检测算法配置文件路径
       model_path: ./output/faster_rcnn_hrnetv2p_w18_3x_defect/model_final.pdparams # 检测算法训练保存的模型路径
-      score_threshold: 0.01 # 输出置信度大于0.01的bbox
+      score_threshold: 0.01 # 只输出置信度大于0.01的bbox
   - CropSegmentation: # 区域分割模块
       pad_scale: 0.5 #根据检测box剪裁RoI区域时变长扩大的倍数
       config_path: ./configs/seg/ocrnet/ocrnet_hrnetw18_RoI_defect_256x256_40k.yml # RoI分割训练配置文件路径

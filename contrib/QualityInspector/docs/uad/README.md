@@ -15,24 +15,26 @@
 
 ## 2. 数据集
 
-此工具以MVTec AD数据集为例, [下载MVTec AD](https://www.mvtec.com/company/research/datasets/mvtec-ad/);
+此工具以MVTec AD数据集为例, 首先下载数据集[下载MVTec AD](https://www.mvtec.com/company/research/datasets/mvtec-ad/), 数据保存在`data/mvtec_anomaly_detection/{category}/...`目录中。MVTec AD数据包含结构和纹理类型的零件共计15类，其中训练集只包含OK图像，测试集包含NG和OK图像，示意图如下：
 
-如果希望使用自己的数据集, 请组织成MVTec AD数据集的格式, 将自定义数据集作为MVTec AD中的一个category，路径设置为`{repo}/data/mvtec_anomaly_detection/{category}/...`，标签文件为灰度图, 缺陷部分像素值为255;
+![](https://github.com/Sunting78/images/blob/master/mvtec.png)
+
+另外，如果希望使用自己的数据集, 请组织成MVTec AD数据集的格式, 将自定义数据集作为MVTec AD中的一个category，路径设置为`{repo}/data/mvtec_anomaly_detection/{category}/...`，标签文件为灰度图, 缺陷部分像素值为255;
 
 
 ## 3. 训练、评估、预测命令
 
-以PaDiM模型为例，训练、评估、预测脚本存放在`tools/uad/padim`，通过`--config`参数传入对应模型YML配置文件，通过`--category`参数指定MVTec AD中的某个类别:
+以PaDiM模型为例，训练、评估、预测脚本存放在`tools/uad/padim/`目录下，通过`--config`参数传入对应模型YML配置文件，通过`--category`参数指定MVTec AD中的某个类别:
 
-Train:
+* 训练:
 
 ```python tools/uad/padim/train.py --config ./configs/uad/padim/padim_resnet18_mvtec.yml --category bottle```
 
-Eval:
+* 评估:
 
 ```python tools/uad/padim/val.py --config ./configs/uad/padim/padim_resnet18_mvtec.yml --category bottle```
 
-Predict:
+* 预测:
 
 ```python tools/uad/padim/predict.py --config ./configs/uad/padim/padim_resnet18_mvtec.yml --category bottle```
 
@@ -70,6 +72,4 @@ threshold: 0.5    # 指定预测后二值化异常分数图的阈值
 
 ## 5. 集成模型
 
-目前uad工具集成了[PaDiM](../../configs/uad/padim/README.md)模型, [PatchCore](../../configs/uad/patchcore/README.md)模型, [STFPM](../../configs/uad/stfpm/README.md)模型;
-
-其中，PaDiM、PatchCore无需训练网络。
+目前uad工具集成了[PaDiM](../../configs/uad/padim/README.md)模型, [PatchCore](../../configs/uad/patchcore/README.md)模型, [STFPM](../../configs/uad/stfpm/README.md)模型，其中，PaDiM、PatchCore无需训练网络，未来将集成和自研更多无监督异常检测算法。
