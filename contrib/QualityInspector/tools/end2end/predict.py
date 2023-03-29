@@ -37,7 +37,7 @@ def argsparser():
         "--input",
         type=str,
         default=None,
-        help="suport image file and the path of image.",
+        help="Suport path of one image file and the directory of images.",
         required=True)
     parser.add_argument(
         "--output_dir",

@@ -24,14 +24,18 @@ def parse_args():
     """Parse arguments"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--json_path', type=str, help="path of coco format json")
+        '--json_path', type=str, help="The path of coco format json file.")
     parser.add_argument(
-        '--root_path', type=str, default="", help="root path of images")
+        '--root_path',
+        type=str,
+        default="",
+        help="The directory of images, default None if the path of images is absolute path in json file."
+    )
     parser.add_argument(
         '--save_path',
         type=str,
         default="./show/",
-        help="where to save visualization result")
+        help="The directory for saving visualization result.")
     return parser.parse_args()
 
 

@@ -24,38 +24,38 @@ import numpy as np
 def get_args():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
-        description='Mask Format convert to Json for detection')
+        description='Mask convert to Json for detection')
     # Parameters
     parser.add_argument(
         '--image_path',
         type=str,
         required=True,
-        help='image path to provide images information')
+        help='The directory of images.')
     parser.add_argument(
         '--anno_path',
         type=str,
         required=True,
-        help='path of mask ground truth')
+        help='The directory of ground truth masks.')
     parser.add_argument(
         '--class_num',
         type=int,
         required=True,
-        help='number of classes, without background')
+        help='Number of categories, without background.')
     parser.add_argument(
         '--label_file',
         type=str,
         default=None,
-        help='the json file which defines class name and category id')
+        help='The path of a json file which gives class name and category id.')
     parser.add_argument(
         '--suffix',
         type=str,
         default='.png',
-        help='the file name suffix between gt and image')
+        help='The suffix of filename between gt and image.')
     parser.add_argument(
         '--output_name',
         type=str,
         default='coco.json',
-        help='name of output coco format json')
+        help='The file name for saving the output json file.')
     return parser.parse_args()
 
 

@@ -38,12 +38,12 @@ def parse_args():
         '--dataset_path',
         type=str,
         required=True,
-        help="path to folder of Magnetic-Tile dataset")
+        help="The directory of Magnetic-Tile dataset.")
     parser.add_argument(
         '--output_path',
         type=str,
         default="dataset/MT_dataset/",
-        help="where to store output")
+        help="The directory for saving output dataset.")
     return parser.parse_args()
 
 
