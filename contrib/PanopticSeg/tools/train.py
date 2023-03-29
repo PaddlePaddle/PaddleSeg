@@ -104,7 +104,13 @@ def parse_train_args(*args, **kwargs):
         default='gpu',
         choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
         type=str)
+    parser.add_argument(
+        '--profiler_options',
+        type=str,
+        help="Options of the training profiler. If `profiler_options` is not None, the training profiler will be enabled. Refer to `paddleseg/utils/train_profiler.py` for details."
+    )
     parser.add_argument('--seed', help="Random seed.", default=None, type=int)
+    parser.add_argument('--opts', help="Update the key-value pairs of existing options.", nargs='+')
 
     return parser.parse_args(*args, **kwargs)
 
@@ -116,7 +122,8 @@ def train_with_args(args):
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
-        batch_size=args.batch_size)
+        batch_size=args.batch_size,
+        opts=args.opts)
     builder = make_default_builder(cfg)
 
     utils.show_env_info()
@@ -155,7 +162,9 @@ def train_with_args(args):
             eval_sem=args.eval_sem,
             eval_ins=args.eval_ins,
             precision=args.precision,
-            amp_level=args.amp_level)
+            amp_level=args.amp_level,
+            profiler_options=args.profiler_options,
+            to_static_training=cfg.to_static_training)
     except BaseException as e:
         if args.debug:
             import traceback

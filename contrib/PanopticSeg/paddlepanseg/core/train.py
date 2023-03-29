@@ -19,7 +19,7 @@ from collections import deque
 
 import paddle
 from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
-                             worker_init_fn, op_flops_funs)
+                             worker_init_fn, train_profiler, op_flops_funs)
 
 from paddlepanseg.core.val import evaluate
 from paddlepanseg.core.runner import PanSegRunner
@@ -65,7 +65,9 @@ def train(model,
           eval_sem=False,
           eval_ins=False,
           precision='fp32',
-          amp_level='O1'):
+          amp_level='O1',
+          profiler_options=None,
+          to_static_training=False):
     """
     Launch training.
 
@@ -92,6 +94,8 @@ def train(model,
         eval_ins (bool, optional): Whether or not to calculate instance segmentation metrics during validation. Default: False.
         precision (str, optional): If `precision` is 'fp16', enable automatic mixed precision training. Default: 'fp32'.
         amp_level (str, optional): The auto mixed precision level. Choices are 'O1' and 'O2'. Default: 'O1'.
+        profiler_options (str, optional): Options of the training profiler.
+        to_static_training (bool, optional): Whether or not to apply dynamic-to-static model training.
     """
 
     model.train()
@@ -130,6 +134,10 @@ def train(model,
         collate_fn=train_dataset.collate
         if hasattr(train_dataset, 'collate') else None)
 
+    if to_static_training:
+        model = paddle.jit.to_static(model)
+        logger.info("Successfully applied `paddle.jit.to_static`")
+        
     # Bind components to runner
     if nranks > 1:
         runner.bind(model=ddp_model, criteria=losses, optimizer=optimizer)
@@ -167,6 +175,9 @@ def train(model,
 
             loss, loss_list = launcher.train_step(
                 data=data, return_loss_list=True)
+            
+            train_profiler.add_profiler_step(profiler_options)
+
             avg_loss += float(loss)
             if not avg_loss_list:
                 avg_loss_list = [l.numpy() for l in loss_list]
@@ -186,7 +197,7 @@ def train(model,
                 avg_train_reader_cost = reader_cost_averager.get_average()
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 logger.info(
-                    "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}"
+                    "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
                     .format((iter - 1
                              ) // iters_per_epoch + 1, iter, iters, avg_loss,
                             lr, avg_train_batch_cost, avg_train_reader_cost,
