@@ -1,12 +1,14 @@
 # 全流程指标评估
 
-模型的检测AP, 分割mIoU指标往往无法直观地评估一套工业质检解决方案，为了能够更好在项目中落地，我们提供了工业之间行业常用的过杀漏检指标的评估，包含过杀指标，图像级别漏失指标，以及实例缺陷级别的漏检指标。
+模型的检测AP, 分割mIoU指标往往无法直观地评估一套工业质检解决方案，为了能够更好在项目中落地，我们提供了工业质检行业常用的过杀漏检指标的评估方法，包含过杀指标，图像级别漏失指标，以及实例缺陷级别的漏检指标。
 
-同时，为了进一步分析优化指标，提供了对badcase的分析，并且支持后处理NG/OK判断的参数调整重新评测，无需重新加载检测/分割模型预测结果。
+同时，为了进一步分析优化指标，提供了对badcase的分析，并且支持后处理NG/OK判断的参数调整重新评测，无需使用检测/分割模型重新预测结果。
 
-## 评估用法
+## 评估方法
+执行以下命令对`./dataset/MT_dataset/val.json`中的每一张图像进行评估，`--pred_path`是通过执行全流程预测得到的预测结果json文件：
+
 ```
-python3 tools/end2end/eval.py --input_path ./dataset/MT_dataset/val.json --pred_path ./output_det/output.json --config ./configs/end2end/e2e_det.yml --rules_eval --image_root /ssd3/sunting/PP-Industry/
+python3 tools/end2end/eval.py --input_path ./dataset/MT_dataset/val.json --pred_path ./output_det/output.json --config ./configs/end2end/e2e_det.yml --rules_eval --image_root ./
 ```
 
 具体参数说明如下：
@@ -16,13 +18,12 @@ python3 tools/end2end/eval.py --input_path ./dataset/MT_dataset/val.json --pred_
 | `--input_path`     |  带有GT框的coco格式json文件            |           |
 | `--pred_path`      |  通过全流程预测得到的预测json文件        |           |
 | `--config`         |  全流程预测配置文件                     |          |
-| `--image_root`     |  图像保存的根目录                      |           |
+| `--image_root`     |  图像保存的根目录                      |    ''     |
 | `--rules_eval`     |  是否重新进行后处理判断                 |    False  |
 | `--instance_level` |  是否评测实力级别漏检指标                |    True  |
 | `--iou_theshold`   |  预测与gt框大于该阈值，视作召回          |     0.1   |
 | `--badcase`        |  是否进行badcase可视化                 |    True    |
-| `--output_path`    |  badcase保存路径                      |`./output/` |
-
+| `--output_path`    |  badcase保存路径                      | ./output/ |
 
 
 ## 输出结果和指标说明
@@ -123,4 +124,4 @@ Eval INFO: OK Evaluation Result:
 
 ## 其他
 
-判断图像是NG/OK的逻辑：根据输入的json文件，判断是否有标注框。
+判断图像是NG/OK的逻辑：根据输入的json文件，判断是否有标注框，有标注框即任务是NG图像。

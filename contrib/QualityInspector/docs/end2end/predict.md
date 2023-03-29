@@ -20,14 +20,12 @@ python3 tools/end2end/predict.py --config ./configs/end2end/e2e_det.yml --input 
 
 ## 输出结果解析
 
-若将`./configs/end2end/e2e_det.yml`中的`save`和`visualize`设置为`True`, 则会得到保存的预测结果json文件和可视化图像。
+若将`./configs/end2end/e2e_det.yml`中的`save`和`visualize`设置为`True`, 则会得到保存的预测结果json文件和可视化图像。执行上述命令以后，在`./output_det/`路径中会得到`./output_det/output.json`文件，在`./output_det/show/`下可得到可视化的图像:
 
 ```
 Pipeline INFO: Save prediction to ./output_det/output.json
 Pipeline INFO: Visualize prediction to ./output_det/show/
 ```
-
-执行上述命令以后，在`./output_det/`路径中会得到`./output_det/output.json`文件，在`./output_det/show/`下可得到可视化的图像。
 
 输出的json文件保存了以每一张输入图像路径为key, 预测结果为value的dict结构，详细说明如下：
 
@@ -82,5 +80,5 @@ Pipeline INFO: Visualize prediction to ./output_det/show/
 以Magnetic-tile-defect-datasets检测+RoI分割结果为例：
 
 <div align="center">
-<img src="https://github.com/Sunting78/images/blob/master/show.png"  width="600"/>
+<img src="https://github.com/Sunting78/images/blob/master/show.png"  width="800"/>
 </div>
