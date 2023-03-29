@@ -79,7 +79,6 @@ Pipeline INFO: Visualize prediction to ./output_det/show/
 
 可视化图像中包含box, polygon(若使用分割)，类别，置信度，是否是NG信息。
 
-以Magnetic-tile-defect-datasets检测结果为例：
+以Magnetic-tile-defect-datasets检测+RoI分割结果为例：
 
-![](../images/exp5_num_9549.png)
-![](../images/exp5_num_3746.png)
+## <img src="https://github.com/Sunting78/images/blob/master/show.png" width="200"/>

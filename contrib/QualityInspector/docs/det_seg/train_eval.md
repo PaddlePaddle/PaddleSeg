@@ -53,7 +53,7 @@
 
 
 ## 其他说明
- * 为了简化，Industrial Inspection只保留了部分算法配置文件，但实际上可以使用PaddleDetection/PaddleSeg中集成的任意算法，只需将算法的config文件放到`./configs/det/`或`./configs/seg/`中。
+ * 为了简化，QualityInspector只保留了部分算法配置文件，但实际上可以使用PaddleDetection/PaddleSeg中集成的任意算法，只需将算法的config文件放到`./configs/det/`或`./configs/seg/`中。
  * 具体可参考[PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection/blob/release/2.6/docs/tutorials/QUICK_STARTED_cn.md)和[PaddleSeg](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.7/docs/train/train.md)的训练和验证说明文档。
- * 未来，Industrial Inspection也将针对工业质检的难点，二次开发基于检测分割算法的更多功能。
+ * 未来， QualityInspector也将针对工业质检的难点，二次开发基于检测分割算法的更多功能。
  * 暂未支持端到端部署，用户目前可参考PaddleDetection和PaddleSeg进行模型部署，未来将支持端到端的全流程部署，敬请期待。
