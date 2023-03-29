@@ -8,7 +8,7 @@ model:
   type: OCRNet
   backbone:
     type: HRNet_W48
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
+    pretrained: Null
   num_classes: 19
   backbone_indices: [0]
 
