@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections.abc
-from itertools import combinations
-from functools import partial
-
-import numpy as np
 import paddle
 import paddle.nn.functional as F
 

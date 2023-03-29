@@ -1,0 +1,15 @@
+_base_: './pp_mobileseg_base_ade20k_512x512_80k.yml'
+
+batch_size: 16  # total batch size is 32
+iters: 80000
+
+model:
+  type: PPMobileSeg
+  num_classes: 150
+  backbone:
+    type: MobileSeg_Tiny
+    inj_type: AAM
+    out_feat_chs: [32, 64, 128]
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny_pretrain/model.pdparams
+  upsample: intepolate  # During exportation, you need to change it to vim for using VIM
+

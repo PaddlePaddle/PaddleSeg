@@ -3,25 +3,25 @@ English | [简体中文](install_cn.md)
 
 ## 1 Environment Requirements
 
-- PaddlePaddle (the version >= 2.3)
 - OS: 64-bit
-- Python 3(3.5.1+/3.6/3.7/3.8/3.9)，64-bit version
+- Python 3(3.6/3.7/3.8/3.9/3.10)，64-bit version
 - pip/pip3(9.0.1+)，64-bit version
-- CUDA >= 10.1
+- CUDA >= 10.2
 - cuDNN >= 7.6
+- PaddlePaddle (the version >= 2.4)
 
 ## 2 Installation
 
 ### 2.1 Install PaddlePaddle
 
-Please refer to the [installation doc](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html) to install PaddlePaddle (the version >= 2.3).
+Please refer to the [installation doc](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html) to install PaddlePaddle (the version >= 2.4).
 
 Highly recommend you install the GPU version of PaddlePaddle, due to the large overhead of segmentation models, otherwise, it could be out of memory while running the models.
 
-For example, run the following command to install Paddle with pip for Linux, CUDA 10.1.
+For example, run the following command to install Paddle with pip for Linux, CUDA 10.2.
 
 ```
-python -m pip install paddlepaddle-gpu==2.3.2.post101 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+python -m pip install paddlepaddle-gpu==2.4.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 
