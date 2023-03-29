@@ -104,7 +104,25 @@ def parse_train_args(*args, **kwargs):
         default='gpu',
         choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
         type=str)
+    parser.add_argument(
+        '--profiler_options',
+        type=str,
+        help='The option of train profiler. If profiler_options is not None, the train ' \
+            'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
+    )
+    parser.add_argument(
+        '--data_format',
+        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        type=str,
+        default='NCHW')
     parser.add_argument('--seed', help="Random seed.", default=None, type=int)
+    parser.add_argument(
+        '--repeats',
+        type=int,
+        default=1,
+        help="Repeat the samples in the dataset for `repeats` times in each epoch."
+    )
+    parser.add_argument('--opts', help='Update the key-value pairs of all options.', nargs='+')
 
     return parser.parse_args(*args, **kwargs)
 
@@ -116,7 +134,8 @@ def train_with_args(args):
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
-        batch_size=args.batch_size)
+        batch_size=args.batch_size,
+        opts=args.opts)
     builder = make_default_builder(cfg)
 
     utils.show_env_info()
@@ -153,7 +172,9 @@ def train_with_args(args):
             eval_sem=args.eval_sem,
             eval_ins=args.eval_ins,
             precision=args.precision,
-            amp_level=args.amp_level)
+            amp_level=args.amp_level,
+            profiler_options=args.profiler_options,
+            to_static_training=cfg.to_static_training)
     except BaseException as e:
         if args.debug:
             import traceback
