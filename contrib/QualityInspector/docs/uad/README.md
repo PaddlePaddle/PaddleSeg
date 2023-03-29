@@ -1,5 +1,7 @@
 # 无监督异常检测工具
 
+目前uad工具支持三种前沿的无监督异常检测算法，分别是[PaDiM](../../configs/uad/padim/README.md), [PatchCore](../../configs/uad/patchcore/README.md)以及[STFPM](../../configs/uad/stfpm/README.md)，其中，PaDiM、PatchCore无需训练网络，未来将支持更多无监督异常检测算法。
+
 ## 1. 环境依赖
 
 * python
@@ -69,7 +71,3 @@ model_path: output/resnet18/bottle/bottle.pdparams # 指定加载模型参数的
 img_path: data/mvtec_anomaly_detection/bottle/test/broken_large/000.png  # 指定预测的图片路径
 threshold: 0.5    # 指定预测后二值化异常分数图的阈值
 ```
-
-## 5. 集成模型
-
-目前uad工具集成了[PaDiM](../../configs/uad/padim/README.md)模型, [PatchCore](../../configs/uad/patchcore/README.md)模型, [STFPM](../../configs/uad/stfpm/README.md)模型，其中，PaDiM、PatchCore无需训练网络，未来将集成和自研更多无监督异常检测算法。
