@@ -1,14 +1,15 @@
 import numpy as np
 from PIL import Image, ImageDraw
-import pycocotools.mask as mask_util
 
 
 def square(bbox, img_shape):
     """Calculate square bounding box 
+
     Args:
         bbox (list):[x1, y1, x2, y2]
         img_shape (tuple): (height, width)
-    Return:
+
+    Returns:
         bbox (list)
     """
     x1, y1, x2, y2 = bbox
@@ -26,11 +27,13 @@ def square(bbox, img_shape):
 
 def padding(bbox, img_shape, pad_scale=0.0):
     """pad bbox with scale
+
     Args:
         bbox (list):[x1, y1, x2, y2]
         img_shape (tuple): (height, width)
         pad_scale (float): scale for padding
-    Return:
+
+    Returns:
         bbox (list)
     """
     x1, y1, x2, y2 = bbox
@@ -46,11 +49,13 @@ def padding(bbox, img_shape, pad_scale=0.0):
 
 def adjust_bbox(bbox, img_shape, pad_scale=0.0):
     """adjust box according to img_shape and pad_scale 
+
     Args:
         bbox (list):[x1, y1, x2, y2]
         img_shape (tuple): (height, width)
         pad_scale (float): scale for padding
-    Return:
+
+    Returns:
         bbox (list)
     """
     bbox = square(bbox, img_shape)
@@ -63,8 +68,8 @@ def iou_one_to_multiple(box, boxes):
     Calculate the Intersection over Union (IoU) of a bounding box with a batch of bounding boxes.
 
     Args:
-        box (list of 4 floats): [xmin, ymin, xmax, ymax]
-        boxes (list of N lists of 4 floats): [[xmin, ymin, xmax, ymax], [xmin, ymin, xmax, ymax], ...]
+        box (list of 4 floats): [xmin, ymin, w, h]
+        boxes (list of N lists of 4 floats): [[xmin, ymin, w, h], [xmin, ymin, w, h], ...]
 
     Returns:
         list of N floats: the IoU of the box with each of the boxes in the batch
@@ -83,7 +88,16 @@ def iou_one_to_multiple(box, boxes):
 
 
 def get_bbox(height, width, points):
-    """polygon to box"""
+    """polygon to box
+
+    Args:
+        height (int): height of image
+        width (int): width of image
+        points (list): poly point [x, y]
+
+    Returns:
+        bbox (list): [x1, y1, w, h]
+    """
     polygons = points
     mask = np.zeros([height, width], dtype=np.uint8)
     mask = Image.fromarray(mask)
