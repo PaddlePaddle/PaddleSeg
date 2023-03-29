@@ -31,15 +31,13 @@ class SegPredictor(object):
         self.seg_config = seg_config
         self.model = seg_config.model
         self.model_path = seg_model
-        self.visualize = False
         self.transforms = Compose(seg_config.val_transforms)
         utils.utils.load_entire_model(self.model, self.model_path)
         self.model.eval()
 
     def postprocess(self, pred, img_data):
-        class_list = np.unique(pred)
         result = []
-
+        class_list = np.unique(pred)
         for cls_id in class_list:
             if cls_id == 0:
                 continue  # skip background

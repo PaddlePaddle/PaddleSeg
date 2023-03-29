@@ -37,7 +37,7 @@ class BaseSegmentation(object):
 
 @register
 class CropSegmentation(object):
-    def __init__(self, model_cfg, env_cfg):
+    def __init__(self, model_cfg, env_cfg=None):
         super(CropSegmentation, self).__init__()
         seg_config = model_cfg['config_path']
         seg_config = Config(seg_config)
