@@ -107,22 +107,10 @@ def parse_train_args(*args, **kwargs):
     parser.add_argument(
         '--profiler_options',
         type=str,
-        help='The option of train profiler. If profiler_options is not None, the train ' \
-            'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
+        help="Options of the training profiler. If `profiler_options` is not None, the training profiler will be enabled. Refer to `paddleseg/utils/train_profiler.py` for details."
     )
-    parser.add_argument(
-        '--data_format',
-        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
-        type=str,
-        default='NCHW')
     parser.add_argument('--seed', help="Random seed.", default=None, type=int)
-    parser.add_argument(
-        '--repeats',
-        type=int,
-        default=1,
-        help="Repeat the samples in the dataset for `repeats` times in each epoch."
-    )
-    parser.add_argument('--opts', help='Update the key-value pairs of all options.', nargs='+')
+    parser.add_argument('--opts', help="Update the key-value pairs of existing options.", nargs='+')
 
     return parser.parse_args(*args, **kwargs)
 

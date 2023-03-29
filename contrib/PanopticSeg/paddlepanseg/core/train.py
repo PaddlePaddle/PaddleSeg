@@ -19,8 +19,7 @@ from collections import deque
 
 import paddle
 from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
-                             worker_init_fn, train_profiler, op_flops_funs,
-                             init_ema_params, update_ema_model)
+                             worker_init_fn, train_profiler, op_flops_funs)
 
 from paddlepanseg.core.val import evaluate
 from paddlepanseg.core.runner import PanSegRunner
@@ -96,7 +95,7 @@ def train(model,
         precision (str, optional): If `precision` is 'fp16', enable automatic mixed precision training. Default: 'fp32'.
         amp_level (str, optional): The auto mixed precision level. Choices are 'O1' and 'O2'. Default: 'O1'.
         profiler_options (str, optional): The option of train profiler.
-        to_static_training (bool, optional): Whether to use @to_static for training.
+        to_static_training (bool, optional): Whether or not to apply dynamic-to-static model training.
     """
 
     model.train()
@@ -135,6 +134,10 @@ def train(model,
         collate_fn=train_dataset.collate
         if hasattr(train_dataset, 'collate') else None)
 
+    if to_static_training:
+        model = paddle.jit.to_static(model)
+        logger.info("Successfully applied @to_static")
+        
     # Bind components to runner
     if nranks > 1:
         runner.bind(model=ddp_model, criteria=losses, optimizer=optimizer)
@@ -149,9 +152,6 @@ def train(model,
         # Build log writer
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
-    if to_static_training:
-        model = paddle.jit.to_static(model)
-        logger.info("Successfully applied @to_static")
 
     avg_loss = 0.0
     avg_loss_list = []
@@ -172,8 +172,6 @@ def train(model,
                 break
 
             reader_cost_averager.record(time.time() - batch_start)
-
-            lr = optimizer.get_lr()
 
             # Update lr.
             if isinstance(optimizer, paddle.distributed.fleet.Fleet):
