@@ -4,23 +4,23 @@
 
 ## 1 环境要求
 
-- PaddlePaddle (版本不低于2.3)
 - OS 64位操作系统
-- Python 3(3.5.1+/3.6/3.7/3.8/3.9)，64位版本
+- Python 3(3.6/3.7/3.8/3.9/3.10)，64位版本
 - pip/pip3(9.0.1+)，64位版本
-- CUDA >= 10.1
+- CUDA >= 10.2
 - cuDNN >= 7.6
+- PaddlePaddle (版本>=2.4)
 
 ## 2 本地安装说明
 
 ### 2.1 安装PaddlePaddle
 
-请参考[快速安装文档](https://www.paddlepaddle.org.cn/install/quick)或者[详细安装文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_cn.html)，安装PaddlePaddle （要求不低于2.3版本，推荐安装最新版本）。
+请参考[快速安装文档](https://www.paddlepaddle.org.cn/install/quick)或者[详细安装文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_cn.html)，安装PaddlePaddle （要求不低于2.4版本，推荐安装最新版本）。
 
-比如Linux、CUDA 10.1，使用pip安装GPU版本，执行如下命令。
+比如Linux、CUDA 10.2，使用pip安装GPU版本，执行如下命令。
 
 ```
-python -m pip install paddlepaddle-gpu==2.3.2.post101 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+python -m pip install paddlepaddle-gpu==2.4.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 使用如下命令验证PaddlePaddle是否安装成功，并且查看版本。

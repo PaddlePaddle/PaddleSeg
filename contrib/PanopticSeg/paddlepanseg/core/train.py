@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,26 +22,36 @@ from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
                              worker_init_fn, op_flops_funs)
 
 from paddlepanseg.core.val import evaluate
+from paddlepanseg.core.runner import PanSegRunner
+from paddlepanseg.core.launcher import AMPLauncher
 
 
-def loss_computation(sample_dict, net_out_dict, losses):
-    loss_list = []
-    for i in range(len(losses['types'])):
-        loss_i = losses['types'][i]
-        coef_i = losses['coef'][i]
-        if loss_i.__class__.__name__ == 'MixedLoss':
-            mixed_loss_list = loss_i(sample_dict, net_out_dict)
-            for mixed_loss in mixed_loss_list:
-                loss_list.append(coef_i * mixed_loss)
-        else:
-            loss_list.append(coef_i * loss_i(sample_dict, net_out_dict))
-    return loss_list
+class _DistOptimizerWrapper(object):
+    def __init__(self, dist_optim):
+        assert isinstance(dist_optim, paddle.distributed.fleet.Fleet)
+        self._optim = dist_optim
+
+    def __getattr__(self, name):
+        # XXX: We choose to rewrite `__getattr__` here because it is simpler.
+        # However, this may cause performance drop.
+        # First try to find the attribute in `self._optim`
+        try:
+            return getattr(self._optim, name)
+        except AttributeError:
+            # If an attribute is not found in `self._optim`, search it in the internal optimizer
+            real_optim = self._optim.user_defined_optimizer
+            if not hasattr(real_optim, name):
+                raise AttributeError
+            else:
+                return getattr(real_optim, name)
 
 
 def train(model,
           train_dataset,
           losses,
           optimizer,
+          postprocessor,
+          runner,
           val_dataset=None,
           save_dir='output',
           iters=10000,
@@ -52,7 +62,6 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           keep_checkpoint_max=5,
-          postprocessor=None,
           eval_sem=False,
           eval_ins=False,
           precision='fp32',
@@ -66,6 +75,8 @@ def train(model,
         losses (dict): A dict including 'types' and 'coef'. `losses['types']` is a list of loss objects, while `losses['coef']` 
             is a list of the relevant coefficients. `len(losses['coef'])` should be equal to 1 or `len(losses['types'])`.
         optimizer (paddle.optimizer.Optimizer): The optimizer used for model training.
+        postprocessor (paddlepanseg.postprocessors.Postprocessor): Used to postprocess model output in model validation.
+        runner (paddlepanseg.core.runners.PanSegRunner): Used to define how the components interact.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
         save_dir (str, optional): The directory for saving the model snapshot. Default: 'output'.
         iters (int, optional): How may iterations to train the model for. Defualt: 10000.
@@ -82,6 +93,7 @@ def train(model,
         precision (str, optional): If `precision` is 'fp16', enable automatic mixed precision training. Default: 'fp32'.
         amp_level (str, optional): The auto mixed precision level. Choices are 'O1' and 'O2'. Default: 'O1'.
     """
+
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -95,25 +107,20 @@ def train(model,
             os.remove(save_dir)
         os.makedirs(save_dir, exist_ok=True)
 
-    # use amp
+    # Use AMP
     if precision == 'fp16':
         logger.info("Use AMP to train. AMP level = {}.".format(amp_level))
-        scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
-        if amp_level == 'O2':
-            model, optimizer = paddle.amp.decorate(
-                models=model,
-                optimizers=optimizer,
-                level='O2',
-                save_dtype='float32')
 
     if nranks > 1:
         paddle.distributed.fleet.init(is_collective=True)
         optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)
+        if isinstance(optimizer, paddle.distributed.fleet.Fleet):
+            optimizer = _DistOptimizerWrapper(optimizer)
         ddp_model = paddle.distributed.fleet.distributed_model(model)
 
+    # Build batch sampler and data loader
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
-
     loader = paddle.io.DataLoader(
         train_dataset,
         batch_sampler=batch_sampler,
@@ -123,7 +130,18 @@ def train(model,
         collate_fn=train_dataset.collate
         if hasattr(train_dataset, 'collate') else None)
 
+    # Bind components to runner
+    if nranks > 1:
+        runner.bind(model=ddp_model, criteria=losses, optimizer=optimizer)
+    else:
+        runner.bind(model=model, criteria=losses, optimizer=optimizer)
+
+    # Create launcher
+    launcher = AMPLauncher(
+        runner=runner, precision=precision, amp_level=amp_level)
+
     if use_vdl:
+        # Build log writer
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
 
@@ -137,6 +155,7 @@ def train(model,
     save_models = deque()
     batch_start = time.time()
 
+    # By default we adopt iteration-based training
     iter = start_iter
     while iter < iters:
         for data in loader:
@@ -145,49 +164,9 @@ def train(model,
                 break
 
             reader_cost_averager.record(time.time() - batch_start)
-            images = data['img']
-            if hasattr(model, 'data_format') and model.data_format == 'NHWC':
-                images = images.transpose((0, 2, 3, 1))
 
-            if precision == 'fp16':
-                with paddle.amp.auto_cast(
-                        level=amp_level,
-                        enable=True,
-                        custom_white_list={
-                            'elementwise_add', 'batch_norm', 'sync_batch_norm'
-                        },
-                        custom_black_list={'bilinear_interp_v2'}):
-                    net_out = ddp_model(images) if nranks > 1 else model(images)
-                    loss_list = loss_computation(data, net_out, losses=losses)
-                    loss = sum(loss_list)
-
-                scaled = scaler.scale(loss)  # Scale the loss
-                scaled.backward()  # Do backward
-                if isinstance(optimizer, paddle.distributed.fleet.Fleet):
-                    scaler.minimize(optimizer.user_defined_optimizer, scaled)
-                else:
-                    scaler.minimize(optimizer, scaled)  # Update parameters
-            else:
-                net_out = ddp_model(images) if nranks > 1 else model(images)
-                loss_list = loss_computation(data, net_out, losses=losses)
-                loss = sum(loss_list)
-                loss.backward()
-                optimizer.step()
-
-            lr = optimizer.get_lr()
-
-            # Update lr.
-            if isinstance(optimizer, paddle.distributed.fleet.Fleet):
-                lr_sche = optimizer.user_defined_optimizer._learning_rate
-            else:
-                lr_sche = optimizer._learning_rate
-            if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
-                if isinstance(lr_sche, paddle.optimizer.lr.ReduceOnPlateau):
-                    lr_sche.step(loss)
-                else:
-                    lr_sche.step()
-
-            model.clear_gradients()
+            loss, loss_list = launcher.train_step(
+                data=data, return_loss_list=True)
             avg_loss += float(loss)
             if not avg_loss_list:
                 avg_loss_list = [l.numpy() for l in loss_list]
@@ -199,6 +178,7 @@ def train(model,
                 time.time() - batch_start, num_samples=batch_size)
 
             if (iter) % log_iters == 0 and local_rank == 0:
+                lr = launcher.runner.optimizer.get_lr()
                 avg_loss /= log_iters
                 avg_loss_list = [l[0] / log_iters for l in avg_loss_list]
                 remain_iters = iters - iter
@@ -261,7 +241,8 @@ def train(model,
                     eval_sem=eval_sem,
                     eval_ins=eval_ins,
                     precision=precision,
-                    amp_level=amp_level)
+                    amp_level=amp_level,
+                    runner=runner)
 
                 pq = results['pan_metrics']['All']['pq']
                 desc = "[EVAL] PQ: {:.4f}".format(pq)
@@ -298,13 +279,6 @@ def train(model,
                             log_writer.add_scalar('Evaluate/mAP', map, iter)
                             log_writer.add_scalar('Evaluate/mAP50', map50, iter)
             batch_start = time.time()
-
-    # Calculate FLOPs
-    if local_rank == 0 and not (precision == 'fp16' and amp_level == 'O2'):
-        _, c, h, w = data['img'].shape
-        flops = paddle.flops(
-            model, [1, c, h, w],
-            custom_ops={paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn})
 
     # Sleep for a second to let dataloader release resources.
     time.sleep(1)
