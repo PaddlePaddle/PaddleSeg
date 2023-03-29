@@ -81,4 +81,6 @@ Pipeline INFO: Visualize prediction to ./output_det/show/
 
 以Magnetic-tile-defect-datasets检测+RoI分割结果为例：
 
-## <img src="https://github.com/Sunting78/images/blob/master/show.png" width="200"/>
+<div align="center">
+<img src="https://github.com/Sunting78/images/blob/master/show.png"  width="600"/>
+</div>
