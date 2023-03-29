@@ -94,7 +94,7 @@ def train(model,
         eval_ins (bool, optional): Whether or not to calculate instance segmentation metrics during validation. Default: False.
         precision (str, optional): If `precision` is 'fp16', enable automatic mixed precision training. Default: 'fp32'.
         amp_level (str, optional): The auto mixed precision level. Choices are 'O1' and 'O2'. Default: 'O1'.
-        profiler_options (str, optional): The option of train profiler.
+        profiler_options (str, optional): Options of the training profiler.
         to_static_training (bool, optional): Whether or not to apply dynamic-to-static model training.
     """
 
@@ -136,7 +136,7 @@ def train(model,
 
     if to_static_training:
         model = paddle.jit.to_static(model)
-        logger.info("Successfully applied @to_static")
+        logger.info("Successfully applied paddle.jit.to_static")
         
     # Bind components to runner
     if nranks > 1:
@@ -173,20 +173,8 @@ def train(model,
 
             reader_cost_averager.record(time.time() - batch_start)
 
-            # Update lr.
-            if isinstance(optimizer, paddle.distributed.fleet.Fleet):
-                lr_sche = optimizer.user_defined_optimizer._learning_rate
-            else:
-                lr_sche = optimizer._learning_rate
-            if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
-                if isinstance(lr_sche, paddle.optimizer.lr.ReduceOnPlateau):
-                    lr_sche.step(loss)
-                else:
-                    lr_sche.step()
-
             train_profiler.add_profiler_step(profiler_options)
 
-            model.clear_gradients()
             loss, loss_list = launcher.train_step(
                 data=data, return_loss_list=True)
             avg_loss += float(loss)
