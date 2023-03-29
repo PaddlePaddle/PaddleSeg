@@ -70,7 +70,8 @@ def main():
 
     inputs = os.path.abspath(args.input)
     pipeline = Pipeline(args)
-    pipeline.run(inputs)
+    result = pipeline.run(inputs)
+    return result
 
 
 if __name__ == '__main__':

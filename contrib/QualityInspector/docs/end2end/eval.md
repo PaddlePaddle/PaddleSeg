@@ -106,6 +106,9 @@ badcase输出保存在`output`路径下，目录结构如下：
 
 ## 后处理参数调整
 
+由于零件缺陷判断标准可能与缺陷位置、缺陷大小、长度等信息相关，为了过滤不满足NG条件的检出，降低过杀，QualityInspector支持多种后处理算子，位于`./qinspector/ops/postprocess.py`文件中，目前包括`JudgeDetByScores`以及`JudgeByLengthWidth`, `JudgeByArea`分别是通过置信度、边长和面积判断是否是缺陷的功能。通过在全流程yml文件中配置，即可使用。
+
+
 在经过指标输出和badcase可视化的图像查阅后，可以在配置文件中`./configs/end2end/e2e_det.yml`调整后处理的参数，注意此时的执行命令中一定要添加`--config ./configs/end2end/e2e_det.yml`和`--rules_eval`, 才能重新通过调整参数后的后处理模块。例如：在上面展示的指标中，发现Uneven类别的过杀指标较高，因此调整配置文件中后处理模块`JudgeDetByScores`中的`score_threshold`，将第5类Uneven的阈值调高，再重新执行上述评测命令，得到过杀结果如下：
 
 ```
