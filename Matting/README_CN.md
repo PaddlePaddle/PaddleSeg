@@ -82,7 +82,7 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 * [快速体验](docs/quick_start_cn.md)
 * [全流程开发](docs/full_develop_cn.md)
 * [人像抠图Android部署](deploy/human_matting_android_demo/README_CN.md)
-* [人像抠图.NET部署](https://gitee.com/raoyutian/PaddleSegSharp))
+* [人像抠图.NET部署](https://gitee.com/raoyutian/PaddleSegSharp)
 * [数据集准备](docs/data_prepare_cn.md)
 * AI Studio第三方教程
   * [PaddleSeg的Matting教程](https://aistudio.baidu.com/aistudio/projectdetail/3876411?contributionType=1)

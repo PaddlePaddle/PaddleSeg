@@ -85,7 +85,7 @@ The model zoo includes our self developded high accuracy model PP-Matting and li
 * [Quick start](docs/quick_start_en.md)
 * [Full development](docs/full_develop_en.md)
 * [Human matting android deployment](deploy/human_matting_android_demo/README.md)
-* [Human matting .NET deployment](https://gitee.com/raoyutian/PaddleSegSharp))
+* [Human matting .NET deployment](https://gitee.com/raoyutian/PaddleSegSharp)
 * [Dataset preparation](docs/data_prepare_en.md)
 * AI Studio tutorials
   * [The Matting tutorial of PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/3876411?contributionType=1)
