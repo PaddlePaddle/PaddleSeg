@@ -235,7 +235,7 @@ def evaluation(gt_data,
                instance_level=True,
                iou_theshold=0.1):
     if post_modules:
-        for img_path, img_info in preds_data.items():
+        for _, img_info in preds_data.items():
             preds = img_info['pred']
             img_info.pop('isNG')
             for pred in preds:
@@ -330,6 +330,7 @@ def main():
     overkill_info, escape_info_image, escape_info_instance = evaluation(
         gt_data, img_to_pred_annos, post_modules, args.image_root,
         args.instance_level, args.iou_theshold)
+
     if args.badcase:
         show_badcase(gt_data, img_to_pred_annos, overkill_info,
                      escape_info_image, escape_info_instance, args.image_root,
