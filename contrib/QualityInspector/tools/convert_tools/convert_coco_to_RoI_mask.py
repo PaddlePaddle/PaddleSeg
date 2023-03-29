@@ -28,40 +28,41 @@ from qinspector.utils.visualizer import polygons_to_bitmask
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='Json Format convert to RoI binary Mask ')
+        description='CoCo format Json convert to RoI binary Mask.')
     # Parameters
     parser.add_argument(
         '--json_path',
         type=str,
         required=True,
-        help='json path to statistic images information')
+        help='The path of coco format json file.')
     parser.add_argument(
         '--image_path',
         type=str,
         default='',
-        help='images root path, default None if img path in json is absolute path'
+        help='The directory of images, default None if the path of images is absolute path in json file.'
     )
     parser.add_argument(
         '--seg_classid',
         type=int,
         nargs='+',
         default=None,
-        help='classid to segment, default None means all classes')
+        help='Classid for converting to RoI, default None if all classes need to be converted.'
+    )
     parser.add_argument(
         '--pad_scale',
         type=float,
         default=0.5,
-        help='the padding scale of crop img')
+        help='The padding scale of box to crop image.')
     parser.add_argument(
         '--suffix',
         type=str,
         default='.png',
-        help='the file name suffix between gt and image')
+        help='The suffix of filename between gt and image.')
     parser.add_argument(
         '--output_path',
         type=str,
         default='./output/RoI/',
-        help='save path to save images, masks and list.txt')
+        help='The directory for saving the RoI images, masks and list.txt.')
     return parser.parse_args()
 
 

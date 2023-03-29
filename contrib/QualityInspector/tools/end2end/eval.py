@@ -40,44 +40,39 @@ def get_args():
     parser.add_argument(
         '--input_path',
         type=str,
-        help='coco format json path for evaluation',
+        help='The path of coco format json file for evaluation.',
         required=True)
     parser.add_argument(
         '--pred_path',
         type=str,
-        help='the prediction results, json format same as the output json of predict.py',
+        help='The path of json file saving prediction results obtained by `tools/end2end/predict.py`.',
         required=True)
     parser.add_argument(
-        '--image_root', type=str, default='', help='image root path')
+        '--image_root', type=str, default='', help='The directory of images.')
     parser.add_argument(
-        '--config',
-        type=str,
-        default=None,
-        help='config path, you can set conf_file by yourself')
+        '--config', type=str, default=None, help='The path of config file.')
     parser.add_argument(
         '--rules_eval',
         action='store_true',
-        help='update rules params to eval, defalut False')
+        help='Whether or not to update rules for postprocess, defalut: False.')
     parser.add_argument(
         '--instance_level',
         action='store_false',
-        help='instance-wise evaluation, only support in the json format input with instance information'
-    )
+        help='Whether or not to eval by instance-wise, default: True.')
     parser.add_argument(
         '--iou_theshold',
         type=float,
         default=0.1,
-        help='iou threshold, only support in the json format input with instance information'
-    )
+        help='IoU threshold for instance-wise evalution to judge recall.')
     parser.add_argument(
         '--save_badcase',
         action='store_false',
-        help='save badcase, defalt true')
+        help='Whether or not to save badcase, defalt: True.')
     parser.add_argument(
         '--output_dir',
         type=str,
         default='./output/badcase/',
-        help='save path to save images and mask, default None, do not save')
+        help='The directory for saving bascases.')
     return parser.parse_args()
 
 

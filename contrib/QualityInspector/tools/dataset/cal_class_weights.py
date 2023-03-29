@@ -33,7 +33,7 @@ logger = setup_logger('CalClassWeights')
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Visualization')
+    parser = argparse.ArgumentParser(description='Frequency')
     parser.add_argument(
         '--anno_path',
         help='The path of annotated images',

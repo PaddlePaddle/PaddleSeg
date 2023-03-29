@@ -27,37 +27,42 @@ from qinspector.utils.bbox_utils import adjust_bbox
 
 def get_args():
     parser = argparse.ArgumentParser(
-        description='Mask Format convert to Json for detection ')
+        description='Mask convert to RoI for Segmentation')
     # Parameters
     parser.add_argument(
         '--image_path',
         type=str,
         required=True,
-        help='image path to provide images information')
+        help='The directory of images.')
     parser.add_argument(
-        '--anno_path', type=str, required=True, help='mask ground truth path')
+        '--anno_path',
+        type=str,
+        required=True,
+        help='The directory of ground truth masks.')
     parser.add_argument(
         '--class_num',
         type=int,
         required=True,
-        help='number of classes, without background')
+        help='Number of categories, without background.')
     parser.add_argument(
-        '--to_binary', action='store_true', help='conver to binary masks')
+        '--to_binary',
+        action='store_true',
+        help='Whether or not to convert mask to binary RoI.')
     parser.add_argument(
         '--suffix',
         type=str,
         default='.png',
-        help='the file name suffix between gt and image')
+        help='The suffix of filename between gt and image.')
     parser.add_argument(
         '--pad_scale',
         type=float,
         default=0.5,
-        help='the padding scale of crop img')
+        help='The padding scale of box to crop image.')
     parser.add_argument(
         '--output_path',
         type=str,
         default='./output/RoI/',
-        help='save path to save RoI, Mask and txt list')
+        help='The directory for saving the RoI images, masks and list.txt.')
     return parser.parse_args()
 
 
