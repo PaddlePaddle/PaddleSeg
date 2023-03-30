@@ -8,15 +8,15 @@
 
 ## 2 准备数据集
 
-2.1 下载：在当前目录下建立dataset文件夹，请前往[Magnetic-tile-defect-datasets](https://github.com/abin24/Magnetic-tile-defect-datasets.)下载数据集，放在`./dataset/`路径下。具体可见[详细教程——数据准备2.1](./tools_data/prepare_data.md#1-准备数据集)
+2.1 下载：在当前目录下建立dataset文件夹，请前往[Magnetic-tile-defect-datasets](https://github.com/abin24/Magnetic-tile-defect-datasets.)下载数据集，放在`./dataset/`路径下。具体可见[详细教程——数据准备1.1](./tools_data/prepare_data.md#11-公开数据集下载)
 
-2.2 预处理：为了满足PaddleSeg训练支持的分割数据格式，首先将数据进行预处理，具体可见[详细教程——数据准备2.2](./tools_data/prepare_data.md#22-转换为全图分割训练数据格式).
+2.2 预处理：为了满足PaddleSeg训练支持的分割数据格式，首先将数据进行预处理，具体可见[详细教程——数据准备1.2](./tools_data/prepare_data.md#12-转换为全图分割训练数据格式).
 
 ```shell
 python3 tools/dataset/MT_dataset.py --dataset_path ./dataset/Magnetic-Tile-Defect --output_path ./dataset/MT_dataset/
 ```
 
-2.3 数据格式转化：若希望尝试检测+RoI分割的解决方案，需要对2.2得到的分割数据进行数据格式转换，转化为目标检测PaddleDetection支持的训练数据格式，具体可见[详细教程——数据准备2.4](./tools_data/prepare_data.md#24-将全图分割数据转为coco格式的json文件)，
+2.3 数据格式转化：若希望尝试检测+RoI分割的解决方案，需要对2.2得到的分割数据进行数据格式转换，转化为目标检测PaddleDetection支持的训练数据格式，具体可见[详细教程——数据准备1.4](./tools_data/prepare_data.md#14-将全图分割数据转为coco格式的json文件)，
 
 ```shell
 python3 tools/convert_tools/convert_mask_to_coco.py --image_path dataset/MT_dataset/images/train --anno_path dataset/MT_dataset/annos/train --class_num 5 --label_file dataset/MT_dataset/mt_catIDs.json --output_name dataset/MT_dataset/train.json --suffix .png
@@ -24,7 +24,7 @@ python3 tools/convert_tools/convert_mask_to_coco.py --image_path dataset/MT_data
 
 执行后json文件保存在`dataset/MT_dataset/train.json`，将上述命令`--image_path`、`--anno_path`和`--output_name`输入的路径中的`train`改为`val`在执行，得到`dataset/MT_dataset/val.json`
 
-同时需要切割RoI区域用于分割训练，具体可见[详细教程——数据准备2.3](./tools_data/prepare_data.md#23-将全图分割数据转为roi分割文件).
+同时需要切割RoI区域用于分割训练，具体可见[详细教程——数据准备1.3](./tools_data/prepare_data.md#13-将全图分割数据转为roi分割文件).
 
 ```shell
 python3 tools/convert_tools/convert_mask_to_roi.py --image_path dataset/MT_dataset/images/train --anno_path dataset/MT_dataset/annos/train --class_num 5 --output_path dataset/MT_dataset/RoI/train/ --suffix .png --to_binary
