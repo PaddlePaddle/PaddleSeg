@@ -22,7 +22,7 @@ data/mvtec_anomaly_detection/
     |--bottle                    # 某类产品
     |  |--ground_truth           # 标签图
     |     |--broken_large        # 某类缺陷标签图
-    |        |--000_mask.png     
+    |        |--000_mask.png
     |        |--001_mask.png
     |        |--...
     |  |  |--broken_small        # 某类缺陷标签图
@@ -55,7 +55,7 @@ MVTec AD数据包含结构和纹理类型的零件共计15类，其中训练集�
 另外，如果希望使用自己的数据集, 请组织成上述MVTec AD数据集的格式, 将自定义数据集作为MVTec AD中的一个category，即路径设置为`QualityInspector/data/mvtec_anomaly_detection/{category}/...`，标签文件为灰度图, 缺陷部分像素值为255;
 
 
-## 3. 训练、评估、预测命令
+## 2. 训练、评估、预测命令
 
 以PaDiM模型为例，训练、评估、预测脚本存放在`tools/uad/padim/`目录下，通过`--config`参数传入对应模型YML配置文件，通过`--category`参数指定MVTec AD中的某个类别:
 
@@ -73,7 +73,7 @@ MVTec AD数据包含结构和纹理类型的零件共计15类，其中训练集�
 
 
 
-## 4. 配置文件解读
+## 3. 配置文件解读
 
 无监督异常检测(uad)模型的参数可以通过YML配置文件和命令行参数两种方式指定, 如果YML文件与命令行同时指定一个参数, 命令行指定的优先级更高, 以PaDiM的YML文件为例, 主要包含以下参数:
 

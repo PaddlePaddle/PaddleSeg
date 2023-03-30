@@ -1,39 +1,44 @@
-# 全流程工业质检开发工具 **QualityInspector**
+# 工业质检全流程解决方案  **QualityInspector**
 
-## <img src="https://user-images.githubusercontent.com/34859558/190043857-bfbdaf8b-d2dc-4fff-81c7-e0aac50851f9.png" width="25"/> 简介
+## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="25"/> 简介
 
 在3C电子、汽车、纺织化纤、金属、建筑、食品、日用消费品等生产制造行业，质量检测是保障产品质量的重要一环，是企业确保产品符合标准、满足客户需求、提高竞争力的关键步骤。在深度学习时代，AI赋能工业质检成为大势所趋。传统的数字图像处理方法虽然比起人工检测已经有了很大进步，但往往存在精度不高、泛化性差等问题。基于深度学习的方法能够很大程度上缓解这些问题，给很多复杂的质检场景带来自动化的可能性。
 
 基于飞桨的计算机视觉开发套件PaddleClass、PaddleSeg、PaddleDetection三件套，已经可以解决很多质检问题，但是这些套件没有提供针对工业质检场景的数据预处理、后处理、评测指标等配套工具，没有提供针对工业质检的特色模型，且不能有效支持需要这些套件联动来解决问题的场景。
 
-**QualityInspector全流程工业质检开发工具，致力于帮助开发者快速完成算法的研发、验证和调优，端到端完成从数据标注到模型部署的全流程工业质检应用**
+**QualityInspector工业质检全流程解决方案开发工具，致力于帮助开发者快速完成算法的研发、验证和调优，端到端完成从数据标注到模型部署的全流程工业质检应用。**
+
+QualityInspector目前发布V0.5预览版本，主要特性包括：
+* 统一可配置的解决方案：支持检测、分割单模型、检测+RoI分割串联结合后处理的解决方案，简单修改配置即可轻松组合视觉套件的模型。
+* 工业级指标评估和调优：评估工业质检项目实际落地指标，并可直接调节后处理规则参数进行指标一键调优，方便易用。
+* 丰富的视觉算法库：新增支持无监督异常检测算法，同时集成飞桨视觉套件的成熟算法库，覆盖图像分割、目标检测等任务。
+* 可快速上手的工具：支持数据格式转化工具，快速完成检测，分割/RoI分割任务数据格式转化，同时支持数据分析工具和EISeg数据标注工具。
+
+
+<div align="center">
+<img src="https://github.com/Sunting78/images/blob/master/all.png"  width="900" />
+</div>
+
+QualityInspector部分可视化效果如下：
 
 <div align="center">
 <img src="https://github.com/Sunting78/images/blob/master/ezgif.com-video-to-gif.gif"  width="900" />
 </div>
 
-QualityInspector目前发布V0.5预览版本，主要特性包括：
-* 统一可配置的解决方案，支持检测、分割单模型以及检测+RoI分割串联，结合后处理的解决方案。
-* 丰富的视觉模型库：集成飞桨视觉套件的成熟模型库，覆盖图像分割、目标检测等任务。
-* 可快速上手的案例：基于公开数据的解决方案的方法评测，帮助用户使用、分析和选择pipeline。
-* 此外，还包括针对工业质检领域的特色支持：
-   * 数据层面：支持数据格式转化工具，快速完成检测，分割/RoI分割任务数据格式转化和数据可视化和类别统计等工具。
-   * 后处理模块：针对得分，长度，面积等可配置的参数，优化指标。
-   * 评测分析工具：工业项目指标，badcase分析，后处理参数调优。
-   * 冷启动：集成无监督异常检测算法。
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043516-eed25535-10e8-4853-8601-6bcf7ff58197.png" width="25"/> 最新消息
 
-* [2023-4] **发布全流程工业质检开发工具QualityInspector V0.5版本**
-  * 支持配置化pipeline搭建，简单修改配置即可轻松组合视觉套件的模型。
+* [2023-4] 🔥 **发布全流程工业质检开发工具QualityInspector V0.5版本**
+  * 支持配置化全流程方案搭建，简单修改配置即可轻松组合视觉套件的模型。
   * 支持无监督异常检测算法。
   * 提供工业质检场景使用的数据通用工具脚本。
   * 支持全流程工业指标评测，后处理调优。
 
 
-## <img src="https://user-images.githubusercontent.com/34859558/190043857-bfbdaf8b-d2dc-4fff-81c7-e0aac50851f9.png" width="25"/> 快速开始
+## <img src="https://user-images.githubusercontent.com/34859558/190043857-bfbdaf8b-d2dc-4fff-81c7-e0aac50851f9.png" width="25"/> 详细教程
 
 ### 1. [安装说明](./docs/install.md)
+### 2. [快速开始](./docs/quick_start.md)
 ### 2. 数据准备
    * [准备数据集](./docs/tools_data/prepare_data.md)
    * [数据集格式转换工具](./docs/tools_data/conver_tools.md)
