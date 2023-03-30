@@ -70,7 +70,7 @@ python3 tools/dataset/MT_dataset.py --dataset_path ./dataset/Magnetic-Tile-Defec
 
 ## 2.3 将全图分割数据转为RoI分割文件
 
-在2.2中，转换为标准分割数据格式后，如果需要尝试区域分割，具体可以参考[数据转换工具](./conver_tools.md)中3.1的说明，运行命令如下：
+在2.2中，转换为标准分割数据格式后，如果需要尝试区域分割，具体可以参考[数据转换工具](./conver_tools.md#31-全图分割标签转roi分割)中3.1的说明，运行命令如下：
 
 ```shell
 python3 tools/convert_tools/convert_mask_to_roi.py --image_path dataset/MT_dataset/images/train --anno_path dataset/MT_dataset/annos/train --class_num 5 --output_path dataset/MT_dataset/RoI/ --suffix .png --to_binary
@@ -80,7 +80,7 @@ python3 tools/convert_tools/convert_mask_to_roi.py --image_path dataset/MT_datas
 
 ## 2.4 将全图分割数据转为coco格式的json文件
 
-在2.2中，转换为标准分割数据格式后，如果需要尝试检测算法，具体可以参考[数据转换工具](./conver_tools.md)中3.2的说明，运行命令如下：
+在2.2中，转换为标准分割数据格式后，如果需要尝试检测算法，具体可以参考[数据转换工具](./conver_tools.md#32-分割标签转coco格式json文件)中3.2的说明，运行命令如下：
 
 ```shell
 python3 tools/convert_tools/convert_mask_to_coco.py --image_path dataset/MT_dataset/images/train --anno_path dataset/MT_dataset/annos/train --class_num 5 --label_file dataset/MT_dataset/mt_catIDs.json --output_name dataset/MT_dataset/train.json --suffix .png

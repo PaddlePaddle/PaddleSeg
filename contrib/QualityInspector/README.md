@@ -54,9 +54,9 @@ QualityInspector部分可视化效果如下：
    * [全流程预测](./docs/end2end/predict.md)
 
 ### 6. 全流程评估
-   * [过杀&漏检指标评估](./docs/end2end/eval.md)
-   * [badcase可视化分析](./docs/end2end/eval.md)
-   * [后处理参数调优](./docs/end2end/eval.md)
+   * [过杀&漏检指标评估](./docs/end2end/eval.md#全流程评估)
+   * [badcase可视化分析](./docs/end2end/eval.md#badcase可视化输出)
+   * [后处理参数调优](./docs/end2end/eval.md#后处理参数调整)
 
 ## <img src="../../docs/images/chat.png" width="25"/> 技术交流
 * 如果大家有使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
