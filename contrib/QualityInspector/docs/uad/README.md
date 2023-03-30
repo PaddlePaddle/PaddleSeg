@@ -1,27 +1,58 @@
-# 无监督异常检测工具
-
-目前uad工具支持三种前沿的无监督异常检测算法，分别是[PaDiM](../../configs/uad/padim/README.md), [PatchCore](../../configs/uad/patchcore/README.md)以及[STFPM](../../configs/uad/stfpm/README.md)，其中，PaDiM、PatchCore无需训练网络，未来将支持更多无监督异常检测算法。
-
-## 1. 环境依赖
-
-* python
-* paddlepaddle-gpu
-* tqdm
-* sklearn
-* matplotlib
-* pandas
-* Pillow
-* cv2
-* scikit-image
+# 无监督异常检测方案
 
 
-## 2. 数据集
+## 1. 无监督异常检测算法介绍
 
-此工具以MVTec AD数据集为例, 首先下载数据集[下载MVTec AD](https://www.mvtec.com/company/research/datasets/mvtec-ad/), 数据保存在`data/mvtec_anomaly_detection/{category}/...`目录中。MVTec AD数据包含结构和纹理类型的零件共计15类，其中训练集只包含OK图像，测试集包含NG和OK图像，示意图如下：
+无监督异常检测(UAD)算法的技术方向可分为基于表示的算法和基于重构的算法。
+
+基于表示的算法思想是希望通过某种映射将原输入图片映射到某个特征空间，在此特征空间可以更容易区分正常样本与异常样本，此类算法的特点是速度较快，但只能够实现patch级的分割；
+基于重构的算法思想是仅使用正常样本训练的重构模型只能很好的重构正常样本，而不能准确地重构缺陷样本，从而可对比重构误差来检测缺陷样本，此类算法的特点是能够实现像素级的分割，但速度较慢；
+在具体实现时，基于表示的算法通常采用在ImageNet上预训练的backbone提取图片的特征，在预测时通过比对正常样本与异常样本的特征的差异进行缺陷的分类与分割；
+基于重构的算法通常采用自编码器作为重构模型，在预测时通过比对重构前后图片的差异进行缺陷的分类与分割。
+
+目前UAD方案支持三种基于表示的无监督异常检测算法，分别是[PaDiM](../../configs/uad/padim/README.md), [PatchCore](../../configs/uad/patchcore/README.md)以及[STFPM](../../configs/uad/stfpm/README.md)，其中，PaDiM、PatchCore无需训练网络，未来将支持更多无监督异常检测算法。
+
+## 2. 数据集准备
+
+此工具以MVTec AD数据集为例, 首先下载数据集[下载MVTec AD](https://www.mvtec.com/company/research/datasets/mvtec-ad/), 将数据集保存在`QualityInspector/data`中，目录结构如下：
+
+```
+data/mvtec_anomaly_detection/
+    |
+    |--bottle                    # 某类产品
+    |  |--ground_truth           # 标签图
+    |     |--broken_large        # 某类缺陷标签图
+    |        |--000_mask.png     
+    |        |--001_mask.png
+    |        |--...
+    |  |  |--broken_small        # 某类缺陷标签图
+    |        |--...
+    |  |  |--contamination       # 某类缺陷标签图
+    |        |--...
+    |  |--test                   # 测试样本
+    |     |--good                # 正常样本测试图
+    |        |--000.png
+    |        |--...
+    |     |--broken_large        # 某类缺陷测试图
+    |        |--000.png
+    |        |--...
+    |     |--broken_small        # 某类缺陷测试图
+    |        |--...
+    |     |--contamination       # 某类缺陷测试图
+    |        |--...
+    |  |--train                  # 训练样本
+    |     |--good                # 正常样本训练图
+    |        |--000.png
+    |        |--...
+    ...
+
+```
+
+MVTec AD数据包含结构和纹理类型的零件共计15类，其中训练集只包含OK图像，测试集包含NG和OK图像，示意图如下：
 
 ![](https://github.com/Sunting78/images/blob/master/mvtec.png)
 
-另外，如果希望使用自己的数据集, 请组织成MVTec AD数据集的格式, 将自定义数据集作为MVTec AD中的一个category，路径设置为`{repo}/data/mvtec_anomaly_detection/{category}/...`，标签文件为灰度图, 缺陷部分像素值为255;
+另外，如果希望使用自己的数据集, 请组织成上述MVTec AD数据集的格式, 将自定义数据集作为MVTec AD中的一个category，即路径设置为`QualityInspector/data/mvtec_anomaly_detection/{category}/...`，标签文件为灰度图, 缺陷部分像素值为255;
 
 
 ## 3. 训练、评估、预测命令
