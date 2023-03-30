@@ -33,7 +33,7 @@ model:
   type: MODNet
   backbone:
     type: MobileNetV2
-    pretrained: https://paddleseg.bj.bcebos.com/matting/models/MobileNetV2_pretrained/model.pdparams
+    pretrained: Null
   pretrained: Null
 
 optimizer:

@@ -76,9 +76,7 @@ class ConvGNAct(nn.Layer):
         else:
             data_format = "NCHW"
         self._group_norm = nn.GroupNorm(
-            num_groups,
-            out_channels,
-            data_format=data_format)
+            num_groups, out_channels, data_format=data_format)
         self._act_type = act_type
         if act_type is not None:
             self._act = layers.Activation(act_type)

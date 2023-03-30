@@ -41,6 +41,7 @@ def dice_loss(inputs, targets, num_masks):
     numerator = 2 * (inputs * targets).sum(-1)
     denominator = inputs.sum(-1) + targets.sum(-1)
     loss = 1 - (numerator + 1) / (denominator + 1)
+    num_masks = paddle.full(shape=[1], fill_value=num_masks, dtype='float32')
     return loss.sum() / num_masks
 
 
@@ -69,7 +70,7 @@ def sigmoid_focal_loss(inputs, targets, num_masks, alpha=0.25, gamma=2):
     if alpha >= 0:
         alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
         loss = alpha_t * loss
-
+    num_masks = paddle.full(shape=[1], fill_value=num_masks, dtype='float32')
     return loss.mean(1).sum() / num_masks
 
 

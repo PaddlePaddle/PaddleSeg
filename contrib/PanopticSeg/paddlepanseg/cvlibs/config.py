@@ -1,4 +1,4 @@
-# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,6 +36,10 @@ class Config(paddleseg.cvlibs.Config):
     def export_cfg(self):
         return self.dic.get('export', {}).copy()
 
+    @property
+    def runner_cfg(self):
+        return self.dic.get('runner', {}).copy()
+
 
 class PanSegBuilder(builder.SegBuilder):
     def __init__(self, config, comp_list=None):
@@ -43,7 +47,7 @@ class PanSegBuilder(builder.SegBuilder):
             comp_list = [
                 manager.MODELS, manager.BACKBONES, manager.DATASETS,
                 manager.TRANSFORMS, manager.LOSSES, manager.OPTIMIZERS,
-                manager.POSTPROCESSORS
+                manager.POSTPROCESSORS, manager.RUNNERS
             ]
         super().__init__(config, comp_list)
 
@@ -66,6 +70,15 @@ class PanSegBuilder(builder.SegBuilder):
         _set_attr_if_not_exists(pp_cfg, 'ignore_index', 255)
         postprocessor = self.build_component(pp_cfg)
         return postprocessor
+
+    @cached_property
+    def runner(self):
+        runner_cfg = self.config.runner_cfg
+        if runner_cfg == {}:
+            raise RuntimeError(
+                "No `runner` is specified in the configuration file.")
+        runner = self.build_component(runner_cfg)
+        return runner
 
 
 def make_default_builder(*args, **kwargs):

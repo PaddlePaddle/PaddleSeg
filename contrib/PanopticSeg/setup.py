@@ -16,35 +16,37 @@
 from setuptools import find_packages
 from setuptools import setup
 
-import paddlepanseg
+if __name__ == '__main__':
+    with open("requirements.txt", 'r') as fr:
+        REQUIRED_PACKAGES = fr.read()
 
-with open("requirements.txt") as file:
-    REQUIRED_PACKAGES = file.read()
+    with open("paddlepanseg/.version", 'r') as fv:
+        VERSION = fv.read().rstrip()
 
-setup(
-    name='paddlepanseg',
-    version=paddlepanseg.__version__.replace('-', ''),
-    description=('End-to-end panoptic segmentation kit based on PaddleSeg.'),
-    long_description='',
-    author='PaddlePaddle Authors',
-    author_email='',
-    install_requires=REQUIRED_PACKAGES,
-    packages=find_packages(),
-    # PyPI package information.
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Education',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Topic :: Scientific/Engineering',
-        'Topic :: Scientific/Engineering :: Mathematics',
-        'Topic :: Scientific/Engineering :: Artificial Intelligence',
-        'Topic :: Software Development',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-    ],
-    license='Apache 2.0',
-    keywords=('paddleseg paddlepaddle panoptic-segmentation'))
+    setup(
+        name='paddlepanseg',
+        version=VERSION.replace('-', ''),
+        description=('End-to-end panoptic segmentation kit based on PaddleSeg.'),
+        long_description='',
+        author='PaddlePaddle Authors',
+        author_email='',
+        install_requires=REQUIRED_PACKAGES,
+        packages=find_packages(include=['paddlepanseg', 'paddlepanseg.*']),
+        # PyPI package information.
+        classifiers=[
+            'Development Status :: 4 - Beta',
+            'Intended Audience :: Developers',
+            'Intended Audience :: Education',
+            'Intended Audience :: Science/Research',
+            'License :: OSI Approved :: Apache Software License',
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
+            'Topic :: Scientific/Engineering',
+            'Topic :: Scientific/Engineering :: Mathematics',
+            'Topic :: Scientific/Engineering :: Artificial Intelligence',
+            'Topic :: Software Development',
+            'Topic :: Software Development :: Libraries',
+            'Topic :: Software Development :: Libraries :: Python Modules',
+        ],
+        license='Apache 2.0',
+        keywords=('paddleseg paddlepaddle panoptic-segmentation'))

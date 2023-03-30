@@ -67,7 +67,8 @@ def set_device(device):
         place = 'gpu'
     elif device == 'xpu' and paddle.is_compiled_with_xpu():
         place = 'xpu'
-    elif device == 'npu' and "npu" in paddle.device.get_all_custom_device_type():
+    elif device == 'npu' and "npu" in paddle.device.get_all_custom_device_type(
+    ):
         place = 'npu'
     elif device == 'mlu' and paddle.is_compiled_with_mlu():
         place = 'mlu'

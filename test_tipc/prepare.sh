@@ -30,8 +30,26 @@ model_path=test_tipc/output/${model_name}/
 pip install -r requirements.txt
 pip install -r test_tipc/requirements.txt
 # Install current version of PaddleSeg
-pip install .
+pip install -v -e .
 
+if [ ${model_name} = "mask2former" ]; then
+    python -m pip install paddlepaddle-gpu==0.0.0.post117 -f https://www.paddlepaddle.org.cn/whl/linux/gpu/develop.html
+    cd contrib/PanopticSeg
+    pip install -r requirements.txt
+    pip install -e .
+    cd -
+    cd contrib/PanopticSeg/paddlepanseg/models/ops/ms_deform_attn
+    python setup.py install
+    cd -
+fi
+
+if [ ${model_name} = "vit_adapter" ]; then
+    wget https://paddleseg.bj.bcebos.com/dygraph/customized_ops/ms_deform_attn.zip
+    unzip -o ms_deform_attn.zip
+    cd ms_deform_attn/src
+    python setup.py install
+    cd -
+fi
 
 if [ ${MODE} = "serving_infer" ]; then
     inference_models=test_tipc/inferences/${model_name}/
@@ -150,10 +168,18 @@ if [ ${MODE} = "benchmark_train" ]; then
         rm -rf ./test_tipc/data/cityscapes
         wget https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar -O ./test_tipc/data/cityscapes.tar --no-check-certificate
         tar -xf ./test_tipc/data/cityscapes.tar -C ./test_tipc/data/
-    elif [ ${model_name} = 'maskformer' ] || [ ${model_name} = 'mask2former' ]; then
+    elif [ ${model_name} = 'maskformer' ]; then
         rm -rf ./test_tipc/data/ADE20k-20
-        wget -nc -P  ./test_tipc/data/  https://bj.bcebos.com/paddleseg/tipc/data/ADE20k-20.zip --no-check-certificate
+        wget -nc -P ./test_tipc/data/  https://bj.bcebos.com/paddleseg/tipc/data/ADE20k-20.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip ADE20k-20.zip && cd -
+    elif [ ${model_name} = 'mask2former' ]; then
+        rm -rf ./test_tipc/data/coco
+        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/tipc/data/mini_coco.zip --no-check-certificate
+        cd ./test_tipc/data/ && unzip mini_coco.zip && cd -
+    elif [ ${model_name} = 'vit_adapter' ]; then
+        rm -rf ./test_tipc/data/ADEChallengeData2016
+        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/dataset/ADEChallengeData2016.zip --no-check-certificate
+        cd ./test_tipc/data/ && unzip ADEChallengeData2016.zip && cd -
     else
         rm -rf ./test_tipc/data/cityscapes
         wget https://paddleseg.bj.bcebos.com/tipc/data/cityscapes_300imgs.tar.gz \
@@ -173,10 +199,18 @@ elif [ ${MODE} = "lite_train_lite_infer" ] || [ ${MODE} = "lite_train_whole_infe
         rm -rf ./test_tipc/data/PPM-100
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
-    elif [ ${model_name} == "maskformer" ] || [ ${model_name} == "mask2former" ]; then
+    elif [ ${model_name} == "maskformer" ]; then
         rm -rf ./test_tipc/data/ADE20k-20
         wget -nc -P  ./test_tipc/data/  https://bj.bcebos.com/paddleseg/tipc/data/ADE20k-20.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip ADE20k-20.zip && cd -
+    elif [ ${model_name} == "mask2former" ]; then
+        rm -rf ./test_tipc/data/coco
+        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/tipc/data/mini_coco.zip --no-check-certificate
+        cd ./test_tipc/data/ && unzip mini_coco.zip && cd -
+    elif [ ${model_name} = 'vit_adapter' ]; then
+        rm -rf ./test_tipc/data/ADEChallengeData2016
+        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/dataset/ADEChallengeData2016.zip --no-check-certificate
+        cd ./test_tipc/data/ && unzip ADEChallengeData2016.zip && cd -
     else
         if [ ${MODE} = "whole_train_whole_infer" ]; then
             rm -rf ./test_tipc/data/cityscapes
