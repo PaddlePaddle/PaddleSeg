@@ -16,7 +16,7 @@ QualityInspector目前发布V0.5预览版本，主要特性包括：
 
 
 <div align="center">
-<img src="https://github.com/Sunting78/images/blob/master/all.png"  width="900" />
+<img src="https://github.com/Sunting78/images/blob/master/all0.png"  width="900" />
 </div>
 
 QualityInspector部分可视化效果如下：
@@ -39,21 +39,21 @@ QualityInspector部分可视化效果如下：
 
 ### 1. [安装说明](./docs/install.md)
 ### 2. [快速开始](./docs/quick_start.md)
-### 2. 数据准备
+### 3. 数据准备
    * [准备数据集](./docs/tools_data/prepare_data.md)
    * [数据集格式转换工具](./docs/tools_data/conver_tools.md)
    * [数据分析工具](./docs/tools_data/parse_tools.md)
    * [EISeg 数据标注](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.7/EISeg)
 
-### 3. 训练&验证
+### 4. 训练&验证
    * [检测分割算法](./docs/det_seg/train_eval.md)
    * [无监督异常检测算法](./docs/uad/README.md)
 
-### 4. 全流程预测
+### 5. 全流程预测
    * [准备全流程配置文件](./docs/end2end/parse_config.md)
    * [全流程预测](./docs/end2end/predict.md)
 
-### 5. 全流程评估
+### 6. 全流程评估
    * [过杀&漏检指标评估](./docs/end2end/eval.md)
    * [badcase可视化分析](./docs/end2end/eval.md)
    * [后处理参数调优](./docs/end2end/eval.md)
@@ -66,6 +66,7 @@ QualityInspector部分可视化效果如下：
   * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
   * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
   * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
+
 <div align="center">
 <img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
 </div>
