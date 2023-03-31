@@ -67,12 +67,12 @@ class AMPLauncher(_Launcher):
             self.optimizer = self.runner.optimizer
 
     def train_step(self, data, return_loss_list=False):
+        self.model.clear_gradients()
         if self.precision == 'fp32':
             loss, loss_list = self.train_step_fp32(data)
         elif self.precision == 'fp16':
             loss, loss_list = self.train_step_fp16(data)
         self.runner.update_lr(loss)
-        self.model.clear_gradients()
         if return_loss_list:
             return loss, loss_list
         else:
