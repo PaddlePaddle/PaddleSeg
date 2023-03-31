@@ -17,7 +17,6 @@ import codecs
 import os
 from ast import literal_eval
 from typing import Any, Dict, Optional
-
 import yaml
 
 from paddleseg.cvlibs import config_checker as checker

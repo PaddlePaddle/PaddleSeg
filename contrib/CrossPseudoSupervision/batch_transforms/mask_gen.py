@@ -15,7 +15,6 @@
 import numpy as np
 
 from cvlibs import manager
-import paddle.nn.functional as F
 
 
 class MaskGenerator(object):
@@ -35,7 +34,7 @@ class MaskGenerator(object):
         raise NotImplementedError('Abstract')
 
 
-@manager.BATCHTRANSFORMS.add_component
+@manager.BATCH_TRANSFORMS.add_component
 class BoxMaskGenerator(MaskGenerator):
     def __init__(self,
                  prop_range,
@@ -75,7 +74,7 @@ class BoxMaskGenerator(MaskGenerator):
                 self.prop_range[1],
                 size=(n_masks, self.n_boxes))
 
-            # Zeros will cause NaNs, so detect and suppres them
+            # Zeros will cause NaNs, so detect and suppress them
             zero_mask = mask_props == 0.0
 
             if self.random_aspect_ratio:
@@ -141,7 +140,7 @@ class BoxMaskGenerator(MaskGenerator):
         return t_params
 
 
-@manager.BATCHTRANSFORMS.add_component
+@manager.BATCH_TRANSFORMS.add_component
 class AddMaskParamsToBatch(object):
     """
     We add the cut-and-paste parameters to the mini-batch within the collate function,

@@ -16,10 +16,9 @@ from __future__ import division
 from __future__ import print_function
 
 import paddle.nn as nn
-
 from paddleseg.utils import utils
 from paddleseg.models import layers
-from cvlibs import manager
+from paddleseg.cvlibs import manager
 
 __all__ = ['ResNet18', 'ResNet34', 'ResNet50', 'ResNet101', 'ResNet152']
 

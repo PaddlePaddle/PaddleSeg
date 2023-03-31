@@ -14,4 +14,4 @@
 
 from .config import Config
 from . import manager
-from .builder import Builder, CPSBuilder
+from .builder import CPSBuilder

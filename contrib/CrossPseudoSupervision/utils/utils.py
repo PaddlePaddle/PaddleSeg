@@ -18,6 +18,8 @@ import paddle
 
 from paddleseg.utils import logger
 
+__all__ = ['cps_resume', 'get_in_channels', 'et_in_channels']
+
 
 def cps_resume(model, optimizer_l, optimizer_r, resume_model):
     if resume_model is not None:

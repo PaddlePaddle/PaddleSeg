@@ -6,11 +6,12 @@
 
 [Cross pseudo supervision, CPS](https://arxiv.org/abs/2106.01226)是一种**非常简洁而又性能很好**的半监督语义分割任务算法。训练时，使用两个相同结构、但是不同初始化的网络，添加约束**使得两个网络对同一样本的输出是相似的**。具体来说，当前网络产生的one-hot pseudo label，会作为另一路网络预测的目标，这个过程可以用cross entropy loss监督，就像传统的全监督语义分割任务的监督一样。**该算法在在两个benchmark (PASCAL VOC, Cityscapes) 都取得了SOTA的结果**
 
-部分可视化结果如下，左边为RGB图像，中间为预测图，右边为真值
+部分可视化结果如下（左边为RGB图像，中间为预测图，右边为真值）:
 
-![](https://ai-studio-static-online.cdn.bcebos.com/e45cf14fe5a0417791a5455e84b2243abe8d8298cba94c8f9d98b0edd8a431d1)
+![](https://user-images.githubusercontent.com/52785738/229003524-103fb081-dd36-4b19-b070-156d58467fe2.png)
 
-![](https://ai-studio-static-online.cdn.bcebos.com/a136cff0ce7748dbb7bd3d8fa5b6942b8eeee8cb10ec456694c749a09375fc29)
+![](https://user-images.githubusercontent.com/52785738/229003602-05cb2be1-8224-4600-8f6a-1ec58b909e47.png)
+
 
 
 ## 目录
@@ -43,7 +44,7 @@ pip install -v -e .
 | pytorch | 78.77% |
 | paddle | 78.39% |
 
-Paddle复现的模型权重下载链接为：
+请使用以下链接下载预训练权重：
 
 ## 数据准备
 
@@ -83,7 +84,7 @@ data/
 
 ## 训练评估预测
 
-执行以下命令，进入到`CPS`所在分支：
+执行以下命令，进入到`CPS`所在文件夹下：
 
 ```shell
 cd ./contrib/CrossPseudoSupervision
@@ -91,7 +92,7 @@ cd ./contrib/CrossPseudoSupervision
 
 ### 训练
 
-准备好环境与数据之后，执行以下命令训练：
+准备好环境与数据之后，执行以下命令启动训练：
 
 ```shell
 python train.py --config ./configs/deeplabv3p/deeplabv3p_resnet50_0.5cityscapes_800x800_240e.yml --log_iters 10 --save_dir ./output/ --batch_size 2
@@ -104,7 +105,11 @@ python -m paddle.distributed.launch --gpus="0,1,2,3" train.py --config ./configs
 --log_iters 10 --save_dir $SAVE_PATH$ --batch_size 8
 ```
 
-**注**： 论文原repo中训练过程并不验证，而是训练结束后再对后几个保存的权重逐个测试精度，因此本项目也不在训练过程中验证；配置文件是训练1/2有标签的数据，若要改为其他比例，训练epoch数需要进行调整
+- `SAVE_PATH`: 保存权重与日志等文件的文件夹路径
+
+**注**：
+1. 目前，本项目训练过程中并不进行定期的epoch的精度测试
+2. 配置文件是训练1/2有标签的数据，若要调整为其他比例，修改配置文件中的`labeled_ratio`参数。当修改有标签数据的比例时，训练的epoch数需要按照下表进行调整（通过修改配置文件中的`nepochs`参数调整训练的epoch数量）：
 
 | Dataset    | 1/16 | 1/8  | 1/4  | 1/2  |
 | ---------- | ---- | ---- | ---- | ---- |
@@ -122,7 +127,11 @@ python val.py \
        --model_path $MODEL_PATH$
 ```
 
+- `MODEL_PATH`: 加载的权重的路径
+
 ### 预测
+
+执行以下命令，使用滑窗推理进行预测：
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0
@@ -136,4 +145,6 @@ export CUDA_VISIBLE_DEVICES=0
        --stride 532 532
 ```
 
-你可以直接下载我们提供的模型进行预测。
+- `IMG_PATH`: 待预测的图片或文件夹所在的路径
+
+你可以直接下载我们提供的[预训练模型]()进行预测。

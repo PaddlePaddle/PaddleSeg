@@ -17,7 +17,6 @@ import paddle
 import numpy as np
 
 from paddle.io import Dataset
-
 from paddleseg.transforms import Compose
 
 
@@ -47,21 +46,25 @@ class BaseDataset(Dataset):
                  val_path=None,
                  file_length=None,
                  img_channels=3,
-                 ignore_index=255):
+                 ignore_index=255,
+                 separator='\t'):
         super(BaseDataset, self).__init__()
         self.mode = mode.lower()
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self._train_source = train_path
         self._eval_source = val_path
-        self._file_names = self._get_file_names(mode)
         self._file_length = file_length
         self.ignore_index = ignore_index
+        self.separator = separator
+        self.img_channels = img_channels
 
         if self.mode not in ['train', 'val']:
             raise ValueError(
                 "mode should be 'train', 'val' or 'test', but got {}.".format(
                     self.mode))
+        self._file_names = self._get_file_names(mode)
+
         if not os.path.exists(dataset_root):
             raise FileNotFoundError('there is not `dataset_root`: {}.'.format(
                 dataset_root))
@@ -111,7 +114,7 @@ class BaseDataset(Dataset):
             files = f.readlines()
 
         for item in files:
-            img_name, gt_name = self._process_item_names(item)
+            img_name, gt_name = self._process_item_names(item, self.separator)
             file_names.append([img_name, gt_name])
 
         if train_extra:
@@ -121,7 +124,8 @@ class BaseDataset(Dataset):
                 files2 = f.readlines()
 
             for item in files2:
-                img_name, gt_name = self._process_item_names(item)
+                img_name, gt_name = self._process_item_names(item,
+                                                             self.separator)
                 file_names2.append([img_name, gt_name])
 
             return file_names, file_names2
@@ -144,9 +148,9 @@ class BaseDataset(Dataset):
         return new_file_names
 
     @staticmethod
-    def _process_item_names(item):
+    def _process_item_names(item, separator='\t'):
         item = item.strip()
-        item = item.split('\t')
+        item = item.split(separator)
         img_name = item[0]
 
         if len(item) == 1:

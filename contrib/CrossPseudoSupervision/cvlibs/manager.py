@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from paddleseg.cvlibs.manager import ComponentManager, TRANSFORMS, OPTIMIZERS
+from paddleseg.cvlibs.manager import ComponentManager, TRANSFORMS, OPTIMIZERS, LOSSES, BACKBONES
 
-BATCHTRANSFORMS = ComponentManager("batch_transforms")
+BATCH_TRANSFORMS = ComponentManager("batch_transforms")
 MODELS = ComponentManager("models")
 DATASETS = ComponentManager("datasets")
-LOSSES = ComponentManager("losses")
-BACKBONES = ComponentManager("backbones")

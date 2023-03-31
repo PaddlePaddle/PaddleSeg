@@ -1,6 +1,6 @@
 batch_size: 8 # total batch size
 nepochs: 240
-labeled_ratio: 2
+labeled_ratio: 2 #  The ratio of total data to marked data, if 2, is 1/2, i.e. 0.5.
 
 train_dataset:
   type: CityscapesCPS

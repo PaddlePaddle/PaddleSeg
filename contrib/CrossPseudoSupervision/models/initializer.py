@@ -14,6 +14,7 @@
 """
 This code is based on https://github.com/pytorch/pytorch/blob/master/torch/nn/init.py
 Ths copyright of pytorch/pytorch is a BSD-style license, as found in the LICENSE file.
+The license's link is https://github.com/pytorch/pytorch/blob/master/LICENSE
 """
 
 import math

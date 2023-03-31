@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
 import os
+import numpy as np
+
+from paddleseg.transforms import Compose
 
 from cvlibs import manager
-from paddleseg.transforms import Compose
 from .basedataset import BaseDataset
 
 
@@ -27,7 +28,7 @@ class CityscapesCPS(BaseDataset):
     Source: https://www.cityscapes-dataset.com/
     Semi-supervision Cityscapes dataset from [google drive](https://pkueducn-my.sharepoint.com/:f:/g/personal/pkucxk_pku_edu_cn/EtjNKU0oVMhPkOKf9HTPlVsBIHYbACel6LSvcUeP4MXWVg?e=139icd)
 
-    The folder structure is as follow:
+    The folder structure is as follows:
 
         city
         ├── config_new
@@ -62,34 +63,18 @@ class CityscapesCPS(BaseDataset):
         transforms (list): Transforms for image.
         dataset_root (str): Cityscapes dataset directory.
         mode (str, optional): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        coarse_multiple (float|int, optional): Multiple of the amount of coarse data relative to fine data. Default: 1
-        unsupervised (bool, optional): Whether haven't labels. Default: False
+        unsupervised (bool, optional): Whether haven't labels. Default: False.
     """
     NUM_CLASSES = 19
     IGNORE_INDEX = 255
     IMG_CHANNELS = 3
 
-    def __init__(self,
-                 mode,
-                 dataset_root,
-                 transforms,
-                 train_path=None,
-                 val_path=None,
-                 file_length=None,
-                 unsupervised=False,
-                 img_channels=3,
-                 ignore_index=255):
+    def __init__(self, mode, dataset_root, transforms, unsupervised=False):
 
         self.mode = mode
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
-        self._train_source = train_path
-        self._eval_source = val_path
-        self._file_names = self._get_file_names(mode)
-        self._file_length = file_length
         self.unsupervised = unsupervised
-        self.img_channels = img_channels
-        self.ignore_index = ignore_index
 
         self.num_classes = self.NUM_CLASSES
 
@@ -97,15 +82,13 @@ class CityscapesCPS(BaseDataset):
             raise ValueError(
                 "mode should be 'train', 'val' or 'test', but got {}.".format(
                     self.mode))
+        self._file_names = self._get_file_names(mode)
+
         if not os.path.exists(dataset_root):
             raise FileNotFoundError('there is not `dataset_root`: {}.'.format(
                 dataset_root))
         if self.transforms is None:
             raise ValueError("`transforms` is necessary, but it is None.")
-
-        if img_channels not in [1, 3]:
-            raise ValueError("`img_channels` should in [1, 3], but got {}".
-                             format(img_channels))
 
     def __getitem__(self, index):
         if self._file_length is not None:
@@ -133,11 +116,14 @@ class CityscapesCPS(BaseDataset):
             data['trans_info'] = []
             data['label'] = []
             data = self.transforms(data)
+        else:
+            raise ValueError(
+                "when mode is 'val', self.unsupervised should be False.")
 
         return data
 
     @classmethod
-    def get_class_colors(*args):
+    def get_class_colors(self):
         return [[128, 64, 128], [244, 35, 232], [70, 70, 70], [102, 102, 156],
                 [190, 153, 153], [153, 153, 153], [250, 170, 30],
                 [220, 220, 0], [107, 142, 35], [152, 251, 152], [70, 130, 180],
@@ -145,7 +131,7 @@ class CityscapesCPS(BaseDataset):
                 [0, 60, 100], [0, 80, 100], [0, 0, 230], [119, 11, 32]]
 
     @classmethod
-    def get_class_names(*args):
+    def get_class_names(self):
         return [
             'road', 'sidewalk', 'building', 'wall', 'fence', 'pole',
             'traffic light', 'traffic sign', 'vegetation', 'terrain', 'sky',
@@ -154,7 +140,7 @@ class CityscapesCPS(BaseDataset):
         ]
 
     @classmethod
-    def transform_label(cls, pred, name):
+    def transform_label(self, cls, pred, name):
         label = np.zeros(pred.shape)
         ids = np.unique(pred)
         for id in ids:

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
 import os
 import time
 from collections import deque
@@ -21,10 +20,10 @@ import shutil
 import paddle
 import paddle.distributed as dist
 from paddle.io import DistributedBatchSampler, DataLoader
-
 from paddleseg.utils import (TimeAverager, calculate_eta, logger,
                              train_profiler, op_flops_funs)
 from paddleseg.core.val import evaluate
+
 from utils import cps_resume
 from batch_transforms import SegCollate, AddMaskParamsToBatch
 
@@ -163,13 +162,15 @@ def train(model,
             os.remove(save_dir)
         os.makedirs(save_dir, exist_ok=True)
 
+    raw_model = model  # use for eval during training
+
     if nranks > 1:
         paddle.distributed.fleet.init(is_collective=True)
         optimizer_l = paddle.distributed.fleet.distributed_optimizer(
             optimizer_l)  # The return is Fleet object
         optimizer_r = paddle.distributed.fleet.distributed_optimizer(
             optimizer_r)  # The return is Fleet object
-        ddp_model = paddle.distributed.fleet.distributed_model(model)
+        model = paddle.distributed.fleet.distributed_model(raw_model)
 
     add_mask_params_to_batch = AddMaskParamsToBatch(mask_genarator)
     collate_fn = SegCollate()
@@ -225,30 +226,15 @@ def train(model,
             batch_mix_masks = mask_params
             unsup_imgs_mixed = unsup_imgs_0 * (
                 1 - batch_mix_masks) + unsup_imgs_1 * batch_mix_masks
-            if nranks > 1:
-                with paddle.no_grad():
-                    # Estimate the pseudo-label with branch#1 & supervise branch#2
-                    logits_u0_tea_1, _ = ddp_model(unsup_imgs_0)
-                    logits_u1_tea_1, _ = ddp_model(unsup_imgs_1)
-                    logits_u0_tea_1 = logits_u0_tea_1[0].detach()
-                    logits_u1_tea_1 = logits_u1_tea_1[0].detach()
-                    # Estimate the pseudo-label with branch#2 & supervise branch#1
-                    _, logits_u0_tea_2 = ddp_model(unsup_imgs_0)
-                    _, logits_u1_tea_2 = ddp_model(unsup_imgs_1)
-                    logits_u0_tea_2 = logits_u0_tea_2[0].detach()
-                    logits_u1_tea_2 = logits_u1_tea_2[0].detach()
-            else:
-                with paddle.no_grad():
-                    # Estimate the pseudo-label with branch#1 & supervise branch#2
-                    logits_u0_tea_1, _ = model(unsup_imgs_0)
-                    logits_u1_tea_1, _ = model(unsup_imgs_1)
-                    logits_u0_tea_1 = logits_u0_tea_1[0].detach()
-                    logits_u1_tea_1 = logits_u1_tea_1[0].detach()
-                    # Estimate the pseudo-label with branch#2 & supervise branch#1
-                    _, logits_u0_tea_2 = model(unsup_imgs_0)
-                    _, logits_u1_tea_2 = model(unsup_imgs_1)
-                    logits_u0_tea_2 = logits_u0_tea_2[0].detach()
-                    logits_u1_tea_2 = logits_u1_tea_2[0].detach()
+
+            with paddle.no_grad():
+                # Estimate the pseudo-label with one branch & supervise another branch
+                logits_u0_tea_1, logits_u0_tea_2 = model(unsup_imgs_0)
+                logits_u1_tea_1, logits_u1_tea_2 = model(unsup_imgs_1)
+                logits_u0_tea_1 = logits_u0_tea_1[0].detach()
+                logits_u1_tea_1 = logits_u1_tea_1[0].detach()
+                logits_u0_tea_2 = logits_u0_tea_2[0].detach()
+                logits_u1_tea_2 = logits_u1_tea_2[0].detach()
 
             # Mix teacher predictions using same mask
             # It makes no difference whether we do this with logits or probabilities as
@@ -260,13 +246,8 @@ def train(model,
                 1 - batch_mix_masks) + logits_u1_tea_2 * batch_mix_masks
             ps_label_2 = paddle.argmax(logits_cons_tea_2, axis=1)
 
-            if nranks > 1:
-                logits_cons_stu_1, logits_cons_stu_2 = ddp_model(
-                    unsup_imgs_mixed)
-                sup_pred_l, sup_pred_r = ddp_model(imgs)
-            else:
-                logits_cons_stu_1, logits_cons_stu_2 = model(unsup_imgs_mixed)
-                sup_pred_l, sup_pred_r = model(imgs)
+            logits_cons_stu_1, logits_cons_stu_2 = model(unsup_imgs_mixed)
+            sup_pred_l, sup_pred_r = model(imgs)
 
             logits_cons_stu_1, logits_cons_stu_2 = logits_cons_stu_1[
                 0], logits_cons_stu_2[0]
@@ -328,7 +309,7 @@ def train(model,
                             batch_cost_averager.get_ips_average(), eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, current_iter)
-                    # Record all losses if there are more than 2 losses.
+                    # Record all losses if there are more than 1 losses.
                     if len(avg_loss_list) > 1:
                         avg_loss_dict = {}
                         for i, value in enumerate(avg_loss_list):
@@ -359,9 +340,9 @@ def train(model,
                 test_config = {}
 
             mean_iou, acc, _, _, _ = evaluate(
-                model, val_dataset, num_workers=num_workers, **test_config)
+                raw_model, val_dataset, num_workers=num_workers, **test_config)
 
-            model.train()
+            raw_model.train()
 
         if ((epoch + 1) % save_epoch == 0 or
             (epoch + 1) == nepochs) and local_rank == 0 and (
@@ -371,7 +352,7 @@ def train(model,
             if not os.path.isdir(current_save_dir):
                 os.makedirs(current_save_dir)
 
-            paddle.save(model.state_dict(),
+            paddle.save(raw_model.state_dict(),
                         os.path.join(current_save_dir, 'model.pdparams'))
             paddle.save(optimizer_l.state_dict(),
                         os.path.join(current_save_dir, 'model_l.pdopt'))
@@ -388,7 +369,7 @@ def train(model,
                     best_mean_iou = mean_iou
                     best_model_epoch = epoch + 1
                     best_model_dir = os.path.join(save_dir, "best_model")
-                    paddle.save(model.state_dict(),
+                    paddle.save(raw_model.state_dict(),
                                 os.path.join(best_model_dir, 'model.pdparams'))
                 logger.info(
                     '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at epoch {}.'
