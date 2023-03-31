@@ -26,7 +26,7 @@ import util
 from eiseg import logger
 from inference import clicker
 from inference.predictor import get_predictor
-from models import EISegModel
+from eiseg.models import EISegModel
 from util import LabelList
 from util.vis import draw_with_blend_and_clicks
 
