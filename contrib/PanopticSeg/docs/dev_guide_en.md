@@ -26,12 +26,15 @@ PanopticSeg
 │   │   ├── info_dicts.py: Data containers for prediction results, samples, etc.
 │   │   └── manager.py: Register and manage components.
 │   ├── datasets: Interfaces for dataset IO.
+│   ├── deploy: Deployment APIs.
 │   ├── models: Implementations of models.
 │   │   ├── backbones: Implementations of backbone networks.
 │   │   ├── losses: Implementations of loss functions.
 │   │   ├── ops: Implementations of external operators.
+│   │   ├── common.py: Common classes and functions.
 │   │   └── param_init.py: Utility functions for weight initialization.
 │   ├── postprocessors: Postprocessors.
+│   ├── runners: Runners.
 │   ├── transforms: Data transformation operators.
 │   │   └── generate_targets: Transformation operators to generate training targets.
 │   └── utils: Utility functions and classes.

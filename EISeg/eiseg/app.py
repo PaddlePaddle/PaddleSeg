@@ -23,7 +23,7 @@ import webbrowser
 from easydict import EasyDict as edict
 
 from qtpy import QtGui, QtCore, QtWidgets
-from qtpy.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QApplication
+from qtpy.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QApplication, QDialog
 from qtpy.QtGui import QImage, QPixmap
 from qtpy.QtCore import Qt, QByteArray, QVariant, QCoreApplication
 import cv2
@@ -33,7 +33,7 @@ import paddle
 import paddle.nn.functional as F
 
 from eiseg import pjpath, __APPNAME__, logger
-from widget import ShortcutWidget, PolygonAnnotation, LabelCorresWidget
+from widget import ShortcutWidget, PolygonAnnotation, LabelCorresWidget, CustomDialog
 from controller import InteractiveController
 from ui import Ui_EISeg
 import util
@@ -41,6 +41,7 @@ from util import COCO
 from util import check_cn, normcase
 from util.voc import VocAnnotations
 from util.jsencoder import JSEncoder
+from util.masktococo import saveMaskToCOCO
 
 import plugin.remotesensing as rs
 from plugin.medical import med
@@ -216,10 +217,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         self.formats = [
             img_ext,  # 自然图像
-            [".dcm"],  # 医学影像
+            [".dcm", ".tif", ".tiff"],  # 医学影像（tiff格式的X光数据）
             rs_ext,  # 遥感影像
             video_ext,  # 视频
         ]
+
+        self.rs_tiff_support = None
 
         # 遥感
         self.raster = None
@@ -327,6 +330,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "open_folder",
             "OpenFolder",
             tr("打开一个文件夹下所有的图像进行标注"), )
+        convert_mask = action(
+            tr("&加载分割标签图像"),
+            self.loadMaskImage,
+            "convert_mask",
+            "Convert",
+            tr("将分割的图像和图像标签转换为EISeg可以读取多边形的格式"), )
         change_output_dir = action(
             tr("&改变标签保存路径"),
             partial(self.changeOutputDir, None),
@@ -702,6 +711,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             fileMenu=(
                 open_image,
                 open_folder,
+                convert_mask,
                 change_output_dir,
                 load_param,
                 clear_recent,
@@ -1419,6 +1429,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.listFiles.clear()
 
         # 3. 扫描文件夹下所有图片
+        self.rs_tiff_support is None
         # 3.1 获取所有文件名
         imagePaths = os.listdir(inputDir)
         exts = tuple(f for fmts in self.formats for f in fmts)
@@ -1428,9 +1439,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if len(imagePaths) == 0:
             return
         # 3.2 设置默认输出路径
-        if self.outputDir is None:
-            # 没设置为文件夹下的 label 文件夹
-            self.outputDir = osp.join(inputDir, "label")
+        self.outputDir = osp.join(inputDir, "label")
         if not osp.exists(self.outputDir):
             os.makedirs(self.outputDir)
         # 3.3 有重名图片，标签保留原来拓展名
@@ -1477,6 +1486,18 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         image = None
         self.video_first = None
 
+        # tiff数据判断类型
+        if path.lower().endswith((".tif", ".tiff")) and self.rs_tiff_support is None:
+            tiff_checked_dialog = CustomDialog(
+                self, 
+                self.tr("tiff格式检查"),
+                self.tr("检测到当前图像为tiff格式，请指定其为遥感数据还是医疗数据"),
+                self.tr("遥感数据"),
+                self.tr("医疗数据")
+            )
+            if (tiff_checked_dialog.exec_()):
+                self.rs_tiff_support = tiff_checked_dialog.rs_support
+
         # 直接if会报错，因为打开遥感图像后多波段不存在，现在把遥感图像的单独抽出来了
         # 自然图像
         if path.lower().endswith(tuple(self.formats[0])):
@@ -1493,7 +1514,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     image, _ = self.grid.getGrid(0, 0)
 
         # 医学影像
-        if path.lower().endswith(tuple(self.formats[1])):
+        if path.lower().endswith(tuple(self.formats[1])) and \
+            self.rs_tiff_support is not True:
             if not self.dockStatus[5]:
                 res = self.warn(
                     self.tr("未启用医疗组件"),
@@ -1527,7 +1549,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         # 遥感图像
         if path.lower().endswith(tuple(self.formats[
-                2])):  # imghdr.what(path) == "tiff":
+                2])) and self.rs_tiff_support:  # imghdr.what(path) == "tiff":
             if not self.dockStatus[4]:
                 res = self.warn(
                     self.tr("未打开遥感组件"),
@@ -1778,6 +1800,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     color = self.controller.labelList[self.currLabelIdx].color
                     self.createPoly(curr_polygon, color)
         if self.video_first is False:
+            self._video_pause()
             self.updateImage()
             current_mask = self.getVideoMask()
             if current_mask is not None and len(self.scene.polygon_items) == 0:
@@ -2979,16 +3002,22 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.warn(self.tr("图片格式无法播放"), self.tr("请先加载视频"))
             return
         if self.timer.isActive():
-            self.timer.stop()
-            self.image = self.video_images[self.video.cursur]
-            self.videoPlay.setText(self.tr("播放"))
-            self.videoPlay.setIcon(
-                QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
+            self._video_pause()
         else:
-            self.timer.start(1000 // self.ratio)
-            self.videoPlay.setText(self.tr("暂停"))
-            self.videoPlay.setIcon(
-                QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))
+            self._video_play()
+
+    def _video_pause(self):
+        self.timer.stop()
+        self.image = self.video_images[self.video.cursur]
+        self.videoPlay.setText(self.tr("播放"))
+        self.videoPlay.setIcon(
+            QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
+            
+    def _video_play(self):
+        self.timer.start(1000 // self.ratio)
+        self.videoPlay.setText(self.tr("暂停"))
+        self.videoPlay.setIcon(
+            QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))
 
     def getVideoMask(self):
         try:
@@ -3018,6 +3047,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             # return
         print('-------------start propgation----------------')
         self.statusbar.showMessage(self.tr("开始传播"))
+        self.btnPropagate.setEnabled(False)
         # set object
         self.video.set_objects(int(max(self.video.k, current_mask.max())))
         self.video.set_images(self.video_images)
@@ -3033,6 +3063,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         end = time.time()
         print("propagation time cost", end - start)
         self.statusbar.showMessage(self.tr("传播完成!"), 5000)
+        self.btnPropagate.setEnabled(True)
         self.video_first = False
         # 传播进度条重置
         self.proPropagete.setValue(0)
@@ -3384,3 +3415,28 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         with open(path, "w", encoding="utf-8") as f:
             for label in labelName:
                 f.write(label + "\n")
+
+    def loadMaskImage(self):
+        options = (QtWidgets.QFileDialog.ShowDirsOnly |
+                   QtWidgets.QFileDialog.DontResolveSymlinks)
+        if self.settings.value("use_qt_widget", False, type=bool):
+            options = options | QtWidgets.QFileDialog.DontUseNativeDialog
+        imgDir = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            self.tr("选择图片文件夹") + " - " + __APPNAME__,
+            "",
+            options, )
+        if not osp.exists(imgDir):
+            return
+        maskDir = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            self.tr("选择标签文件夹") + " - " + __APPNAME__,
+            "",
+            options, )
+        if not osp.exists(maskDir):
+            return
+        try:
+            saveMaskToCOCO(imgDir, maskDir)
+            self.statusbar.showMessage(self.tr("转换完成"), 10000)
+        except:
+            self.statusbar.showMessage(self.tr("转换失败"), 10000)

@@ -27,6 +27,7 @@ from .ghostnet import *
 from .cae import *
 from .top_transformer import *
 from .uhrnet import *
+from .strideformer import *
 from .vit_adapter import *
 from .hrformer import *
 from .mscan import *
