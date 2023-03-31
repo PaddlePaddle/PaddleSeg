@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import find_packages
+from setuptools import find_packages, find_namespace_packages
 from setuptools import setup
 
 if __name__ == '__main__':
@@ -26,12 +26,15 @@ if __name__ == '__main__':
     setup(
         name='paddlepanseg',
         version=VERSION.replace('-', ''),
-        description=('End-to-end panoptic segmentation kit based on PaddleSeg.'),
+        description=(
+            "End-to-end panoptic segmentation kit based on PaddleSeg."),
         long_description='',
         author='PaddlePaddle Authors',
         author_email='',
         install_requires=REQUIRED_PACKAGES,
-        packages=find_packages(include=['paddlepanseg', 'paddlepanseg.*']),
+        packages=find_packages(include=['paddlepanseg', 'paddlepanseg.*']) +
+        find_namespace_packages(include=['paddlepanseg', 'paddlepanseg.*']),
+        include_package_data=True,
         # PyPI package information.
         classifiers=[
             'Development Status :: 4 - Beta',
