@@ -1,0 +1,48 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 4
+iters: 80000
+
+optimizer:
+  weight_decay: 5.0e-4
+
+lr_scheduler:
+  warmup_iters: 1000
+  warmup_start_lr: 1.0e-5
+  learning_rate: 0.005
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+      min_kept: 130000
+    - type: OhemCrossEntropyLoss
+      min_kept: 130000
+    - type: OhemCrossEntropyLoss
+      min_kept: 130000
+  coef: [1, 1, 1]
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
+    - type: Normalize
+  mode: train
+
+model:
+  type: MobileSeg
+  backbone:
+    type: ShuffleNetV2_x1_0   # out channels: [24, 116, 232, 464]
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/shufflenetv2_x1_0.zip
+  cm_bin_sizes: [1, 2, 4]
+  cm_out_ch: 128
+  arm_out_chs: [32, 64, 128]
+  seg_head_inter_chs: [32, 32, 32]
