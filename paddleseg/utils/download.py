@@ -163,13 +163,14 @@ def download_file_and_uncompress(url,
                         not zipfile.is_zipfile(savepath)):
                     if not os.path.exists(extraname):
                         os.makedirs(extraname)
+                    shutil.move(savepath, extraname)
 
                 else:
                     savename = _uncompress_file(savepath, extrapath,
                                                 delete_file, print_progress)
                     savename = os.path.join(extrapath, savename)
+                    shutil.move(savename, extraname)
 
-            shutil.move(savename, extraname)
             os.remove(lock_path)
 
         else:
