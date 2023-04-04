@@ -146,21 +146,33 @@ def download_file_and_uncompress(url,
             shutil.rmtree(extraname)
     full_path = os.path.join(extraname,
                              filename) if filename is not None else extraname
+    rank_id_curr_node = int(os.environ.get("PADDLE_RANK_IN_NODE", 0))
     if not os.path.exists(
             full_path):  # If pretrained model exists, skip download process.
-        if not os.path.exists(savename):
-            if not os.path.exists(savepath):
-                _download_file(url, savepath, print_progress)
+        lock_path = extraname + '.download.lock'
+        with open(lock_path, 'w'):  # touch    
+            os.utime(lock_path, None)
+        if rank_id_curr_node == 0:
+            if not os.path.exists(savename):
+                if not os.path.exists(savepath):
+                    _download_file(url, savepath, print_progress)
 
-            if (not tarfile.is_tarfile(savepath)) and (
-                    not zipfile.is_zipfile(savepath)):
-                if not os.path.exists(extraname):
-                    os.makedirs(extraname)
-                shutil.move(savepath, extraname)
-                return extraname
+                if (not tarfile.is_tarfile(savepath)) and (
+                        not zipfile.is_zipfile(savepath)):
+                    if not os.path.exists(extraname):
+                        os.makedirs(extraname)
+                    shutil.move(savepath, extraname)
 
-            savename = _uncompress_file(savepath, extrapath, delete_file,
-                                        print_progress)
-            savename = os.path.join(extrapath, savename)
-        shutil.move(savename, extraname)
+                else:
+                    savename = _uncompress_file(savepath, extrapath,
+                                                delete_file, print_progress)
+                    savename = os.path.join(extrapath, savename)
+                    shutil.move(savename, extraname)
+
+            os.remove(lock_path)
+
+        else:
+            while os.path.exists(lock_path):
+                time.sleep(0.5)
+
     return extraname
