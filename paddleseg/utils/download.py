@@ -146,9 +146,7 @@ def download_file_and_uncompress(url,
             shutil.rmtree(extraname)
     full_path = os.path.join(extraname,
                              filename) if filename is not None else extraname
-
     rank_id_curr_node = int(os.environ.get("PADDLE_RANK_IN_NODE", 0))
-
     if not os.path.exists(
             full_path):  # If pretrained model exists, skip download process.
         lock_path = extraname + '.download.lock'
@@ -163,13 +161,14 @@ def download_file_and_uncompress(url,
                         not zipfile.is_zipfile(savepath)):
                     if not os.path.exists(extraname):
                         os.makedirs(extraname)
+                    shutil.move(savepath, extraname)
 
                 else:
                     savename = _uncompress_file(savepath, extrapath,
                                                 delete_file, print_progress)
                     savename = os.path.join(extrapath, savename)
+                    shutil.move(savename, extraname)
 
-            shutil.move(savename, extraname)
             os.remove(lock_path)
 
         else:
