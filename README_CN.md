@@ -43,7 +43,7 @@
 
 ## <img src="./docs/images/feature.png" width="20"/> 特性
 
-* **高精度**：跟踪学术界的前沿分割技术，结合高精度训练的骨干网络，提供40+主流分割网络、140+的高质量预训练模型，效果优于其他开源实现。
+* **高精度**：跟踪学术界的前沿分割技术，结合高精度训练的骨干网络，提供45+主流分割网络、150+的高质量预训练模型，效果优于其他开源实现。
 
 * **高性能**：使用多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
 
@@ -139,6 +139,13 @@
             <li><a href="./configs/uhrnet">UHRNet</a></li>
             <li><a href="./configs/topformer">TopFormer</a></li>
             <li><a href="./configs/mscale_ocrnet">MscaleOCRNet-PSA</a></li>
+            <li><a href="./configs/cae">CAE</a></li>
+            <li><a href="./configs/maskformer">MaskFormer</a></li>
+            <li><a href="./configs/vit_adapter">ViT-Adapter</a></li>
+            <li><a href="./configs/hrformer">HRFormer</a></li>
+            <li><a href="./configs/lpsnet">LPSNet</a></li>
+            <li><a href="./configs/segnext">SegNeXt</a></li>
+            <li><a href="./configs/knet">K-Net</a></li>
           </ul>
         </details>
         <details><summary><b>交互式分割模型</b></summary>
@@ -155,11 +162,13 @@
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
+              <li><a href="./Matting/configs/rvm">RVM</a></li>
           </ul>
         </details>
         <details><summary><b>全景分割</b></summary>
           <ul>
-            <li><a href="./contrib/PanopticDeepLab/README_CN.md">Panoptic-DeepLab</a></li>
+            <li><a href="./contrib/PanopticSeg/configs/mask2former">Mask2Former</a></li>
+            <li><a href="./contrib/PanopticSeg/configs/panoptic_deeplab">Panoptic-DeepLab</a></li>
           </ul>
         </details>
       </td>
@@ -178,6 +187,9 @@
             <li><a href="./paddleseg/models/backbones/vision_transformer.py">VIT</a></li>
             <li><a href="./paddleseg/models/backbones/mix_transformer.py">MixVIT</a></li>
             <li><a href="./paddleseg/models/backbones/swin_transformer.py">Swin Transformer</a></li>
+            <li><a href="./paddleseg/models/backbones/top_transformer.py">TopTransformer</a></li>
+            <li><a href="./paddleseg/models/backbones/hrformer.py">HRTransformer</a></li>
+            <li><a href="./paddleseg/models/backbones/mscan.py">MSCAN</a></li>
           </ul>
         </details>
         <details><summary><b>损失函数</b></summary>
@@ -394,6 +406,7 @@
     * [导出ONNX模型](./docs/model_export_onnx_cn.md)
 
 * 模型部署
+    * [FastDeploy部署](./deploy/fastdeploy)
     * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference_cn.md)
     * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference_cn.md)
     * [Paddle Lite部署](./docs/deployment/lite/lite_cn.md)

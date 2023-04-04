@@ -73,12 +73,14 @@ def val_with_args(args):
         logger.info("Params are successfully loaded.")
     val_dataset = builder.val_dataset
     postprocessor = builder.postprocessor
+    runner = builder.runner
 
     try:
         evaluate(
             model,
             val_dataset,
             postprocessor=postprocessor,
+            runner=runner,
             num_workers=args.num_workers,
             eval_sem=args.eval_sem,
             eval_ins=args.eval_ins)

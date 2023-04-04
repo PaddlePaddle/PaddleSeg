@@ -1,0 +1,12 @@
+_base_: './pp_mobileseg_base_cityscapes_1024x512_80k.yml'
+
+model:
+  type: PPMobileSeg
+  num_classes: 19
+  backbone:
+    type: MobileSeg_Tiny
+    inj_type: AAM
+    out_feat_chs: [32, 64, 128]
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny_pretrain/model.pdparams
+  upsample: intepolate  # During exportation, you need to change it to vim for using VIM
+

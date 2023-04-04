@@ -1,0 +1,15 @@
+ENV:
+  device: gpu
+  output_dir: ./output_seg/
+  save: True
+  visualize: True
+
+PipeLine:
+  - BaseSegmentation:
+      config_path: ./configs/seg/ocrnet/ocrnet_hrnetw18_defect_256x256_40k.yml
+      model_path: ./output/seg/best_model/model.pdparams
+      aug_pred : False
+  - PostProcess:
+      - JudgeByArea:
+          area_thresh: 
+            1: 0

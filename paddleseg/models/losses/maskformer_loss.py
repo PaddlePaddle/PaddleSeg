@@ -41,6 +41,7 @@ def dice_loss(inputs, targets, num_masks):
     numerator = 2 * (inputs * targets).sum(-1)
     denominator = inputs.sum(-1) + targets.sum(-1)
     loss = 1 - (numerator + 1) / (denominator + 1)
+    num_masks = paddle.full(shape=[1], fill_value=num_masks, dtype='float32')
     return loss.sum() / num_masks
 
 
@@ -69,7 +70,7 @@ def sigmoid_focal_loss(inputs, targets, num_masks, alpha=0.25, gamma=2):
     if alpha >= 0:
         alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
         loss = alpha_t * loss
-
+    num_masks = paddle.full(shape=[1], fill_value=num_masks, dtype='float32')
     return loss.mean(1).sum() / num_masks
 
 
@@ -345,6 +346,8 @@ class MaskFormerLoss(nn.Layer):
         tgt_idx = self._get_tgt_permutation_idx(indices_cpt)
         src_masks = outputs["pred_masks"]
         src_masks = src_masks[src_idx]
+        if src_masks.ndim == 2:
+            src_masks = src_masks.unsqueeze(0)
         masks = [t["masks"] for t in targets_cpt]
 
         target_masks, valid = nested_tensor_from_tensor_list(masks)
@@ -403,12 +406,15 @@ class MaskFormerLoss(nn.Layer):
 
         targets = []
         for item in targets_cpt:
-            paddle.cast(item['masks'], 'bool')
-            start_idx = paddle.nonzero(
-                paddle.cast(item["labels"] == self.ignore_index, 'int64'))[
-                    0].numpy()[0]
-            index = paddle.cast(paddle.to_tensor([i for i in range(start_idx)]),
-                    'int64')
+            item['masks'] = paddle.cast(item['masks'], 'bool')
+            invalid_indices = paddle.nonzero(
+                paddle.cast(item['labels'] == self.ignore_index, 'int64'))
+            if len(invalid_indices) > 0:
+                start_idx = int(invalid_indices[0].numpy())
+            else:
+                start_idx = len(item['labels'])
+            index = paddle.cast(
+                paddle.to_tensor([i for i in range(start_idx)]), 'int64')
             item['labels'] = paddle.gather(
                 item['labels'], index, axis=0)  # [n] n<150
             item['masks'] = paddle.gather(

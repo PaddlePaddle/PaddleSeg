@@ -1,4 +1,4 @@
-# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .pan_loss import AdaptedSegLoss, PanLoss
-from .cross_entropy_loss import CrossEntropyLoss
-from .panoptic_deeplab_losses import CenterLoss, OffsetLoss
-from .maskformer_losses import MaskFormerCombinedLoss
+from .noncustomizable_loss import NoncustomizableLoss

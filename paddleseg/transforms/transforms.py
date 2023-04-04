@@ -558,9 +558,11 @@ class RandomPaddingCrop:
         crop_size (tuple, optional): The target cropping size. Default: (512, 512).
         im_padding_value (float, optional): The padding value of raw image. Default: 127.5.
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
-        category_max_ratio (float, optional): The maximum ratio that single category could occupy. Default: 1.0.
-        ignore_index (int, optional): Specifies a target value that is ignored. Default: 255.
-        loop_times (int, optional): The maximum loop times. Default: 10.
+        category_max_ratio (float, optional): The maximum ratio that single category could occupy. 
+            Default: 1.0.
+        ignore_index (int, optional): The value that should be ignored in the annotation image. 
+            Default: 255.
+        loop_times (int, optional): The maximum number of attempts to crop an image. Default: 10.
 
     Raises:
         TypeError: When crop_size is neither list nor tuple.
@@ -577,28 +579,27 @@ class RandomPaddingCrop:
         if isinstance(crop_size, list) or isinstance(crop_size, tuple):
             if len(crop_size) != 2:
                 raise ValueError(
-                    'Type of `crop_size` is list or tuple. It should include 2 elements, but it is {}'
+                    'Type of `crop_size` is list or tuple. It should include 2 elements, but it is {}.'
                     .format(crop_size))
         else:
             raise TypeError(
-                "The type of `crop_size` is invalid. It should be list or tuple, but it is {}"
+                "The type of `crop_size` is invalid. It should be list or tuple, but it is {}."
                 .format(type(crop_size)))
         if category_max_ratio <= 0:
             raise ValueError(
-                "The value of `category_max_ratio` must be greater than 0, but got {}".
+                "The value of `category_max_ratio` must be greater than 0, but got {}.".
                 format(category_max_ratio))
         if loop_times <= 0:
             raise ValueError(
-                "The value of `loop_times` must be greater than 0, but got {}".
+                "The value of `loop_times` must be greater than 0, but got {}.".
                 format(loop_times))
-        if isinstance(crop_size, int):
-            crop_size = (crop_size, ) * 2
+
         self.crop_size = tuple(reversed(crop_size))
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
         self.category_max_ratio = category_max_ratio
         self.ignore_index = ignore_index
-        self.loop_times = loop_times if category_max_ratio != 1.0 else 1
+        self.loop_times = loop_times
 
     def _get_crop_coordinates(self, origin_size):
         margin_h = max(origin_size[0] - self.crop_size[0], 0)
@@ -645,16 +646,18 @@ class RandomPaddingCrop:
         img_shape = data['img'].shape[:2]
         crop_coordinates = self._get_crop_coordinates(img_shape)
 
-        for _ in range(self.loop_times):
-            seg_temp = functional.crop(data["label"], crop_coordinates)
-            labels, cnt = np.unique(seg_temp, return_counts=True)
-            cnt = cnt[labels != self.ignore_index]
-            if len(cnt) > 1 and np.max(cnt) / np.sum(
-                    cnt) < self.category_max_ratio:
-                break
-            crop_coordinates = self._get_crop_coordinates(img_shape)
-
-        data["img"] = functional.crop(data["img"], crop_coordinates)
+        if self.category_max_ratio < 1.0:
+            for _ in range(self.loop_times):
+                seg_temp = functional.crop(data["label"], crop_coordinates)
+                labels, cnt = np.unique(seg_temp, return_counts=True)
+                cnt = cnt[labels != self.ignore_index]
+                if len(cnt) > 1 and np.max(cnt) / np.sum(
+                        cnt) < self.category_max_ratio:
+                    data['img'] = seg_temp
+                    break
+                crop_coordinates = self._get_crop_coordinates(img_shape)
+        else:
+            data['img'] = functional.crop(data['img'], crop_coordinates)
         for key in data.get("gt_fields", []):
             data[key] = functional.crop(data[key], crop_coordinates)
 

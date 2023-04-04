@@ -65,7 +65,7 @@ model:
     type: ResNet50_vd
     output_stride: 8
     multi_grid: [1, 2, 4]
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+    pretrained: Null
   num_classes: 2
   backbone_indices: [0, 3]
   aspp_ratios: [1, 12, 24, 36]

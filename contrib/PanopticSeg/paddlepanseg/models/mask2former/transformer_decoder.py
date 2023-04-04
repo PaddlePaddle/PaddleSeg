@@ -1,4 +1,4 @@
-# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -336,7 +336,8 @@ class MultiScaleMaskedTransformerDecoder(nn.Layer):
                                  attn_mask_target_size):
         decoder_output = self.decoder_norm(output)
         outputs_class = self.class_embed(decoder_output)
-        mask_embed = self.mask_embed(decoder_output)
+        mask_embed = self.mask_embed(decoder_output).astype('float32')
+        mask_features = mask_features.astype('float32')
         outputs_mask = paddle.einsum('bqc,bchw->bqhw', mask_embed,
                                      mask_features)
 
