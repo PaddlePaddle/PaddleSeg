@@ -27,10 +27,6 @@ from .ghostnet import *
 from .cae import *
 from .top_transformer import *
 from .uhrnet import *
-<<<<<<< HEAD
-from .hrformer import *
-=======
 from .vit_adapter import *
 from .hrformer import *
 from .mscan import *
->>>>>>> 574be6fd86c5aa99dd7b60c746d4166def5698e0
