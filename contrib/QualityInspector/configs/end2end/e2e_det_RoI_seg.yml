@@ -1,0 +1,28 @@
+ENV:
+  device: gpu
+  output_dir: ./output_det_roi/
+  save: True
+  visualize: False
+
+PipeLine:
+  - Detection:
+      config_path: ./configs/det/hrnet/faster_rcnn_hrnetv2p_w18_3x_defect.yml
+      model_path: ./output/faster_rcnn_hrnetv2p_w18_3x_defect/model_final.pdparams
+      score_threshold: 0.01
+  - CropSegmentation:
+      pad_scale: 0.5
+      config_path: ./configs/seg/ocrnet/ocrnet_hrnetw18_RoI_defect_256x256_40k.yml
+      model_path: ./output/seg_roi/best_model/model.pdparams
+      aug_pred : True
+  - PostProcess:    # to reduce overkill
+      - JudgeDetByScores:
+          score_threshold: 
+            1: 0.1    # {class_id: threshold}
+            5: 0.2
+      - JudgeByLengthWidth:
+          len_thresh: 0    # smaller than it is OK sample
+      - JudgeByArea:
+          area_thresh: 
+            1: 10
+
+

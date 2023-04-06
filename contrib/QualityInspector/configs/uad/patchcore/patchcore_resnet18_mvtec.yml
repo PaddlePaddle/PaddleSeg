@@ -1,0 +1,27 @@
+# common arguments
+device: gpu
+seed: 3
+method: coreset # projection method, one of [sample, ortho, svd_ortho, gaussian, coreset]
+k: 10  # using feature channels
+
+
+# dataset arguments
+batch_size: 1
+num_workers: 0
+category: bottle  # Category name for MvTec AD dataset, also support one of [textures, objects, all]
+resize: [256, 256]
+crop_size: [256, 256]
+data_path: data/mvtec_anomaly_detection
+save_path: output/
+
+# train arguments
+do_eval: True  # After training, whether to eval model;
+backbone: resnet18  # Support resnet18, resnet50, wide_resnet50_2
+
+# val and predict arguments
+save_pic: True  # Whether to save one output example picture in val and predict;
+model_path: output/coreset_resnet18_10/bottle.pdparams
+
+# predict arguments
+img_path: data/mvtec_anomaly_detection/bottle/test/broken_large/000.png
+threshold: 0.5
