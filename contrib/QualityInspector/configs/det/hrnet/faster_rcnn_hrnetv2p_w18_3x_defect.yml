@@ -1,0 +1,32 @@
+_BASE_: [
+  '../datasets/defect_detection.yml',
+  './_base_/faster_rcnn_hrnetv2p_w18.yml',
+  '../faster_rcnn/_base_/optimizer_1x.yml',
+  './_base_/faster_fpn_defect_reader.yml',
+  '../runtime.yml',
+]
+
+weights: output/faster_rcnn_hrnetv2p_w18_1x_defect/model_final
+epoch: 36
+
+LearningRate:
+  base_lr: 0.02
+  schedulers:
+  - !PiecewiseDecay
+    gamma: 0.1
+    milestones: [8, 11]
+  - !LinearWarmup
+    start_factor: 0.1
+    steps: 1000
+
+TrainReader:
+  batch_size: 16
+
+BBoxPostProcess:
+  decode: 
+    name: RCNNBox
+  nms:
+    name: MultiClassNMS
+    keep_top_k: 100
+    score_threshold: 0.2
+    nms_threshold: 0.1
