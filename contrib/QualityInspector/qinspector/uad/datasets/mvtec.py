@@ -49,7 +49,8 @@ class MVTecDataset(Dataset):
         self.cropsize = cropsize
 
         # load dataset
-        self.x, self.y, self.mask = self.load_dataset_folder()
+        if is_train:
+            self.x, self.y, self.mask = self.load_dataset_folder()
 
         # set transforms
         self.transform_x = T.Compose([

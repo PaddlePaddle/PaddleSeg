@@ -69,7 +69,6 @@ python3 tools/convert_tools/convert_mask_to_coco.py \
         --image_path dataset/MT_dataset/images/train \
         --anno_path dataset/MT_dataset/annos/train \
         --class_num 5 \
-        --label_file dataset/MT_dataset/mt_catIDs.json \
         --output_name dataset/MT_dataset/train.json \
         --suffix .png
 ```
