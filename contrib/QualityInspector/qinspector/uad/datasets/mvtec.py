@@ -39,7 +39,8 @@ class MVTecDataset(Dataset):
                  class_name='bottle',
                  is_train=True,
                  resize=[256, 256],
-                 cropsize=[224, 224]):
+                 cropsize=[224, 224],
+                 is_predict=False):
         assert class_name in CLASS_NAMES, 'class_name: {}, should be in {}'.format(
             class_name, CLASS_NAMES)
         self.dataset_root_path = dataset_root_path
@@ -49,7 +50,7 @@ class MVTecDataset(Dataset):
         self.cropsize = cropsize
 
         # load dataset
-        if is_train:
+        if not is_predict:
             self.x, self.y, self.mask = self.load_dataset_folder()
 
         # set transforms

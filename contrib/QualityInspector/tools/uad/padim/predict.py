@@ -89,7 +89,7 @@ def main():
     print("Testing model for {} with sigle picture".format(class_name))
 
     # build datasets
-    MVTecDataset = mvtec.MVTecDataset(is_train=False)
+    MVTecDataset = mvtec.MVTecDataset(is_predict=True)
     transform_x = MVTecDataset.get_transform_x()
     x = Image.open(args.img_path).convert('RGB')
     x = transform_x(x).unsqueeze(0)
