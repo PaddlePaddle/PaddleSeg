@@ -89,7 +89,8 @@ def main():
     print("Testing model for {} with sigle picture".format(class_name))
 
     # build datasets
-    transform_x = mvtec.MVTecDataset.get_transform_x()
+    MVTecDataset = mvtec.MVTecDataset(is_train=False)
+    transform_x = MVTecDataset.get_transform_x()
     x = Image.open(args.img_path).convert('RGB')
     x = transform_x(x).unsqueeze(0)
     idx = paddle.to_tensor(sample(range(0, t_d), d))
