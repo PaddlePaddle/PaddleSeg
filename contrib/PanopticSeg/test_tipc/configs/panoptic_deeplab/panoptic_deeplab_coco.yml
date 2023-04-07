@@ -102,23 +102,25 @@ model:
   instance_head_channels: 32
 
 optimizer:
-  type: adam
+  type: Adam
 
 lr_scheduler:
   type: PolynomialDecay
   learning_rate: 0.0005
   power: 0.9
   end_lr: 0.0
-  decay_steps: *iters
   warmup_iters: 1000
   warmup_start_lr: 5.e-7
 
 loss:
   types:
+    # Classification loss
     - type: CrossEntropyLoss
       top_k_percent_pixels: 0.2
-    - type: CenterLoss
-    - type: OffsetLoss
+    # Center loss
+    - type: L1Loss
+    # Offset loss
+    - type: L1Loss
   coef: [1, 200, 0.01]
 
 postprocessor:
@@ -130,6 +132,9 @@ postprocessor:
   nms_kernel: 7
   top_k: 200
   ignore_index: *ignore_index
+
+runner: 
+  type: PanopticDeepLabRunner
 
 export:
   transforms:
