@@ -24,7 +24,7 @@ import argparse
 import numpy as np  # type: ignore
 import paddle
 
-from paddleseg_anything import SamAutomaticMaskGenerator, sam_model_registry
+from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 from paddleseg.utils.visualize import get_pseudo_color_map, get_color_map_list
 
 ID_PHOTO_IMAGE_DEMO = "examples/cityscapes_demo.png"
@@ -220,7 +220,7 @@ def gradio_display(generator):
 
     def clear_image_all():
         delete_result()
-        return None, None, None
+        return None, None, None, None
 
     def get_id_photo_output(img):
         """
