@@ -39,11 +39,22 @@
     ```
 
 ### Start the gradio service.
-In this step, we will start a gradio service on local machine and you can try out our project with your own images.
+In this step, we start a gradio service with the following scrip on local machine and you can try out our project with your own images.
 
-There are three model options for you, vit_b, vit_l and vit_h, represent vit_base, vit_large and vit_huge. Large model is more accurate and also slower. You can choose the model size based on your device. The test result shows that vit_h needs 16G video memory and needs around 10s to infer an image on V100.
+1. Run the following script:
 
 ```bash
 python script/amg_paddle.py --model-type [vit_l/vit_b/vit_h] # default is vit_h
 
 ```
+Note:
+*  There are three model options for you, vit_b, vit_l and vit_h, represent vit_base, vit_large and vit_huge. Large model is more accurate and also slower. You can choose the model size based on your device.
+* The test result shows that vit_h needs 16G video memory and needs around 10s to infer an image on V100.
+
+2. Open the webpage on your localhost: ```http://0.0.0.0:8017```
+
+3. Try it out by clear and upload the test image! Our example looks like:
+
+    <div align="center">
+    <img src="https://user-images.githubusercontent.com/34859558/230873989-9597527e-bef6-47ce-988b-977198794d75.jpg"  width = "1000" />  
+    </div>
