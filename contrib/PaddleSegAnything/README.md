@@ -12,7 +12,7 @@
 ## <img src="https://user-images.githubusercontent.com/34859558/190044217-8f6befc2-7f20-473d-b356-148e06265205.png" width="25"/> Performance
 
 <div align="center">
-<img src="https://github.com/Sunting78/images/blob/master/sam.gif"  width="1000" />
+<img src="https://github.com/Sunting78/images/blob/master/sam_new.gif"  width="1000" />
 </div>
 
 ## <img src="https://user-images.githubusercontent.com/34859558/188439970-18e51958-61bf-4b43-a73c-a9de3eb4fc79.png" width="25"/> Try it by yourself with one line of code
