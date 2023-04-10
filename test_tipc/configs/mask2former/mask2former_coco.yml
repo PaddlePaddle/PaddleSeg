@@ -1,0 +1,144 @@
+num_classes: &num_classes 133
+ignore_index: &ignore_index 255
+label_divisor: &label_divisor 1000
+mean: &mean [0.485, 0.456, 0.406]
+std: &std [0.229, 0.224, 0.225]
+iters: &iters 368750
+batch_size: &batch_size 4
+
+train_dataset:
+  type: COCO
+  dataset_root: test_tipc/data/coco
+  transforms:
+    - type: ConvertRGBToID
+    - type: RandomHorizontalFlip
+    - type: ResizeRangeScaling
+      min_value: 100
+      max_value: 2048
+    - type: RandomPaddingCrop
+      crop_size: &crop_size [1024, 1024]
+      im_padding_value: 0
+    - type: GenerateMaskFormerTrainTargets
+    - type: Normalize
+      mean: *mean
+      std: *std
+    - type: Collect
+      keys: 
+        - img
+        - label
+        - img_path
+        - lab_path
+        - img_h
+        - img_w
+        - gt_ids
+        - gt_masks
+  mode: train
+  file_list: test_tipc/data/coco/train_list.txt
+  json_path: test_tipc/data/coco/annotations/panoptic_train2017.json
+  label_divisor: *label_divisor
+  num_classes: *num_classes
+  no_collation_keys:
+    - gt_ids
+    - gt_masks
+  ignore_index: *ignore_index
+
+val_dataset:
+  type: COCO
+  dataset_root: test_tipc/data/coco
+  transforms:
+    - type: ConvertRGBToID
+    - type: ResizeByShort
+      short_size: 800
+    - type: LimitLong
+      max_long: 1333
+    - type: PadToDivisible
+      size_divisor: 32
+    - type: DecodeLabels
+      label_divisor: *label_divisor
+      ignore_index: *ignore_index
+    - type: Normalize
+      mean: *mean
+      std: *std
+    - type: Collect
+      keys:
+        - img
+        - label
+        - ann
+        - image_id
+        - gt_fields
+        - trans_info
+        - img_path
+        - lab_path
+        - pan_label
+        - sem_label
+        - ins_label
+  mode: val
+  file_list: test_tipc/data/coco/val_list.txt
+  json_path: test_tipc/data/coco/annotations/panoptic_val2017.json
+  label_divisor: *label_divisor
+  num_classes: *num_classes
+
+model:
+  type: Mask2Former
+  backbone:
+    type: ResNet50_vd
+    output_stride: 16
+    pretrained: null
+  num_classes: *num_classes
+  backbone_indices: [1, 2, 3]
+  backbone_feat_os: [4, 8, 16, 32]
+  num_queries: 100
+  pd_num_heads: 8
+  pd_conv_dim: 256
+  pd_mask_dim: 256
+  pd_ff_dim: 1024
+  pd_num_layers: 6
+  pd_common_stride: 4
+  td_hidden_dim: 256
+  td_num_heads: 8
+  td_ff_dim: 2048
+  td_num_layers: 9
+  td_pre_norm: False
+  td_mask_dim: 256
+  td_enforce_proj: False
+  pretrained: null
+
+optimizer:
+  type: AdamW
+  weight_decay: 0.05
+  custom_cfg:
+    - name: backbone
+      lr_mult: 0.1
+  grad_clip_cfg:
+    name: ClipGradByNorm
+    clip_norm: 0.01
+
+lr_scheduler:
+  type: MultiStepDecay
+  learning_rate: 0.0001
+  milestones: [327778, 355092]
+  gamma: 0.1
+
+loss:
+  types:
+    - type: NoncustomizableLoss
+  coef: [1]
+
+postprocessor:
+  type: MaskFormerPostprocessor
+  num_classes: *num_classes
+  object_mask_threshold: 0.8
+  overlap_threshold: 0.8
+  label_divisor: *label_divisor
+  ignore_index: *ignore_index
+
+runner: 
+  type: MaskFormerRunner
+  num_classes: *num_classes
+  weight_ce: 2.0
+  weight_mask: 5.0
+  weight_dice: 5.0
+  eos_coef: 0.1
+  num_points: 12544
+  oversample_ratio: 3.0
+  importance_sample_ratio: 0.75

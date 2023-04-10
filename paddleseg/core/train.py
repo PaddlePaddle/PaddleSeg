@@ -105,6 +105,7 @@ def train(model,
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
     """
+
     if use_ema:
         ema_model = deepcopy(model)
         ema_model.eval()
@@ -377,6 +378,7 @@ def train(model,
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
+
                         if use_ema:
                             log_writer.add_scalar('Evaluate/Ema_mIoU',
                                                   ema_mean_iou, iter)

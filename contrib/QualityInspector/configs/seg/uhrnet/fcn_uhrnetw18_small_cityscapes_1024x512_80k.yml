@@ -1,0 +1,14 @@
+_base_: '../_base_/cityscapes.yml'
+
+model:
+  type: FCN
+  backbone:
+    type: UHRNet_W18_Small
+    align_corners: False
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/backbone/uhrnetw18_small_imagenet.tar.gz
+  num_classes: 19
+  pretrained: Null
+  backbone_indices: [-1]
+
+optimizer:
+  weight_decay: 0.0005

@@ -99,21 +99,19 @@ class ADE20K(Dataset):
         ]  # If key in gt_fields, the data[key] have transforms synchronous.
 
         if self.mode == 'val':
-            data = self.transforms(data)
             label = np.asarray(Image.open(label_path))
             # The class 0 is ignored. And it will equal to 255 after
             # subtracted 1, because the dtype of label is uint8.
             label = label - 1
+            data = self.transforms(data)
             label = label[np.newaxis, :, :]
             data['label'] = label
             return data
         else:
-            data['label'] = label_path
+            data['label'] = np.asarray(Image.open(label_path))
             data['gt_fields'].append('label')
-            data = self.transforms(data)
             data['label'] = data['label'] - 1
-            # Recover the ignore pixels adding by transform
-            data['label'][data['label'] == 254] = 255
+            data = self.transforms(data)
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(
                     label, radius=2, num_classes=self.num_classes)
