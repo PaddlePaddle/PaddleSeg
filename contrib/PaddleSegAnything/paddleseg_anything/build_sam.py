@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This implementation refers to: https://github.com/facebookresearch/segment-anything
-
 import paddle
 
 from functools import partial
+
+from paddleseg import utils
+
 from .modeling import ImageEncoderViT, MaskDecoder, PromptEncoder, Sam, TwoWayTransformer
 
 
@@ -26,8 +27,7 @@ def build_sam_vit_h(checkpoint=None):
         encoder_depth=32,
         encoder_num_heads=16,
         encoder_global_attn_indexes=[7, 15, 23, 31],
-        checkpoint=checkpoint,
-    )
+        checkpoint=checkpoint, )
 
 
 build_sam = build_sam_vit_h
@@ -39,8 +39,7 @@ def build_sam_vit_l(checkpoint=None):
         encoder_depth=24,
         encoder_num_heads=16,
         encoder_global_attn_indexes=[5, 11, 17, 23],
-        checkpoint=checkpoint,
-    )
+        checkpoint=checkpoint, )
 
 
 def build_sam_vit_b(checkpoint=None):
@@ -49,8 +48,7 @@ def build_sam_vit_b(checkpoint=None):
         encoder_depth=12,
         encoder_num_heads=12,
         encoder_global_attn_indexes=[2, 5, 8, 11],
-        checkpoint=checkpoint,
-    )
+        checkpoint=checkpoint, )
 
 
 sam_model_registry = {
@@ -62,12 +60,11 @@ sam_model_registry = {
 
 
 def _build_sam(
-    encoder_embed_dim,
-    encoder_depth,
-    encoder_num_heads,
-    encoder_global_attn_indexes,
-    checkpoint=None,
-):
+        encoder_embed_dim,
+        encoder_depth,
+        encoder_num_heads,
+        encoder_global_attn_indexes,
+        checkpoint=None, ):
     prompt_embed_dim = 256
     image_size = 1024
     vit_patch_size = 16
@@ -78,38 +75,33 @@ def _build_sam(
             embed_dim=encoder_embed_dim,
             img_size=image_size,
             mlp_ratio=4,
-            norm_layer=partial(paddle.nn.LayerNorm, epsilon=1e-6),
+            norm_layer=partial(
+                paddle.nn.LayerNorm, epsilon=1e-6),
             num_heads=encoder_num_heads,
             patch_size=vit_patch_size,
             qkv_bias=True,
             use_rel_pos=True,
             global_attn_indexes=encoder_global_attn_indexes,
             window_size=14,
-            out_chans=prompt_embed_dim,
-        ),
+            out_chans=prompt_embed_dim, ),
         prompt_encoder=PromptEncoder(
             embed_dim=prompt_embed_dim,
             image_embedding_size=(image_embedding_size, image_embedding_size),
             input_image_size=(image_size, image_size),
-            mask_in_chans=16,
-        ),
+            mask_in_chans=16, ),
         mask_decoder=MaskDecoder(
             num_multimask_outputs=3,
             transformer=TwoWayTransformer(
                 depth=2,
                 embedding_dim=prompt_embed_dim,
                 mlp_dim=2048,
-                num_heads=8,
-            ),
+                num_heads=8, ),
             transformer_dim=prompt_embed_dim,
             iou_head_depth=3,
-            iou_head_hidden_dim=256,
-        ),
+            iou_head_hidden_dim=256, ),
         pixel_mean=[123.675, 116.28, 103.53],
-        pixel_std=[58.395, 57.12, 57.375],
-    )
+        pixel_std=[58.395, 57.12, 57.375], )
     sam.eval()
     if checkpoint is not None:
-        state_dict = paddle.load(checkpoint)
-        sam.set_state_dict(state_dict)
+        utils.load_entire_model(sam, checkpoint)
     return sam

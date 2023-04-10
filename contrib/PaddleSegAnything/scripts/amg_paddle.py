@@ -16,17 +16,12 @@
 
 import os
 import sys
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
 import time
 import cv2  # type: ignore
-import json
 import argparse
-import numpy as  np  # type: ignore
-from typing import Any, Dict, List
-from collections import OrderedDict
-import matplotlib.pyplot as plt
+import numpy as np  # type: ignore
 import paddle
 
 from paddleseg_anything import SamAutomaticMaskGenerator, sam_model_registry
@@ -35,38 +30,33 @@ from paddleseg.utils.visualize import get_pseudo_color_map, get_color_map_list
 ID_PHOTO_IMAGE_DEMO = "examples/cityscapes_demo.png"
 CACHE_DIR = ".temp"
 
+model_link = {
+    'vit_h':
+    "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_h/model.pdparams",
+    'vit_l':
+    "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_l/model.pdparams",
+    'vit_b':
+    "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_b/model.pdparams"
+}
 
-parser = argparse.ArgumentParser(
-    description=(
-        "Runs automatic mask generation on an input image or directory of images, "
-        "and outputs masks as either PNGs or COCO-style RLEs. Requires open-cv, "
-        "as well as pycocotools if saving in RLE format."
-    )
-)
+parser = argparse.ArgumentParser(description=(
+    "Runs automatic mask generation on an input image or directory of images, "
+    "and outputs masks as either PNGs or COCO-style RLEs. Requires open-cv, "
+    "as well as pycocotools if saving in RLE format."))
 
 parser.add_argument(
     "--model-type",
     type=str,
-    default="default",
-    help="The type of model to load, in ['default', 'vit_l', 'vit_b']",
-)
-
-parser.add_argument(
-    "--checkpoint",
-    type=str,
+    default="vit_l",
     required=True,
-    help="The path to the SAM checkpoint to use for mask generation.",
-)
-
+    help="The type of model to load, in ['vit_h', 'vit_l', 'vit_b']", )
 
 parser.add_argument(
     "--convert-to-rle",
     action="store_true",
     help=(
         "Save masks as COCO RLEs in a single json instead of as a folder of PNGs. "
-        "Requires pycocotools."
-    ),
-)
+        "Requires pycocotools."), )
 
 amg_settings = parser.add_argument_group("AMG Settings")
 
@@ -81,8 +71,7 @@ amg_settings.add_argument(
     "--points-per-batch",
     type=int,
     default=None,
-    help="How many input points to process simultaneously in one batch.",
-)
+    help="How many input points to process simultaneously in one batch.", )
 
 amg_settings.add_argument(
     "--pred-iou-thresh",
@@ -95,8 +84,7 @@ amg_settings.add_argument(
     "--stability-score-thresh",
     type=float,
     default=None,
-    help="Exclude masks with a stability score lower than this threshold.",
-)
+    help="Exclude masks with a stability score lower than this threshold.", )
 
 amg_settings.add_argument(
     "--stability-score-offset",
@@ -109,8 +97,7 @@ amg_settings.add_argument(
     "--box-nms-thresh",
     type=float,
     default=None,
-    help="The overlap threshold for excluding a duplicate mask.",
-)
+    help="The overlap threshold for excluding a duplicate mask.", )
 
 amg_settings.add_argument(
     "--crop-n-layers",
@@ -118,9 +105,7 @@ amg_settings.add_argument(
     default=None,
     help=(
         "If >0, mask generation is run on smaller crops of the image to generate more masks. "
-        "The value sets how many different scales to crop at."
-    ),
-)
+        "The value sets how many different scales to crop at."), )
 
 amg_settings.add_argument(
     "--crop-nms-thresh",
@@ -133,8 +118,7 @@ amg_settings.add_argument(
     "--crop-overlap-ratio",
     type=int,
     default=None,
-    help="Larger numbers mean image crops will overlap more.",
-)
+    help="Larger numbers mean image crops will overlap more.", )
 
 amg_settings.add_argument(
     "--crop-n-points-downscale-factor",
@@ -149,9 +133,8 @@ amg_settings.add_argument(
     default=None,
     help=(
         "Disconnected mask regions or holes with area smaller than this value "
-        "in pixels are removed by postprocessing."
-    ),
-)
+        "in pixels are removed by postprocessing."), )
+
 
 def get_amg_kwargs(args):
     amg_kwargs = {
@@ -170,12 +153,14 @@ def get_amg_kwargs(args):
     amg_kwargs = {k: v for k, v in amg_kwargs.items() if v is not None}
     return amg_kwargs
 
+
 def delete_result():
     """clear old result in `.temp`"""
     results = sorted(os.listdir(CACHE_DIR))
     for res in results:
         if int(time.time()) - int(os.path.splitext(res)[0]) > 10000:
             os.remove(os.path.join(CACHE_DIR, res))
+
 
 def download(img):
     if not os.path.exists(CACHE_DIR):
@@ -191,14 +176,16 @@ def download(img):
     img.save(tmp_name, 'png')
     return tmp_name
 
+
 def masks2pseudomap(masks):
     result = np.ones(masks[0]["segmentation"].shape, dtype=np.uint8) * 255
     for i, mask_data in enumerate(masks):
-        result[mask_data["segmentation"] == 1] = i+1
+        result[mask_data["segmentation"] == 1] = i + 1
     pred_result = result
     result = get_pseudo_color_map(result)
 
     return pred_result, result
+
 
 def visualize(image, result, color_map, weight=0.6):
     """
@@ -227,13 +214,14 @@ def visualize(image, result, color_map, weight=0.6):
     vis_result = cv2.addWeighted(image, weight, pseudo_img, 1 - weight, 0)
     return vis_result
 
+
 def gradio_display(generator):
     import gradio as gr
 
     def clear_image_all():
         delete_result()
         return None, None, None
-    
+
     def get_id_photo_output(img):
         """
         Get the special size and background photo.
@@ -247,15 +235,15 @@ def gradio_display(generator):
         """
         predictor = generator
         masks = predictor.generate(img)
-        pred_result, pseudo_map = masks2pseudomap(masks) # PIL Image
-        added_pseudo_map = visualize(img, pred_result, color_map=get_color_map_list(256))
+        pred_result, pseudo_map = masks2pseudomap(masks)  # PIL Image
+        added_pseudo_map = visualize(
+            img, pred_result, color_map=get_color_map_list(256))
         res_download = download(pseudo_map)
-        
+
         return pseudo_map, added_pseudo_map, res_download
 
     with gr.Blocks() as demo:
-        gr.Markdown("""# PaddleSeg Anything""")
-        gr.Markdown("""<font color=Gray>Tips: You can try segment the default image OR upload any images you want to segment by click on the clear button first.</font>""")
+        gr.Markdown("""# Segment Anything (PaddleSeg) """)
         with gr.Tab("InputImage"):
             image_in = gr.Image(value=ID_PHOTO_IMAGE_DEMO, label="Input image")
 
@@ -264,10 +252,13 @@ def gradio_display(generator):
                 image_submit_btn = gr.Button("Submit")
 
             with gr.Row():
-                img_out1 = gr.Image(label="Output image", interactive=False).style(height=300)
-                img_out2 = gr.Image(label="Output image with mask", interactive=False).style(height=300)
+                img_out1 = gr.Image(
+                    label="Output image", interactive=False).style(height=300)
+                img_out2 = gr.Image(
+                    label="Output image with mask",
+                    interactive=False).style(height=300)
             downloaded_img = gr.File(label='Image download').style(height=50)
-    
+
         image_clear_btn.click(
             fn=clear_image_all,
             inputs=None,
@@ -276,7 +267,11 @@ def gradio_display(generator):
         image_submit_btn.click(
             fn=get_id_photo_output,
             inputs=[image_in, ],
-            outputs=[img_out1, img_out2,  downloaded_img])
+            outputs=[img_out1, img_out2, downloaded_img])
+
+        gr.Markdown(
+            """<font color=Gray>Tips: You can try segment the default image OR upload any images you want to segment by click on the clear button first.</font>"""
+        )
 
         gr.Markdown(
             """<font color=Gray>This is Segment Anything build with PaddlePaddle. 
@@ -286,18 +281,22 @@ def gradio_display(generator):
 
         gr.Button.style(1)
 
-    demo.launch(server_name="0.0.0.0", server_port=8019, share=True)
+    demo.launch(server_name="0.0.0.0", server_port=8017, share=True)
+
 
 def main(args: argparse.Namespace) -> None:
     print("Loading model...")
-    sam = sam_model_registry[args.model_type](checkpoint=args.checkpoint)
+
+    sam = sam_model_registry[args.model_type](
+        checkpoint=model_link[args.model_type])
     if paddle.is_compiled_with_cuda():
         paddle.set_device("gpu")
     else:
         paddle.set_device("cpu")
     output_mode = "coco_rle" if args.convert_to_rle else "binary_mask"
     amg_kwargs = get_amg_kwargs(args)
-    generator = SamAutomaticMaskGenerator(sam, output_mode=output_mode, **amg_kwargs)
+    generator = SamAutomaticMaskGenerator(
+        sam, output_mode=output_mode, **amg_kwargs)
 
     gradio_display(generator)
 
