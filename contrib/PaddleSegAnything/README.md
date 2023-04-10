@@ -68,3 +68,25 @@ Note:
     <div align="center">
     <img src="https://user-images.githubusercontent.com/34859558/230873989-9597527e-bef6-47ce-988b-977198794d75.jpg"  width = "1000" />  
     </div>
+
+### Start with the script.
+You can run the command to produce masks from different types of prompts including points, boxes, masks and text, as follow:
+
+
+1. Box prompt
+
+```bash
+python script/promt_predict.py --input_path xxx.png --box_prompt 1050 370 1500 700 --model-type [vit_l/vit_b/vit_h] # default is vit_h
+```
+
+2. Point prompt
+```bash
+python script/promt_predict.py --input_path xxx.png --point_prompt 1200 450 --model-type [vit_l/vit_b/vit_h] # default is vit_h
+```
+
+3. mask prompt
+```bash
+python script/promt_predict.py --input_path xxx.png --mask_prompt xxx.png --model-type [vit_l/vit_b/vit_h] # default is vit_h
+```
+
+mask_prompt is the path of a binary image.
