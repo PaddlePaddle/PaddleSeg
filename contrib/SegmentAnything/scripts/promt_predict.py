@@ -25,7 +25,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from paddleseg_anything.predictor import SamPredictor
-from paddleseg_anything.build_sam import build_sam, build_sam_vit_l, build_sam_vit_b
+from paddleseg_anything.build_sam import sam_model_registry
+
+model_link = {
+    'vit_h':
+    "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_h/model.pdparams",
+    'vit_l':
+    "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_l/model.pdparams",
+    'vit_b':
+    "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_b/model.pdparams"
+}
 
 
 def get_args():
@@ -35,7 +44,11 @@ def get_args():
     parser.add_argument(
         '--input_path', type=str, required=True, help='The directory of image.')
     parser.add_argument(
-        '--checkpoint', type=str, required=True, help='The path of model.')
+        "--model-type",
+        type=str,
+        default="vit_l",
+        required=True,
+        help="The type of model to load, in ['vit_h', 'vit_l', 'vit_b']", )
     parser.add_argument(
         '--point_prompt',
         type=int,
@@ -69,7 +82,10 @@ def show_mask(mask, ax, random_color=False):
 
 
 def main(args):
-    paddle.set_device('gpu')
+    if paddle.is_compiled_with_cuda():
+        paddle.set_device("gpu")
+    else:
+        paddle.set_device("cpu")
     input_path = args.input_path
     output_path = args.output_path
     point, box, mask_path = args.point_prompt, args.box_prompt, args.mask_prompt
@@ -87,7 +103,8 @@ def main(args):
 
     image = cv2.imread(input_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    model = build_sam_vit_b(checkpoint=args.checkpoint)
+    model = sam_model_registry[args.model_type](
+        checkpoint=model_link[args.model_type])
     predictor = SamPredictor(model)
     predictor.set_image(image)
 
