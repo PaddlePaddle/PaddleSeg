@@ -1,14 +1,14 @@
 # Segment Anything with PaddleSeg
 
-## Contents
-1. Overview
-2. Performance
-3. Try it by yourself with one line of code
-
 ## Reference
 
 > Alexander Kirillov, Eric Mintun, Nikhila Ravi, Hanzi Mao, Chloe Rolland, Laura Gustafson, Tete Xiao, Spencer Whitehead, Alexander C. Berg, Wan-Yen Lo, Piotr Dollár, Ross Girshick. [Segment Anything](https://ai.facebook.com/research/publications/segment-anything/).
 
+
+## Contents
+1. Overview
+2. Performance
+3. Try it by yourself with one line of code
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190043857-bfbdaf8b-d2dc-4fff-81c7-e0aac50851f9.png" width="25"/> Overview
 
