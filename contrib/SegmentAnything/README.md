@@ -34,14 +34,14 @@ We provide the pretrained model parameters of PaddlePaddle format, including [vi
     cd PaddleSeg
     pip install -r requirements.txt
     ```
-* Download the example image to ```contrib/PaddleSegAnything/examples```, and the file structure is as following:
+* Download the example image to ```contrib/SegmentAnything/examples```, and the file structure is as following:
     ```bash
     wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
     ```
 
     ```
     PaddleSeg/contrib
-    ├── PaddleSegAnything
+    ├── SegmentAnything
     │   ├── examples
     │   │   └──  cityscapes_demo.png
     │   ├── modeling
