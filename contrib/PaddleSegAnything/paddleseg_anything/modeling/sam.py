@@ -30,13 +30,12 @@ class Sam(nn.Layer):
     image_format: str = "RGB"
 
     def __init__(
-        self,
-        image_encoder: ImageEncoderViT,
-        prompt_encoder: PromptEncoder,
-        mask_decoder: MaskDecoder,
-        pixel_mean: List[float] = [123.675, 116.28, 103.53],
-        pixel_std: List[float] = [58.395, 57.12, 57.375],
-    ) -> None:
+            self,
+            image_encoder: ImageEncoderViT,
+            prompt_encoder: PromptEncoder,
+            mask_decoder: MaskDecoder,
+            pixel_mean: List[float]=[123.675, 116.28, 103.53],
+            pixel_std: List[float]=[58.395, 57.12, 57.375], ) -> None:
         """
         SAM predicts object masks from an image and input prompts.
 
@@ -53,8 +52,14 @@ class Sam(nn.Layer):
         self.image_encoder = image_encoder
         self.prompt_encoder = prompt_encoder
         self.mask_decoder = mask_decoder
-        self.register_buffer("pixel_mean", paddle.to_tensor(pixel_mean).reshape([-1, 1, 1]), persistable=False)
-        self.register_buffer("pixel_std", paddle.to_tensor(pixel_std).reshape([-1, 1, 1]), persistable=False)
+        self.register_buffer(
+            "pixel_mean",
+            paddle.to_tensor(pixel_mean).reshape([-1, 1, 1]),
+            persistable=False)
+        self.register_buffer(
+            "pixel_std",
+            paddle.to_tensor(pixel_std).reshape([-1, 1, 1]),
+            persistable=False)
 
     @property
     def device(self) -> Any:
@@ -62,10 +67,9 @@ class Sam(nn.Layer):
 
     @paddle.no_grad()
     def forward(
-        self,
-        batched_input: List[Dict[str, Any]],
-        multimask_output: bool,
-    ) -> List[Dict[str, paddle.Tensor]]:
+            self,
+            batched_input: List[Dict[str, Any]],
+            multimask_output: bool, ) -> List[Dict[str, paddle.Tensor]]:
         """
         Predicts masks end-to-end from provided images and prompts.
         If prompts are not known in advance, using SamPredictor is
@@ -104,48 +108,45 @@ class Sam(nn.Layer):
                 shape BxCxHxW, where H=W=256. Can be passed as mask input
                 to subsequent iterations of prediction.
         """
-        input_images = paddle.stack([self.preprocess(x["image"]) for x in batched_input], axis=0)
+        input_images = paddle.stack(
+            [self.preprocess(x["image"]) for x in batched_input], axis=0)
         image_embeddings = self.image_encoder(input_images)
 
         outputs = []
-        for image_record, curr_embedding in zip(batched_input, image_embeddings):
+        for image_record, curr_embedding in zip(batched_input,
+                                                image_embeddings):
             if "point_coords" in image_record:
-                points = (image_record["point_coords"], image_record["point_labels"])
+                points = (image_record["point_coords"],
+                          image_record["point_labels"])
             else:
                 points = None
             sparse_embeddings, dense_embeddings = self.prompt_encoder(
                 points=points,
                 boxes=image_record.get("boxes", None),
-                masks=image_record.get("mask_inputs", None),
-            )
+                masks=image_record.get("mask_inputs", None), )
             low_res_masks, iou_predictions = self.mask_decoder(
                 image_embeddings=curr_embedding.unsqueeze(0),
                 image_pe=self.prompt_encoder.get_dense_pe(),
                 sparse_prompt_embeddings=sparse_embeddings,
                 dense_prompt_embeddings=dense_embeddings,
-                multimask_output=multimask_output,
-            )
+                multimask_output=multimask_output, )
             masks = self.postprocess_masks(
                 low_res_masks,
                 input_size=image_record["image"].shape[-2:],
-                original_size=image_record["original_size"],
-            )
+                original_size=image_record["original_size"], )
             masks = masks > self.mask_threshold
-            outputs.append(
-                {
-                    "masks": masks,
-                    "iou_predictions": iou_predictions,
-                    "low_res_logits": low_res_masks,
-                }
-            )
+            outputs.append({
+                "masks": masks,
+                "iou_predictions": iou_predictions,
+                "low_res_logits": low_res_masks,
+            })
         return outputs
 
     def postprocess_masks(
-        self,
-        masks: paddle.Tensor,
-        input_size: Tuple[int, ...],
-        original_size: Tuple[int, ...],
-    ) -> paddle.Tensor:
+            self,
+            masks: paddle.Tensor,
+            input_size: Tuple[int, ...],
+            original_size: Tuple[int, ...], ) -> paddle.Tensor:
         """
         Remove padding and upscale masks to the original image size.
 
@@ -165,10 +166,10 @@ class Sam(nn.Layer):
             masks,
             (self.image_encoder.img_size, self.image_encoder.img_size),
             mode="bilinear",
-            align_corners=False,
-        )
-        masks = masks[..., : input_size[0], : input_size[1]]
-        masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
+            align_corners=False, )
+        masks = masks[..., :input_size[0], :input_size[1]]
+        masks = F.interpolate(
+            masks, original_size, mode="bilinear", align_corners=False)
         return masks
 
     def preprocess(self, x: paddle.Tensor) -> paddle.Tensor:

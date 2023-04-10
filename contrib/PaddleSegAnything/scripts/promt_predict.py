@@ -17,8 +17,7 @@
 import os
 import sys
 import argparse
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
 import paddle
 import cv2
@@ -34,35 +33,23 @@ def get_args():
         description='Segment image with point promp, box or mask')
     # Parameters
     parser.add_argument(
-        '--input_path',
-        type=str,
-        required=True,
-        help='The directory of image.')
+        '--input_path', type=str, required=True, help='The directory of image.')
     parser.add_argument(
-        '--checkpoint',
-        type=str,
-        required=True,
-        help='The path of model.') 
+        '--checkpoint', type=str, required=True, help='The path of model.')
     parser.add_argument(
         '--point_prompt',
         type=int,
         nargs='+',
         default=None,
-        help='point promt.'
-    )
+        help='point promt.')
     parser.add_argument(
         '--box_prompt',
         type=int,
         nargs='+',
         default=None,
-        help='box promt format as xyxy.'
-    )
+        help='box promt format as xyxy.')
     parser.add_argument(
-        '--mask_prompt',
-        type=str,
-        default=None,
-        help='The path of mask.'
-    )
+        '--mask_prompt', type=str, default=None, help='The path of mask.')
     parser.add_argument(
         '--output_path',
         type=str,
@@ -70,14 +57,16 @@ def get_args():
         help='The directory for saving the results')
     return parser.parse_args()
 
+
 def show_mask(mask, ax, random_color=False):
     if random_color:
         color = np.concatenate([np.random.random(3), np.array([0.6])], axis=0)
     else:
-        color = np.array([30/255, 144/255, 255/255, 0.6])
+        color = np.array([30 / 255, 144 / 255, 255 / 255, 0.6])
     h, w = mask.shape[-2:]
     mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
     ax.imshow(mask_image)
+
 
 def main(args):
     paddle.set_device('gpu')
@@ -106,8 +95,8 @@ def main(args):
         point_coords=point,
         point_labels=input_label,
         box=box,
-        mask_input = mask,
-        multimask_output=True,)
+        mask_input=mask,
+        multimask_output=True, )
 
     plt.figure(figsize=(10, 10))
     plt.imshow(image)

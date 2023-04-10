@@ -42,7 +42,8 @@ def to_pil_image(pic, mode=None):
 
     elif isinstance(pic, paddle.Tensor):
         if pic.ndim not in {2, 3}:
-            raise ValueError(f"pic should be 2/3 dimensional. Got {pic.ndim} dimensions.")
+            raise ValueError(
+                f"pic should be 2/3 dimensional. Got {pic.ndim} dimensions.")
 
         elif pic.ndim == 2:
             # if 2D image, add channel dimension (CHW)
@@ -50,11 +51,14 @@ def to_pil_image(pic, mode=None):
 
         # check number of channels
         if pic.shape[-3] > 4:
-            raise ValueError(f"pic should not have > 4 channels. Got {pic.shape[-3]} channels.")
+            raise ValueError(
+                f"pic should not have > 4 channels. Got {pic.shape[-3]} channels."
+            )
 
     elif isinstance(pic, np.ndarray):
         if pic.ndim not in {2, 3}:
-            raise ValueError(f"pic should be 2/3 dimensional. Got {pic.ndim} dimensions.")
+            raise ValueError(
+                f"pic should be 2/3 dimensional. Got {pic.ndim} dimensions.")
 
         elif pic.ndim == 2:
             # if 2D image, add channel dimension (HWC)
@@ -62,7 +66,9 @@ def to_pil_image(pic, mode=None):
 
         # check number of channels
         if pic.shape[-1] > 4:
-            raise ValueError(f"pic should not have > 4 channels. Got {pic.shape[-1]} channels.")
+            raise ValueError(
+                f"pic should not have > 4 channels. Got {pic.shape[-1]} channels."
+            )
 
     npimg = pic
     if isinstance(pic, paddle.Tensor):
@@ -71,7 +77,9 @@ def to_pil_image(pic, mode=None):
         npimg = np.transpose(pic.cpu().numpy(), (1, 2, 0))
 
     if not isinstance(npimg, np.ndarray):
-        raise TypeError("Input pic must be a paddle.Tensor or NumPy ndarray, not {type(npimg)}")
+        raise TypeError(
+            "Input pic must be a paddle.Tensor or NumPy ndarray, not {type(npimg)}"
+        )
 
     if npimg.shape[2] == 1:
         expected_mode = None
@@ -87,14 +95,15 @@ def to_pil_image(pic, mode=None):
         if mode is not None and mode != expected_mode:
             raise ValueError(
                 f"Incorrect mode ({mode}) supplied "
-                f"for input type {np.dtype}. Should be {expected_mode}"
-            )
+                f"for input type {np.dtype}. Should be {expected_mode}")
         mode = expected_mode
 
     elif npimg.shape[2] == 2:
         permitted_2_channel_modes = ["LA"]
         if mode is not None and mode not in permitted_2_channel_modes:
-            raise ValueError(f"Only modes {permitted_2_channel_modes} are supported for 2D inputs")
+            raise ValueError(
+                f"Only modes {permitted_2_channel_modes} are supported for 2D inputs"
+            )
 
         if mode is None and npimg.dtype == np.uint8:
             mode = "LA"
@@ -102,14 +111,18 @@ def to_pil_image(pic, mode=None):
     elif npimg.shape[2] == 4:
         permitted_4_channel_modes = ["RGBA", "CMYK", "RGBX"]
         if mode is not None and mode not in permitted_4_channel_modes:
-            raise ValueError(f"Only modes {permitted_4_channel_modes} are supported for 4D inputs")
+            raise ValueError(
+                f"Only modes {permitted_4_channel_modes} are supported for 4D inputs"
+            )
 
         if mode is None and npimg.dtype == np.uint8:
             mode = "RGBA"
     else:
         permitted_3_channel_modes = ["RGB", "YCbCr", "HSV"]
         if mode is not None and mode not in permitted_3_channel_modes:
-            raise ValueError(f"Only modes {permitted_3_channel_modes} are supported for 3D inputs")
+            raise ValueError(
+                f"Only modes {permitted_3_channel_modes} are supported for 3D inputs"
+            )
         if mode is None and npimg.dtype == np.uint8:
             mode = "RGB"
 
@@ -117,8 +130,6 @@ def to_pil_image(pic, mode=None):
         raise TypeError(f"Input type {npimg.dtype} is not supported")
 
     return Image.fromarray(npimg, mode=mode)
-
-
 
 
 class ResizeLongestSide:
@@ -135,24 +146,26 @@ class ResizeLongestSide:
         """
         Expects a numpy array with shape HxWxC in uint8 format.
         """
-        target_size = self.get_preprocess_shape(image.shape[0], image.shape[1], self.target_length)
+        target_size = self.get_preprocess_shape(image.shape[0], image.shape[1],
+                                                self.target_length)
         return np.array(resize(to_pil_image(image), target_size))
 
-    def apply_coords(self, coords: np.ndarray, original_size: Tuple[int, ...]) -> np.ndarray:
+    def apply_coords(self, coords: np.ndarray,
+                     original_size: Tuple[int, ...]) -> np.ndarray:
         """
         Expects a numpy array of length 2 in the final dimension. Requires the
         original image size in (H, W) format.
         """
         old_h, old_w = original_size
         new_h, new_w = self.get_preprocess_shape(
-            original_size[0], original_size[1], self.target_length
-        )
+            original_size[0], original_size[1], self.target_length)
         coords = deepcopy(coords).astype(float)
         coords[..., 0] = coords[..., 0] * (new_w / old_w)
         coords[..., 1] = coords[..., 1] * (new_h / old_h)
         return coords
 
-    def apply_boxes(self, boxes: np.ndarray, original_size: Tuple[int, ...]) -> np.ndarray:
+    def apply_boxes(self, boxes: np.ndarray,
+                    original_size: Tuple[int, ...]) -> np.ndarray:
         """
         Expects a numpy array shape Bx4. Requires the original image size
         in (H, W) format.
@@ -160,46 +173,52 @@ class ResizeLongestSide:
         boxes = self.apply_coords(boxes.reshape([-1, 2, 2]), original_size)
         return boxes.reshape([-1, 4])
 
-    def apply_image_paddle(self, image: paddle.Tensor) -> paddle.Tensor: # not used
+    def apply_image_paddle(self,
+                           image: paddle.Tensor) -> paddle.Tensor:  # not used
         """
         Expects batched images with shape BxCxHxW and float format. This
         transformation may not exactly match apply_image. apply_image is
         the transformation expected by the model.
         """
         # Expects an image in BCHW format. May not exactly match apply_image.
-        target_size = self.get_preprocess_shape(image.shape[0], image.shape[1], self.target_length)
+        target_size = self.get_preprocess_shape(image.shape[0], image.shape[1],
+                                                self.target_length)
         return F.interpolate(
-            image, target_size, mode="bilinear", align_corners=False, # todo: missing this flag antialias=True
+            image,
+            target_size,
+            mode="bilinear",
+            align_corners=False,  # todo: missing this flag antialias=True
         )
 
-    def apply_coords_paddle(
-        self, coords: paddle.Tensor, original_size: Tuple[int, ...]
-    ) -> paddle.Tensor:
+    def apply_coords_paddle(self,
+                            coords: paddle.Tensor,
+                            original_size: Tuple[int, ...]) -> paddle.Tensor:
         """
         Expects a paddle tensor with length 2 in the last dimension. Requires the
         original image size in (H, W) format.
         """
         old_h, old_w = original_size
         new_h, new_w = self.get_preprocess_shape(
-            original_size[0], original_size[1], self.target_length
-        )
+            original_size[0], original_size[1], self.target_length)
         coords = deepcopy(coords).to(paddle.float)
         coords[..., 0] = coords[..., 0] * (new_w / old_w)
         coords[..., 1] = coords[..., 1] * (new_h / old_h)
         return coords
 
-    def apply_boxes_paddle(
-        self, boxes: paddle.Tensor, original_size: Tuple[int, ...]
-    ) -> paddle.Tensor:
+    def apply_boxes_paddle(self,
+                           boxes: paddle.Tensor,
+                           original_size: Tuple[int, ...]) -> paddle.Tensor:
         """
         Expects a paddle tensor with shape Bx4. Requires the original image
         size in (H, W) format.
         """
-        boxes = self.apply_coords_paddle(boxes.reshape([-1, 2, 2]), original_size)
+        boxes = self.apply_coords_paddle(
+            boxes.reshape([-1, 2, 2]), original_size)
         return boxes.reshape([-1, 4])
 
     @staticmethod
-    def get_preprocess_shape(oldh: int, oldw: int, long_side_length: int) -> Tuple[int, int]:
+    def get_preprocess_shape(oldh: int, oldw: int,
+                             long_side_length: int) -> Tuple[int, int]:
         """
         Compute the output size given input size and target long side length.
         """
