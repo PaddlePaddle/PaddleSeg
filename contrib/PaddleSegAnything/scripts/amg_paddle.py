@@ -28,7 +28,10 @@ import matplotlib.pyplot as plt
 import paddle
 
 from paddleseg_anything import SamAutomaticMaskGenerator, sam_model_registry
-from paddleseg.utils.visualize import get_pseudo_color_map
+from paddleseg.utils.visualize import get_pseudo_color_map, get_color_map_list
+
+ID_PHOTO_IMAGE_DEMO = "examples/cityscapes_demo.png"
+CACHE_DIR = ".temp"
 
 
 parser = argparse.ArgumentParser(
@@ -37,23 +40,6 @@ parser = argparse.ArgumentParser(
         "and outputs masks as either PNGs or COCO-style RLEs. Requires open-cv, "
         "as well as pycocotools if saving in RLE format."
     )
-)
-
-parser.add_argument(
-    "--input",
-    type=str,
-    required=True,
-    help="Path to either a single input image or folder of images.",
-)
-
-parser.add_argument(
-    "--output",
-    type=str,
-    required=True,
-    help=(
-        "Path to the directory where masks will be output. Output will be either a folder "
-        "of PNGs per image or a single json with COCO-style masks."
-    ),
 )
 
 parser.add_argument(
@@ -70,7 +56,6 @@ parser.add_argument(
     help="The path to the SAM checkpoint to use for mask generation.",
 )
 
-parser.add_argument("--device", type=str, default="cuda", help="The device to run generation on.")
 
 parser.add_argument(
     "--convert-to-rle",
@@ -166,47 +151,6 @@ amg_settings.add_argument(
     ),
 )
 
-def show_anns(anns):
-    if len(anns) == 0:
-        return
-    sorted_anns = sorted(anns, key=(lambda x: x['area']), reverse=True)
-    ax = plt.gca()
-    ax.set_autoscale_on(False)
-    polygons = []
-    color = []
-    for ann in sorted_anns:
-        m = ann['segmentation']
-        img = np.ones((m.shape[0], m.shape[1], 3))
-        color_mask = np.random.random((1, 3)).tolist()[0]
-        for i in range(3):
-            img[:,:,i] = color_mask[i]
-        ax.imshow(np.dstack((img, m*0.35)))
-
-def write_masks_to_folder(masks: List[Dict[str, Any]], path: str) -> None:
-    header = "id,area,bbox_x0,bbox_y0,bbox_w,bbox_h,point_input_x,point_input_y,predicted_iou,stability_score,crop_box_x0,crop_box_y0,crop_box_w,crop_box_h"  # noqa
-    metadata = [header]
-    for i, mask_data in enumerate(masks):
-        mask = mask_data["segmentation"]
-        filename = f"{i}.png"
-        cv2.imwrite(os.path.join(path, filename), mask * 255)
-        mask_metadata = [
-            str(i),
-            str(mask_data["area"]),
-            *[str(x) for x in mask_data["bbox"]],
-            *[str(x) for x in mask_data["point_coords"][0]],
-            str(mask_data["predicted_iou"]),
-            str(mask_data["stability_score"]),
-            *[str(x) for x in mask_data["crop_box"]],
-        ]
-        row = ",".join(mask_metadata)
-        metadata.append(row)
-    metadata_path = os.path.join(path, "metadata.csv")
-    with open(metadata_path, "w") as f:
-        f.write("\n".join(metadata))
-
-    return
-
-
 def get_amg_kwargs(args):
     amg_kwargs = {
         "points_per_side": args.points_per_side,
@@ -224,228 +168,138 @@ def get_amg_kwargs(args):
     amg_kwargs = {k: v for k, v in amg_kwargs.items() if v is not None}
     return amg_kwargs
 
+def delete_result():
+    """clear old result in `.temp`"""
+    results = sorted(os.listdir(CACHE_DIR))
+    for res in results:
+        if int(time.time()) - int(os.path.splitext(res)[0]) > 10000:
+            os.remove(os.path.join(CACHE_DIR, res))
+
+def download(img):
+    if not os.path.exists(CACHE_DIR):
+        os.makedirs(CACHE_DIR)
+    while True:
+        name = str(int(time.time()))
+        tmp_name = os.path.join(CACHE_DIR, name + '.jpg')
+        if not os.path.exists(tmp_name):
+            break
+        else:
+            time.sleep(1)
+
+    img.save(tmp_name, 'png')
+    return tmp_name
+
+def masks2pseudomap(masks):
+    result = np.ones(masks[0]["segmentation"].shape, dtype=np.uint8) * 255
+    for i, mask_data in enumerate(masks):
+        result[mask_data["segmentation"] == 1] = i+1
+    pred_result = result
+    result = get_pseudo_color_map(result)
+
+    return pred_result, result
+
+def visualize(image, result, color_map, weight=0.6):
+    """
+    Convert predict result to color image, and save added image.
+
+    Args:
+        image (str): The path of origin image.
+        result (np.ndarray): The predict result of image.
+        color_map (list): The color used to save the prediction results.
+        save_dir (str): The directory for saving visual image. Default: None.
+        weight (float): The image weight of visual image, and the result weight is (1 - weight). Default: 0.6
+
+    Returns:
+        vis_result (np.ndarray): If `save_dir` is None, return the visualized result.
+    """
+
+    color_map = [color_map[i:i + 3] for i in range(0, len(color_map), 3)]
+    color_map = np.array(color_map).astype("uint8")
+    # Use OpenCV LUT for color mapping
+    c1 = cv2.LUT(result, color_map[:, 0])
+    c2 = cv2.LUT(result, color_map[:, 1])
+    c3 = cv2.LUT(result, color_map[:, 2])
+    pseudo_img = np.dstack((c3, c2, c1))
+
+    # im = cv2.imread(image)
+    vis_result = cv2.addWeighted(image, weight, pseudo_img, 1 - weight, 0)
+    return vis_result
+
+def gradio_display(generator):
+    import gradio as gr
+
+    def clear_image_all():
+        delete_result()
+        return None, None, None
+    
+    def get_id_photo_output(img):
+        """
+        Get the special size and background photo.
+
+        Args:
+            img(numpy:ndarray): The image array.
+            size(str): The size user specified.
+            bg(str): The background color user specified.
+            download_size(str): The size for image saving.
+
+        """
+        predictor = generator
+        masks = predictor.generate(img)
+        pred_result, pseudo_map = masks2pseudomap(masks) # PIL Image
+        added_pseudo_map = visualize(img, pred_result, color_map=get_color_map_list(256))
+        res_download = download(pseudo_map)
+        
+        return pseudo_map, added_pseudo_map, res_download
+
+    with gr.Blocks() as demo:
+        gr.Markdown("""# PaddleSeg Anything""")
+        gr.Markdown("""<font color=Gray>Tips: You can try segment the default image OR upload any images you want to segment by click on the clear button first.</font>""")
+        with gr.Tab("InputImage"):
+            image_in = gr.Image(value=ID_PHOTO_IMAGE_DEMO, label="Input image")
+
+            with gr.Row():
+                image_clear_btn = gr.Button("Clear")
+                image_submit_btn = gr.Button("Submit")
+
+            with gr.Row():
+                img_out1 = gr.Image(label="Output image", interactive=False).style(height=300)
+                img_out2 = gr.Image(label="Output image with mask", interactive=False).style(height=300)
+            downloaded_img = gr.File(label='Image download').style(height=50)
+    
+        image_clear_btn.click(
+            fn=clear_image_all,
+            inputs=None,
+            outputs=[image_in, img_out1, img_out2, downloaded_img])
+
+        image_submit_btn.click(
+            fn=get_id_photo_output,
+            inputs=[image_in, ],
+            outputs=[img_out1, img_out2,  downloaded_img])
+
+        gr.Markdown(
+            """<font color=Gray>This is Segment Anything build with PaddlePaddle. 
+            We refer to the [SAM](https://github.com/facebookresearch/segment-anything) for code strucure and model architecture.
+            If you have any question or feature request, welcome to raise issues on [GitHub](https://github.com/PaddlePaddle/PaddleSeg/issues). </font>"""
+        )
+
+        gr.Button.style(1)
+
+    demo.launch(server_name="0.0.0.0", server_port=8019, share=True)
 
 def main(args: argparse.Namespace) -> None:
     print("Loading model...")
     sam = sam_model_registry[args.model_type](checkpoint=args.checkpoint)
-    paddle.set_device("gpu")
+    if paddle.is_compiled_with_cuda():
+        paddle.set_device("gpu")
+    else:
+        paddle.set_device("cpu")
     output_mode = "coco_rle" if args.convert_to_rle else "binary_mask"
     amg_kwargs = get_amg_kwargs(args)
     generator = SamAutomaticMaskGenerator(sam, output_mode=output_mode, **amg_kwargs)
 
-    os.makedirs(args.output, exist_ok=True)
-    
-    if not os.path.isdir(args.input):
-        targets = [args.input]
-    else:
-        targets = [
-            f for f in os.listdir(args.input) if not os.path.isdir(os.path.join(args.input, f))
-        ]
-        targets = [os.path.join(args.input, f) for f in targets]
-
-
-    for t in targets:
-        print(f"Processing '{t}'...")
-        time1 = time.time()
-        image = cv2.imread(t)
-        if image is None:
-            raise FileNotFoundError('{} is not found.'.format(t))
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-        masks = generator.generate(image)
-        base = os.path.basename(t)
-        base = os.path.splitext(base)[0]
-        save_base = os.path.join(args.output, base)
-        if output_mode == "binary_mask":
-            os.makedirs(save_base, exist_ok=True)
-            write_masks_to_folder(masks, save_base) # repalce with pseudo mask
-        elif output_mode == "pseudo_color_mask":
-            result = np.ones(masks[0]["segmentation"].shape, dtype=np.uint8) * 255
-            for i, mask_data in enumerate(masks):
-                result[mask_data["segmentation"] == 1] = i+1
-            result = get_pseudo_color_map(result)
-            basename = f'{base}_mask.png'
-            result.save(os.path.join(args.output, basename))
-        else:
-            save_file = save_base + ".json"
-            with open(save_file, "w") as f:
-                json.dump(masks, f)
-    print("Done with {} s!".format(time.time()-time1))
-
-    #gradio_display(generator)
+    gradio_display(generator)
 
 
 if __name__ == "__main__":
-    SIZES = OrderedDict({
-        "1 inch": {
-            'physics': (25, 35),
-            'pixels': (295, 413)
-        },
-        "1 inch smaller": {
-            'physics': (22, 32),
-            'pixels': (260, 378)
-        },
-        "1 inch larger": {
-            'physics': (33, 48),
-            'pixels': (390, 567)
-        },
-        "2 inches": {
-            'physics': (35, 49),
-            'pixels': (413, 579)
-        },
-        "2 inches smaller": {
-            'physics': (35, 45),
-            'pixels': (413, 531)
-        },
-        "2 inches larger": {
-            'physics': (35, 53),
-            'pixels': (413, 626)
-        },
-        "3 inches": {
-            'physics': (55, 84),
-            'pixels': (649, 991)
-        },
-        "4 inches": {
-            'physics': (76, 102),
-            'pixels': (898, 1205)
-        },
-        "5 inches": {
-            'physics': (89, 127),
-            'pixels': (1050, 1500)
-        }
-    })
-
-    # jpg compress ratio
-    SAVE_SIZE = {'Small': 50, 'Middle': 75, 'Large': 95}
-
-    CACHE_DIR = ".temp"
-
-
-    def delete_result():
-        """clear old result in `.temp`"""
-        results = sorted(os.listdir(CACHE_DIR))
-        for res in results:
-            if int(time.time()) - int(os.path.splitext(res)[0]) > 10000:
-                os.remove(os.path.join(CACHE_DIR, res))
-
-    def adjust_size(img, size_index):
-        key = list(SIZES.keys())[size_index]
-        w_o, h_o = SIZES[key]['pixels']
-
-        # scale
-        img = np.array(img)
-        h_ori, w_ori = img.shape[:2]
-        scale = max(w_o / w_ori, h_o / h_ori)
-        if scale > 1:
-            interpolation = cv2.INTER_CUBIC
-        else:
-            interpolation = cv2.INTER_AREA
-        img_scale = cv2.resize(
-            img, dsize=None, fx=scale, fy=scale, interpolation=interpolation)
-
-        # crop
-        h_scale, w_scale = img_scale.shape[:2]
-        h_cen = h_scale // 2
-        w_cen = w_scale // 2
-        h_start = max(0, h_cen - h_o // 2)
-        h_end = min(h_scale, h_start + h_o)
-        w_start = max(0, w_cen - w_o // 2)
-        w_end = min(w_scale, w_start + w_o)
-        img_c = img_scale[h_start:h_end, w_start:w_end]
-
-        return img_c
-
-
-    def download(img, size):
-        q = SAVE_SIZE[size]
-        if not os.path.exists(CACHE_DIR):
-            os.makedirs(CACHE_DIR)
-        while True:
-            name = str(int(time.time()))
-            tmp_name = os.path.join(CACHE_DIR, name + '.jpg')
-            if not os.path.exists(tmp_name):
-                break
-            else:
-                time.sleep(1)
-
-        img.save(tmp_name, 'png')
-        return tmp_name
-    
-    def masks2pseudomap(masks):
-        result = np.ones(masks[0]["segmentation"].shape, dtype=np.uint8) * 255
-        for i, mask_data in enumerate(masks):
-            result[mask_data["segmentation"] == 1] = i+1
-        result = get_pseudo_color_map(result)
-
-        return result
-
-    def gradio_display(generator):
-        import gradio as gr
-
-        ID_PHOTO_IMAGE_DEMO = "cityscapes_demo.png"
-
-        def clear_image_all():
-            delete_result()
-            return None, None, 'Large', None
-        
-        def get_id_photo_output(img, download_size):
-            """
-            Get the special size and background photo.
-
-            Args:
-                img(numpy:ndarray): The image array.
-                size(str): The size user specified.
-                bg(str): The background color user specified.
-                download_size(str): The size for image saving.
-
-            """
-            predictor = generator
-            masks = predictor.generate(img)
-            pseudo_map = masks2pseudomap(masks) # PIL Image
-            res_download = download(pseudo_map, download_size)
-            
-            return pseudo_map, res_download
-
-        with gr.Blocks() as demo:
-            gr.Markdown("""# Paddleseg Everything Demo""")
-            gr.Markdown("""<font color=Gray>Tips: Please upload any photos you want to segment.</font>""")
-            with gr.Tab("InputImage"):
-                image_in = gr.Image(value=ID_PHOTO_IMAGE_DEMO, label="Input image")
-                with gr.Row():
-                    image_download_size = gr.Radio(
-                        ["Small", "Middle", "Large"],
-                        label="Download file size (affects image quality)",
-                        value='Large',
-                        interactive=True)
-
-                with gr.Row():
-                    image_clear_btn = gr.Button("Clear")
-                    image_submit_btn = gr.Button("Submit")
-
-                img_out = gr.Image(label="Output image", interactive=False).style(height=300)
-                downloaded_img = gr.File(label='Image download').style(height=50)
-        
-            image_clear_btn.click(
-                fn=clear_image_all,
-                inputs=None,
-                outputs=[image_in, img_out,
-                        image_download_size, downloaded_img])
-
-            image_submit_btn.click(
-                fn=get_id_photo_output,
-                inputs=[image_in, image_download_size],
-                outputs=[img_out, downloaded_img])
-
-            gr.Markdown(
-                """<font color=Gray>This application is supported by [PaddleSeg](https://github.com/PaddlePaddle/PaddleSeg). 
-                If you have any question or feature request, 
-                welcome to raise issues on [GitHub](https://github.com/PaddlePaddle/PaddleSeg/issues). 
-                BTW, a star is a great encouragement for us, thanks!  ^_^</font>"""
-            )
-
-            gr.Button.style(1)
-
-        demo.launch(server_name="0.0.0.0", server_port=8017, share=True)
-
     args = parser.parse_args()
     main(args)
