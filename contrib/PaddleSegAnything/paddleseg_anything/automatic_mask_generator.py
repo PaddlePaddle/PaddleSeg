@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+# This implementation refers to: https://github.com/facebookresearch/segment-anything
+
 import numpy as np
 import paddle
 from paddle.vision.ops import nms

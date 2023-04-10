@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This implementation refers to: https://github.com/facebookresearch/segment-anything
+
 import sys
 import os
 sys.path.append(

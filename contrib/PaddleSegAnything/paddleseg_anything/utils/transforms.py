@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This implementation refers to: https://github.com/facebookresearch/segment-anything
+
 import numpy as np
 import PIL
 from PIL import Image
@@ -20,7 +22,6 @@ from typing import Tuple
 
 import paddle
 from paddle.nn import functional as F
-#from torchvision.transforms.functional import resize, to_pil_image  
 from paddle.vision.transforms.functional import resize  # type: ignore
 
 

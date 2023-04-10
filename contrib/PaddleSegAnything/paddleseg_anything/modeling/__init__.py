@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This implementation refers to: https://github.com/facebookresearch/segment-anything
+
 from .sam import Sam
 from .image_encoder import ImageEncoderViT
 from .mask_decoder import MaskDecoder

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This implementation refers to: https://github.com/facebookresearch/segment-anything
+
 import os
 import sys
 import argparse
@@ -24,7 +26,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from paddleseg_anything.predictor import SamPredictor
-from paddleseg_anything.build_sam import build_sam
+from paddleseg_anything.build_sam import build_sam, build_sam_vit_l, build_sam_vit_b
 
 
 def get_args():
@@ -96,7 +98,7 @@ def main(args):
 
     image = cv2.imread(input_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    model = build_sam(checkpoint=args.checkpoint)
+    model = build_sam_vit_b(checkpoint=args.checkpoint)
     predictor = SamPredictor(model)
     predictor.set_image(image)
 
