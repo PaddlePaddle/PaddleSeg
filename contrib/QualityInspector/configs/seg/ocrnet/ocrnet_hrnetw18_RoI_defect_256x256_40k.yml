@@ -4,6 +4,7 @@ iters: 1000
 train_dataset:
   type: Dataset
   dataset_root: ./
+  num_classes: 2
   train_path: dataset/MT_dataset/RoI/train/RoI.txt
   transforms:
     - type: ResizeStepScaling
@@ -24,6 +25,7 @@ train_dataset:
 val_dataset:
   type: Dataset
   dataset_root: ./
+  num_classes: 2
   val_path: dataset/MT_dataset/RoI/val/RoI.txt
   transforms:
     - type: ResizeByLong
