@@ -23,12 +23,14 @@ English | [简体中文](README_CN.md)
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> News
 <ul class="nobull">
-  <li>[2022-11-30] :fire: PaddleSeg v2.7 is released! Check more details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
+  <li>[2023-04-11] :fire: PaddleSeg v2.8 is released! Check more details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
     <ul>
-        <li>Release <a href="./Matting/">PP-MattingV2</a>, a real-time human matting model with SOTA performance. Compared to previous models, the mean error is reduced by 17.91%, the inference speed is improved by 44.6% on GPU. </li>
-        <li>Release <a href="./contrib/MedicalSeg/">MedicalSegV2</a>, a superior 3D medical image segmentation solution, including an intelligent annotation toolkit called EISeg-Med3D, several state-of-the-art models, and an optimized nnUNet-D with high performance.</li>
-        <li>Release <a href="./configs/rtformer/">RTFormer</a>, a real-time semantic segmentation model (the paper has been accepted by NeurIPS 2022). RTFormer combines the advantages of CNN and Transformer modules, and it achieves SOTA trade-off between performance and efficiency on several datasets.</li>
+        <li>Release <a href="./contrib/SegmentAnything">Segment Anything Model</a> based on PaddlePaddle. Demos are provided to demonstrate the function of automatic full-image segmentation and specified object segmentation with prompt input.</li>
+        <li>Release <a href="./configs/pp_mobileseg">PP-MobileSeg</a>, a lightweight semantic segmentation model for mobile devices. Comparing PP-MobileSeg with other models on the ADE20K dataset, the segmentation accuracy is improved by 1.5%, the inference speed is accelerated by 42.3%, and the number of parameters is decreased by 34.9%. </li>
+        <li>Release <a href="./contrib/QualityInspector">QualityInspector v0.5</a>, a full-process solution for industrial quality inspection. It provides a unified and configurable pipeline for single-task and multi-task models, integrates detection and segmentation model libraries, and supports three unsupervised quality inspection methods. </li>
+        <li>Release <a href="./contrib/PanopticSeg">PanopticSeg v0.5</a>, a universal panoptic segmentation solution. It provides the full-process capabilities of panoptic segmentation, integrates two models, and has flexible secondary development capabilities. </li>
     </ul>
+  <li>[2022-11-30] PaddleSeg v2.7 released a real-time human matting model <a href="./Matting/">PP-MattingV2</a>, a 3D medical image segmentation solution <a href="./contrib/MedicalSeg/">MedicalSegV2</a>, and a real-time semantic segmentation model <a href="./configs/rtformer/">RTFormer</a>.
   <li>[2022-07-20] PaddleSeg v2.6 released a real-time human segmentation SOTA solution <a href="./contrib/PP-HumanSeg">PP-HumanSegV2</a>, a stable-version semi-automatic segmentation annotation tool <a href="./EISeg">EISeg v1.0</a>, a pseudo label pre-training method PSSL, and the source code of PP-MattingV1. </li>
   <li>[2022-04-20] PaddleSeg v2.5 released a real-time semantic segmentation model <a href="./configs/pp_liteseg">PP-LiteSeg</a>, a trimap-free image matting model PP-MattingV1, and an easy-to-use solution for 3D medical image segmentation MedicalSegV1.</li>
   <li>[2022-01-20] We release PaddleSeg v2.4 with EISeg v0.4, and PP-HumanSegV1 including an open-sourced dataset <a href="./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset">PP-HumanSeg14K</a>. </li>
