@@ -4,6 +4,7 @@ iters: 40000
 
 train_dataset:
   type: Dataset
+  num_classes: 6
   dataset_root: ./
   train_path: dataset/MT_dataset/train.txt
   transforms:
@@ -24,6 +25,7 @@ train_dataset:
   mode: train
 
 val_dataset:
+  num_classes: 6
   type: Dataset
   dataset_root: ./
   val_path: dataset/MT_dataset/val.txt
