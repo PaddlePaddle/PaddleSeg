@@ -71,7 +71,7 @@ class Pipeline(object):
         if input_ext in im_exts:
             input_type = "image"
             return [input], input_type
-        raise ValueError("Unsupported input format: {}".fomat(input_ext))
+        raise ValueError("Unsupported input format: {}".format(input_ext))
 
     def predict_images(self, input):
         results = self.modules.run(input)
