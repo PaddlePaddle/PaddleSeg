@@ -63,7 +63,10 @@ class Sam(nn.Layer):
 
     @property
     def device(self) -> Any:
-        return 'gpu'
+        if paddle.is_compiled_with_cuda():
+            return 'gpu'
+        else:
+            return 'cpu'
 
     @paddle.no_grad()
     def forward(
