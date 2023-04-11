@@ -44,8 +44,8 @@ We provide the pretrained model parameters of PaddlePaddle format, including [vi
     ├── SegmentAnything
     │   ├── examples
     │   │   └──  cityscapes_demo.png
-    │   ├── modeling
-    │   └── script
+    │   ├── segment_anything
+    │   └── scripts
 
     ```
 
@@ -54,7 +54,7 @@ In this step, we start a gradio service with the following scrip on local machin
 
 1. Run the following script:
     ```bash
-    python script/amg_paddle.py --model-type [vit_l/vit_b/vit_h] # default is vit_h
+    python scripts/amg_paddle.py --model-type [vit_l/vit_b/vit_h] # default is vit_h
 
     ```
     Note:
@@ -76,17 +76,17 @@ You can run the following commands to produce masks from different types of prom
 1. Box prompt
 
 ```bash
-python script/promt_predict.py --input_path xxx.png --box_prompt 1050 370 1500 700 --model-type [vit_l/vit_b/vit_h] # default is vit_h
+python scripts/promt_predict.py --input_path xxx.png --box_prompt 1050 370 1500 700 --model-type [vit_l/vit_b/vit_h] # default is vit_h
 ```
 
 2. Point prompt
 ```bash
-python script/promt_predict.py --input_path xxx.png --point_prompt 1200 450 --model-type [vit_l/vit_b/vit_h] # default is vit_h
+python scripts/promt_predict.py --input_path xxx.png --point_prompt 1200 450 --model-type [vit_l/vit_b/vit_h] # default is vit_h
 ```
 
 3. Mask prompt
 ```bash
-python script/promt_predict.py --input_path xxx.png --mask_prompt xxx.png --model-type [vit_l/vit_b/vit_h] # default is vit_h
+python scripts/promt_predict.py --input_path xxx.png --mask_prompt xxx.png --model-type [vit_l/vit_b/vit_h] # default is vit_h
 ```
 
 Note:
