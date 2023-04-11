@@ -149,7 +149,7 @@ def main(args):
         place = 'gpu'
     elif args.device == 'xpu' and paddle.is_compiled_with_xpu():
         place = 'xpu'
-    elif args.device == 'npu' and paddle.is_compiled_with_npu():
+    elif args.device == 'npu' and paddle.is_compiled_with_custom_device('npu'):
         place = 'npu'
     elif args.device == 'mlu' and paddle.is_compiled_with_mlu():
         place = 'mlu'
