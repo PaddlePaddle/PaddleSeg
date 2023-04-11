@@ -437,9 +437,6 @@ if __name__ == '__main__':
     import torch
     from segment_anything.modeling import ImageEncoderViT as ImageEncoderViT_torch
 
-    # Set random seed
-    # np.random.seed(42)
-    paddle.set_device('gpu')
     image_encoder_t = ImageEncoderViT_torch(
         depth=12,
         embed_dim=768,
@@ -454,7 +451,6 @@ if __name__ == '__main__':
         global_attn_indexes=[2, 5, 8, 11],
         window_size=14,
         out_chans=256, )
-    # image_encoder_t = image_encoder_t.to('cuda:1')
 
     image_encoder = ImageEncoderViT(
         depth=12,
