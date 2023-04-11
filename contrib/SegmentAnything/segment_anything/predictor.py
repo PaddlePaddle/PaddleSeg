@@ -270,7 +270,10 @@ class SamPredictor:
 
     @property
     def device(self) -> paddle.device:
-        return 'gpu'
+        if paddle.is_compiled_with_cuda():
+            return 'cpu'
+        else:
+            return 'gpu'
 
     def reset_image(self) -> None:
         """Resets the currently set image."""

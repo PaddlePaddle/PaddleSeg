@@ -166,7 +166,6 @@ class SamAutomaticMaskGenerator:
                crop_box (list(float)): The crop of the image used to generate
                  the mask, given in XYWH format.
         """
-        paddle.device.set_device('gpu')
         # Generate masks
         mask_data = self._generate_masks(image)
 
