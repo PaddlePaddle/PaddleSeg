@@ -1,6 +1,6 @@
 # 训练&验证——检测分割算法
 
-以Magnetic-tile-defect-datasets为例，在前面的[数据准备](../data/prepare_data.md)中，可以获得检测，分割，RoI分割任务对应的符合训练格式的数据，检测分割任务的配置文件分别存放在`./configs/det/`和`./configs/seg/`路径下。接下来进行不同任务的训练和验证：
+以Magnetic-tile-defect-datasets为例，在前面的[数据准备](../tools_data/prepare_data.md)中，可以获得检测，分割，RoI分割任务对应的符合训练格式的数据，检测分割任务的配置文件分别存放在`./configs/det/`和`./configs/seg/`路径下。接下来进行不同任务的训练和验证：
 
 ## 训练
 * 检测
