@@ -21,11 +21,13 @@
 </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
-* [2023-02-27] :fire:  PaddleSeg集成高性能、全场景模型部署方案FastDeploy，欢迎参考[指南](./deploy/fastdeploy)试用（注意切换成develop分支）。
-* [2022-11-30] :fire:  PaddleSeg 2.7版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
-  * 发布实时人像抠图模型[PP-MattingV2](./Matting/)：推理速度提升44.6%，平均误差减小17.91%，完美超越此前SOTA模型，支持零成本开箱即用。
-  * 发布3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)：涵盖3D医疗影像交互式标注工具EISeg-Med3D、3个高精分割模型，集成并优化前沿分割方案nnUNet-D。
-  * 官方发布轻量级语义分割模型[RTFormer](./configs/rtformer/)：由百度提出并发表于NeurIPS 2022，在公开数据集上实现SOTA性能。
+
+* [2023-04-11] :fire:  PaddleSeg 2.8版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
+  * 开源飞桨版本视觉大模型[Segment Anything Model](./contrib/SegmentAnything)，提供演示Demo，支持全图分割的功能、使用提示输入分割的功能。
+  * 发布超轻量级语义分割SOTA模型[PP-MobileSeg](./configs/pp_mobileseg)：在ADE20K数据集上，PP-MobileSeg对比此前最优模型，精度提升1.5%、速度提升42.3%、参数量减少34.9%。
+  * 发布工业质检全流程解决方案[QualityInspector v0.5](./contrib/QualityInspector)：提供统一可配置的算法Pipeline，集成检测和分割模型库，支持3种无监督异常检测算法，支持工业级指标评测、分析、调优等功能。
+  * 发布通用的全景分割解决方案[PanopticSeg v0.5](./contrib/PanopticSeg)：提供全景分割的全流程开发功能，集成2个前沿高精模型，具备灵活的二次开发能力。
+* [2022-11-30] PaddleSeg 2.7版本发布实时人像抠图模型[PP-MattingV2](./Matting/)、3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)、轻量级语义分割模型[RTFormer](./configs/rtformer/)。
 * [2022-07-20] PaddleSeg 2.6版本发布实时人像分割SOTA方案[PP-HumanSegV2](./contrib/PP-HumanSeg)、高性能智能标注工具[EISeg v1.0](./EISeg)正式版、ImageNet分割伪标签数据预训练方法PSSL，开源PP-MattingV1代码和预训练模型。
 * [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-MattingV1，3D医疗影像开发套件MedicalSegV1，交互式分割工具EISeg v0.5。
 * [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSegV1，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
@@ -89,6 +91,7 @@
         <details><summary><b>语义分割模型</b></summary>
           <ul>
             <li><a href="./configs/pp_liteseg">PP-LiteSeg</a> </li>
+            <li><a href="./configs/pp_mobileseg">PP-MobileSeg</a> </li>
             <li><a href="./configs/deeplabv3p">DeepLabV3P</a> </li>
             <li><a href="./configs/ocrnet">OCRNet</a> </li>
             <li><a href="./configs/mobileseg">MobileSeg</a> </li>
