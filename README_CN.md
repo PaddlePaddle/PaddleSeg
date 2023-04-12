@@ -377,9 +377,9 @@
 
 
 | 模型 | 骨干网络 | ADE20K精度mIoU(%) | 骁龙855推理延时(ms)* | 参数量(M) | 链接 |
-|-|-|-|-|-|-|
-|PP-MobileSeg-Base|StrideFormer-Base|41.57%|265.5|5.62|[config](./configs/pp-mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
-|PP-MobileSeg-Tiny|StrideFormer-Tiny|36.39%|215.3|1.61|[config](./configs/pp-mobileseg/pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ffba08f700424b9d526c138df4426f4c)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
+|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+|PP-MobileSeg-Base|StrideFormer-Base|41.57|265.5|5.62|[config](./configs/pp-mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
+|PP-MobileSeg-Tiny|StrideFormer-Tiny|36.39|215.3|1.61|[config](./configs/pp-mobileseg/pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ffba08f700424b9d526c138df4426f4c)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
 
 测试条件:
 * 我们在带有最有一个argmax算子的条件下，使用[PaddleLite](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/README_en.md）小米9的骁龙855上进行测试。测试使用单线程，输入图像维度是1x3x256x256。
