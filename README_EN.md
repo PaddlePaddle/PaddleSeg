@@ -375,13 +375,15 @@ Note that:
 
 #### These super lightweight semantic segmentation models are designed for X86 CPU and ARM CPU.
 
-| Model | Backbone | ADE20K mIoU(%) | Snapdragon 855 Inference latency(ms)* | params(M) | Links |
+| Model | Backbone | ADE20K mIoU(%) | Snapdragon 855 Inference latency(ms) | params(M) | Links |
 |:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-|PP-MobileSeg-Base|StrideFormer-Base|41.57|265.5|5.62|[config](./configs/pp-mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
-|PP-MobileSeg-Tiny|StrideFormer-Tiny|36.39|215.3|1.61|[config](./configs/pp-mobileseg/pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ffba08f700424b9d526c138df4426f4c)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
+|TopFormer-Base|TopTransformer-Base|38.28|480.6|5.13|[config](./configs/topformer/)
+|PP-MobileSeg-Base :star2: |StrideFormer-Base|41.57|265.5|5.62|[config](./configs/pp_mobileseg/)|
+|TopFormer-Tiny|TopTransformer-Tiny|32.46|490.3|1.41|[config](./configs/topformer/)
+|PP-MobileSeg-Tiny :star2: |StrideFormer-Tiny|36.39|215.3|1.61|[config](./configs/pp_mobileseg/)|
 
 Note that:
-* We test the latency with the final argmax operator using [PaddleLite](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/README_en.md) on xiaomi9 (Snapdragon 855 CPU) with single thread and 1x3x512x512 as input shape.
+* We test the inference speed on Snapdragon 855. We use [PaddleLite](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/README_en.md) CPP API with 1 thread, and the shape of input tensor is 1x3x512x512. We test the latency with the final argmax operator on.
 
 
 | Model    | Backbone | Cityscapes mIoU(%)    |  V100 TRT Inference Speed(FPS)  | Snapdragon 855 Inference Speed(FPS) | Config File |
