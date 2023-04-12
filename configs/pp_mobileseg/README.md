@@ -26,8 +26,8 @@ Extensive experiments show that PP-MobileSeg achieves a superior params-accuracy
 ### ADE20K
 | Model | Backbone | Training Iters | Batchsize | Train Resolution | mIoU(%) | latency(ms)* | params(M) | Links |
 |-|-|-|-|-|-|-|-|-|
-|PP-MobileSeg-Base|StrideFormer-Base|80000|32|512x512|41.57%|265.5|5.62|[config](./pp_mobileseg_base_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
-|PP-MobileSeg-Tiny|StrideFormer-Tiny|80000|32|512x512|36.39%|215.3|1.61|[config](./pp_mobileseg_tiny_ade20k_512x512_160k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ffba08f700424b9d526c138df4426f4c)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
+|PP-MobileSeg-Base|StrideFormer-Base|80000|32|512x512|41.57%|265.5|5.62|[config](./pp_mobileseg_base_ade20k_512x512_80k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=4836be3e2e571ec358a9cab069530fb2)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_base/export_model.zip)|
+|PP-MobileSeg-Tiny|StrideFormer-Tiny|80000|32|512x512|36.39%|215.3|1.61|[config](./pp_mobileseg_tiny_ade20k_512x512_80k.yml)\|[model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/model.pdparams)\|[log](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=ffba08f700424b9d526c138df4426f4c)\|[exported model](https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny/export_model.zip)|
 
 
 
@@ -81,7 +81,7 @@ You can start training by assign the ```tools/train.py``` with config files, the
 export CUDA_VISIBLE_DEVICES=0,1
 
 python3  -m paddle.distributed.launch tools/train.py \
-    --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
+    --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_80k.yml \
     --save_dir output/pp_mobileseg_base \
     --save_interval 1000 \
     --num_workers 4 \
@@ -96,7 +96,7 @@ With the trained model on hand, you can verify the model's accuracy through eval
 
 ```bash
 python  -m paddle.distributed.launch tools/val.py \
-       --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
+       --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_80k.yml \
        --model_path output/pp_mobileseg_base/best_model/model.pdparams
 ```
 
@@ -124,7 +124,7 @@ The model needs to be transferred from dynamic graph to static graph for PaddleL
 
 ```bash
 python tools/export.py \
-      --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_160k.yml \
+      --config configs/pp_mobileseg/pp_mobileseg_base_ade20k_512x512_80k.yml \
       --save_dir output/pp_mobileseg_base  \
       --input_shape 1 3 512 512 \ # The model is set to infer one image with this input shape, feel free to suit this to your dataset.
       --output_op none   # If do not use VIM, you need to set this to argmax to get the final prediction rather than logits.
