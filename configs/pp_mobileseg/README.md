@@ -1,5 +1,9 @@
 # PP-MobileSeg: Exploring Transformer Blocks for Efficient Mobile Segmentation.
 
+## Reference
+
+> Shiyu Tang, Ting Sun, Juncai Peng, Guowei Chen, Yuying Hao, Manhui Lin, Zhihong Xiao, Jiangbin You, Yi Liu. PP-MobileSeg: Explore the Fast and Accurate Semantic Segmentation Model on Mobile Devices. https://arxiv.org/abs/2304.05152
+
 ## Contents
 1. Overview
 2. Performance

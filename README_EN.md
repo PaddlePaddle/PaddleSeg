@@ -90,7 +90,8 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         <ul>
         <details><summary><b>Semantic Segmentation</b></summary>
           <ul>
- <li><a href="./configs/pp_liteseg">PP-LiteSeg</a> </li>
+            <li><a href="./configs/pp_liteseg">PP-LiteSeg</a> </li>
+            <li><a href="./configs/pp_mobileseg">PP-MobileSeg</a> </li>
             <li><a href="./configs/deeplabv3p">DeepLabV3P</a> </li>
             <li><a href="./configs/ocrnet">OCRNet</a> </li>
             <li><a href="./configs/mobileseg">MobileSeg</a> </li>
@@ -271,6 +272,11 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
+        <details><summary><b>Segment Anything</b></summary>
+          <ul>
+              <li><a href="./contrib/SegmentAnything">SegmentAnything</a></li>
+          </ul>
+        </details>
         <details><summary><b>Model Selection Tool</b></summary>
           <ul>
               <li><a href="./configs/smrt">PaddleSMRT</a></li>
@@ -368,6 +374,17 @@ Note that:
 <summary><b>Super Lightweight Semantic Segmentation Models</b></summary>
 
 #### These super lightweight semantic segmentation models are designed for X86 CPU and ARM CPU.
+
+| Model | Backbone | ADE20K mIoU(%) | Snapdragon 855 Inference latency(ms) | params(M) | Links |
+|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+|TopFormer-Base|TopTransformer-Base|38.28|480.6|5.13|[config](./configs/topformer/)
+|PP-MobileSeg-Base :star2: |StrideFormer-Base|41.57|265.5|5.62|[config](./configs/pp_mobileseg/)|
+|TopFormer-Tiny|TopTransformer-Tiny|32.46|490.3|1.41|[config](./configs/topformer/)
+|PP-MobileSeg-Tiny :star2: |StrideFormer-Tiny|36.39|215.3|1.61|[config](./configs/pp_mobileseg/)|
+
+Note that:
+* We test the inference speed on Snapdragon 855. We use [PaddleLite](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/README_en.md) CPP API with 1 thread, and the shape of input tensor is 1x3x512x512. We test the latency with the final argmax operator on.
+
 
 | Model    | Backbone | Cityscapes mIoU(%)    |  V100 TRT Inference Speed(FPS)  | Snapdragon 855 Inference Speed(FPS) | Config File |
 |:-------- |:--------:|:---------------------:|:-------------------------------:|:-----------------------------------:|:-----------:|
