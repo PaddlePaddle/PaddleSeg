@@ -237,3 +237,6 @@ def predict(model,
 		# save JSON file
         jsonPath = json_saved_dir + ".json"
         open(jsonPath, "w", encoding="utf-8").write(json.dumps(jdata, cls=NpEncoder))
+		
+    logger.info("Predicted images are saved in {} and {} .".format(
+        added_saved_dir, pred_saved_dir))
