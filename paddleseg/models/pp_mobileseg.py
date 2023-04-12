@@ -29,7 +29,9 @@ class PPMobileSeg(nn.Layer):
     """
     The PP_MobileSeg implementation based on PaddlePaddle.
 
-    The original article refers to xxx.
+    The original article refers to "Shiyu Tang, Ting Sun, Juncai Peng, Guowei Chen, Yuying Hao, 
+    Manhui Lin, Zhihong Xiao, Jiangbin You, Yi Liu. PP-MobileSeg: Explore the Fast and Accurate 
+    Semantic Segmentation Model on Mobile Devices. https://arxiv.org/abs/2304.05152"
 
 
     Args:
