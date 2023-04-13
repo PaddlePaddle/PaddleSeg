@@ -100,7 +100,7 @@ git add README.md
 pre-commit
 ```
 
-重复上述步骤，直到pre-comit格式检查不报错。如下所示。
+重复上述步骤，直到pre-commit格式检查不报错。如下所示。
 
 ![img](../images/003_precommit_pass.png)
 
