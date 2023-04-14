@@ -39,8 +39,8 @@ class RSGrids:
 
     def createGrids(self) -> List[int]:
         img_size = (self.raster.geoinfo.ysize, self.raster.geoinfo.xsize)
-        grid_count = np.ceil(
-            (img_size + self.raster.overlap) / self.raster.grid_size)
+        grid_count = np.ceil((img_size - self.raster.overlap) /
+                             (self.raster.grid_size - self.raster.overlap))
         self.grid_count = grid_count = grid_count.astype("uint16")
         self.mask_grids = [[np.zeros(self.raster.grid_size) \
                             for _ in range(grid_count[1])] for _ in range(grid_count[0])]

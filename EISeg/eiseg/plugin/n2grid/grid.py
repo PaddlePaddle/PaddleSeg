@@ -45,7 +45,8 @@ class Grids:
     def createGrids(self):
         # 计算宫格横纵向格数
         imgSize = np.array(self.detimg.shape[:2])
-        grid_count = np.ceil((imgSize + self.overlap) / self.gridSize)
+        grid_count = np.ceil(
+            (imgSize - self.overlap) / (self.gridSize - self.overlap))
         self.grid_count = grid_count = grid_count.astype("uint16")
         # ul = self.overlap - self.gridSize
         # for row in range(grid_count[0]):
@@ -93,8 +94,8 @@ class Grids:
         # if h is None and w is None:
         #     return False
         h, w = self.gridSize
-        row = math.ceil(raw_size[0] / h)
-        col = math.ceil(raw_size[1] / w)
+        row = math.ceil((raw_size[0] - self.overlap[0]) / (h - self.overlap[0]))
+        col = math.ceil((raw_size[1] - self.overlap[1]) / (w - self.overlap[1]))
         result_1 = np.zeros((h * row, w * col), dtype=np.uint8)
         result_2 = result_1.copy()
         # k = 0
