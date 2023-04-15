@@ -6,3 +6,4 @@ filelock
 scipy
 prettytable
 scikit-learn
+eiseg==1.1.1

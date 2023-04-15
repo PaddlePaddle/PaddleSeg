@@ -14,6 +14,7 @@
 
 import os
 import math
+import json
 
 import cv2
 import numpy as np
@@ -21,6 +22,7 @@ import paddle
 
 from paddleseg import utils
 from paddleseg.core import infer
+from eiseg.util.polygon import get_polygon
 from paddleseg.utils import logger, progbar, visualize
 
 
@@ -43,6 +45,21 @@ def preprocess(im_path, transforms):
     data['img'] = data['img'][np.newaxis, ...]
     data['img'] = paddle.to_tensor(data['img'])
     return data
+
+
+# convert various types of data into JSON format
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, datetime.datetime):
+            return obj.strftime('%Y-%m-%dT%H:%M:%S')
+        else:
+            return super(NpEncoder, self).default(obj)
 
 
 def predict(model,
@@ -92,11 +109,32 @@ def predict(model,
 
     added_saved_dir = os.path.join(save_dir, 'added_prediction')
     pred_saved_dir = os.path.join(save_dir, 'pseudo_color_prediction')
+    json_saved_name = os.path.join(save_dir, 'annotations.json')
 
+    polygons = []
     logger.info("Start to predict...")
     progbar_pred = progbar.Progbar(target=len(img_lists[0]), verbose=1)
     color_map = visualize.get_color_map_list(256, custom_color=custom_color)
     with paddle.no_grad():
+        # define the nodes required for JSON, including images, colors, etc
+        images = []
+        annotations = []
+        categories = []
+        bk_color = {
+            "id": 1,
+            "name": "bk",
+            "color": [0, 0, 0],
+            "supercategory": "",
+        }
+        categories.append(bk_color)
+        obj_color = {
+            "id": 2,
+            "name": "obj",
+            "color": [128, 0, 0],
+            "supercategory": "",
+        }
+        categories.append(obj_color)
+
         for i, im_path in enumerate(img_lists[local_rank]):
             data = preprocess(im_path, transforms)
 
@@ -122,6 +160,10 @@ def predict(model,
             pred = paddle.squeeze(pred)
             pred = pred.numpy().astype('uint8')
 
+            # obtain polygon vertices
+            polygons = get_polygon(
+                (pred * 255), img_size=pred.shape, building=False)
+
             # get the saved name
             if image_dir is not None:
                 im_file = im_path.replace(image_dir, '')
@@ -145,6 +187,55 @@ def predict(model,
             pred_mask.save(pred_saved_path)
 
             progbar_pred.update(i + 1)
+
+            # define the information required for a single image
+            image = {
+                "id": i + 1,
+                "width": pred.shape[1],
+                "height": pred.shape[0],
+                "file_name": im_file,
+                "license": "",
+                "flickr_url": "",
+                "coco_url": "",
+                "date_captured": ""
+            }
+            images.append(image)
+
+            # store polygon vertices in annotation
+            annotation = {
+                "id": i + 1,
+                "iscrowd": 0,
+                "image_id": i + 1,
+                "category_id": 2,
+                "segmentation": [],
+                "area": 0,
+                "bbox": [],
+            }
+            for polygon in polygons:
+                tmp = []
+                for p in polygon:
+                    tmp.append(p[0])
+                    tmp.append(p[1])
+                annotation["segmentation"].append(tmp)
+            annotations.append(annotation)
+
+        # summarize all information together to form annotated data
+        json_data = {
+            "categories": [],
+            "images": [],
+            "annotations": [],
+            "info": "",
+            "licenses": [],
+        }
+        json_data["categories"] = categories
+        json_data["images"] = images
+        json_data["annotations"] = annotations
+
+        # save JSON file
+        open(
+            json_saved_name, "w",
+            encoding="utf-8").write(json.dumps(
+                json_data, cls=NpEncoder))
 
     logger.info("Predicted images are saved in {} and {} .".format(
         added_saved_dir, pred_saved_dir))
