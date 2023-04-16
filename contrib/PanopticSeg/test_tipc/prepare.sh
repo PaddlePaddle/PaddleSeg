@@ -16,15 +16,6 @@ IFS=$'\n'
 lines=(${dataline})
 model_name=$(func_parser_value "${lines[1]}")
 
-# Prepare environments
-pip install -r requirements.txt
-# Install current version of PaddlePanSeg
-pip install -e .
-if [ "${model_name}" = mask2former ]; then
-    # Install custom OPs
-    pip install -e paddlepanseg/models/ops/*
-fi
-
 # Download pretrained weights
 if [ ${MODE} = 'whole_infer' ]; then
     :

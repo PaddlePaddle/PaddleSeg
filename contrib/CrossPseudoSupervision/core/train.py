@@ -124,13 +124,13 @@ def train(model,
         model (nn.Layer): A semantic segmentation model.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
         mask_generator (batch_transforms.mask_gen.BoxMaskGenerator): Cutmix used for training.
-        unsupervised_train_dataset (paddle.io.Dataset): Used to read and process training datasets do not have labels.
+        unsupervised_train_dataset (paddle.io.Dataset, optional): Used to read and process training datasets do not have labels.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
-        optimizer_l (paddle.optimizer.Optimizer): The optimizer for sub model first.
-        optimizer_r (paddle.optimizer.Optimizer): The optimizer for sub model second
+        optimizer_l (paddle.optimizer.Optimizer, optional): The optimizer for sub model first.
+        optimizer_r (paddle.optimizer.Optimizer, optional): The optimizer for sub model second
         save_dir (str, optional): The directory for saving the model snapshot. Default: 'output'.
         nepochs (int, optional): How may epochs to train the model. Defualt: 240.
-        labeled_ratio (int, optional): The ratio of total data to marked data, if 2, is 1/2, i.e. 0.5. Default: 2. 
+        labeled_ratio (int, optional): The ratio of total data to marked data, if 2, we use the ratio of 1/2, i.e. 0.5. Default: 2. 
         batch_size (int, optional): Mini batch size of total gpus or cpu. Default: 8.
         resume_model (str, optional): The path of resume model.
         save_epoch (int, optional): How many epochs to save a model snapshot once during training. Default: 5.

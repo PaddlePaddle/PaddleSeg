@@ -31,13 +31,13 @@ class Config(object):
     Configuration parsing.
 
     The following hyper-parameters are available in the config file:
-        batch_size: The number of samples per gpu.
+        batch_size: The number of samples total gpus.
         nepochs: The total training epochs.
-        train_dataset: A training data config including type/data_root/transforms/mode.
-            For data type, please refer to paddleseg.datasets.
-            For specific transforms, please refer to paddleseg.transforms.transforms.
+        train_dataset: A config for training data with ground truth, including type/data_root/transforms/mode/unsupervised.
+        unsupervised_train_dataset: A config for training data without ground truth, including type/data_root/transforms/mode/unsupervised.
         val_dataset: A validation data config including type/data_root/transforms/mode.
-        optimizer: A optimizer config. Please refer to paddleseg.optimizers.
+        batch_transforms: A batch transform config including type/prob_range/n_boxes/random_aspect_ratio/prop_by_area/within_bounds/inverst.
+        optimizer_l/optimizer_r: A optimizer config. Please refer to paddleseg.optimizers.
         loss: A loss config. Multi-loss config is available. The loss type order is 
             consistent with the seg model outputs, where the coef term indicates the 
             weight of corresponding loss. Note that the number of coef must be the 

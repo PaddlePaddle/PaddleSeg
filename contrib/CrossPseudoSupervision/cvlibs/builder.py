@@ -81,9 +81,47 @@ class CPSBuilder(Builder):
         self.show_msg('model', model_cfg)
         return self.build_component(model_cfg)
 
-    @cached_property
-    def optimizer_l(self) -> paddle.optimizer.Optimizer:
-        opt_cfg = self.config.optimizer_l_cfg
+    def _build_lr_scheduler(self, lr_cfg) -> paddle.optimizer.lr.LRScheduler:
+        assert lr_cfg != {}, \
+            'No lr_scheduler specified in the configuration file.'
+        use_warmup = False
+        if 'warmup_iters' in lr_cfg:
+            use_warmup = True
+            warmup_iters = lr_cfg.pop('warmup_iters')
+            assert 'warmup_start_lr' in lr_cfg, \
+                "When use warmup, please set warmup_start_lr and warmup_iters in lr_scheduler"
+            warmup_start_lr = lr_cfg.pop('warmup_start_lr')
+            end_lr = lr_cfg['learning_rate']
+
+        # calculate iters
+        num_train_imgs = 2975 // self.config.labeled_ratio
+        num_unsup_imgs = 2975 - num_train_imgs
+        max_samples = max(num_train_imgs, num_unsup_imgs)
+        niters_per_epoch = max_samples // self.config.batch_size
+        iters = niters_per_epoch * self.config.nepochs
+        lr_type = lr_cfg.pop('type')
+        if lr_type == 'PolynomialDecay':
+            iters = iters - warmup_iters if use_warmup else iters
+            iters = max(iters, 1)
+            lr_cfg.setdefault('decay_steps', iters)
+
+        try:
+            lr_sche = getattr(paddle.optimizer.lr, lr_type)(**lr_cfg)
+        except Exception as e:
+            raise RuntimeError(
+                "Create {} has failed. Please check lr_scheduler in config. "
+                "The error message: {}".format(lr_type, e))
+
+        if use_warmup:
+            lr_sche = paddle.optimizer.lr.LinearWarmup(
+                learning_rate=lr_sche,
+                warmup_steps=warmup_iters,
+                start_lr=warmup_start_lr,
+                end_lr=end_lr)
+
+        return lr_sche
+
+    def _build_optimizer(self, opt_cfg) -> paddle.optimizer.Optimizer:
         assert opt_cfg != {}, \
             'No optimizer specified in the configuration file.'
         # For compatibility
@@ -97,113 +135,29 @@ class CPSBuilder(Builder):
                         'the type is changed to Momentum.')
         self.show_msg('optimizer', opt_cfg)
         opt = self.build_component(opt_cfg)
-        opt = opt(self.model.branch1, self.lr_scheduler_l)
+        return opt
+
+    @cached_property
+    def optimizer_l(self) -> paddle.optimizer.Optimizer:
+        opt_cfg = self.config.optimizer_l_cfg
+        lr_cfg = self.config.lr_scheduler_l_cfg
+
+        opt = self._build_optimizer(opt_cfg)
+        lr = self._build_lr_scheduler(lr_cfg)
+
+        opt = opt(self.model.branch1, lr)
         return opt
 
     @cached_property
     def optimizer_r(self) -> paddle.optimizer.Optimizer:
         opt_cfg = self.config.optimizer_r_cfg
-        assert opt_cfg != {}, \
-            'No optimizer specified in the configuration file.'
-        # For compatibility
-        if opt_cfg['type'] == 'adam':
-            opt_cfg['type'] = 'Adam'
-        if opt_cfg['type'] == 'sgd':
-            opt_cfg['type'] = 'SGD'
-        if opt_cfg['type'] == 'SGD' and 'momentum' in opt_cfg:
-            opt_cfg['type'] = 'Momentum'
-            logger.info('If the type is SGD and momentum in optimizer config, '
-                        'the type is changed to Momentum.')
-        self.show_msg('optimizer', opt_cfg)
-        opt = self.build_component(opt_cfg)
-        opt = opt(self.model.branch2, self.lr_scheduler_r)
-        return opt
-
-    @cached_property
-    def lr_scheduler_r(self) -> paddle.optimizer.lr.LRScheduler:
         lr_cfg = self.config.lr_scheduler_r_cfg
-        assert lr_cfg != {}, \
-            'No lr_scheduler specified in the configuration file.'
 
-        use_warmup = False
-        if 'warmup_iters' in lr_cfg:
-            use_warmup = True
-            warmup_iters = lr_cfg.pop('warmup_iters')
-            assert 'warmup_start_lr' in lr_cfg, \
-                "When use warmup, please set warmup_start_lr and warmup_iters in lr_scheduler"
-            warmup_start_lr = lr_cfg.pop('warmup_start_lr')
-            end_lr = lr_cfg['learning_rate']
+        opt = self._build_optimizer(opt_cfg)
+        lr = self._build_lr_scheduler(lr_cfg)
 
-        # calculate iters
-        num_train_imgs = 2975 // self.config.labeled_ratio
-        num_unsup_imgs = 2975 - num_train_imgs
-        max_samples = max(num_train_imgs, num_unsup_imgs)
-        niters_per_epoch = max_samples // self.config.batch_size
-        iters = niters_per_epoch * self.config.nepochs
-        lr_type = lr_cfg.pop('type')
-        if lr_type == 'PolynomialDecay':
-            iters = iters - warmup_iters if use_warmup else iters
-            iters = max(iters, 1)
-            lr_cfg.setdefault('decay_steps', iters)
-
-        try:
-            lr_sche = getattr(paddle.optimizer.lr, lr_type)(**lr_cfg)
-        except Exception as e:
-            raise RuntimeError(
-                "Create {} has failed. Please check lr_scheduler in config. "
-                "The error message: {}".format(lr_type, e))
-
-        if use_warmup:
-            lr_sche = paddle.optimizer.lr.LinearWarmup(
-                learning_rate=lr_sche,
-                warmup_steps=warmup_iters,
-                start_lr=warmup_start_lr,
-                end_lr=end_lr)
-
-        return lr_sche
-
-    @cached_property
-    def lr_scheduler_l(self) -> paddle.optimizer.lr.LRScheduler:
-        lr_cfg = self.config.lr_scheduler_l_cfg
-        assert lr_cfg != {}, \
-            'No lr_scheduler specified in the configuration file.'
-
-        use_warmup = False
-        if 'warmup_iters' in lr_cfg:
-            use_warmup = True
-            warmup_iters = lr_cfg.pop('warmup_iters')
-            assert 'warmup_start_lr' in lr_cfg, \
-                "When use warmup, please set warmup_start_lr and warmup_iters in lr_scheduler"
-            warmup_start_lr = lr_cfg.pop('warmup_start_lr')
-            end_lr = lr_cfg['learning_rate']
-
-        # calculate iters
-        num_train_imgs = 2975 // self.config.labeled_ratio
-        num_unsup_imgs = 2975 - num_train_imgs
-        max_samples = max(num_train_imgs, num_unsup_imgs)
-        niters_per_epoch = max_samples // self.config.batch_size
-        iters = niters_per_epoch * self.config.nepochs
-        lr_type = lr_cfg.pop('type')
-        if lr_type == 'PolynomialDecay':
-            iters = iters - warmup_iters if use_warmup else iters
-            iters = max(iters, 1)
-            lr_cfg.setdefault('decay_steps', iters)
-
-        try:
-            lr_sche = getattr(paddle.optimizer.lr, lr_type)(**lr_cfg)
-        except Exception as e:
-            raise RuntimeError(
-                "Create {} has failed. Please check lr_scheduler in config. "
-                "The error message: {}".format(lr_type, e))
-
-        if use_warmup:
-            lr_sche = paddle.optimizer.lr.LinearWarmup(
-                learning_rate=lr_sche,
-                warmup_steps=warmup_iters,
-                start_lr=warmup_start_lr,
-                end_lr=end_lr)
-
-        return lr_sche
+        opt = opt(self.model.branch2, lr)
+        return opt
 
     @cached_property
     def loss(self) -> dict:

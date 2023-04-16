@@ -25,17 +25,18 @@ class BaseDataset(Dataset):
     Pass in a custom dataset that conforms to the format.
 
     Args:
+        mode (str, optional): which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
         transforms (list): Transforms for image.
         dataset_root (str): The dataset directory.
-        mode (str, optional): which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
         train_path (str, optional): The train dataset file. When mode is 'train', train_path is necessary.
             The contents of train_path file are as follow:
             image1.jpg ground_truth1.png
             image2.jpg ground_truth2.png
-        val_path (str. optional): The evaluation dataset file. When mode is 'val', val_path is necessary.
+        val_path (str, optional): The evaluation dataset file. When mode is 'val', val_path is necessary.
             The contents is the same as train_path
         file_length (int, optional): The number of trainable data in the dataset. Default: None.
-
+        ignore_index (int, optional): The category that needs to be ignored during the training process.
+        separator (str, optional): The separator of dataset list.
     """
 
     def __init__(self,
@@ -162,11 +163,3 @@ class BaseDataset(Dataset):
 
     def get_length(self):
         return self.__len__()
-
-    @classmethod
-    def get_class_colors(*args):
-        raise NotImplementedError
-
-    @classmethod
-    def get_class_names(*args):
-        raise NotImplementedError

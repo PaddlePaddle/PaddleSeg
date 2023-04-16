@@ -2,9 +2,9 @@
 
 # CPS: 基于交叉伪监督的半监督语义分割
 
-不同于图像分类任务，**数据的标注对于语义分割任务来说是比较困难而且成本高昂的**，需要为图像的每一个像素标注一个标签，包括一些特别细节的物体，如电线杆等。但是对于获取RGB数据是比较简单，如何**利用大量的无标注数据去提高模型的性能**，便是半监督语义分割领域研究的问题。
+不同于图像分类任务，**数据的标注对于语义分割任务来说是比较困难且成本高昂的**。图像中的每个像素都需要有一个标签，包括一些特别细节的物体，如电线杆等。与对像素的密集标注相比，获取原始RGB数据相对简单。因此，**如何利用大量的无标注数据提升模型的性能，是半监督语义分割领域的研究热点**。
 
-[Cross pseudo supervision, CPS](https://arxiv.org/abs/2106.01226)是一种**非常简洁而又性能很好**的半监督语义分割任务算法。训练时，使用两个相同结构、但是不同初始化的网络，添加约束**使得两个网络对同一样本的输出是相似的**。具体来说，当前网络产生的one-hot pseudo label，会作为另一路网络预测的目标，这个过程可以用cross entropy loss监督，就像传统的全监督语义分割任务的监督一样。**该算法在在两个benchmark (PASCAL VOC, Cityscapes) 都取得了SOTA的结果**
+[Cross pseudo supervision, CPS](https://arxiv.org/abs/2106.01226)是一种**简洁而高性能**的半监督语义分割任务算法。在训练时，使用两个相同结构、但是初始化状态不同的网络，添加约束**使得两个网络对同一样本的输出是相似的**。具体来说，一个网络生成的one-hot伪标签将作为训练另一个网络的目标。这个过程可以用交叉熵损失函数监督，就像传统的监督学习语义分割任务的一样。**该算法在在两个benchmark (PASCAL VOC, Cityscapes) 都取得了最先进的结果**
 
 部分可视化结果如下（左边为RGB图像，中间为预测图，右边为真值）:
 
@@ -37,18 +37,18 @@ pip install -v -e .
 
 ## 模型
 
-本项目复现的为在Cityscapes数据集以0.5倍数据量上的结果，复现模型的mIOU为**78.39%**，对比如下表所示：
+本项目的默认配置重现原始论文中的 CPS.resnet50.deeplabv3+(1/2 Cityscapes) 配置，其中使用50%的带标注样本，复现模型的 mIoU 为 **78.39%**。本项目复现结果与原论文结果对比如下表所示：：
 
 | CPS.resnet50.deeplabv3+(1/2 Cityscapes) | mIOU |
 | --- | --- |
-| pytorch | 78.77% |
-| paddle | 78.39% |
+| original paper | 78.77% |
+| reproduced | 78.39% |
 
 请使用以下链接下载预训练权重：
 
 ## 数据准备
 
-使用CPS源代码所提供的Cityscapes数据集，已上传至[AI Studio](https://aistudio.baidu.com/aistudio/datasetdetail/177911)，建议将数据解压至`contrib/CrossPseudoSupervision/data`文件夹下，准备好的数据组织如下：
+使用CPS源代码所提供的Cityscapes数据集，下载链接为：https://pkueducn-my.sharepoint.com/:f:/g/personal/pkucxk_pku_edu_cn/EtjNKU0oVMhPkOKf9HTPlVsBIHYbACel6LSvcUeP4MXWVg?e=139icd，将数据集`city`放至`contrib/CrossPseudoSupervision/data`文件夹下，准备好的数据组织如下：
 
 ```
 data/
@@ -108,12 +108,11 @@ python -m paddle.distributed.launch --gpus="0,1,2,3" train.py --config ./configs
 - `SAVE_PATH`: 保存权重与日志等文件的文件夹路径
 
 **注**：
-1. 目前，本项目训练过程中并不进行定期的epoch的精度测试
-2. 配置文件是训练1/2有标签的数据，若要调整为其他比例，修改配置文件中的`labeled_ratio`参数。当修改有标签数据的比例时，训练的epoch数需要按照下表进行调整（通过修改配置文件中的`nepochs`参数调整训练的epoch数量）：
+1. 配置文件是训练1/2有标签的数据，若要调整为其他比例，修改配置文件中的`labeled_ratio`参数。当修改有标签数据的比例时，训练的epoch数需要按照下表进行调整（通过修改配置文件中的`nepochs`参数调整训练的epoch数量）：
 
-| Dataset    | 1/16 | 1/8  | 1/4  | 1/2  |
+| Ratio    | 1/16 | 1/8  | 1/4  | 1/2  |
 | ---------- | ---- | ---- | ---- | ---- |
-| Cityscapes | 128  | 137  | 160  | 240  |
+| nepochs | 128  | 137  | 160  | 240  |
 
 
 ### 评估
@@ -147,4 +146,4 @@ export CUDA_VISIBLE_DEVICES=0
 
 - `IMG_PATH`: 待预测的图片或文件夹所在的路径
 
-你可以直接下载我们提供的[预训练模型]()进行预测。
+本项目提供[预训练模型]()可供直接进行预测。

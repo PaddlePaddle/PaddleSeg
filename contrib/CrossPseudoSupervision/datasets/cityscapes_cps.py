@@ -69,11 +69,21 @@ class CityscapesCPS(BaseDataset):
     IGNORE_INDEX = 255
     IMG_CHANNELS = 3
 
-    def __init__(self, mode, dataset_root, transforms, unsupervised=False):
+    def __init__(self,
+                 mode,
+                 dataset_root,
+                 transforms,
+                 unsupervised=False,
+                 train_path=None,
+                 val_path=None,
+                 file_length=None,
+                 img_channels=3,
+                 ignore_index=255,
+                 separator='\t'):
+        super(CityscapesCPS, self).__init__(
+            mode, dataset_root, transforms, train_path, val_path, file_length,
+            img_channels, ignore_index, separator)
 
-        self.mode = mode
-        self.dataset_root = dataset_root
-        self.transforms = Compose(transforms)
         self.unsupervised = unsupervised
 
         self.num_classes = self.NUM_CLASSES
@@ -121,32 +131,3 @@ class CityscapesCPS(BaseDataset):
                 "when mode is 'val', self.unsupervised should be False.")
 
         return data
-
-    @classmethod
-    def get_class_colors(self):
-        return [[128, 64, 128], [244, 35, 232], [70, 70, 70], [102, 102, 156],
-                [190, 153, 153], [153, 153, 153], [250, 170, 30],
-                [220, 220, 0], [107, 142, 35], [152, 251, 152], [70, 130, 180],
-                [220, 20, 60], [255, 0, 0], [0, 0, 142], [0, 0, 70],
-                [0, 60, 100], [0, 80, 100], [0, 0, 230], [119, 11, 32]]
-
-    @classmethod
-    def get_class_names(self):
-        return [
-            'road', 'sidewalk', 'building', 'wall', 'fence', 'pole',
-            'traffic light', 'traffic sign', 'vegetation', 'terrain', 'sky',
-            'person', 'rider', 'car', 'truck', 'bus', 'train', 'motorcycle',
-            'bicycle'
-        ]
-
-    @classmethod
-    def transform_label(self, cls, pred, name):
-        label = np.zeros(pred.shape)
-        ids = np.unique(pred)
-        for id in ids:
-            label[np.where(pred == id)] = cls.trans_labels[id]
-
-        new_name = (name.split('.')[0]).split('_')[:-1]
-        new_name = '_'.join(new_name) + '.png'
-
-        return label, new_name

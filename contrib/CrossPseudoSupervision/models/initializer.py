@@ -61,9 +61,9 @@ def _no_grad_fill_(tensor, value=0.):
 
 def uniform_(tensor, a, b):
     """
-    Modified tensor inspace using uniform_
+    Modify tensor in space using uniform_
     Args:
-        tensor (paddle.Tensor): paddle Tensor
+        tensor (paddle.Tensor): paddle tensor.
         a (float|int): min value.
         b (float|int): max value.
     Return:
@@ -74,9 +74,9 @@ def uniform_(tensor, a, b):
 
 def normal_(tensor, mean=0., std=1.):
     """
-    Modified tensor inspace using normal_
+    Modify tensor in space using normal_
     Args:
-        tensor (paddle.Tensor): paddle Tensor
+        tensor (paddle.Tensor): paddle tensor.
         mean (float|int): mean value.
         std (float|int): std value.
     Return:
@@ -87,9 +87,9 @@ def normal_(tensor, mean=0., std=1.):
 
 def constant_(tensor, value=0.):
     """
-    Modified tensor inspace using constant_
+    Modify tensor in space using constant_
     Args:
-        tensor (paddle.Tensor): paddle Tensor
+        tensor (paddle.Tensor): paddle tensor.
         value (float|int): value to fill tensor.
     Return:
         tensor
@@ -99,9 +99,9 @@ def constant_(tensor, value=0.):
 
 def ones_(tensor):
     """
-    Modified tensor inspace using ones_
+    Modify tensor in space using ones_
     Args:
-        tensor (paddle.Tensor): paddle Tensor
+        tensor (paddle.Tensor): paddle tensor.
     Return:
         tensor
     """
@@ -110,9 +110,9 @@ def ones_(tensor):
 
 def zeros_(tensor):
     """
-    Modified tensor inspace using zeros_
+    Modify tensor in space using zeros_
     Args:
-        tensor (paddle.Tensor): paddle Tensor
+        tensor (paddle.Tensor): paddle tensor.
     Return:
         tensor
     """
@@ -123,8 +123,8 @@ def _calculate_fan_in_and_fan_out(tensor, reverse=False):
     """
     Calculate (fan_in, _fan_out) for tensor
     Args:
-        tensor (Tensor): paddle.Tensor
-        reverse (bool: False): tensor data format order, False by default as [fout, fin, ...]. e.g. : conv.weight [cout, cin, kh, kw] is False; linear.weight [cin, cout] is True
+        tensor (paddle.Tensor): paddle tensor.
+        reverse (bool): tensor data format order, default to False. e.g. : conv.weight [cout, cin, kh, kw] is False; linear.weight [cin, cout] is True.
     Return:
         Tuple[fan_in, fan_out]
     """
@@ -150,11 +150,11 @@ def _calculate_fan_in_and_fan_out(tensor, reverse=False):
 
 def xavier_uniform_(tensor, gain=1., reverse=False):
     """
-    Modified tensor inspace using xavier_uniform_
+    Modify tensor in space using xavier_uniform_
     Args:
-        tensor (paddle.Tensor): paddle Tensor
-        gain (float): super parameter, 1. default.
-        reverse (bool):  reverse (bool: False): tensor data format order, False by default as [fout, fin, ...].
+        tensor (paddle.Tensor): paddle tensor.
+        gain (float): super parameter, default to 1.
+        reverse (bool):  tensor data format order, default to False.
     Return:
         tensor
     """
@@ -166,11 +166,11 @@ def xavier_uniform_(tensor, gain=1., reverse=False):
 
 def xavier_normal_(tensor, gain=1., reverse=False):
     """
-    Modified tensor inspace using xavier_normal_
+    Modify tensor in space using xavier_normal_
     Args:
-        tensor (paddle.Tensor): paddle Tensor
-        gain (float): super parameter, 1. default.
-        reverse (bool):  reverse (bool: False): tensor data format order, False by default as [fout, fin, ...].
+        tensor (paddle.Tensor): paddle tensor.
+        gain (float): super parameter, default to 1.
+        reverse (bool):  tensor data format order, default to False.
     Return:
         tensor
     """
@@ -226,12 +226,12 @@ def kaiming_uniform_(tensor,
                      nonlinearity='leaky_relu',
                      reverse=False):
     """
-    Modified tensor inspace using kaiming_uniform method
+    Modify tensor in space using kaiming_uniform method
     Args:
-        tensor (paddle.Tensor): paddle Tensor
-        mode (str): ['fan_in', 'fan_out'], 'fin_in' defalut
-        nonlinearity (str): nonlinearity method name
-        reverse (bool):  reverse (bool: False): tensor data format order, False by default as [fout, fin, ...].
+        tensor (paddle.Tensor): paddle tensor.
+        mode (str): a value in ['fan_in', 'fan_out'], 'fin_in' by default.
+        nonlinearity (str): nonlinearity method name.
+        reverse (bool): tensor data format order, default to False.
     Return:
         tensor
     """
@@ -248,12 +248,12 @@ def kaiming_normal_(tensor,
                     nonlinearity='leaky_relu',
                     reverse=False):
     """
-    Modified tensor inspace using kaiming_normal_
+    Modify tensor in space using kaiming_normal_
     Args:
-        tensor (paddle.Tensor): paddle Tensor
-        mode (str): ['fan_in', 'fan_out'], 'fin_in' defalut
-        nonlinearity (str): nonlinearity method name
-        reverse (bool):  reverse (bool: False): tensor data format order, False by default as [fout, fin, ...].
+        tensor (paddle.Tensor): paddle tensor.
+        mode (str): a value in ['fan_in', 'fan_out'], 'fin_in' by default.
+        nonlinearity (str): nonlinearity method name.
+        reverse (bool):  tensor data format order, default to False.
     Return:
         tensor
     """
@@ -285,10 +285,10 @@ def bias_init_with_prob(prior_prob=0.01):
 @paddle.no_grad()
 def reset_initialized_parameter(model, include_self=True):
     """
-    Reset initialized parameter using following method for [conv, linear, embedding, bn]
+    Reset initialized parameter for [conv, linear, embedding, bn]
     Args:
-        model (paddle.Layer): paddle Layer
-        include_self (bool: False): include_self for Layer.named_sublayers method. Indicate whether including itself
+        model (paddle.Layer): paddle Layer.
+        include_self (bool): include_self for Layer.named_sublayers method. Indicate whether including `model` itself, default to False.
     Return:
         None
     """
