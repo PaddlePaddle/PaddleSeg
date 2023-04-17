@@ -8,7 +8,7 @@ PaddleLabel aims to become an effective and flexible data annotation tool. There
 
 ## Install
 
-Installing in a new enviroment is not required but suggested.
+Installing in a new environment is not required but suggested.
 
 ```python
 conda create -n pplabel python=3.9

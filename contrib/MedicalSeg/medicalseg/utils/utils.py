@@ -149,7 +149,7 @@ def get_image_list(image_path, valid_suffix=None, filter_key=None):
     Args:
     image_path(str): the image or image folder where you want to get a image list from.
     valid_suffix(tuple): Contain only the suffix you want to include.
-    filter_key(dict): the key(ignore case) and whether you want to include it. e.g.:{"segmentation": True} will futher filter the imagename with segmentation in it.
+    filter_key(dict): the key(ignore case) and whether you want to include it. e.g.:{"segmentation": True} will further filter the imagename with segmentation in it.
 
     """
     if valid_suffix is None:
@@ -213,18 +213,18 @@ def save_array(save_path, save_content, form, image_infor):
     """
     if not isinstance(save_content, dict):
         raise TypeError(
-            'The save_content need to be dict which the key is the save name and the value is the numpy array to be saved, but recieved {}'
+            'The save_content need to be dict which the key is the save name and the value is the numpy array to be saved, but received {}'
             .format(type(save_content)))
 
     for (key, val) in save_content.items():
         if not isinstance(val, np.ndarray):
-            raise TypeError('We only save numpy array, but recieved {}'.format(
+            raise TypeError('We only save numpy array, but received {}'.format(
                 type(val)))
         if len(val.shape) > 3:
             save_content[key] = np.squeeze(val)
 
     if not isinstance(form, Iterable):
-        raise TypeError('The form need be iterable, but recieved {}'.format(
+        raise TypeError('The form need be iterable, but received {}'.format(
             type(form)))
 
     if save_path is not None:
