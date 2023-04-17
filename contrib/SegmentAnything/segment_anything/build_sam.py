@@ -17,7 +17,7 @@ import paddle
 
 from functools import partial
 
-from paddleseg import utils
+from paddleseg.utils import load_entire_model
 
 from .modeling import ImageEncoderViT, MaskDecoder, PromptEncoder, Sam, TwoWayTransformer
 
@@ -104,5 +104,5 @@ def _build_sam(
         pixel_std=[58.395, 57.12, 57.375], )
     sam.eval()
     if checkpoint is not None:
-        utils.load_entire_model(sam, checkpoint)
+        load_entire_model(sam, checkpoint)
     return sam
