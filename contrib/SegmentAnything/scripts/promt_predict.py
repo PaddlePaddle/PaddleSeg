@@ -39,7 +39,7 @@ model_link = {
 
 def get_args():
     parser = argparse.ArgumentParser(
-        description='Segment image with point promp, box or mask')
+        description='Segment image with point promp or box')
     # Parameters
     parser.add_argument(
         '--input_path', type=str, required=True, help='The directory of image.')
@@ -61,8 +61,6 @@ def get_args():
         nargs='+',
         default=None,
         help='box promt format as xyxy.')
-    parser.add_argument(
-        '--mask_prompt', type=str, default=None, help='The path of mask.')
     parser.add_argument(
         '--output_path',
         type=str,
@@ -88,7 +86,7 @@ def main(args):
         paddle.set_device("cpu")
     input_path = args.input_path
     output_path = args.output_path
-    point, box, mask_path = args.point_prompt, args.box_prompt, args.mask_prompt
+    point, box = args.point_prompt, args.box_prompt
     if point is not None:
         point = np.array([point])
         input_label = np.array([1])
@@ -96,10 +94,6 @@ def main(args):
         input_label = None
     if box is not None:
         box = np.array([[box[0], box[1]], [box[2], box[3]]])
-    if mask_path is not None:
-        mask = cv2.imread(mask_path, -1)
-    else:
-        mask = None
 
     image = cv2.imread(input_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -112,7 +106,6 @@ def main(args):
         point_coords=point,
         point_labels=input_label,
         box=box,
-        mask_input=mask,
         multimask_output=True, )
 
     plt.figure(figsize=(10, 10))
