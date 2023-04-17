@@ -326,7 +326,7 @@ def main():
         gt_data, img_to_pred_annos, post_modules, args.image_root,
         args.instance_level, args.iou_theshold)
 
-    if args.badcase:
+    if args.save_badcase:
         show_badcase(gt_data, img_to_pred_annos, overkill_info,
                      escape_info_image, escape_info_instance, args.image_root,
                      args.output_dir)

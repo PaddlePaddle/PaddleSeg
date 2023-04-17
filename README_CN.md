@@ -272,6 +272,11 @@
         </details>
       </td>
       <td>
+        <details><summary><b>分割一切模型</b></summary>
+          <ul>
+              <li><a href="./contrib/SegmentAnything">SegmentAnything</a></li>
+          </ul>
+        </details>
         <details><summary><b>模型选型工具</b></summary>
           <ul>
               <li><a href="./configs/smrt">PaddleSMRT</a></li>
@@ -369,6 +374,18 @@
 <summary><b>超轻量级语义分割模型</b></summary>
 
 #### 超轻量级模型，分割mIoU一般、推理算量低，适合部署在服务器端X86 CPU和移动端ARM CPU。
+
+
+| 模型名称 | 骨干网络 | ADE20K精度mIoU(%) | 骁龙855推理延时(ms) | 参数量(M) | 配置文件 |
+|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+|TopFormer-Base|TopTransformer-Base|38.28|480.6|5.13|[config](./configs/topformer/)
+|PP-MobileSeg-Base|StrideFormer-Base|41.57|265.5|5.62|[config](./configs/pp_mobileseg/)|
+|TopFormer-Tiny|TopTransformer-Tiny|32.46|490.3|1.41|[config](./configs/topformer/)
+|PP-MobileSeg-Tiny|StrideFormer-Tiny|36.39|215.3|1.61|[config](./configs/pp_mobileseg/)|
+
+
+测试条件:
+* 针对小米9手机，使用[PaddleLite](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/README_en.md)预测库的CPP API，ARMV8编译，单线程，输入图像维度是1x3x512x512。测试模型在带有最后一个argmax算子的条件下进行测试。
 
 | 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS)  | 骁龙855推理速度(FPS)|  配置文件 |
 |:-------- |:--------:|:---------------------:|:---------------------:|:-----------------:|:--------:|
