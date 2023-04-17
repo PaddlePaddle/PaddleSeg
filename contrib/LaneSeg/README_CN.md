@@ -220,7 +220,7 @@ python export.py --help
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
     --image_path  data/test_images/3.jpg \
-    --save_dir ouput/results
+    --save_dir output/results
 ```
 
 更多参数信息请运行如下命令进行查看:
