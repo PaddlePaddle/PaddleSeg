@@ -60,8 +60,8 @@ EISeg (Efficient Interactive Segmentation) is an efficient and intelligent inter
 <div align="center">
 <img src="https://user-images.githubusercontent.com/30883834/216607378-94745b74-0ca1-4d39-a817-de94385496f1.jpg"  width = "200" />  
 </div>
-## <img src="../docs/images/teach.png" width="20"/> Tutorials
 
+## <img src="../docs/images/teach.png" width="20"/> Tutorials
 * [Installation](docs/install_en.md)
 * [Image Segmentation Annotation](docs/image_en.md)
 * [Video Segmentation Annotation](docs/video_en.md)
