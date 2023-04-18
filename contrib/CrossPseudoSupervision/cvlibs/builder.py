@@ -1,4 +1,4 @@
-# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 
 import copy
 from typing import Any, Optional
-import yaml
 
+import yaml
 import paddle
 from paddleseg.utils import logger
 from paddleseg.cvlibs import Builder
@@ -94,8 +94,10 @@ class CPSBuilder(Builder):
             end_lr = lr_cfg['learning_rate']
 
         # calculate iters
-        num_train_imgs = 2975 // self.config.labeled_ratio
-        num_unsup_imgs = 2975 - num_train_imgs
+        total_imgs = len(self.train_dataset) + len(
+            self.unsupervised_train_dataset)
+        num_train_imgs = total_imgs // self.config.labeled_ratio
+        num_unsup_imgs = total_imgs - num_train_imgs
         max_samples = max(num_train_imgs, num_unsup_imgs)
         niters_per_epoch = max_samples // self.config.batch_size
         iters = niters_per_epoch * self.config.nepochs

@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import os
-import numpy as np
 
+import numpy as np
 from paddleseg.transforms import Compose
 
 from cvlibs import manager
@@ -26,7 +26,7 @@ class CityscapesCPS(BaseDataset):
     """
     Semi-supervision Cityscapes dataset with images, segmentation labels and data list.
     Source: https://www.cityscapes-dataset.com/
-    Semi-supervision Cityscapes dataset from [google drive](https://pkueducn-my.sharepoint.com/:f:/g/personal/pkucxk_pku_edu_cn/EtjNKU0oVMhPkOKf9HTPlVsBIHYbACel6LSvcUeP4MXWVg?e=139icd)
+    Semi-supervision Cityscapes dataset from [OneDrive](https://pkueducn-my.sharepoint.com/:f:/g/personal/pkucxk_pku_edu_cn/EtjNKU0oVMhPkOKf9HTPlVsBIHYbACel6LSvcUeP4MXWVg?e=139icd)
 
     The folder structure is as follows:
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+
 import paddle
 import numpy as np
 

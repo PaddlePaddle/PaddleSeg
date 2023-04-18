@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
 import paddle.nn as nn
 from paddleseg.utils import utils
 from paddleseg.models import layers

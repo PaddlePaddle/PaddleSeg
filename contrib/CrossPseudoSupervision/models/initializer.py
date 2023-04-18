@@ -18,8 +18,8 @@ The license's link is https://github.com/pytorch/pytorch/blob/master/LICENSE
 """
 
 import math
-import numpy as np
 
+import numpy as np
 import paddle
 import paddle.nn as nn
 
@@ -74,7 +74,7 @@ def uniform_(tensor, a, b):
 
 def normal_(tensor, mean=0., std=1.):
     """
-    Modify tensor in space using normal_
+    Modify tensor in place using normal_
     Args:
         tensor (paddle.Tensor): paddle tensor.
         mean (float|int): mean value.
@@ -288,7 +288,7 @@ def reset_initialized_parameter(model, include_self=True):
     Reset initialized parameter for [conv, linear, embedding, bn]
     Args:
         model (paddle.Layer): paddle Layer.
-        include_self (bool): include_self for Layer.named_sublayers method. Indicate whether including `model` itself, default to False.
+        include_self (bool): include_self for Layer.named_sublayers method. Indicate whether to include `model` itself, default to False.
     Return:
         None
     """

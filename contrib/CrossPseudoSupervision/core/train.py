@@ -126,11 +126,11 @@ def train(model,
         mask_generator (batch_transforms.mask_gen.BoxMaskGenerator): Cutmix used for training.
         unsupervised_train_dataset (paddle.io.Dataset, optional): Used to read and process training datasets do not have labels.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
-        optimizer_l (paddle.optimizer.Optimizer, optional): The optimizer for sub model first.
-        optimizer_r (paddle.optimizer.Optimizer, optional): The optimizer for sub model second
+        optimizer_l (paddle.optimizer.Optimizer, optional): The optimizer for the first sub-model.
+        optimizer_r (paddle.optimizer.Optimizer, optional): The optimizer for the second sub-model.
         save_dir (str, optional): The directory for saving the model snapshot. Default: 'output'.
         nepochs (int, optional): How may epochs to train the model. Defualt: 240.
-        labeled_ratio (int, optional): The ratio of total data to marked data, if 2, we use the ratio of 1/2, i.e. 0.5. Default: 2. 
+        labeled_ratio (int, optional): The ratio of total data to marked data. If 2, we use the ratio of 1/2, i.e. 0.5. Default: 2. 
         batch_size (int, optional): Mini batch size of total gpus or cpu. Default: 8.
         resume_model (str, optional): The path of resume model.
         save_epoch (int, optional): How many epochs to save a model snapshot once during training. Default: 5.
@@ -309,7 +309,7 @@ def train(model,
                             batch_cost_averager.get_ips_average(), eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, current_iter)
-                    # Record all losses if there are more than 1 losses.
+                    # Record all losses if there are more than 1 loss.
                     if len(avg_loss_list) > 1:
                         avg_loss_dict = {}
                         for i, value in enumerate(avg_loss_list):

@@ -111,6 +111,7 @@ python -m paddle.distributed.launch --gpus="0,1,2,3" train.py --config ./configs
 | ---------- | ---- | ---- | ---- | ---- |
 | nepochs | 128  | 137  | 160  | 240  |
 
+
 ### Evaluation
 
 After training, execute the following commands to evaluate the model accuracy:
