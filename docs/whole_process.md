@@ -401,7 +401,7 @@ output
 | Python | Paddle prediction library | [e.g.](../deploy/python/) |
 | C++ | Paddle prediction library | [e.g.](../deploy/cpp/) |
 | Mobile | PaddleLite   | [e.g.](../deploy/lite/) |
-| Serving | HubServing   | Comming soon |
+| Serving | HubServing   | Coming soon |
 | Front-end | PaddleJS     | [e.g.](../deploy/web/) |
 
 ```

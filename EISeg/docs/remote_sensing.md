@@ -41,7 +41,7 @@ conda install gdal
 
 ### 2.1 数据加载
 
-目前EISeg仅支持了*.tif/tiff图像后缀的的遥感影像读取，由于训练数据都是来自于RGB三通道的遥感图像切片，因此交互分割也仅在RGB三通道上完成，也就表示EISeg支持多波段数据的波段选择。
+目前EISeg仅支持了*.tif/tiff图像后缀的遥感影像读取，由于训练数据都是来自于RGB三通道的遥感图像切片，因此交互分割也仅在RGB三通道上完成，也就表示EISeg支持多波段数据的波段选择。
 
 当使用EISeg打开GTiff图像时，会获取当前波段数，可通过波段设置的下拉列表进行设置。默认为[b1, b1, b1]。下例展示的是天宫一号多光谱数据设置真彩色：
 
@@ -63,7 +63,7 @@ conda install gdal
 当打开标注的GTiff图像带有地理参考，可设置EISeg保存时保存为带有地理参考的GTiff和ESRI Shapefile。
 
 - GTiff：已成为GIS和卫星遥感应用的行业图像标准文件。
-- ESRI Shapefile：是最常见的的矢量数据格式，Shapefile文件是美国环境系统研究所（ESRI）所研制的GIS文件系统格式文件，是工业标准的矢量数据文件。 所有的商业和开源GIS软件都支持。无处不在的它已成为行业标准。
+- ESRI Shapefile：是最常见的矢量数据格式，Shapefile文件是美国环境系统研究所（ESRI）所研制的GIS文件系统格式文件，是工业标准的矢量数据文件。 所有的商业和开源GIS软件都支持。无处不在的它已成为行业标准。
 
 ![82jlu-no59o](https://user-images.githubusercontent.com/71769312/141137726-76457454-5e9c-4ad0-85d6-d03f658ee63c.gif)
 

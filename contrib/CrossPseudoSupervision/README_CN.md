@@ -24,7 +24,7 @@
 
 
 - [PaddlePaddle安装](https://www.paddlepaddle.org.cn/install/quick)
-    - 版本要求：PaddlePaddle develop, Python>=3.7
+    - 版本要求：PaddlePaddle develop (Nightly build), Python>=3.7
 
 - PaddleSeg安装，通过以下命令：
 
@@ -48,7 +48,7 @@ pip install -v -e .
 
 ## 数据准备
 
-使用CPS源代码所提供的Cityscapes数据集，下载链接为：https://pkueducn-my.sharepoint.com/:f:/g/personal/pkucxk_pku_edu_cn/EtjNKU0oVMhPkOKf9HTPlVsBIHYbACel6LSvcUeP4MXWVg?e=139icd，将数据集`city`放至`contrib/CrossPseudoSupervision/data`文件夹下，准备好的数据组织如下：
+使用CPS源代码所提供的Cityscapes数据集，通过[OneDrive链接](https://pkueducn-my.sharepoint.com/:f:/g/personal/pkucxk_pku_edu_cn/EtjNKU0oVMhPkOKf9HTPlVsBIHYbACel6LSvcUeP4MXWVg?e=139icd)下载`city`数据集， 并将数据集`city`放至`contrib/CrossPseudoSupervision/data`文件夹下，准备好的数据组织如下：
 
 ```
 data/
@@ -95,6 +95,7 @@ cd ./contrib/CrossPseudoSupervision
 准备好环境与数据之后，执行以下命令启动训练：
 
 ```shell
+export CUDA_VISIBLE_DEVICES=0
 python train.py --config ./configs/deeplabv3p/deeplabv3p_resnet50_0.5cityscapes_800x800_240e.yml --log_iters 10 --save_dir ./output/ --batch_size 2
 ```
 
@@ -134,7 +135,7 @@ python val.py \
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-!python predict.py \
+python predict.py \
        --config ./configs/deeplabv3p/deeplabv3p_resnet50_0.5cityscapes_800x800_240e.yml \
        --model_path $MODEL_PATH$ \
        --image_path $IMG_PATH$ \

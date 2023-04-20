@@ -432,7 +432,7 @@ class MaskFormerRunner(PanSegRunner):
         # Retrieve the matching between the outputs and the targets
         indices = self.matcher(data, net_out)
 
-        # Compute the average number of target boxes accross all nodes, for normalization purposes
+        # Compute the average number of target boxes across all nodes, for normalization purposes
         num_masks = sum(len(gt_ids) for gt_ids in data['gt_ids'])
         num_masks = paddle.to_tensor([num_masks], dtype='float32')
         n_ranks = paddle.distributed.get_world_size()

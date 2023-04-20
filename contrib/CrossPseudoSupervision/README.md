@@ -21,7 +21,7 @@ Some visualization results are as follows (RGB image on the left, prediction ima
 ## Installation
 
 - [PaddlePaddle Installation](https://www.paddlepaddle.org.cn/install/quick)
-    - Versions：PaddlePaddle develop, Python>=3.7
+    - Versions：PaddlePaddle develop (Nightly build), Python>=3.7
 
 - To install PaddleSeg, use the following commands:
 
@@ -45,8 +45,9 @@ Please download the pretrained weights from [this link](https://paddleseg.bj.bce
 
 ## Data Preparation
 
-The Cityscapes dataset was provided by the CPS source code. Download the dataset `city` to the `contrib/CrossPseudoService/data` folder from [OneDrive link](https://pkueducn-my.sharepoint.com/:f:/g/personal/pkucxk_pku_edu_cn/EtjNKU0oVMhPkOKf9HTPlVsBIHYbACel6LSvcUeP4MXWVg?e=139icd). The dataset should be organized as follows:
+The Cityscapes dataset was provided by the CPS source code. Download the dataset `city` to the `contrib/CrossPseudoService/data` folder from [OneDrive link](https://pkueducn-my.sharepoint.com/:f:/g/personal/pkucxk_pku_edu_cn/EtjNKU0oVMhPkOKf9HTPlVsBIHYbACel6LSvcUeP4MXWVg?e=139icd).
 
+The dataset should be organized as follows:
 
 ```
 data/
@@ -92,6 +93,7 @@ cd ./contrib/CrossPseudoSupervision
 After preparing the environment and data, execute the following command to launch training:
 
 ```shell
+export CUDA_VISIBLE_DEVICES=0
 python train.py --config ./configs/deeplabv3p/deeplabv3p_resnet50_0.5cityscapes_800x800_240e.yml --log_iters 10 --save_dir ./output/ --batch_size 2
 ```
 
@@ -131,7 +133,7 @@ Execute the following commands to use sliding window inference for prediction:
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-!python predict.py \
+python predict.py \
        --config ./configs/deeplabv3p/deeplabv3p_resnet50_0.5cityscapes_800x800_240e.yml \
        --model_path $MODEL_PATH$ \
        --image_path $IMG_PATH$ \
