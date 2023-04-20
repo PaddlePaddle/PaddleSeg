@@ -309,7 +309,7 @@ def main(args):
 if __name__ == '__main__':
     """
     Based on the infer config and dataset, this program read the test and
-    label images, applys the transfors, run the predictor, ouput the accuracy.
+    label images, applys the transfors, run the predictor, output the accuracy.
 
     For example:
     python deploy/python/infer_dataset.py \

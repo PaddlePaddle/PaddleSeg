@@ -1,7 +1,7 @@
 [English](README.md) | 简体中文
 # 图像分割 PaddleSeg Android Demo 使用文档  
 
-在 Android 上实现实时的人像分割功能，此 Demo 有很好的的易用性和开放性，如在 Demo 中跑自己训练好的模型等。
+在 Android 上实现实时的人像分割功能，此 Demo 有很好的易用性和开放性，如在 Demo 中跑自己训练好的模型等。
 
 ## 环境准备
 

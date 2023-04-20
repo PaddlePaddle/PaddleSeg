@@ -29,7 +29,7 @@ PaddleSeg模型导出，请参考其文档说明[模型导出](https://github.co
 ### 3.3 导出须知  
 请参考[模型导出](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/model_export_cn.md)中`output_op`参数的说明，获取您部署所需的模型，比如是否带`argmax`或`softmax`算子
 
-### 3.4 转换为为RV1126支持的INT8模型
+### 3.4 转换为RV1126支持的INT8模型
 瑞芯微RV1126仅支持INT8，将推理模型量化压缩为INT8模型，FastDeploy模型量化的方法及一键自动化压缩工具可以参考[模型量化](../../../quantize/README.md)
 
 ## 4. 详细的部署示例

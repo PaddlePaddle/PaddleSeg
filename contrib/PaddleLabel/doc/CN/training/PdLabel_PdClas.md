@@ -78,7 +78,7 @@ Arch:
   name: ShuffleNetV2_x0_25
   class_num: 3
 
-# loss function config for traing/eval process
+# loss function config for training/eval process
 Loss:
   Train:
     - CELoss:

@@ -358,7 +358,7 @@ class MaskFormerCombinedLoss(PanLoss):
         # Retrieve the matching between the outputs and the targets
         indices = self.matcher(sample_dict, net_out_dict)
 
-        # Compute the average number of target boxes accross all nodes, for normalization purposes
+        # Compute the average number of target boxes across all nodes, for normalization purposes
         num_masks = sum(len(gt_ids) for gt_ids in sample_dict['gt_ids'])
         num_masks = paddle.to_tensor([num_masks], dtype='float32')
         n_ranks = paddle.distributed.get_world_size()

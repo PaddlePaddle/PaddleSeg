@@ -343,7 +343,7 @@ class MSDDataset(MedicalDataset):
         if self.stage == 1 and self.cascade:
             self.data_aug_params["num_cached_per_thread"] = 2
 
-            self.data_aug_params['move_last_seg_chanel_to_data'] = True
+            self.data_aug_params['move_last_seg_channel_to_data'] = True
             self.data_aug_params['cascade_do_cascade_augmentations'] = True
 
             self.data_aug_params['cascade_random_binary_transform_p'] = 0.4

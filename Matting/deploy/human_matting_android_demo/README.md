@@ -63,7 +63,7 @@ This demo uses the MODNet with HRNet_W18 backbone to perform human matting. Plea
 
 In order to be able to infer on Android phones, the dynamic graph model needs to be exported as a static graph model, and the input size of the image should be fixed when exporting.
 
-First, update the [PaddleSeg](https://github.com/paddlepaddle/paddleseg/tree/develop) repository. Then `cd` to the `PaddleSeg/contrib/Matting` directory. Then put the downloaded modnet-hrnet_w18.pdparams (traing by youself is ok) on current directory（`PaddleSeg/contrib/Matting`). After that, fix the config file `configs/modnet_mobilenetv2.yml`(note: hrnet18 is used, but the config file `modnet_hrnet_w18.yml` is based on `modnet_mobilenetv2.yml`), where,modify the val_dataset field as follows:
+First, update the [PaddleSeg](https://github.com/paddlepaddle/paddleseg/tree/develop) repository. Then `cd` to the `PaddleSeg/contrib/Matting` directory. Then put the downloaded modnet-hrnet_w18.pdparams (training by youself is ok) on current directory（`PaddleSeg/contrib/Matting`). After that, fix the config file `configs/modnet_mobilenetv2.yml`(note: hrnet18 is used, but the config file `modnet_hrnet_w18.yml` is based on `modnet_mobilenetv2.yml`), where,modify the val_dataset field as follows:
 
 ``` yml
 val_dataset:
