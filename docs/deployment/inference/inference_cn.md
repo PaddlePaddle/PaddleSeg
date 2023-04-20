@@ -16,7 +16,7 @@
 
 在终端输入以下命令进行预测:
 ```shell
-python deploy/python/infer.py --config /path/to/deploy.yaml --image_path # 如果导出指定了input_shape，传入infer的的图片大小或者经过deploy.yaml变换的图片大小需要和 input_shape 保持一致
+python deploy/python/infer.py --config /path/to/deploy.yaml --image_path # 如果导出指定了input_shape，传入infer的图片大小或者经过deploy.yaml变换的图片大小需要和 input_shape 保持一致
 ```
 
 参数说明如下:

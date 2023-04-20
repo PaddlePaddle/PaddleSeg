@@ -1,6 +1,6 @@
 English | [简体中文](prune_cn.md)
 
-# Model Pruning Toturial
+# Model Pruning Tutorial
 
 Many CNN models require huge computing and memory overhead, which seriously hinders the applications under limited resources. Model compression can reduce model parameters or FLOPs, and facilitate the deployment of restricted hardware. Powered by PaddleSlim, PaddleSeg provides model pruning for developers in image segmentation.
 

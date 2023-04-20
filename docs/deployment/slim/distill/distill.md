@@ -58,7 +58,7 @@ python tools/train.py \
     --save_dir output/deeplabv3p_resnet50
 ```
 
-After the traing, the mIoU of the teacher model is 91.54% and the trained weights are saved in `output/deeplabv3p_resnet50/best_model/model.pdparams`.
+After the training, the mIoU of the teacher model is 91.54% and the trained weights are saved in `output/deeplabv3p_resnet50/best_model/model.pdparams`.
 
 ### 2.4 Train the Student Model (Optional)
 

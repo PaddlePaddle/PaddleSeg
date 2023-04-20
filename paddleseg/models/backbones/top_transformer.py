@@ -593,8 +593,8 @@ class TopTransformer(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        ouputs = self.tpm(x)
-        out = self.ppa(ouputs)
+        outputs = self.tpm(x)
+        out = self.ppa(outputs)
         out = self.trans(out)
 
         if self.injection:
@@ -602,14 +602,14 @@ class TopTransformer(nn.Layer):
             results = []
             for i in range(len(self.feat_channels)):
                 if i in self.trans_out_indices:
-                    local_tokens = ouputs[i]
+                    local_tokens = outputs[i]
                     global_semantics = xx[i]
                     out_ = self.SIM[i](local_tokens, global_semantics)
                     results.append(out_)
             return results
         else:
-            ouputs.append(out)
-            return ouputs
+            outputs.append(out)
+            return outputs
 
 
 @manager.BACKBONES.add_component
