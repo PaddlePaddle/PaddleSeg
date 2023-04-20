@@ -305,9 +305,9 @@ else
                 if [ ${#gpu} -le 2 ]; then  # Train with cpu or single gpu
                     cmd="${python} ${run_train} ${set_config} ${set_use_gpu} ${set_save_model} ${set_epoch} ${set_pretrain} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                 elif [ ${#ips} -le 15 ]; then  # Train with multi-gpu
-                    cmd="${python} -m paddle.distributed.launch --gpus=${gpu} ${run_train} ${set_config} ${set_use_gpu} ${set_save_model} ${set_epoch} ${set_pretrain} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
+                    cmd="${python} -m paddle.distributed.launch --devices=${gpu} ${run_train} ${set_config} ${set_use_gpu} ${set_save_model} ${set_epoch} ${set_pretrain} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                 else     # Train with multi-machine
-                    cmd="${python} -m paddle.distributed.launch --ips=${ips} --gpus=${gpu} ${run_train} ${set_config} ${set_use_gpu} ${set_save_model} ${set_pretrain} ${set_epoch} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
+                    cmd="${python} -m paddle.distributed.launch --ips=${ips} --devices=${gpu} ${run_train} ${set_config} ${set_use_gpu} ${set_save_model} ${set_pretrain} ${set_epoch} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                 fi
 
                 echo ${cmd}
@@ -352,9 +352,9 @@ else
                         infer_model_dir=${save_infer_path}
                     fi
                     func_inference "${python}" "${inference_py}" "${infer_model_dir}" "${OUT_PATH}" "${train_infer_img_dir}"
-
-                    eval "unset CUDA_VISIBLE_DEVICES"
                 fi
+                
+                eval "unset CUDA_VISIBLE_DEVICES"
             done  # Done with:    for trainer in ${trainer_list[*]}; do
         done      # Done with:    for autocast in ${autocast_list[*]}; do
     done          # Done with:    for gpu in ${gpu_list[*]}; do

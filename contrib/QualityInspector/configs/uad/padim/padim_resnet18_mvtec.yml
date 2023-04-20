@@ -1,0 +1,24 @@
+# common arguments
+device: gpu
+seed: 3
+
+# dataset arguments
+batch_size: 1
+num_workers: 0
+category: bottle
+resize: [256, 256]
+crop_size: [224, 224]
+data_path: data/mvtec_anomaly_detection
+save_path: output/
+
+# train arguments
+do_eval: True  # After training, whether to eval model;
+backbone: resnet18  # Support resnet18, resnet50, wide_resnet50_2
+
+# val and predict arguments
+save_pic: True # Whether to save one output example picture in val and predict;
+model_path: output/resnet18/bottle/bottle.pdparams
+
+# predict arguments
+img_path: data/mvtec_anomaly_detection/bottle/test/broken_large/000.png
+threshold: 0.5

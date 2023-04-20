@@ -1,0 +1,19 @@
+numpy<1.24
+lap==0.4.0
+paddlepaddle-gpu>=2.3.0
+paddledet==2.6.0
+paddleseg==2.8.0
+visualdl>=2.2.0
+scipy
+opencv-python <= 4.6.0
+pycocotools
+PyYAML
+tqdm
+scikit-learn
+Pillow  
+matplotlib==3.7.1
+scikit-image
+
+# for uad
+pandas
+

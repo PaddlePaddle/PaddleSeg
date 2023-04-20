@@ -16,3 +16,5 @@
 * Maskformer support different network setting including tiny, small, base and large. The training result of base and large is not provided, but it should be consistent with the paper
 
 * Maskformer-Base and Maskformer-Large will be evaled with multi-scale and flip as the original codebase .
+
+* Please use cuda 11.2 rather than cuda 10.2 to prevent computation bugs.
