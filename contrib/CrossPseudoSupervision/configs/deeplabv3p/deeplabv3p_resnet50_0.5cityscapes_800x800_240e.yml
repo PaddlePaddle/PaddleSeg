@@ -139,14 +139,14 @@ model:
     deep_stem: True
     stem_width: 64
     as_backbone: True
-    pretrained: data/paddle-weight/resnet50_v1c.pdparams
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/cross_pseudo_supervision/backbone/resnet50_v1c.pdparams
     in_channels: 3
   backbone_r:
     type: ResNet50
     deep_stem: True
     stem_width: 64
     as_backbone: True
-    pretrained: data/paddle-weight/resnet50_v1c.pdparams
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/cross_pseudo_supervision/backbone/resnet50_v1c.pdparams
     in_channels: 3
   bn_eps: 1.0e-5
   bn_momentum: 0.9

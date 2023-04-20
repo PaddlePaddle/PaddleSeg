@@ -41,9 +41,9 @@ We chose to reproduce the CPS.resnet50.deeplabv3+(1/2 Cityscapes) setting in the
 | original paper | 78.77% |
 | reproduced | 78.39% |
 
-Please download the pretrained weights from the following link:
+Please download the pretrained weights from [this link](https://paddleseg.bj.bcebos.com/dygraph/cross_pseudo_supervision/cityscapes/deeplabv3p_resnet50_cityscapes0.5.pdparams).
 
-## Dataset Preparation
+## Data Preparation
 
 The Cityscapes dataset was provided by the CPS source code. Download the dataset `city` to the `contrib/CrossPseudoService/data` folder from [OneDrive link](https://pkueducn-my.sharepoint.com/:f:/g/personal/pkucxk_pku_edu_cn/EtjNKU0oVMhPkOKf9HTPlVsBIHYbACel6LSvcUeP4MXWVg?e=139icd). The dataset should be organized as follows:
 
@@ -82,7 +82,7 @@ data/
 
 ## Training, Evaluation and Prediction
 
-Execute the following command to enter the folder where `CPS` is located:
+Execute the following command to enter the `CrossPseudoSupervision` folder:
 ```shell
 cd ./contrib/CrossPseudoSupervision
 ```
@@ -143,4 +143,4 @@ export CUDA_VISIBLE_DEVICES=0
 
 - `IMG_PATH`: The path of the picture or folder to be predicted.
 
-You can also download the [pretrained weights]() provided by us for prediction.
+You can also download the [pretrained weights](https://paddleseg.bj.bcebos.com/dygraph/cross_pseudo_supervision/cityscapes/deeplabv3p_resnet50_cityscapes0.5.pdparams) provided by us for prediction.

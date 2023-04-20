@@ -44,7 +44,7 @@ pip install -v -e .
 | original paper | 78.77% |
 | reproduced | 78.39% |
 
-请使用以下链接下载预训练权重：
+请在[此链接](https://paddleseg.bj.bcebos.com/dygraph/cross_pseudo_supervision/cityscapes/deeplabv3p_resnet50_cityscapes0.5.pdparams)下载预训练权重。
 
 ## 数据准备
 
@@ -84,7 +84,7 @@ data/
 
 ## 训练评估预测
 
-执行以下命令，进入到`CPS`所在文件夹下：
+执行以下命令，进入到`CrossPseudoSupervision`文件夹下：
 
 ```shell
 cd ./contrib/CrossPseudoSupervision
@@ -146,4 +146,4 @@ export CUDA_VISIBLE_DEVICES=0
 
 - `IMG_PATH`: 待预测的图片或文件夹所在的路径。
 
-本项目提供[预训练模型]()可供直接进行预测。
+本项目提供[预训练模型](https://paddleseg.bj.bcebos.com/dygraph/cross_pseudo_supervision/cityscapes/deeplabv3p_resnet50_cityscapes0.5.pdparams)可供直接进行预测。

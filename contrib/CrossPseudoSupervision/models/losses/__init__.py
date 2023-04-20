@@ -13,4 +13,3 @@
 # limitations under the License.
 
 from .probohem_cross_entropy_loss import ProbOhemCrossEntropy2D
-from .cross_entropy_loss import CrossEntropyLoss, DistillCrossEntropyLoss
