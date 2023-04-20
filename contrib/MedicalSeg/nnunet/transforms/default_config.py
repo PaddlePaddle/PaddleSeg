@@ -49,7 +49,7 @@ default_3D_augmentation_params = {
     "mask_was_used_for_normalization": None,
     "border_mode_data": "constant",
     "all_segmentation_labels": None,
-    "move_last_seg_chanel_to_data": False,
+    "move_last_seg_channel_to_data": False,
     "cascade_do_cascade_augmentations": False,
     "cascade_random_binary_transform_p": 0.4,
     "cascade_random_binary_transform_p_per_label": 1,
