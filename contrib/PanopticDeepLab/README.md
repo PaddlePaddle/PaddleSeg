@@ -4,7 +4,7 @@ English | [简体中文](README_CN.md)
 
 The implementation of [Panoptic Deeplab](https://arxiv.org/abs/1911.10194) algorithm based on PaddlePaddle.
 
-Panoptic DeepLab has comfirmed that the bottem-up algorithm can achieve state-of-the-art effect for the first time。Panoptic DeepLab predicts three ouputs: Semantic Segmentation, Center Prediction and Center Regression。According to the principle of nearest distance, the pixels of instance category are gathered to the center of the instance to obtain the segmentation result. Finally, according to the rules of majority-vote, semantic segmentation results and instance segmentation results are fused to obtain the final panoptic segmentation results.
+Panoptic DeepLab has comfirmed that the bottem-up algorithm can achieve state-of-the-art effect for the first time。Panoptic DeepLab predicts three outputs: Semantic Segmentation, Center Prediction and Center Regression。According to the principle of nearest distance, the pixels of instance category are gathered to the center of the instance to obtain the segmentation result. Finally, according to the rules of majority-vote, semantic segmentation results and instance segmentation results are fused to obtain the final panoptic segmentation results.
 It achieves segmentation by assigning each pixel to one category or instance.
 ![](./docs/panoptic_deeplab.jpg)
 
