@@ -26,7 +26,7 @@
         <td align="center">Medical segmentation</td>
     <tr>
     <tr>
-        <td><img src="https://user-images.githubusercontent.com/71769312/185751161-f23d0c1b-62c5-4cd2-903f-502037e353a8.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/30883834/232094536-8b651399-3f2a-4be3-94f3-df9831c3f9ef.gif"></td>
         <td><img src="https://user-images.githubusercontent.com/71769312/179209328-87174780-6c6f-4b53-b2a2-90d289ac1c8a.gif"></td>
         <td colspan="2"><img src="https://user-images.githubusercontent.com/71769312/179209342-5b75e61e-d9cf-4702-ba3e-971f47a10f5f.gif"></td>
     <tr>
