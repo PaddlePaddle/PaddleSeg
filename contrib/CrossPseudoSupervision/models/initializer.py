@@ -61,7 +61,7 @@ def _no_grad_fill_(tensor, value=0.):
 
 def uniform_(tensor, a, b):
     """
-    Modify tensor in space using uniform_
+    Modify tensor in place using uniform_
     Args:
         tensor (paddle.Tensor): paddle tensor.
         a (float|int): min value.
@@ -87,7 +87,7 @@ def normal_(tensor, mean=0., std=1.):
 
 def constant_(tensor, value=0.):
     """
-    Modify tensor in space using constant_
+    Modify tensor in place using constant_
     Args:
         tensor (paddle.Tensor): paddle tensor.
         value (float|int): value to fill tensor.
@@ -99,7 +99,7 @@ def constant_(tensor, value=0.):
 
 def ones_(tensor):
     """
-    Modify tensor in space using ones_
+    Modify tensor in place using ones_
     Args:
         tensor (paddle.Tensor): paddle tensor.
     Return:
@@ -110,7 +110,7 @@ def ones_(tensor):
 
 def zeros_(tensor):
     """
-    Modify tensor in space using zeros_
+    Modify tensor in place using zeros_
     Args:
         tensor (paddle.Tensor): paddle tensor.
     Return:
@@ -150,7 +150,7 @@ def _calculate_fan_in_and_fan_out(tensor, reverse=False):
 
 def xavier_uniform_(tensor, gain=1., reverse=False):
     """
-    Modify tensor in space using xavier_uniform_
+    Modify tensor in place using xavier_uniform_
     Args:
         tensor (paddle.Tensor): paddle tensor.
         gain (float): super parameter, default to 1.
@@ -166,7 +166,7 @@ def xavier_uniform_(tensor, gain=1., reverse=False):
 
 def xavier_normal_(tensor, gain=1., reverse=False):
     """
-    Modify tensor in space using xavier_normal_
+    Modify tensor in place using xavier_normal_
     Args:
         tensor (paddle.Tensor): paddle tensor.
         gain (float): super parameter, default to 1.
@@ -226,7 +226,7 @@ def kaiming_uniform_(tensor,
                      nonlinearity='leaky_relu',
                      reverse=False):
     """
-    Modify tensor in space using kaiming_uniform method
+    Modify tensor in place using kaiming_uniform method
     Args:
         tensor (paddle.Tensor): paddle tensor.
         mode (str): a value in ['fan_in', 'fan_out'], 'fin_in' by default.
@@ -248,7 +248,7 @@ def kaiming_normal_(tensor,
                     nonlinearity='leaky_relu',
                     reverse=False):
     """
-    Modify tensor in space using kaiming_normal_
+    Modify tensor in place using kaiming_normal_
     Args:
         tensor (paddle.Tensor): paddle tensor.
         mode (str): a value in ['fan_in', 'fan_out'], 'fin_in' by default.

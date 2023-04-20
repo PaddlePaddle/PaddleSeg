@@ -31,7 +31,7 @@ class Config(object):
     Configuration parsing.
 
     The following hyper-parameters are available in the config file:
-        batch_size: The number of samples total gpus.
+        batch_size: The total number of samples across all GPUs.
         nepochs: The total training epochs.
         train_dataset: A config for training data with ground truth, including type/data_root/transforms/mode/unsupervised.
         unsupervised_train_dataset: A config for training data without ground truth, including type/data_root/transforms/mode/unsupervised.
