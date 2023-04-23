@@ -176,7 +176,7 @@ if [ ${MODE} = "benchmark_train" ]; then
         rm -rf ./test_tipc/data/coco
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/tipc/data/mini_coco.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip mini_coco.zip && cd -
-    elif [ ${model_name} = 'vit_adapter' ]; then
+    elif [ ${model_name} = 'vit_adapter' ] || [ ${model_name} = 'pp_mobileseg' ]; then
         rm -rf ./test_tipc/data/ADEChallengeData2016
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/dataset/ADEChallengeData2016.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip ADEChallengeData2016.zip && cd -
