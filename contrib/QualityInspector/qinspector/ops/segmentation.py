@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import cv2
-from paddleseg.cvlibs import Config
+from paddleseg.cvlibs import Config, SegBuilder
 
 from qinspector.cvlib.workspace import register
 from qinspector.utils.bbox_utils import adjust_bbox
@@ -26,9 +26,10 @@ class BaseSegmentation(object):
         super(BaseSegmentation, self).__init__()
         seg_config = model_cfg['config_path']
         seg_config = Config(seg_config)
+        builder = SegBuilder(seg_config)
         seg_model = model_cfg['model_path']
         self.aug_pred = model_cfg.get('aug_pred', False)
-        self.predictor = SegPredictor(seg_config, seg_model)
+        self.predictor = SegPredictor(builder, seg_model)
 
     def __call__(self, inputs):
         results = self.predictor.predict(inputs, aug_pred=self.aug_pred)
@@ -41,10 +42,11 @@ class CropSegmentation(object):
         super(CropSegmentation, self).__init__()
         seg_config = model_cfg['config_path']
         seg_config = Config(seg_config)
+        builder = SegBuilder(seg_config)
         seg_model = model_cfg['model_path']
         self.pad_scale = model_cfg.get('pad_scale', 0.5)
         self.aug_pred = model_cfg.get('aug_pred', False)
-        self.predictor = SegPredictor(seg_config, seg_model)
+        self.predictor = SegPredictor(builder, seg_model)
 
     def __call__(self, input):
         for data in input:
