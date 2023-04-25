@@ -199,7 +199,7 @@ class Predictor:
         if args.device == 'cpu':
             self._init_cpu_config()
         elif args.device == 'npu':
-            self.pred_cfg.enable_npu()
+            self.pred_cfg.enable_custom_device('npu')
         elif args.device == 'xpu':
             self.pred_cfg.enable_xpu()
         else:
