@@ -118,8 +118,7 @@ class WindowAttention(nn.Layer):
         self.relative_position_bias_table = self.create_parameter(
             shape=((2 * window_size[0] - 1) * (2 * window_size[1] - 1),
                    num_heads),
-            default_initializer=zeros_,
-            dtype='float32')
+            default_initializer=zeros_)
         self.add_parameter("relative_position_bias_table",
                            self.relative_position_bias_table)
 
@@ -165,7 +164,7 @@ class WindowAttention(nn.Layer):
         q = q * self.scale
         attn = paddle.mm(q, k.transpose([0, 1, 3, 2]))
 
-        index = self.relative_position_index.reshape([-1]).astype('int32')
+        index = self.relative_position_index.reshape([-1])
         relative_position_bias = paddle.index_select(
             self.relative_position_bias_table, index)
 
