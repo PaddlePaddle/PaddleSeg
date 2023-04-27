@@ -238,7 +238,7 @@ class PointHead(nn.Layer):
         self.scale_factor = scale_factor
         self.subdivision_steps = subdivision_steps
         self.subdivision_num_points = paddle.to_tensor(
-            subdivision_num_points, dtype="int32")
+            [subdivision_num_points], dtype="int32")
         self.dropout_ratio = dropout_ratio
         self.coarse_pred_each_layer = coarse_pred_each_layer
         self.align_corners = align_corners
