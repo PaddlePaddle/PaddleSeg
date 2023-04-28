@@ -18,6 +18,17 @@ sed -i "s/--device:cpu|gpu/--device:cpu|npu/g" $FILENAME
 sed -i "s/--benchmark:True/--benchmark:False/g" $FILENAME
 dataline=`cat $FILENAME`
 
+# parser params
+IFS=$'\n'
+lines=(${dataline})
+modelname=$(func_parser_value "${lines[1]}")
+echo $modelname
+
+if  [ $modelname == "hrnet_w48_contrast" ]; then
+    sed -i "s/lite_train_lite_infer=20/lite_train_lite_infer=10/g" $FILENAME
+    sed -i "s/--save_interval 500/--save_interval 250/g" $FILENAME
+fi
+
 # change gpu to npu in execution script
 sed -i "s/\"gpu\"/\"npu\"/g" test_tipc/test_train_inference_python.sh
 
