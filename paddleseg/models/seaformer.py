@@ -402,6 +402,8 @@ class SeaFormer(nn.Layer):
                 act_layer=act_layer)
             setattr(self, f"trans{i + 1}", trans)
 
+        self.init_weights()
+
     def forward(self, x):
         outputs = []
         num_smb_stage = len(self.cfgs)
@@ -591,7 +593,18 @@ def SeaFormer_small(pretrained, num_classes, **kwags):
 
 @manager.MODELS.add_component
 def SeaFormer_base(pretrained, num_classes, **kwags):
-    backbone = SeaFormer(pretrained=pretrained, **kwags)
+    backbone = SeaFormer(
+        pretrained=pretrained,
+        cfgs=[[[3, 1, 16, 1], [3, 4, 32, 2], [3, 3, 32, 1]],
+              [[5, 3, 64, 2], [5, 3, 64, 1]], [[3, 3, 128, 2], [3, 3, 128, 1]],
+              [[5, 4, 192, 2]], [[3, 6, 256, 2]]],
+        emb_dims=[192, 256],
+        key_dims=[16, 24],
+        channels=[16, 32, 64, 128, 192, 256],
+        depths=[4, 4],
+        num_heads=8,
+        mlp_ratios=[2, 4],
+        **kwags)
     seg_model = SeaFormerHead(backbone, num_classes=num_classes)
     return seg_model
 
