@@ -29,6 +29,11 @@ if  [ $modelname == "hrnet_w48_contrast" ]; then
     sed -i "s/--save_interval 500/--save_interval 250/g" $FILENAME
 fi
 
+if  [ $modelname == "pfpnnet" ]; then
+    sed -i "s/lite_train_lite_infer=20/lite_train_lite_infer=10/g" $FILENAME
+    sed -i "s/--save_interval 500/--save_interval 250/g" $FILENAME
+fi
+
 # change gpu to npu in execution script
 sed -i "s/\"gpu\"/\"npu\"/g" test_tipc/test_train_inference_python.sh
 
