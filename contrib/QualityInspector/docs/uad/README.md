@@ -63,6 +63,8 @@ MVTec AD数据包含结构和纹理类型的零件共计15类，其中训练集�
 
 ```python tools/uad/padim/train.py --config ./configs/uad/padim/padim_resnet18_mvtec.yml --category bottle```
 
+说明：由于padim和patchcore的网络不参与训练，在执行上述命令时，若log产生loss为0是正常现象。
+
 * 评估:
 
 ```python tools/uad/padim/val.py --config ./configs/uad/padim/padim_resnet18_mvtec.yml --category bottle```

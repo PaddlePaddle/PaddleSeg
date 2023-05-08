@@ -24,7 +24,7 @@ Here we show the configuration files of two lightweight models, [STDC2](https://
 
 There is no need to do this step if [STDC2](https://paddleseg.bj.bcebos.com/dygraph/pssl/stdc2_pssl_pretrained/model.pdparams) and [PPLite-Seg-B](https://paddleseg.bj.bcebos.com/dygraph/pssl/pp_liteseg_stdc2_pssl_pretrained/model.pdparams) are used.
 
-Otherwise, checking the following steps for preparing the enviroment and the datasets:
+Otherwise, checking the following steps for preparing the environment and the datasets:
 
 1. Make sure that PaddleSeg is well installed. See the [installation guide](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.6/docs/install.md) for details.
 
