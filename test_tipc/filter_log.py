@@ -31,5 +31,3 @@ if __name__ == '__main__':
                     fo.write(line)
             else:
                 fo.write(line)
-                prev_val = None
-                cnt = 0
