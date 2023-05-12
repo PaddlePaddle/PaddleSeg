@@ -54,7 +54,7 @@ python tools/data/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir 
 
 如果不是使用已经标注好的公开数据集，大家需要预先采集图像，然后使用数据标注工具完成标注。
 
-PddleSeg支持多种标注工具，比如EISeg交互式分割标注工具、LabelMe标注工具。标注工具的教程，请参考：
+PaddleSeg支持多种标注工具，比如EISeg交互式分割标注工具、LabelMe标注工具。标注工具的教程，请参考：
 - [EISeg交互式分割标注工具教程](../../../EISeg/README.md)
 - [LabelMe标注教程](../transform/transform_cn.md)
 
