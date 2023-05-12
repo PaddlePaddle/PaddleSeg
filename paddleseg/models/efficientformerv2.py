@@ -1,70 +1,191 @@
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import math
 import itertools
 import copy
+import numpy as np
 
 import paddle
 import paddle.nn as nn
-import numpy as np
+import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager, param_init
 from paddleseg.utils import utils, logger
-import paddle.nn.functional as F
-
-from paddleseg.models.backbones.transformer_utils import *
-from paddleseg.models.pfpnnet import PFPNNet
+from paddleseg.models.backbones.transformer_utils import to_2tuple, zeros_, DropPath
 
 
-__all__ = [
-    'EfficientFormerv2_s0', 'EfficientFormerv2_s1',
-    'EfficientFormerv2_s2', 'EfficientFormerv2_l'
-]
+@manager.MODELS.add_component
+class EfficientFormerV2(nn.Layer):
+    """
+    The EfficientFormerV2 implementation based on PaddlePaddle.
 
-EfficientFormer_width = {
-    'L': [40, 80, 192, 384],  # 26m 83.3% 6attn
-    'S2': [32, 64, 144, 288],  # 12m 81.6% 4attn dp0.02
-    'S1': [32, 48, 120, 224],  # 6.1m 79.0
-    'S0': [32, 48, 96, 176],  # 75.0 75.7
-}
+    The original article refers to "Yanyu Li, Ju Hu, Yang Wen, Georgios Evangelidis,
+    Kamyar Salahi, Yanzhi Wang, Sergey Tulyakov, Jian Ren. Rethinking Vision
+    Transformers for MobileNet Size and Speed. arXiv preprint arXiv:2212.08059 (2022)."
 
-EfficientFormer_depth = {
-    'L': [5, 5, 15, 10],  # 26m 83.3%
-    'S2': [4, 4, 12, 8],  # 12m
-    'S1': [3, 3, 9, 6],  # 79.0
-    'S0': [2, 2, 6, 4],  # 75.7
-}
+    Args:
+         layers (List): The depth of every stage.
+         embed_dims (List): The width of every stage.
+         mlp_ratios (int, optional): The radio of the mlp. Default:4
+         downsamples (list[bool]): whether use the downsamples in the model.
+         pool_size (int, optional): The kernel size of the pool layer. Default:3
+         norm_layer (layer, optional): The norm layer type. Default: nn.BatchNorm2D
+         act_layer (layer, optional): The activate function type. Default: nn.GELU
+         num_classes (int, optional): The num of the classes. Default: 150
+         down_patch_size (int, optional): The patch size of down sample. Default: 3
+         down_stride (int, optional): The stride size of the down sample. Default: 2
+         down_pad (int, optional): The padding size of the down sample. Default: 1
+         drop_rate (float, optional): The drop rate in meta_blocks. Default: 0.
+         drop_path_rate (float): The drop path rate in meta_blocks. Default: 0.02
+         use_layer_scale (bool, optional): Whether use the multi-scale layer. Default: True
+         layer_scale_init_value (float, optional): The initial value of token. Default: 1e-5
+         fork_feat (bool): Whether use the classes as the the output channels .
+         pretrained (str): The path or url of pretrained model.
+         vit_num (str): The num of vit stages.
+         distillation (bool, optional): Whether use the distillation. Default:True
+         resolution (int, optional): The resolution of the input image. Default
+         e_ratios (int): The ratios in the meta_blocks.
+  }
+    """
+    def __init__(self,
+                 layers,
+                 embed_dims=None,
+                 mlp_ratios=4,
+                 downsamples=None,
+                 pool_size=3,
+                 norm_layer=nn.BatchNorm2D,
+                 act_layer=nn.GELU,
+                 num_classes=150,
+                 down_patch_size=3,
+                 down_stride=2,
+                 down_pad=1,
+                 drop_rate=0.,
+                 drop_path_rate=0.,
+                 use_layer_scale=True,
+                 layer_scale_init_value=1e-5,
+                 fork_feat=False,
+                 pretrained=None,
+                 vit_num=0,
+                 distillation=True,
+                 resolution=512,
+                 e_ratios=None):
+        super().__init__()
 
-# 26m
-expansion_ratios_L = {
-    '0': [4, 4, 4, 4, 4],
-    '1': [4, 4, 4, 4, 4],
-    '2': [4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4],
-    '3': [4, 4, 4, 3, 3, 3, 3, 4, 4, 4],
-}
+        self.pretrained = pretrained
 
-# 12m
-expansion_ratios_S2 = {
-    '0': [4, 4, 4, 4],
-    '1': [4, 4, 4, 4],
-    '2': [4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4],
-    '3': [4, 4, 3, 3, 3, 3, 4, 4],
-}
+        self.feat_channels = embed_dims
 
-# 6.1m
-expansion_ratios_S1 = {
-    '0': [4, 4, 4],
-    '1': [4, 4, 4],
-    '2': [4, 4, 3, 3, 3, 3, 4, 4, 4],
-    '3': [4, 4, 3, 3, 4, 4],
-}
+        self.fpn_head = FPN_head(num_classes,
+                                embed_dims,
+                                drop_path_rate)
 
-# 3.5m
-expansion_ratios_S0 = {
-    '0': [4, 4],
-    '1': [4, 4],
-    '2': [4, 3, 3, 3, 4, 4],
-    '3': [4, 3, 3, 4],
-}
+        if not fork_feat:
+            self.num_classes = num_classes
+        self.fork_feat = fork_feat
 
+        self.patch_embed = stem(3, embed_dims[0], act_layer=act_layer)
+
+        network = []
+        for i in range(len(layers)):
+            stage = meta_blocks(embed_dims[i], i, layers,
+                                pool_size=pool_size, mlp_ratio=mlp_ratios,
+                                act_layer=act_layer, norm_layer=norm_layer,
+                                drop_rate=drop_rate,
+                                drop_path_rate=drop_path_rate,
+                                use_layer_scale=use_layer_scale,
+                                layer_scale_init_value=layer_scale_init_value,
+                                resolution=math.ceil(resolution / (2 ** (i + 2))),
+                                vit_num=vit_num,
+                                e_ratios=e_ratios)
+            network.append(stage)
+            if i >= len(layers) - 1:
+                break
+            if downsamples[i] or embed_dims[i] != embed_dims[i + 1]:
+                # downsampling between two stages
+                if i >= 2:
+                    asub = True
+                else:
+                    asub = False
+                network.append(
+                    Embedding(
+                        patch_size=down_patch_size, stride=down_stride,
+                        padding=down_pad,
+                        in_chans=embed_dims[i], embed_dim=embed_dims[i + 1],
+                        resolution=math.ceil(resolution / (2 ** (i + 2))),
+                        asub=asub,
+                        act_layer=act_layer, norm_layer=norm_layer,
+                    )
+                )
+
+        self.network = nn.LayerList(network)
+
+        if self.fork_feat:
+            # add a norm layer for each output
+            self.out_indices = [0, 2, 4, 6]
+        else:
+            # Classifier head
+            self.norm = norm_layer(embed_dims[-1])
+            self.head = nn.Linear(
+                embed_dims[-1], num_classes) if num_classes > 0 \
+                else nn.Identity()
+            self.dist = distillation
+            if self.dist:
+                self.dist_head = nn.Linear(
+                    embed_dims[-1], num_classes) if num_classes > 0 \
+                    else nn.Identity()
+
+        self.init_weight()
+
+
+    # imagenet pre-trained weights
+    def init_weight(self):
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Conv2D):
+                param_init.normal_init(layer.weight, std=0.001)
+            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(layer.weight, value=1.0)
+                param_init.constant_init(layer.bias, value=0.0)
+            elif isinstance(layer, nn.Linear):
+                param_init.normal_init(layer.weight)
+                if layer.bias is not None:
+                    param_init.constant_init(layer.bias, value=0)
+            elif isinstance(layer, nn.LayerNorm):
+                param_init.constant_init(layer.bias, value=0)
+                param_init.constant_init(layer.weight, value=1)
+
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
+
+
+    def forward_tokens(self, x):
+        outs = []
+        for idx, block in enumerate(self.network):
+            x = block(x)
+            if self.fork_feat and idx in self.out_indices:
+                outs.append(x)
+        if self.fork_feat:
+            return outs
+        return x
+
+    def forward(self, x):
+        H, W = x.shape[-2:]
+        x = self.patch_embed(x)
+        x = self.forward_tokens(x)
+        x = self.fpn_head(x)
+        out = [F.interpolate(x, size=[H, W], mode='bilinear', align_corners=False)]
+        return out
 
 class Attention4D(nn.Layer):
     def __init__(self,
@@ -133,8 +254,7 @@ class Attention4D(nn.Layer):
                                                           default_initializer=zeros_)
         self.register_buffer('attention_bias_idxs_seg',
                              paddle.to_tensor(idxs).reshape([N, N]))
-        # self.register_buffer('attention_bias_idxs',
-        #                      torch.LongTensor(idxs).view(N, N))
+
 
     @paddle.no_grad()
     def train(self, mode=True):
@@ -142,14 +262,14 @@ class Attention4D(nn.Layer):
         if mode and hasattr(self, 'ab'):
             del self.ab
         else:
-            #self.ab = self.attention_biases_seg[:, self.attention_bias_idxs_seg]
             self.ab = paddle.gather(self.attention_biases_seg,
                              self.attention_bias_idxs_seg.flatten(),
                              axis=1).reshape([self.attention_biases_seg.shape[0],
                                               self.attention_bias_idxs_seg.shape[0],
                                               self.attention_bias_idxs_seg.shape[1]])
 
-    def forward(self, x):  # x (B,N,C)
+
+    def forward(self, x):
         B, C, H, W = x.shape
         if self.stride_conv is not None:
             x = self.stride_conv(x)
@@ -157,21 +277,17 @@ class Attention4D(nn.Layer):
             W = W // 2
 
         q = self.q(x).flatten(2).reshape([B, self.num_heads, -1, H * W]).transpose([0, 1, 3, 2])
-        #q = self.q(x).flatten(2).reshape(B, self.num_heads, -1, H * W).permute(0, 1, 3, 2)
         k = self.k(x).flatten(2).reshape([B, self.num_heads, -1, H * W]).transpose([0, 1, 2, 3])
-        #k = self.k(x).flatten(2).reshape(B, self.num_heads, -1, H * W).permute(0, 1, 2, 3)
         v = self.v(x)
         v_local = self.v_local(v)
         v = v.flatten(2).reshape([B, self.num_heads, -1, H * W]).transpose([0, 1, 3, 2])
-        #v = v.flatten(2).reshape(B, self.num_heads, -1, H * W).permute(0, 1, 3, 2)
 
         attn = (q @ k) * self.scale
-        #bias = self.attention_biases_seg[:, self.attention_bias_idxs_seg] if self.training else self.ab
         bias = paddle.gather(self.attention_biases_seg,
                              self.attention_bias_idxs_seg.flatten(),
                              axis=1).reshape([self.attention_biases_seg.shape[0],
                                               self.attention_bias_idxs_seg.shape[0],
-                                              self.attention_bias_idxs_seg.shape[1]]) #if self.training else self.ab
+                                              self.attention_bias_idxs_seg.shape[1]])
 
         bias = F.interpolate(bias.unsqueeze(0), size=attn.shape[-2:], mode='bicubic')
         attn = attn + bias
@@ -183,7 +299,6 @@ class Attention4D(nn.Layer):
         x = (attn @ v)
 
         out = x.transpose([0, 1, 3, 2]).reshape([B, self.dh, H, W]).clone() + v_local
-        #out = x.transpose(2, 3).reshape(B, self.dh, H, W) + v_local
         if self.upsample is not None:
             out = self.upsample(out)
 
@@ -292,10 +407,7 @@ class Attention4DDownsample(nn.Layer):
                                                           default_initializer=zeros_ )
         self.register_buffer('attention_bias_idxs_seg',
                              paddle.to_tensor(idxs, dtype=paddle.int64).reshape([N_, N]))
-        # self.attention_biases = torch.nn.Parameter(
-        #     torch.zeros(num_heads, len(attention_offsets)))
-        # self.register_buffer('attention_bias_idxs',
-        #                      torch.LongTensor(idxs).view(N_, N))
+
 
     @paddle.no_grad()
     def train(self, mode=True):
@@ -303,33 +415,27 @@ class Attention4DDownsample(nn.Layer):
         if mode and hasattr(self, 'ab'):
             del self.ab
         else:
-            #self.ab = self.attention_biases_seg[:, self.attention_bias_idxs_seg]
             self.ab = paddle.gather(self.attention_biases_seg,
                              self.attention_bias_idxs_seg.flatten(),
                              axis=1).reshape([self.attention_biases_seg.shape[0],
                                               self.attention_bias_idxs_seg.shape[0],
                                               self.attention_bias_idxs_seg.shape[1]])
 
-    def forward(self, x):  # x (B,N,C)
+    def forward(self, x):
         B, C, H, W = x.shape
 
         q = self.q(x).flatten(2).reshape([B, self.num_heads, -1, H * W // 4]).clone().transpose([0, 1, 3, 2])
-        #q = self.q(x).flatten(2).reshape(B, self.num_heads, -1, H * W // 4).permute(0, 1, 3, 2)
         k = self.k(x).flatten(2).reshape([B, self.num_heads, -1, H * W]).clone().transpose([0, 1, 2, 3])
-        #k = self.k(x).flatten(2).reshape(B, self.num_heads, -1, H * W).permute(0, 1, 2, 3)
         v = self.v(x)
         v_local = self.v_local(v)
         v = v.flatten(2).reshape([B, self.num_heads, -1, H * W]).clone().transpose([0, 1, 3, 2])
-        #v = v.flatten(2).reshape(B, self.num_heads, -1, H * W).permute(0, 1, 3, 2)
-
 
         attn = (q @ k) * self.scale
-        #bias = self.attention_biases_seg[:, self.attention_bias_idxs_seg] if self.training else self.ab
         bias = paddle.gather(self.attention_biases_seg,
                              self.attention_bias_idxs_seg.flatten(),
                              axis=1).reshape([self.attention_biases_seg.shape[0],
                                               self.attention_bias_idxs_seg.shape[0],
-                                              self.attention_bias_idxs_seg.shape[1]]) #if self.training else self.ab
+                                              self.attention_bias_idxs_seg.shape[1]])
         bias = F.interpolate(bias.unsqueeze(0), size=attn.shape[-2:], mode='bicubic')
         attn = attn + bias
 
@@ -340,19 +446,6 @@ class Attention4DDownsample(nn.Layer):
 
         out = self.proj(out)
         return out
-
-
-"""Copy from timm"""
-from itertools import repeat
-import collections.abc
-def _ntuple(n):
-    def parse(x):
-        if isinstance(x, collections.abc.Iterable) and not isinstance(x, str):
-            return x
-        return tuple(repeat(x, n))
-    return parse
-
-to_2tuple = _ntuple(2)
 
 
 class Embedding(nn.Layer):
@@ -422,7 +515,6 @@ class Mlp(nn.Layer):
     Implementation of MLP with 1*1 convolutions.
     Input: tensor with shape [B, C, H, W]
     """
-
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -443,17 +535,12 @@ class Mlp(nn.Layer):
         if self.mid_conv:
             self.mid = nn.Conv2D(hidden_features, hidden_features, kernel_size=3, stride=1, padding=1,
                                  groups=hidden_features)
-            self.mid_norm = nn.BatchNorm2D(hidden_features)
+            #self.mid_norm = nn.BatchNorm2D(hidden_features)
 
         self.norm1 = nn.BatchNorm2D(hidden_features)
-        # self.norm1 = PruneBatchNorm2D(hidden_features)
         self.norm2 = nn.BatchNorm2D(out_features)
+        self.init_weight()
 
-    # def _init_weights(self, m):
-    #     if isinstance(m, nn.Conv2D):
-    #         param_init.normal_init(m.weight, std=.02)
-    #         if m.bias is not None:
-    #             param_init.constant_init(m.bias, value=0)
     def init_weight(self):
         for layer in self.sublayers():
             if isinstance(layer, nn.Conv2D):
@@ -468,8 +555,7 @@ class Mlp(nn.Layer):
 
         if self.mid_conv:
             x_mid = self.mid(x)
-            x_mid = self.mid_norm(x_mid)
-            # x = self.act(x_mid + x)
+            #x_mid = self.mid_norm(x_mid)
             x = self.act(x_mid)
         x = self.drop(x)
 
@@ -512,10 +598,7 @@ class AttnFFN(nn.Layer):
             self.layer_scale_2 = self.create_parameter(shape=param_value.shape,
                                                        dtype=str(param_value.numpy().dtype),
                                                        default_initializer=nn.initializer.Assign(param_value))
-            # self.layer_scale_1 = nn.Parameter(
-            #     layer_scale_init_value * torch.ones(dim).unsqueeze(-1).unsqueeze(-1), requires_grad=True)
-            # self.layer_scale_2 = nn.Parameter(
-            #     layer_scale_init_value * torch.ones(dim).unsqueeze(-1).unsqueeze(-1), requires_grad=True)
+
     def forward(self, x):
         if self.use_layer_scale:
             x = x + self.drop_path(self.layer_scale_1 * self.token_mixer(x))
@@ -551,8 +634,6 @@ class FFN(nn.Layer):
             self.layer_scale_2 = self.create_parameter(shape=param_value_2.shape,
                                                        dtype=str(param_value_2.numpy().dtype),
                                                        default_initializer=nn.initializer.Assign(param_value_2))
-            # self.layer_scale_2 = nn.Parameter(
-            #     layer_scale_init_value * torch.ones(dim).unsqueeze(-1).unsqueeze(-1), requires_grad=True)
 
     def forward(self, x):
         if self.use_layer_scale:
@@ -600,20 +681,31 @@ def meta_blocks(dim, index, layers,
     return blocks
 
 
-# 构建Conv+BN+ReLU块：
-class ConvBnReLU(nn.Layer):
-    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
-        super(ConvBnReLU, self).__init__()
-        self.conv = nn.Conv2D(in_channels, out_channels, kernel_size, stride, padding, bias_attr=False)
-        self.bn = nn.BatchNorm2D(out_channels)
+class FPN_head(nn.Layer):
+    def __init__(self,
+                 num_classes,
+                 embed_dims,
+                 drop_path_tate,
+                 align_corners=False):
+        super().__init__()
+        self.align_corners = align_corners
+        self.neck = FPN(in_channels = embed_dims,
+                        out_channels= 256,
+                        num_outs = 4)
+        self.head = FPNHead(in_channels=[256, 256, 256, 256],
+                            in_index=[0, 1, 2, 3],
+                            feature_strides=[4, 8, 16, 32],
+                            channels=128,
+                            dropout_ratio=drop_path_tate,
+                            num_classes=num_classes)
 
     def forward(self, x):
-        return F.relu(self.bn(self.conv(x)))
+        x = self.neck(x)
+        x = self.head(x)
+
+        return x
 
 
-# 构建FPN整体，参数base_channels为网络设置的基础通道数，每降低一个分辨率，通道数依据此翻倍
-# forward输入：三通道图像
-# forward输出：四个尺度的特征
 class FPN(nn.Layer):
     """Feature Pyramid Network.
 
@@ -652,49 +744,24 @@ class FPN(nn.Layer):
         upsample_cfg (dict): Config dict for interpolate layer.
             Default: `dict(mode='nearest')`
         init_cfg (dict or list[dict], optional): Initialization config dict.
-
-    Example:
-        >>> import torch
-        >>> in_channels = [2, 3, 5, 7]
-        >>> scales = [340, 170, 84, 43]
-        >>> inputs = [torch.rand(1, c, s, s)
-        ...           for c, s in zip(in_channels, scales)]
-        >>> self = FPN(in_channels, 11, len(in_channels)).eval()
-        >>> outputs = self.forward(inputs)
-        >>> for i in range(len(outputs)):
-        ...     print(f'outputs[{i}].shape = {outputs[i].shape}')
-        outputs[0].shape = torch.Size([1, 11, 340, 340])
-        outputs[1].shape = torch.Size([1, 11, 170, 170])
-        outputs[2].shape = torch.Size([1, 11, 84, 84])
-        outputs[3].shape = torch.Size([1, 11, 43, 43])
     """
-
     def __init__(self,
                  in_channels,
-                 channels,
+                 out_channels,
                  num_outs,
                  start_level=0,
                  end_level=-1,
                  add_extra_convs=False,
-                 #extra_convs_on_inputs=False,
-                 relu_before_extra_convs=False,
-                 no_norm_on_lateral=False,
-                 #conv_cfg=None,
-                 #norm_cfg=None,
-                 #act_cfg=None,
-                 upsample_cfg=dict(mode='nearest'),
-                 #init_cfg=dict(type='Xavier', layer='Conv2d', distribution='uniform')
-                 ):
+                 extra_convs_on_inputs=False,
+                 relu_before_extra_convs=False):
         super(FPN, self).__init__()
+
         assert isinstance(in_channels, list)
         self.in_channels = in_channels
-        self.out_channels = channels
+        self.out_channels = out_channels
         self.num_ins = len(in_channels)
         self.num_outs = num_outs
         self.relu_before_extra_convs = relu_before_extra_convs
-        self.no_norm_on_lateral = no_norm_on_lateral
-        self.fp16_enabled = False
-        self.upsample_cfg = upsample_cfg.copy()
 
         if end_level == -1:
             self.backbone_end_level = self.num_ins
@@ -707,41 +774,24 @@ class FPN(nn.Layer):
         self.start_level = start_level
         self.end_level = end_level
         self.add_extra_convs = add_extra_convs
-        # assert isinstance(add_extra_convs, (str, bool))
-        # if isinstance(add_extra_convs, str):
-        #     # Extra_convs_source choices: 'on_input', 'on_lateral', 'on_output'
-        #     assert add_extra_convs in ('on_input', 'on_lateral', 'on_output')
-        # elif add_extra_convs:  # True
-        #     if extra_convs_on_inputs:
-        #         # For compatibility with previous release
-        #         # TODO: deprecate `extra_convs_on_inputs`
-        #         self.add_extra_convs = 'on_input'
-        #     else:
-        #         self.add_extra_convs = 'on_output'
+        assert isinstance(add_extra_convs, (str, bool))
+        if isinstance(add_extra_convs, str):
+            # Extra_convs_source choices: 'on_input', 'on_lateral', 'on_output'
+            assert add_extra_convs in ('on_input', 'on_lateral', 'on_output')
+        elif add_extra_convs:  # True
+            if extra_convs_on_inputs:
+                # For compatibility with previous release
+                # TODO: deprecate `extra_convs_on_inputs`
+                self.add_extra_convs = 'on_input'
+            else:
+                self.add_extra_convs = 'on_output'
 
         self.lateral_convs = nn.LayerList()
         self.fpn_convs = nn.LayerList()
 
         for i in range(self.start_level, self.backbone_end_level):
-            l_conv = ConvBnReLU(in_channels[i], channels, 1, 1, 0)
-            # l_conv = ConvModule(
-            #     in_channels[i],
-            #     out_channels,
-            #     1,
-            #     conv_cfg=conv_cfg,
-            #     norm_cfg=norm_cfg if not self.no_norm_on_lateral else None,
-            #     act_cfg=act_cfg,
-            #     inplace=False)
-            fpn_conv = ConvBnReLU(channels, channels, 3, 1, 1)
-            # fpn_conv = ConvModule(
-            #     out_channels,
-            #     out_channels,
-            #     3,
-            #     padding=1,
-            #     conv_cfg=conv_cfg,
-            #     norm_cfg=norm_cfg,
-            #     act_cfg=act_cfg,
-            #     inplace=False)
+            l_conv = nn.Conv2D(in_channels[i], out_channels, 1)
+            fpn_conv = nn.Conv2D(out_channels, out_channels, 3, padding=1)
 
             self.lateral_convs.append(l_conv)
             self.fpn_convs.append(fpn_conv)
@@ -753,19 +803,14 @@ class FPN(nn.Layer):
                 if i == 0 and self.add_extra_convs == 'on_input':
                     in_channels = self.in_channels[self.backbone_end_level - 1]
                 else:
-                    in_channels = channels
-                extra_fpn_conv = ConvBnReLU(in_channels, channels, 3, 2, 1)
-                # extra_fpn_conv = ConvModule(
-                #     in_channels,
-                #     out_channels,
-                #     3,
-                #     stride=2,
-                #     padding=1,
-                #     conv_cfg=conv_cfg,
-                #     norm_cfg=norm_cfg,
-                #     act_cfg=act_cfg,
-                #     inplace=False)
+                    in_channels = out_channels
+                extra_fpn_conv = nn.Conv2D(in_channels,
+                                           out_channels,
+                                           3,
+                                           stride=2,
+                                           padding=1)
                 self.fpn_convs.append(extra_fpn_conv)
+        self.init_weight()
 
     def forward(self, inputs):
         assert len(inputs) == len(self.in_channels)
@@ -781,15 +826,9 @@ class FPN(nn.Layer):
         for i in range(used_backbone_levels - 1, 0, -1):
             # In some cases, fixing `scale factor` (e.g. 2) is preferred, but
             #  it cannot co-exist with `size` in `F.interpolate`.
-            if 'scale_factor' in self.upsample_cfg:
-                # laterals[i - 1] += resize(laterals[i], **self.upsample_cfg)
-                laterals[i - 1] += F.interpolate(laterals[i], **self.upsample_cfg)
-            else:
-                prev_shape = laterals[i - 1].shape[2:]
-                # laterals[i - 1] += resize(
-                #     laterals[i], size=prev_shape, **self.upsample_cfg)
-                laterals[i - 1] += F.interpolate(
-                    laterals[i], size=prev_shape, **self.upsample_cfg)
+
+            prev_shape = laterals[i - 1].shape[2:]
+            laterals[i - 1] += F.interpolate(laterals[i], size=prev_shape, mode='nearest', align_corners=False)
 
         # build outputs
         # part 1: from original levels
@@ -819,7 +858,39 @@ class FPN(nn.Layer):
                         outs.append(self.fpn_convs[i](F.relu(outs[-1])))
                     else:
                         outs.append(self.fpn_convs[i](outs[-1]))
-        return outs
+        return tuple(outs)
+
+    def init_weight(self):
+        for sublayer in self.sublayers():
+            if isinstance(sublayer, nn.Conv2D):
+                param_init.normal_init(sublayer.weight, std=0.001)
+            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(sublayer.weight, value=1.0)
+                param_init.constant_init(sublayer.bias, value=0.0)
+
+
+class Upsample(nn.Layer):
+    def __init__(self,
+                 size=None,
+                 scale_factor=None,
+                 mode='nearest',
+                 align_corners=None):
+
+        super().__init__()
+        self.size = size
+        if isinstance(scale_factor, tuple):
+            self.scale_factor = tuple(float(factor) for factor in scale_factor)
+        else:
+            self.scale_factor = float(scale_factor) if scale_factor else None
+        self.mode = mode
+        self.align_corners = align_corners
+
+    def forward(self, x):
+        if not self.size:
+            size = [int(t * self.scale_factor) for t in x.shape[-2:]]
+        else:
+            size = self.size
+        return F.interpolate(x, size, None, self.mode, self.align_corners)
 
 
 class FPNHead(nn.Layer):
@@ -833,21 +904,30 @@ class FPNHead(nn.Layer):
             stack_lateral. All strides suppose to be power of 2. The first
             one is of largest resolution.
     """
-
     def __init__(self,
-                 in_channels,
-                 channels,
-                 numclasses,
-                 feature_strides,
-                 ):
-        super(FPNHead, self).__init__()
+                 in_index = [0, 1, 2, 3],
+                 in_channels=[256, 256, 256, 256],
+                 channels = 128,
+                 feature_strides = [4, 8, 16, 32],
+                 dropout_ratio = 0.1,
+                 num_classes = 150,
+                 align_corners=False):
+        super().__init__()
+
         self.in_channels = in_channels
-        self.channels = channels
-        self.num_classes = numclasses
 
         assert len(feature_strides) == len(self.in_channels)
         assert min(feature_strides) == feature_strides[0]
+
+        self.in_index = in_index
+
+        self.channels = channels
         self.feature_strides = feature_strides
+        self.align_corners = align_corners
+        self.dropout_ratio = dropout_ratio
+        self.num_classes = num_classes
+        if self.dropout_ratio > 0:
+            self.dropout = nn.Dropout2D(self.dropout_ratio)
 
         self.scale_heads = nn.LayerList()
         for i in range(len(feature_strides)):
@@ -856,45 +936,30 @@ class FPNHead(nn.Layer):
                 int(np.log2(feature_strides[i]) - np.log2(feature_strides[0])))
             scale_head = []
             for k in range(head_length):
-                scale_head.append(ConvBnReLU(
-                    self.in_channels[i] if k == 0 else self.channels,
-                    self.channels,
-                    3,
-                    1,
-                    1))
-                    # ConvModule(
-                    #     self.in_channels[i] if k == 0 else self.channels,
-                    #     self.channels,
-                    #     3,
-                    #     padding=1,
-                    #     conv_cfg=self.conv_cfg,
-                    #     norm_cfg=self.norm_cfg,
-                    #     act_cfg=self.act_cfg)
+                scale_head.append(
+                    nn.Sequential(nn.Conv2D(self.in_channels[i] if k == 0 else self.channels,
+                                            self.channels,
+                                            3,
+                                            padding=1,
+                                            bias_attr=False),
+                                  nn.BatchNorm2D(self.channels),
+                                  nn.ReLU()))
+
+
                 if feature_strides[i] != feature_strides[0]:
                     scale_head.append(
-                        nn.Upsample(scale_factor=2,
-                                      mode='bilinear',
-                                      align_corners=False))
-                        # Upsample(
-                        #     scale_factor=2,
-                        #     mode='bilinear',
-                        #     align_corners=self.align_corners))
+                        Upsample(
+                            scale_factor=2,
+                            mode='bilinear',
+                            align_corners=self.align_corners))
+
             self.scale_heads.append(nn.Sequential(*scale_head))
-        self.predict = nn.Sequential(nn.Upsample(scale_factor=4,
-                                                 mode='bilinear',
-                                                 align_corners=False),
-                                     nn.Conv2D(self.channels, self.num_classes, kernel_size=1))
+        self.cls_seg = nn.Conv2D(self.channels, self.num_classes, kernel_size=1)
+        self.init_weight()
 
     def forward(self, inputs):
 
-        # upsampled_inputs = [F.interpolate(
-        #             x,
-        #             size=inputs[0].shape[2:],
-        #             mode='bilinear',
-        #             align_corners=False) for x in inputs]
-        # x = paddle.concat(upsampled_inputs, axis=1)
-        #x = self._transform_inputs(inputs)
-        x = inputs
+        x = [inputs[i] for i in self.in_index]
 
         output = self.scale_heads[0](x[0])
         for i in range(1, len(self.feature_strides)):
@@ -903,232 +968,17 @@ class FPNHead(nn.Layer):
                 self.scale_heads[i](x[i]),
                 size=output.shape[2:],
                 mode='bilinear',
-                align_corners=False)
+                align_corners=self.align_corners)
 
-        #output = self.cls_seg(output)
-        output = self.predict(output)
+        if self.dropout_ratio > 0:
+            output = self.dropout(output)
+        output = self.cls_seg(output)
         return output
 
-
-
-
-class EfficientFormerV2(nn.Layer):
-
-    def __init__(self,
-                 layers,
-                 embed_dims=None,
-                 mlp_ratios=4,
-                 downsamples=None,
-                 pool_size=3,
-                 norm_layer=nn.BatchNorm2D,
-                 act_layer=nn.GELU,
-                 num_classes=150,
-                 down_patch_size=3,
-                 down_stride=2,
-                 down_pad=1,
-                 drop_rate=0.,
-                 drop_path_rate=0.,
-                 use_layer_scale=True,
-                 layer_scale_init_value=1e-5,
-                 fork_feat=False,
-                 pretrained=None,
-                 vit_num=0,
-                 distillation=True,
-                 resolution=512,
-                 e_ratios=expansion_ratios_S2,
-                 fpn_in_channels=None,
-                 channels=None,
-                 feature_strides=None,
-                 **kwargs):
-        super().__init__()
-
-        self.pretrained = pretrained
-
-        self.feat_channels = embed_dims
-
-        # self.neck = FPN(fpn_in_channels,
-        #                 channels,
-        #                 len(fpn_in_channels))
-
-        self.fpnhead = FPNHead(fpn_in_channels,
-                               channels,
-                               num_classes,
-                               feature_strides
-                               )
-
-        if not fork_feat:
-            self.num_classes = num_classes
-        self.fork_feat = fork_feat
-
-        self.patch_embed = stem(3, embed_dims[0], act_layer=act_layer)
-
-        network = []
-        for i in range(len(layers)):
-            stage = meta_blocks(embed_dims[i], i, layers,
-                                pool_size=pool_size, mlp_ratio=mlp_ratios,
-                                act_layer=act_layer, norm_layer=norm_layer,
-                                drop_rate=drop_rate,
-                                drop_path_rate=drop_path_rate,
-                                use_layer_scale=use_layer_scale,
-                                layer_scale_init_value=layer_scale_init_value,
-                                resolution=math.ceil(resolution / (2 ** (i + 2))),
-                                vit_num=vit_num,
-                                e_ratios=e_ratios)
-            network.append(stage)
-            if i >= len(layers) - 1:
-                break
-            if downsamples[i] or embed_dims[i] != embed_dims[i + 1]:
-                # downsampling between two stages
-                if i >= 2:
-                    asub = True
-                else:
-                    asub = False
-                network.append(
-                    Embedding(
-                        patch_size=down_patch_size, stride=down_stride,
-                        padding=down_pad,
-                        in_chans=embed_dims[i], embed_dim=embed_dims[i + 1],
-                        resolution=math.ceil(resolution / (2 ** (i + 2))),
-                        asub=asub,
-                        act_layer=act_layer, norm_layer=norm_layer,
-                    )
-                )
-
-        self.network = nn.LayerList(network)
-
-        if self.fork_feat:
-            # add a norm layer for each output
-            self.out_indices = [0, 2, 4, 6]
-        else:
-            # Classifier head
-            self.norm = norm_layer(embed_dims[-1])
-            self.head = nn.Linear(
-                embed_dims[-1], num_classes) if num_classes > 0 \
-                else nn.Identity()
-            self.dist = distillation
-            if self.dist:
-                self.dist_head = nn.Linear(
-                    embed_dims[-1], num_classes) if num_classes > 0 \
-                    else nn.Identity()
-
-        self.init_weight()
-
-        # self.init_cfg = copy.deepcopy(init_cfg)
-        # # load pre-trained model
-        # if self.fork_feat and (
-        #         self.init_cfg is not None or pretrained is not None):
-        #     self.init_weights()
-        #     #self = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(self)
-        #     paddle.nn.SyncBatchNorm.convert_sync_batchnorm(self)
-        #     self.train()
-
-    # # init for classification
-    # def cls_init_weights(self, m):
-    #     if isinstance(m, nn.Linear):
-    #         trunc_normal_init(m.weight, std=.02)
-    #         if isinstance(m, nn.Linear) and m.bias is not None:
-    #             constant_init(m.bias, value=0)
-
-    # init for mmdetection or mmsegmentation by loading
-    # imagenet pre-trained weights
     def init_weight(self):
-        for layer in self.sublayers():
-            if isinstance(layer, nn.Conv2D):
-                param_init.normal_init(layer.weight, std=0.001)
-            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                param_init.constant_init(layer.weight, value=1.0)
-                param_init.constant_init(layer.bias, value=0.0)
-            elif isinstance(layer, nn.Linear):
-                param_init.normal_init(layer.weight)
-                if layer.bias is not None:
-                    param_init.constant_init(layer.bias, value=0)
-            elif isinstance(layer, nn.LayerNorm):
-                param_init.constant_init(layer.bias, value=0)
-                param_init.constant_init(layer.weight, value=1)
-
-        if self.pretrained is not None:
-            utils.load_pretrained_model(self, self.pretrained)
-
-    # @paddle.no_grad()
-    # def train(self, mode=True):
-    #     super().train(mode)
-    #     for m in self.modules():
-    #         # trick: eval have effect on BatchNorm only
-    #         if isinstance(m, nn.BatchNorm2D):
-    #             m.eval()
-
-    def forward_tokens(self, x):
-        outs = []
-        for idx, block in enumerate(self.network):
-            x = block(x)
-            if self.fork_feat and idx in self.out_indices:
-                # norm_layer = getattr(self, f'norm{idx}')
-                # x_out = norm_layer(x)
-                outs.append(x)
-        if self.fork_feat:
-            return outs
-        return x
-
-    def forward(self, x):
-        x = self.patch_embed(x)
-        x = self.forward_tokens(x)
-        out = self.fpnhead(x)   # N,num_classes,H,W
-
-        return [out]
-
-
-@manager.MODELS.add_component
-class EfficientFormerv2_s0(EfficientFormerV2):
-    def __init__(self, **kwargs):
-        super().__init__(
-            layers=EfficientFormer_depth['S0'],
-            embed_dims=EfficientFormer_width['S0'],
-            downsamples=[True, True, True, True],
-            fork_feat=True,
-            drop_path_rate=0.,
-            vit_num=2,
-            e_ratios=expansion_ratios_S0,
-            **kwargs)
-
-
-@manager.MODELS.add_component
-class EfficientFormerv2_s1(EfficientFormerV2):
-    def __init__(self, **kwargs):
-        super().__init__(
-            layers=EfficientFormer_depth['S1'],
-            embed_dims=EfficientFormer_width['S1'],
-            downsamples=[True, True, True, True],
-            fork_feat=True,
-            drop_path_rate=0.,
-            vit_num=2,
-            e_ratios=expansion_ratios_S1,
-            **kwargs)
-
-
-@manager.MODELS.add_component
-class EfficientFormerv2_s2(EfficientFormerV2):
-    def __init__(self, **kwargs):
-        super().__init__(
-            layers=EfficientFormer_depth['S2'],
-            embed_dims=EfficientFormer_width['S2'],
-            downsamples=[True, True, True, True],
-            fork_feat=True,
-            drop_path_rate=0.02,
-            vit_num=4,
-            e_ratios=expansion_ratios_S2,
-            **kwargs)
-
-
-
-@manager.MODELS.add_component
-class EfficientFormerv2_l(EfficientFormerV2):
-    def __init__(self, **kwargs):
-        super().__init__(
-            layers=EfficientFormer_depth['L'],
-            embed_dims=EfficientFormer_width['L'],
-            downsamples=[True, True, True, True],
-            fork_feat=True,
-            drop_path_rate=0.1,
-            vit_num=6,
-            e_ratios=expansion_ratios_L,
-            **kwargs)
+        for sublayer in self.sublayers():
+            if isinstance(sublayer, nn.Conv2D):
+                param_init.normal_init(sublayer.weight, std=0.001)
+            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(sublayer.weight, value=1.0)
+                param_init.constant_init(sublayer.bias, value=0.0)

@@ -71,4 +71,4 @@ from .lpsnet import LPSNet
 from .maskformer import MaskFormer
 from .segnext import SegNeXt
 from .knet import KNet
-from .fpn import FPNet
+from .efficientformerv2 import EfficientFormerV2

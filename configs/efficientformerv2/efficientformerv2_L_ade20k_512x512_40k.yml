@@ -27,16 +27,16 @@ test_config:
 
 model:
   type: EfficientFormerV2
-  layers: [4, 4, 12, 8]
-  embed_dims: [32, 64, 144, 288]
+  layers: [5, 5, 15, 10]
+  embed_dims: [40, 80, 192, 384]
   downsamples: [True, True, True, True]
   fork_feat: True
-  drop_path_rate: 0.02
-  vit_num: 4
+  drop_path_rate: 0.1
+  vit_num: 6
   e_ratios: {
-    '0': [4, 4, 4, 4],
-    '1': [4, 4, 4, 4],
-    '2': [4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4],
-    '3': [4, 4, 3, 3, 3, 3, 4, 4],
+    '0': [4, 4, 4, 4, 4],
+    '1': [4, 4, 4, 4, 4],
+    '2': [4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+    '3': [4, 4, 4, 3, 3, 3, 3, 4, 4, 4],
   }
   pretrained: pretrained/eformer_s_2_pretrained.pdparams
