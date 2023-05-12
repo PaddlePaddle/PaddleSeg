@@ -425,9 +425,9 @@ class SeaFormer(nn.Layer):
     def init_weights(self):
         for layer in self.sublayers():
             if isinstance(layer, nn.Conv2D):
-                std = layer.kernel_size[0] * layer.kernel_size[
-                    1] * layer.out_channels
-                std //= layer.groups
+                std = layer._kernel_size[0] * layer._kernel_size[
+                    1] * layer._out_channels
+                std //= layer._groups
                 param_init.normal_init(layer.weight, std=std)
             elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(layer.weight, value=1.0)
