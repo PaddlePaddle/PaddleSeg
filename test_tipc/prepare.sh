@@ -33,7 +33,6 @@ pip install -r test_tipc/requirements.txt
 pip install -v -e .
 
 if [ ${model_name} = "mask2former" ]; then
-    python -m pip install paddlepaddle-gpu==0.0.0.post117 -f https://www.paddlepaddle.org.cn/whl/linux/gpu/develop.html
     cd contrib/PanopticSeg
     pip install -r requirements.txt
     pip install -e .
