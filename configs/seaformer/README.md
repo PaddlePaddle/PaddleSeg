@@ -10,4 +10,4 @@
 
 | Model | size | Head | Resolution | Training Iters | mIoU (slice) | Links |
 | :-:   | :-:  | :-:        | :-:            | :-:          | :-:          | :-:          |
-| SeaFormer | base | LightHead | 512x512 | 160000 | 40.90 | [model](https://paddleseg.bj.bcebos.com/dygraph/ade20k/seaformer_ade20k_512x512_160k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/ade20k/seaformer_ade20k_512x512_160k/train.log) \| [vdl]() |
+| SeaFormer | base | LightHead | 512x512 | 160000 | 40.90 | [model](https://paddleseg.bj.bcebos.com/dygraph/ade20k/seaformer_ade20k_512x512_160k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/ade20k/seaformer_ade20k_512x512_160k/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=f43d0185995605fb99da6597121a96f1) |
