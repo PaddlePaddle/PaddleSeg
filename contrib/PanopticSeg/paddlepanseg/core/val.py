@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +19,11 @@ import time
 import paddle
 from paddleseg.utils import TimeAverager, logger, progbar
 
-from paddlepanseg.core import infer
 from paddlepanseg.cvlibs import build_info_dict
 from paddlepanseg.utils.evaluation import SemSegEvaluator, InsSegEvaluator, PanSegEvaluator
 from paddlepanseg.utils import tabulate_metrics
+from paddlepanseg.core.runner import PanSegRunner
+from paddlepanseg.core.launcher import AMPLauncher
 
 np.set_printoptions(suppress=True)
 
@@ -35,7 +36,8 @@ def evaluate(model,
              eval_sem=False,
              eval_ins=False,
              precision='fp32',
-             amp_level='O1'):
+             amp_level='O1',
+             runner=None):
     """
     Launch evaluation.
 
@@ -43,6 +45,7 @@ def evaluate(model,
         model（nn.Layer): A panoptic segmentation model.
         eval_dataset (paddle.io.Dataset): Used to read and process validation datasets.
         postprocessor (paddlepanseg.postprocessors.Postprocessor): Used to postprocess model output.
+        runner (paddlepanseg.core.runners.PanSegRunner): Used to define how the components interact.
         num_workers (int, optional): The number of workers used by the data loader. Default: 0.
         print_detail (bool, optional): Whether or not to print detailed information about the evaluation process. Default: True.
         eval_sem (bool, optional): Whether or not to calculate semantic segmentation metrics. Default: False.
@@ -50,9 +53,8 @@ def evaluate(model,
         precision (str, optional): If `precision` is 'fp16', enable automatic mixed precision training. Default: 'fp32'.
         amp_level (str, optional): The auto mixed precision level. Choices are 'O1' and 'O2'. Default: 'O1'.
     """
+
     model.eval()
-    # By default evaluate the results with panoptic segmentation metrics
-    eval_pan = True
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
     if nranks > 1:
@@ -60,6 +62,11 @@ def evaluate(model,
         if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
         ):
             paddle.distributed.init_parallel_env()
+
+    # By default evaluate the results with panoptic segmentation metrics
+    eval_pan = True
+
+    # Build batch sampler and data loader
     batch_sampler = paddle.io.DistributedBatchSampler(
         eval_dataset, batch_size=1, shuffle=False, drop_last=False)
     loader = paddle.io.DataLoader(
@@ -69,6 +76,13 @@ def evaluate(model,
         return_list=True,
         collate_fn=eval_dataset.collate
         if hasattr(eval_dataset, 'collate') else None)
+
+    # Bind components to runner
+    runner.bind(model=model, postprocessor=postprocessor)
+
+    # Create launcher
+    launcher = AMPLauncher(
+        runner=runner, precision=precision, amp_level=amp_level)
 
     total_iters = len(loader)
     if eval_sem:
@@ -103,19 +117,7 @@ def evaluate(model,
         for iter, data in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
 
-            if precision == 'fp16':
-                with paddle.amp.auto_cast(
-                        level=amp_level,
-                        enable=True,
-                        custom_white_list={
-                            'elementwise_add', 'batch_norm', 'sync_batch_norm'
-                        },
-                        custom_black_list={'bilinear_interp_v2'}):
-                    pp_out = infer.inference(
-                        model=model, data=data, postprocessor=postprocessor)
-            else:
-                pp_out = infer.inference(
-                    model=model, data=data, postprocessor=postprocessor)
+            pp_out = launcher.infer_step(data=data)
 
             if eval_sem:
                 sem_evaluator.update(data, pp_out)
