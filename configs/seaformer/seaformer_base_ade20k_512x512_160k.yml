@@ -32,6 +32,6 @@ lr_scheduler:
   warmup_start_lr: 1.0e-6
 
 test_config:
-  is_slide: True
+  is_slide: False
   crop_size: [512, 512]
   stride: [512, 512]
