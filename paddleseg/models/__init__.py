@@ -38,7 +38,7 @@ from .dnlnet import *
 from .setr import *
 from .sfnet import *
 from .pphumanseg_lite import *
-from .seaformer import *
+from .seg_seaformer import Seg_SeaFormer
 from .mla_transformer import MLATransformer
 from .portraitnet import PortraitNet
 from .stdcseg import STDCSeg

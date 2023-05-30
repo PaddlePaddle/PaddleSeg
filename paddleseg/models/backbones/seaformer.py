@@ -444,114 +444,9 @@ class SeaFormer(nn.Layer):
             utils.load_pretrained_model(self, self.pretrained)
 
 
-class FusionBlock(nn.Layer):
-    def __init__(self, inp: int, oup: int, embed_dim: int):
-        super().__init__()
-
-        self.local_embedding = layers.ConvBN(
-            inp, embed_dim, kernel_size=1, bias_attr=False)
-        self.global_act = layers.ConvBN(
-            oup, embed_dim, kernel_size=1, bias_attr=False)
-        self.act = nn.Hardsigmoid()
-
-    def forward(self, x_l, x_g):
-        B, C, H, W = x_l.shape
-        local_feat = self.local_embedding(x_l)
-        global_act = self.global_act(x_g)
-        sig_act = F.interpolate(
-            self.act(global_act),
-            size=[H, W],
-            mode='bilinear',
-            align_corners=False)
-        out = local_feat * sig_act
-        return out
-
-
-class SeaFormerHead(nn.Layer):
-    def __init__(self,
-                 backbone,
-                 in_channels=[64, 192, 256],
-                 in_index=[0, 1, 2],
-                 channels=160,
-                 embed_dims=[128, 160],
-                 num_classes=150,
-                 is_dw=True,
-                 dropout_ratio=0.1,
-                 align_corners=False,
-                 input_transform='multiple_select'):
-        super().__init__()
-
-        self.head_channels = channels
-        self.backbone = backbone
-
-        self.in_index = in_index
-        self.input_transform = input_transform
-        self.align_corners = align_corners
-
-        self.embed_dims = embed_dims
-
-        self.linear_fuse = layers.ConvBNReLU(
-            self.head_channels,
-            self.head_channels,
-            1,
-            stride=1,
-            groups=self.head_channels if is_dw else 1,
-            bias_attr=False)
-        if dropout_ratio > 0:
-            self.dropout = nn.Dropout2D(dropout_ratio)
-
-        self.cls_seg = nn.Conv2D(channels, num_classes, kernel_size=1)
-
-        for i in range(len(embed_dims)):
-            fuse = FusionBlock(
-                in_channels[0] if i == 0 else embed_dims[i - 1],
-                in_channels[i + 1],
-                embed_dim=embed_dims[i])
-            setattr(self, f"fuse{i + 1}", fuse)
-
-    def forward(self, inputs):
-        B, C, H, W = inputs.shape
-        inputs = self.backbone(inputs)
-
-        if self.input_transform == 'resize_concat':
-            inputs = [inputs[i] for i in self.in_index]
-            upsampled_inputs = [
-                F.interpolate(
-                    x,
-                    size=inputs[0].shape[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners) for x in inputs
-            ]
-            xx = paddle.concat(upsampled_inputs, axis=1)
-
-        elif self.input_transform == 'multiple_select':
-            xx = [inputs[i] for i in self.in_index]
-        else:
-            xx = inputs[self.in_index]
-
-        x_detail = xx[0]
-        for i in range(len(self.embed_dims)):
-            fuse = getattr(self, f"fuse{i + 1}")
-            x_detail = fuse(x_detail, xx[i + 1])
-        feat = self.linear_fuse(x_detail)
-
-        if self.dropout is not None:
-            feat = self.dropout(feat)
-
-        x = self.cls_seg(feat)
-        x = [
-            F.interpolate(
-                x,
-                size=[H, W],
-                mode='bilinear',
-                align_corners=self.align_corners)
-        ]
-        return x
-
-
-@manager.MODELS.add_component
-def SeaFormer_tiny(pretrained, num_classes, **kwags):
-    backbone = SeaFormer(
+@manager.BACKBONES.add_component
+def SeaFormer_tiny(pretrained, **kwags):
+    seaformer = SeaFormer(
         pretrained=pretrained,
         cfgs=[[[3, 1, 16, 1], [3, 4, 16, 2], [3, 3, 16, 1]],
               [[5, 3, 32, 2], [5, 3, 32, 1]], [[3, 3, 64, 2], [3, 3, 64, 1]],
@@ -561,18 +456,13 @@ def SeaFormer_tiny(pretrained, num_classes, **kwags):
         depths=[2, 2],
         num_heads=4,
         **kwags)
-    seg_model = SeaFormerHead(
-        backbone,
-        num_classes=num_classes,
-        in_channels=[32, 128, 160],
-        channels=96,
-        embed_dims=[64, 96])
-    return seg_model
+
+    return seaformer
 
 
-@manager.MODELS.add_component
-def SeaFormer_small(pretrained, num_classes, **kwags):
-    backbone = SeaFormer(
+@manager.BACKBONES.add_component
+def SeaFormer_small(pretrained, **kwags):
+    seaformer = SeaFormer(
         pretrained=pretrained,
         cfgs=[[[3, 1, 16, 1], [3, 4, 24, 2], [3, 3, 24, 1]],
               [[5, 3, 48, 2], [5, 3, 48, 1]], [[3, 3, 96, 2], [3, 3, 96, 1]],
@@ -582,18 +472,13 @@ def SeaFormer_small(pretrained, num_classes, **kwags):
         depths=[3, 3],
         num_heads=6,
         **kwags)
-    seg_model = SeaFormerHead(
-        backbone,
-        num_classes=num_classes,
-        in_channels=[48, 160, 192],
-        channels=128,
-        embed_dims=[96, 128])
-    return seg_model
+
+    return seaformer
 
 
-@manager.MODELS.add_component
-def SeaFormer_base(pretrained, num_classes, **kwags):
-    backbone = SeaFormer(
+@manager.BACKBONES.add_component
+def SeaFormer_base(pretrained, **kwags):
+    seaformer = SeaFormer(
         pretrained=pretrained,
         cfgs=[[[3, 1, 16, 1], [3, 4, 32, 2], [3, 3, 32, 1]],
               [[5, 3, 64, 2], [5, 3, 64, 1]], [[3, 3, 128, 2], [3, 3, 128, 1]],
@@ -605,13 +490,13 @@ def SeaFormer_base(pretrained, num_classes, **kwags):
         num_heads=8,
         mlp_ratios=[2, 4],
         **kwags)
-    seg_model = SeaFormerHead(backbone, num_classes=num_classes)
-    return seg_model
+
+    return seaformer
 
 
-@manager.MODELS.add_component
-def SeaFormer_large(pretrained, num_classes, **kwags):
-    backbone = SeaFormer(
+@manager.BACKBONES.add_component
+def SeaFormer_large(pretrained, **kwags):
+    seaformer = SeaFormer(
         pretrained=pretrained,
         cfgs=[[[3, 3, 32, 1], [3, 4, 64, 2], [3, 3, 64, 1]],
               [[5, 4, 128, 2], [5, 4, 128, 1]],
@@ -624,11 +509,5 @@ def SeaFormer_large(pretrained, num_classes, **kwags):
         num_heads=8,
         mlp_ratios=[2, 4, 6],
         **kwags)
-    seg_model = SeaFormerHead(
-        backbone,
-        num_classes=num_classes,
-        in_channels=[128, 192, 256, 320],
-        in_index=[0, 1, 2, 3],
-        channels=192,
-        embed_dims=[128, 160, 192])
-    return seg_model
+
+    return seaformer
