@@ -22,6 +22,97 @@ from paddleseg.models.backbones.transformer_utils import DropPath, zeros_, ones_
 from paddleseg.utils import utils
 
 
+class SeaFormer(nn.Layer):
+    def __init__(self,
+                 in_channels=3,
+                 cfgs=[[[3, 1, 16, 1], [3, 4, 32, 2], [3, 3, 32, 1]],
+                       [[5, 3, 64, 2], [5, 3, 64, 1]],
+                       [[3, 3, 128, 2], [3, 3, 128, 1]], [[5, 4, 192, 2]],
+                       [[3, 6, 256, 2]]],
+                 channels=[16, 32, 64, 128, 192, 256],
+                 emb_dims=[192, 256],
+                 key_dims=[16, 24],
+                 depths=[4, 4],
+                 num_heads=8,
+                 attn_ratios=2,
+                 mlp_ratios=[2, 4],
+                 drop_path_rate=0.1,
+                 act_layer=nn.ReLU6,
+                 pretrained=None):
+        super().__init__()
+
+        self.channels = channels
+        self.depths = depths
+        self.cfgs = cfgs
+        self.pretrained = pretrained
+
+        for i in range(len(cfgs)):
+            smb = StackedMV2Block(
+                in_channels=in_channels,
+                cfgs=cfgs[i],
+                stem=True if i == 0 else False,
+                inp_channel=channels[i])
+            setattr(self, f"smb{i + 1}", smb)
+
+        for i in range(len(depths)):
+            dpr = [
+                x.item() for x in paddle.linspace(0, drop_path_rate, depths[i])
+            ]  # stochastic depth decay rule
+            trans = BasicLayer(
+                block_num=depths[i],
+                embedding_dim=emb_dims[i],
+                key_dim=key_dims[i],
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratios[i],
+                attn_ratio=attn_ratios,
+                drop=0,
+                attn_drop=0,
+                drop_path=dpr,
+                act_layer=act_layer)
+            setattr(self, f"trans{i + 1}", trans)
+
+        self.init_weights()
+
+    def forward(self, x):
+        outputs = []
+        num_smb_stage = len(self.cfgs)
+        num_trans_stage = len(self.depths)
+        for i in range(num_smb_stage):
+            smb = getattr(self, f"smb{i + 1}")
+            x = smb(x)
+            # 1/8 shared feat
+            if i == 1:
+                outputs.append(x)
+            if num_trans_stage + i >= num_smb_stage:
+                trans = getattr(
+                    self, f"trans{i + num_trans_stage - num_smb_stage + 1}")
+                x = trans(x)
+                outputs.append(x)
+
+        return outputs
+
+    def init_weights(self):
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Conv2D):
+                std = layer._kernel_size[0] * layer._kernel_size[
+                    1] * layer._out_channels
+                std //= layer._groups
+                param_init.normal_init(layer.weight, std=std)
+            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(layer.weight, value=1.0)
+                param_init.constant_init(layer.bias, value=0.0)
+            elif isinstance(layer, nn.Linear):
+                param_init.normal_init(layer.weight, std=0.01)
+                if layer.bias is not None:
+                    zeros_(layer.bias)
+            elif isinstance(layer, nn.LayerNorm):
+                zeros_(layer.bias)
+                ones_(layer.weight)
+
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
+
+
 def _make_divisible(v, divisor, min_value=None):
 
     if min_value is None:
@@ -351,99 +442,6 @@ class BasicLayer(nn.Layer):
         return x
 
 
-class SeaFormer(nn.Layer):
-    def __init__(self,
-                 in_channels=3,
-                 cfgs=[[[3, 1, 16, 1], [3, 4, 32, 2], [3, 3, 32, 1]],
-                       [[5, 3, 64, 2], [5, 3, 64, 1]],
-                       [[3, 3, 128, 2], [3, 3, 128, 1]], [[5, 4, 192, 2]],
-                       [[3, 6, 256, 2]]],
-                 channels=[16, 32, 64, 128, 192, 256],
-                 emb_dims=[192, 256],
-                 key_dims=[16, 24],
-                 depths=[4, 4],
-                 num_heads=8,
-                 attn_ratios=2,
-                 mlp_ratios=[2, 4],
-                 drop_path_rate=0.1,
-                 act_layer=nn.ReLU6,
-                 num_classes=1000,
-                 pretrained=None):
-        super().__init__()
-
-        self.num_classes = num_classes
-        self.channels = channels
-        self.depths = depths
-        self.cfgs = cfgs
-        self.pretrained = pretrained
-
-        for i in range(len(cfgs)):
-            smb = StackedMV2Block(
-                in_channels=in_channels,
-                cfgs=cfgs[i],
-                stem=True if i == 0 else False,
-                inp_channel=channels[i])
-            setattr(self, f"smb{i + 1}", smb)
-
-        for i in range(len(depths)):
-            dpr = [
-                x.item() for x in paddle.linspace(0, drop_path_rate, depths[i])
-            ]  # stochastic depth decay rule
-            trans = BasicLayer(
-                block_num=depths[i],
-                embedding_dim=emb_dims[i],
-                key_dim=key_dims[i],
-                num_heads=num_heads,
-                mlp_ratio=mlp_ratios[i],
-                attn_ratio=attn_ratios,
-                drop=0,
-                attn_drop=0,
-                drop_path=dpr,
-                act_layer=act_layer)
-            setattr(self, f"trans{i + 1}", trans)
-
-        self.init_weights()
-
-    def forward(self, x):
-        outputs = []
-        num_smb_stage = len(self.cfgs)
-        num_trans_stage = len(self.depths)
-        for i in range(num_smb_stage):
-            smb = getattr(self, f"smb{i + 1}")
-            x = smb(x)
-            # 1/8 shared feat
-            if i == 1:
-                outputs.append(x)
-            if num_trans_stage + i >= num_smb_stage:
-                trans = getattr(
-                    self, f"trans{i + num_trans_stage - num_smb_stage + 1}")
-                x = trans(x)
-                outputs.append(x)
-
-        return outputs
-
-    def init_weights(self):
-        for layer in self.sublayers():
-            if isinstance(layer, nn.Conv2D):
-                std = layer._kernel_size[0] * layer._kernel_size[
-                    1] * layer._out_channels
-                std //= layer._groups
-                param_init.normal_init(layer.weight, std=std)
-            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                param_init.constant_init(layer.weight, value=1.0)
-                param_init.constant_init(layer.bias, value=0.0)
-            elif isinstance(layer, nn.Linear):
-                param_init.normal_init(layer.weight, std=0.01)
-                if layer.bias is not None:
-                    zeros_(layer.bias)
-            elif isinstance(layer, nn.LayerNorm):
-                zeros_(layer.bias)
-                ones_(layer.weight)
-
-        if self.pretrained is not None:
-            utils.load_pretrained_model(self, self.pretrained)
-
-
 @manager.BACKBONES.add_component
 def SeaFormer_tiny(pretrained, **kwags):
     seaformer = SeaFormer(
@@ -456,6 +454,7 @@ def SeaFormer_tiny(pretrained, **kwags):
         depths=[2, 2],
         num_heads=4,
         **kwags)
+    seaformer.feat_channels = [32, 128, 160]
 
     return seaformer
 
@@ -472,6 +471,7 @@ def SeaFormer_small(pretrained, **kwags):
         depths=[3, 3],
         num_heads=6,
         **kwags)
+    seaformer.feat_channels = [48, 160, 192]
 
     return seaformer
 
@@ -490,6 +490,7 @@ def SeaFormer_base(pretrained, **kwags):
         num_heads=8,
         mlp_ratios=[2, 4],
         **kwags)
+    seaformer.feat_channels = [64, 192, 256]
 
     return seaformer
 
@@ -509,5 +510,6 @@ def SeaFormer_large(pretrained, **kwags):
         num_heads=8,
         mlp_ratios=[2, 4, 6],
         **kwags)
+    seaformer.feat_channels = [128, 192, 256, 320]
 
     return seaformer

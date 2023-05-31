@@ -4,11 +4,17 @@ batch_size: 8
 iters: 160000
 
 model:
-  type: Seg_SeaFormer
+  type: SeaFormerSeg
   backbone: 
     type: SeaFormer_base
     pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/seaformer_base_imagenet_pretrained.zip
   num_classes: 19
+  head_channels: 160
+  embed_dims: [128, 160]
+  is_dw: True
+  dropout_ratio: 0.1
+  align_corners: False
+  input_transform: 'multiple_select'
 
 
 optimizer:

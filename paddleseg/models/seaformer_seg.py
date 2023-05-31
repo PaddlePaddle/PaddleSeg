@@ -44,22 +44,41 @@ class FusionBlock(nn.Layer):
 
 
 @manager.MODELS.add_component
-class Seg_SeaFormer(nn.Layer):
+class SeaFormerSeg(nn.Layer):
+    """
+    The SeaFormer implementation based on PaddlePaddle.
+
+    The original article refers to
+    Qiang Wang, et, al. "SEAFORMER: SQUEEZE-ENHANCED AXIAL TRANSFORMER FOR MOBILE SEMANTIC SEGMENTATION"
+    (https://arxiv.org/pdf/2301.13156.pdf).
+
+    Args:
+        backbone (Paddle.nn.Layer): Backbone network, currently support SeaFormer.
+        in_index (list, optional): Two values in the tuple indicate the indices of output of backbone. Defaulte: [0, 1, 2]
+        head_channels (int, optional): Number of channels of segmentation head. Default: 160.
+        embed_dims (list, optional): The size of embedding dimensions. Default: [128, 160].
+        num_classes (int, optional): The unique number of target classes. Default: 150.
+        is_dw (bool, optional): An argument of using head_channels as group of Conv2D. Default: True.
+        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
+        input_transform (str, optional): An argument of data format backbone's output. Default: 'multiple_select'.
+    """
+
     def __init__(self,
                  backbone,
-                 in_channels=[64, 192, 256],
                  in_index=[0, 1, 2],
-                 channels=160,
+                 head_channels=160,
                  embed_dims=[128, 160],
                  num_classes=150,
                  is_dw=True,
                  dropout_ratio=0.1,
                  align_corners=False,
                  input_transform='multiple_select'):
-        super().__init__()
 
-        self.head_channels = channels
+        super().__init__()
+        self.head_channels = head_channels
         self.backbone = backbone
+        in_channels = backbone.feat_channels
 
         self.in_index = in_index
         self.input_transform = input_transform
@@ -77,7 +96,7 @@ class Seg_SeaFormer(nn.Layer):
         if dropout_ratio > 0:
             self.dropout = nn.Dropout2D(dropout_ratio)
 
-        self.cls_seg = nn.Conv2D(channels, num_classes, kernel_size=1)
+        self.cls_seg = nn.Conv2D(self.head_channels, num_classes, kernel_size=1)
 
         for i in range(len(embed_dims)):
             fuse = FusionBlock(
