@@ -1,0 +1,21 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 8
+iters: 40000
+
+model:
+  type: FPNet
+  backbone:
+    type: efficientformerv2_s2
+    pretrained: pretrained/eformer_s_2_pretrained.pdparams
+  num_classes: 19
+  
+optimizer:
+  type: AdamW
+  _inherited_: False
+  weight_decay: 1.0e-4
+
+lr_scheduler:
+  learning_rate: 0.0006
+  power: 0.9
+  end_lr: 1.0e-6

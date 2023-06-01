@@ -728,11 +728,6 @@ class EfficientFormer(nn.Layer):
                     embed_dims[-1], num_classes) if num_classes > 0 \
                     else nn.Identity()
 
-        if self.fork_feat:
-            self.init_weight()
-            self = nn.SyncBatchNorm.convert_sync_batchnorm(self)
-            self.train()
-
     def init_weight(self):
         for layer in self.sublayers():
             if isinstance(layer, nn.Conv2D):
@@ -794,7 +789,7 @@ class EfficientFormer(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-class efficientformerv2_s0_feat(EfficientFormer):
+class efficientformerv2_s0(EfficientFormer):
     def __init__(self, **kwargs):
         super().__init__(
             layers=EfficientFormer_depth['S0'],
@@ -808,7 +803,7 @@ class efficientformerv2_s0_feat(EfficientFormer):
 
 
 @manager.BACKBONES.add_component
-class efficientformerv2_s1_feat(EfficientFormer):
+class efficientformerv2_s1(EfficientFormer):
     def __init__(self, **kwargs):
         super().__init__(
             layers=EfficientFormer_depth['S1'],
@@ -822,7 +817,7 @@ class efficientformerv2_s1_feat(EfficientFormer):
 
 
 @manager.BACKBONES.add_component
-class efficientformerv2_s2_feat(EfficientFormer):
+class efficientformerv2_s2(EfficientFormer):
     def __init__(self, **kwargs):
         super().__init__(
             layers=EfficientFormer_depth['S2'],
@@ -836,7 +831,7 @@ class efficientformerv2_s2_feat(EfficientFormer):
 
 
 @manager.BACKBONES.add_component
-class efficientformerv2_l_feat(EfficientFormer):
+class efficientformerv2_l(EfficientFormer):
     def __init__(self, **kwargs):
         super().__init__(
             layers=EfficientFormer_depth['L'],

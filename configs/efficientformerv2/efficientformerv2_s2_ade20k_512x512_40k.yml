@@ -6,7 +6,7 @@ iters: 40000
 model:
   type: FPNNet
   backbone:
-    type: efficientformerv2_s2_feat
+    type: efficientformerv2_s2
     pretrained: pretrained/eformer_s_2_pretrained.pdparams
 
 val_dataset:
