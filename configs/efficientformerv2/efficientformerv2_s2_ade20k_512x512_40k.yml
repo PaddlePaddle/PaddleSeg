@@ -1,0 +1,36 @@
+_base_: '../_base_/ade20k.yml'
+
+batch_size: 8
+iters: 40000
+
+model:
+  type: FPNNet
+  backbone:
+    type: efficientformerv2_s2_feat
+    pretrained: pretrained/eformer_s_2_pretrained.pdparams
+
+val_dataset:
+  transforms:
+    - type: Resize
+      target_size: [1024, 512]
+      keep_ratio: True
+      size_divisor: 32
+    - type: Normalize
+  mode: val
+
+
+optimizer:
+  type: AdamW
+  _inherited_: False
+  weight_decay: 1.0e-4
+
+lr_scheduler:
+  learning_rate: 0.0006
+  power: 0.9
+  end_lr: 1.0e-6
+  
+
+test_config:
+  is_slide: False
+  crop_size: [512, 512]
+  stride: [512, 512]
