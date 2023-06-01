@@ -33,7 +33,7 @@ class HRNet(nn.Layer):
     The HRNet implementation based on PaddlePaddle.
 
     The original article refers to
-    Jingdong Wang, et, al. "HRNet：Deep High-Resolution Representation Learning for Visual Recognition"
+    Jingdong Wang, et, al. "HRNet: Deep High-Resolution Representation Learning for Visual Recognition"
     (https://arxiv.org/pdf/1908.07919.pdf).
 
     Args:
