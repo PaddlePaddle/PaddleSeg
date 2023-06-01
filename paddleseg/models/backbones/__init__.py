@@ -24,6 +24,11 @@ from .stdcnet import *
 from .lite_hrnet import *
 from .shufflenetv2 import *
 from .ghostnet import *
+from .cae import *
 from .top_transformer import *
 from .uhrnet import *
 from .efficientformerv2 import *
+from .strideformer import *
+from .vit_adapter import *
+from .hrformer import *
+from .mscan import *

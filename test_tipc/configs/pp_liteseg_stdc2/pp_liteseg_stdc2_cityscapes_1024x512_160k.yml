@@ -4,10 +4,10 @@ model:
   type: PPLiteSeg
   backbone:
     type: STDC2
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
+    pretrained: Null
 
 optimizer:
-  type: sgd
+  type: SGD
   weight_decay: 0.0005
 
 loss:

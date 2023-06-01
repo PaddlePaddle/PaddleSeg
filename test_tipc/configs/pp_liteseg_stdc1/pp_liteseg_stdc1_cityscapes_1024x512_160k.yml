@@ -4,12 +4,12 @@ model:
   type: PPLiteSeg
   backbone:
     type: STDC1
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+    pretrained: Null
   arm_out_chs: [32, 64, 128]
   seg_head_inter_chs: [32, 64, 64]
 
 optimizer:
-  type: sgd
+  type: SGD
   weight_decay: 0.0005
 
 loss:

@@ -25,7 +25,7 @@
         <td align="center">医疗分割</td>
     <tr>
     <tr>
-        <td><img src="https://user-images.githubusercontent.com/71769312/185751161-f23d0c1b-62c5-4cd2-903f-502037e353a8.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/30883834/232094536-8b651399-3f2a-4be3-94f3-df9831c3f9ef.gif"></td>
         <td><img src="https://user-images.githubusercontent.com/71769312/179209328-87174780-6c6f-4b53-b2a2-90d289ac1c8a.gif"></td>
         <td colspan="2"><img src="https://user-images.githubusercontent.com/71769312/179209342-5b75e61e-d9cf-4702-ba3e-971f47a10f5f.gif"></td>
     <tr>
@@ -66,9 +66,11 @@ EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能
   * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
   * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
   * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
+
 <div align="center">
-<img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/30883834/216607378-94745b74-0ca1-4d39-a817-de94385496f1.jpg"  width = "200" />  
 </div>
+
 ## <img src="../docs/images/teach.png" width="20"/> 使用教程
 * [安装说明](docs/install.md)
 * [图像分割标注](docs/image.md)

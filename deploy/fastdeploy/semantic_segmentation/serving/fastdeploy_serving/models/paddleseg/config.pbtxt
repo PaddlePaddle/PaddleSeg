@@ -1,0 +1,67 @@
+platform: "ensemble"
+
+input [
+  {
+    name: "INPUT"
+    data_type: TYPE_UINT8
+    dims: [-1, -1, -1, 3 ]
+  }
+]
+
+output [
+  {
+    name: "SEG_RESULT"
+    data_type: TYPE_STRING
+    dims: [ -1 ]
+  }
+]
+
+ensemble_scheduling {
+  step [
+    {
+      model_name: "preprocess"
+      model_version: 1
+      input_map {
+        key: "preprocess_input"
+        value: "INPUT"
+      }
+      output_map {
+        key: "preprocess_output_1"
+        value: "RUNTIME_INPUT_1"
+      }
+      output_map {
+        key: "preprocess_output_2"
+        value: "POSTPROCESS_INPUT_2"
+      }
+    },
+    {
+      model_name: "runtime"
+      model_version: 1
+      input_map {
+        key: "x"
+        value: "RUNTIME_INPUT_1"
+      }
+      output_map {
+        key: "argmax_0.tmp_0"
+        value: "RUNTIME_OUTPUT"
+      }
+    },
+    {
+      model_name: "postprocess"
+      model_version: 1
+      input_map {
+        key: "post_input_1"
+        value: "RUNTIME_OUTPUT"
+      }
+      input_map {
+        key: "post_input_2"
+        value: "POSTPROCESS_INPUT_2"
+      }
+      output_map {
+        key: "post_output"
+        value: "SEG_RESULT"
+      }
+    }
+  ]
+}
+

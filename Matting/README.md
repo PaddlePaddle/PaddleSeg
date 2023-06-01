@@ -48,7 +48,7 @@ The part of the image covered by the mask can be extracted to complete foregroun
 * If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/30883834/213601179-0813a896-11e1-4514-b612-d145e068ba86.jpeg"  width = "200" />  
 </div>
 
 ## Models
@@ -85,6 +85,7 @@ The model zoo includes our self developded high accuracy model PP-Matting and li
 * [Quick start](docs/quick_start_en.md)
 * [Full development](docs/full_develop_en.md)
 * [Human matting android deployment](deploy/human_matting_android_demo/README.md)
+* [Human matting .NET deployment](https://gitee.com/raoyutian/PaddleSegSharp)
 * [Dataset preparation](docs/data_prepare_en.md)
 * AI Studio tutorials
   * [The Matting tutorial of PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/3876411?contributionType=1)

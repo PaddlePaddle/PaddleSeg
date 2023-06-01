@@ -61,10 +61,16 @@ from .ddrnet import DDRNet_23
 from .ccnet import CCNet
 from .mobileseg import MobileSeg
 from .upernet import UPerNet
+from .upernet_cae import UPerNetCAE
 from .sinet import SINet
 from .lraspp import LRASPP
 from .mscale_ocrnet import MscaleOCRNet
 from .topformer import TopFormer
 from .rtformer import RTFormer
+from .upernet_vit_adapter import UPerNetViTAdapter
 from .lpsnet import LPSNet
 from .fpnnet import FPNNet
+from .maskformer import MaskFormer
+from .segnext import SegNeXt
+from .knet import KNet
+from .pp_mobileseg import PPMobileSeg

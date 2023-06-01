@@ -1,0 +1,34 @@
+_base_: 'maskformer_swin_tiny_ade20k_512x512_160k.yml'
+
+train_dataset:
+  type: ADE20K
+  dataset_root: data/ADEChallengeData2016/
+  transforms: 
+    - type: ResizeByShort
+      short_size: [320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344]
+      max_size: 2560
+    - type: RandomPaddingCrop
+      crop_size: [640, 640] 
+    - type: RandomDistort
+      brightness_range: 0.125
+      brightness_prob: 1.0
+      contrast_range: 0.5
+      contrast_prob: 1.0
+      saturation_range: 0.5
+      saturation_prob: 1.0
+      hue_range: 18
+      hue_prob: 1.0
+    - type: RandomHorizontalFlip
+    - type: GenerateInstanceTargets
+      num_classes: 150
+      ignore_index: 255
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+model:
+  type: MaskFormer
+  num_classes: 150
+  backbone:
+    type: SwinTransformer_large_patch4_window7_384_maskformer
+  pretrained: https://bj.bcebos.com/paddleseg/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_large/pretrain/model.pdparams

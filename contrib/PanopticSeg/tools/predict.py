@@ -65,7 +65,7 @@ def pred_with_args(args):
         model,
         model_path=args.model_path,
         transforms=transforms,
-        postprocessor=cfg.postprocessor,
+        postprocessor=builder.postprocessor,
         image_list=image_list,
         label_divisor=val_dataset.label_divisor,
         ignore_index=val_dataset.ignore_index,

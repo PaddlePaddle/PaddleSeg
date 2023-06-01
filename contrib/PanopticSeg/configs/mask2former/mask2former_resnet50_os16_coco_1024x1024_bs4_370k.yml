@@ -121,16 +121,7 @@ lr_scheduler:
 
 loss:
   types:
-    - type: MaskFormerCombinedLoss
-      num_classes: *num_classes
-      weight_ce: 2.0
-      weight_mask: 5.0
-      weight_dice: 5.0
-      eos_coef: 0.1
-      num_points: 12544
-      oversample_ratio: 3.0
-      importance_sample_ratio: 0.75
-      ignore_index: *ignore_index
+    - type: NoncustomizableLoss
   coef: [1]
 
 postprocessor:
@@ -140,3 +131,14 @@ postprocessor:
   overlap_threshold: 0.8
   label_divisor: *label_divisor
   ignore_index: *ignore_index
+
+runner: 
+  type: MaskFormerRunner
+  num_classes: *num_classes
+  weight_ce: 2.0
+  weight_mask: 5.0
+  weight_dice: 5.0
+  eos_coef: 0.1
+  num_points: 12544
+  oversample_ratio: 3.0
+  importance_sample_ratio: 0.75

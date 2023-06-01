@@ -297,7 +297,7 @@ class ResNet_vd(nn.Layer):
                         block] if dilation_dict and block in dilation_dict else 1
 
                     # Actually block here is 'stage', and i is 'block' in 'stage'
-                    # At the stage 4, expand the the dilation_rate if given multi_grid
+                    # At the stage 4, expand the dilation_rate if given multi_grid
                     if block == 3:
                         dilation_rate = dilation_rate * multi_grid[i]
                     ###############################################################################

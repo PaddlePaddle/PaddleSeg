@@ -299,7 +299,7 @@ class MSDDataset(MedicalDataset):
                                                   30. / 360 * 2. * np.pi)
             if self.do_dummy_2D_aug:
                 self.data_aug_params["dummy_2D"] = True
-                self.print_to_log_file("Using dummy2d data augmentation")
+                print("Using dummy2d data augmentation")
                 self.data_aug_params[
                     "elastic_deform_alpha"] = default_2D_augmentation_params[
                         "elastic_deform_alpha"]
@@ -343,7 +343,7 @@ class MSDDataset(MedicalDataset):
         if self.stage == 1 and self.cascade:
             self.data_aug_params["num_cached_per_thread"] = 2
 
-            self.data_aug_params['move_last_seg_chanel_to_data'] = True
+            self.data_aug_params['move_last_seg_channel_to_data'] = True
             self.data_aug_params['cascade_do_cascade_augmentations'] = True
 
             self.data_aug_params['cascade_random_binary_transform_p'] = 0.4
@@ -382,7 +382,7 @@ class MSDDataset(MedicalDataset):
 
         if 'pool_op_kernel_sizes' not in stage_plans.keys():
             assert 'num_pool_per_axis' in stage_plans.keys()
-            self.print_to_log_file(
+            print(
                 "WARNING! old plans file with missing pool_op_kernel_sizes. Attempting to fix it..."
             )
             self.net_num_pool_op_kernel_sizes = []
@@ -399,7 +399,7 @@ class MSDDataset(MedicalDataset):
                 'pool_op_kernel_sizes']
 
         if 'conv_kernel_sizes' not in stage_plans.keys():
-            self.print_to_log_file(
+            print(
                 "WARNING! old plans file with missing conv_kernel_sizes. Attempting to fix it..."
             )
             self.net_conv_kernel_sizes = [[3] * len(self.net_pool_per_axis)

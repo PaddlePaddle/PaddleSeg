@@ -154,7 +154,7 @@ class GSCNNHead(nn.Layer):
             input_shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
-        cs = F.sigmoid(cs)  # Ouput of shape stream
+        cs = F.sigmoid(cs)  # Output of shape stream
 
         return [cs, ]
 

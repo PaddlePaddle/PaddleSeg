@@ -48,7 +48,7 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
   * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
   * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/30883834/213601179-0813a896-11e1-4514-b612-d145e068ba86.jpeg"  width = "200" />  
 </div>
 
 ## 模型库
@@ -82,6 +82,7 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 * [快速体验](docs/quick_start_cn.md)
 * [全流程开发](docs/full_develop_cn.md)
 * [人像抠图Android部署](deploy/human_matting_android_demo/README_CN.md)
+* [人像抠图.NET部署](https://gitee.com/raoyutian/PaddleSegSharp)
 * [数据集准备](docs/data_prepare_cn.md)
 * AI Studio第三方教程
   * [PaddleSeg的Matting教程](https://aistudio.baidu.com/aistudio/projectdetail/3876411?contributionType=1)

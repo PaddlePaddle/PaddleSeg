@@ -123,10 +123,10 @@ class ISAHead(nn.Layer):
         x = self.in_conv(C4)
         x_shape = paddle.shape(x)
         P_h, P_w = self.down_factor
-        Q_h, Q_w = paddle.ceil(x_shape[2] / P_h).astype('int32'), paddle.ceil(
-            x_shape[3] / P_w).astype('int32')
-        pad_h, pad_w = (Q_h * P_h - x_shape[2]).astype('int32'), (
-            Q_w * P_w - x_shape[3]).astype('int32')
+        Q_h, Q_w = paddle.ceil(x_shape[2:3] / P_h).astype('int32'), paddle.ceil(
+            x_shape[3:4] / P_w).astype('int32')
+        pad_h, pad_w = (Q_h * P_h - x_shape[2:3]).astype('int32'), (
+            Q_w * P_w - x_shape[3:4]).astype('int32')
         if pad_h > 0 or pad_w > 0:
             padding = paddle.concat(
                 [

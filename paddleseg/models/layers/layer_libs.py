@@ -58,6 +58,71 @@ class ConvBNReLU(nn.Layer):
         return x
 
 
+class ConvGNAct(nn.Layer):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 padding="same",
+                 num_groups=32,
+                 act_type=None,
+                 **kwargs):
+        super().__init__()
+        self._conv = nn.Conv2D(
+            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
+
+        if "data_format" in kwargs:
+            data_format = kwargs["data_format"]
+        else:
+            data_format = "NCHW"
+        self._group_norm = nn.GroupNorm(
+            num_groups, out_channels, data_format=data_format)
+        self._act_type = act_type
+        if act_type is not None:
+            self._act = layers.Activation(act_type)
+
+    def forward(self, x):
+        x = self._conv(x)
+        x = self._group_norm(x)
+        if self._act_type is not None:
+            x = self._act(x)
+        return x
+
+
+class ConvNormAct(nn.Layer):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 padding='same',
+                 act_type=None,
+                 norm=None,
+                 **kwargs):
+        super().__init__()
+
+        self._conv = nn.Conv2D(
+            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
+
+        if 'data_format' in kwargs:
+            data_format = kwargs['data_format']
+        else:
+            data_format = 'NCHW'
+
+        self._norm = norm if norm is not None else None
+
+        self._act_type = act_type
+        if act_type is not None:
+            self._act = layers.Activation(act_type)
+
+    def forward(self, x):
+        x = self._conv(x)
+        if self._norm is not None:
+            x = self._norm(x)
+        if self._act_type is not None:
+            x = self._act(x)
+        return x
+
+
 class ConvBNAct(nn.Layer):
     def __init__(self,
                  in_channels,

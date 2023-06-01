@@ -61,15 +61,12 @@ lr_scheduler:
 loss:
   types:
     - type: CrossEntropyLoss
-    - type: CrossEntropyLoss
-    - type: FocalLoss
-    - type: KLLoss
-  coef: [1, 1, 0.3, 2]
+  coef: [1]
 
 model:
   type: PortraitNet
   backbone:
     type: MobileNetV2_x1_0
     pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv2_x1_0_ssld.tar.gz
-  add_edge: True
+  add_edge: False
   num_classes: 2

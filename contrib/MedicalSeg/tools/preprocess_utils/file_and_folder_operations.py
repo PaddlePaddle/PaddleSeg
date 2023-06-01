@@ -18,6 +18,8 @@ import pickle
 import json
 from typing import List
 
+from .path_utils import join_paths
+
 
 def subdirs(folder: str,
             join: bool=True,
@@ -25,12 +27,12 @@ def subdirs(folder: str,
             suffix: str=None,
             sort: bool=True) -> List[str]:
     if join:
-        l = os.path.join
+        l = join_paths
     else:
         l = lambda x, y: y
     res = [
         l(folder, i) for i in os.listdir(folder)
-        if os.path.isdir(os.path.join(folder, i)) and
+        if os.path.isdir(join_paths(folder, i)) and
         (prefix is None or i.startswith(prefix)
          ) and (suffix is None or i.endswith(suffix))
     ]
@@ -45,12 +47,12 @@ def subfiles(folder: str,
              suffix: str=None,
              sort: bool=True) -> List[str]:
     if join:
-        l = os.path.join
+        l = join_paths
     else:
         l = lambda x, y: y
     res = [
         l(folder, i) for i in os.listdir(folder)
-        if os.path.isfile(os.path.join(folder, i)) and
+        if os.path.isfile(join_paths(folder, i)) and
         (prefix is None or i.startswith(prefix)
          ) and (suffix is None or i.endswith(suffix))
     ]
@@ -90,7 +92,7 @@ def save_json(obj, file: str, indent: int=4, sort_keys: bool=True) -> None:
 
 
 def pardir(path: str):
-    return os.path.join(path, os.pardir)
+    return join_paths(path, os.pardir)
 
 
 def split_path(path: str) -> List[str]:
@@ -100,7 +102,7 @@ def split_path(path: str) -> List[str]:
     return path.split(os.sep)
 
 
-join = os.path.join
+join = join_paths
 isdir = os.path.isdir
 isfile = os.path.isfile
 listdir = os.listdir

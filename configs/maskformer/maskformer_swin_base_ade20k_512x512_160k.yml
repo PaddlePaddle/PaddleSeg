@@ -1,0 +1,8 @@
+_base_: 'maskformer_swin_large_ade20k_512x512_160k.yml'
+
+model:
+  type: MaskFormer
+  num_classes: 150
+  backbone:
+    type: SwinTransformer_base_patch4_window7_384_maskformer
+  pretrained: https://bj.bcebos.com/paddleseg/paddleseg/dygraph/ade20k/maskformer_ade20k_swin_base/pretrain/model.pdparams

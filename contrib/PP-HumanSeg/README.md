@@ -41,7 +41,7 @@ The following is demonstration videos (due to the video is large, the loading wi
 * If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/30883834/213601179-0813a896-11e1-4514-b612-d145e068ba86.jpeg"  width = "200" />  
 </div>
 
 ## 4 PP-HumanSeg Models
@@ -57,7 +57,7 @@ PP-HumanSegV2-Lite protrait segmentation model: **The inference speed is increas
   * Faster inference speed: We reduce the input resolution, which reduces the inference time and increases the receptive field.
   * Better robustness: Based on the idea of transfer learning, we first pretrain the model on a large general human segmentation dataset, and then finetune it on a small portrait segmentation dataset.
 
-| Model Name | Best Input Shape | mIou(%) | Inference Time on Arm CPU(ms) | Modle Size(MB) | Config File | Links |
+| Model Name | Best Input Shape | mIou(%) | Inference Time on Arm CPU(ms) | Model Size(MB) | Config File | Links |
 | --- | --- | --- | ---| --- | --- | --- |
 | PP-HumanSegV1-Lite | 398x224 | 93.60 | 29.68 | 2.3 | [cfg](./configs/portrait_pp_humansegv1_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax.zip) |
 | PP-HumanSegV2-Lite | 256x144 | 96.63 | 15.86 | 5.4 | [cfg](./configs/portrait_pp_humansegv2_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_smaller/portrait_pp_humansegv2_lite_256x144_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_smaller/portrait_pp_humansegv2_lite_256x144_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_smaller/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax.zip) |
@@ -336,11 +336,6 @@ Refer to the "Quick Start  -  Prepare Environment", install Paddle and PaddleSeg
 Run the following command to download `mini_supervisely` dataset. Refer to the "Quick Start  -  Prepare Models and Data" for detailed information.
 ```bash
 python src/download_data.py
-```
-
-Run the following command to download pretrained models.
-```bash
-python src/download_pretrained_models.py
 ```
 
 ### 6.2 Training
