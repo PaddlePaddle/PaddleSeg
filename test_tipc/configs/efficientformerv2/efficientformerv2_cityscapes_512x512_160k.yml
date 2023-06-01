@@ -4,7 +4,7 @@ batch_size: 8
 iters: 40000
 
 model:
-  type: FPNet
+  type: EfficientFormerSeg
   backbone:
     type: efficientformerv2_s2
     pretrained: pretrained/eformer_s_2_pretrained.pdparams

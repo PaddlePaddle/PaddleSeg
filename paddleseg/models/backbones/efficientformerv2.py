@@ -10,20 +10,19 @@ from paddleseg.cvlibs import manager, param_init
 from paddleseg.models.backbones.transformer_utils import *
 
 EfficientFormer_width = {
-    'L': [40, 80, 192, 384],  # 26m 83.3% 6attn
-    'S2': [32, 64, 144, 288],  # 12m 81.6% 4attn dp0.02
-    'S1': [32, 48, 120, 224],  # 6.1m 79.0
-    'S0': [32, 48, 96, 176],  # 75.0 75.7
+    'L': [40, 80, 192, 384],
+    'S2': [32, 64, 144, 288],
+    'S1': [32, 48, 120, 224],
+    'S0': [32, 48, 96, 176],
 }
 
 EfficientFormer_depth = {
-    'L': [5, 5, 15, 10],  # 26m 83.3%
-    'S2': [4, 4, 12, 8],  # 12m
-    'S1': [3, 3, 9, 6],  # 79.0
-    'S0': [2, 2, 6, 4],  # 75.7
+    'L': [5, 5, 15, 10],
+    'S2': [4, 4, 12, 8],
+    'S1': [3, 3, 9, 6],
+    'S0': [2, 2, 6, 4],
 }
 
-# 26m
 expansion_ratios_L = {
     '0': [4, 4, 4, 4, 4],
     '1': [4, 4, 4, 4, 4],
@@ -31,7 +30,6 @@ expansion_ratios_L = {
     '3': [4, 4, 4, 3, 3, 3, 3, 4, 4, 4],
 }
 
-# 12m
 expansion_ratios_S2 = {
     '0': [4, 4, 4, 4],
     '1': [4, 4, 4, 4],
@@ -39,7 +37,6 @@ expansion_ratios_S2 = {
     '3': [4, 4, 3, 3, 3, 3, 4, 4],
 }
 
-# 6.1m
 expansion_ratios_S1 = {
     '0': [4, 4, 4],
     '1': [4, 4, 4],
@@ -47,13 +44,131 @@ expansion_ratios_S1 = {
     '3': [4, 4, 3, 3, 4, 4],
 }
 
-# 3.5m
 expansion_ratios_S0 = {
     '0': [4, 4],
     '1': [4, 4],
     '2': [4, 3, 3, 3, 4, 4],
     '3': [4, 3, 3, 4],
 }
+
+
+class EfficientFormer(nn.Layer):
+    def __init__(self,
+                 layers,
+                 in_channels=3,
+                 mode='multi_scale',
+                 embed_dims=None,
+                 mlp_ratios=4,
+                 downsamples=None,
+                 pool_size=3,
+                 norm_layer=nn.BatchNorm2D,
+                 act_layer=nn.GELU,
+                 down_patch_size=3,
+                 down_stride=2,
+                 down_pad=1,
+                 drop_rate=0.,
+                 drop_path_rate=0.,
+                 use_layer_scale=True,
+                 layer_scale_init_value=1e-5,
+                 pretrained=None,
+                 vit_num=0,
+                 resolution=512,
+                 e_ratios=expansion_ratios_L,
+                 **kwargs):
+        super().__init__()
+
+        self.pretrained = pretrained
+        self.mode = mode
+
+        self.feat_channels = [32, 64, 144, 288]
+
+        self.patch_embed = stem(3, embed_dims[0], act_layer=act_layer)
+
+        network = []
+        for i in range(len(layers)):
+            stage = meta_blocks(
+                embed_dims[i],
+                i,
+                layers,
+                pool_size=pool_size,
+                mlp_ratio=mlp_ratios,
+                act_layer=act_layer,
+                norm_layer=norm_layer,
+                drop_rate=drop_rate,
+                drop_path_rate=drop_path_rate,
+                use_layer_scale=use_layer_scale,
+                layer_scale_init_value=layer_scale_init_value,
+                resolution=math.ceil(resolution / (2**(i + 2))),
+                vit_num=vit_num,
+                e_ratios=e_ratios)
+            network.append(stage)
+            if i >= len(layers) - 1:
+                break
+            if downsamples[i] or embed_dims[i] != embed_dims[i + 1]:
+                # downsampling between two stages
+                if i >= 2:
+                    asub = True
+                else:
+                    asub = False
+                network.append(
+                    Embedding(
+                        patch_size=down_patch_size,
+                        stride=down_stride,
+                        padding=down_pad,
+                        in_chans=embed_dims[i],
+                        embed_dim=embed_dims[i + 1],
+                        resolution=math.ceil(resolution / (2**(i + 2))),
+                        asub=asub,
+                        act_layer=act_layer,
+                        norm_layer=norm_layer, ))
+
+        self.network = nn.LayerList(network)
+
+        self.out_indices = [0, 2, 4, 6]
+
+        self.init_weight()
+
+    def init_weight(self):
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Conv2D):
+                param_init.normal_init(layer.weight, std=0.001)
+            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(layer.weight, value=1.0)
+                param_init.constant_init(layer.bias, value=0.0)
+            elif isinstance(layer, nn.Linear):
+                trunc_normal_(layer.weight)
+                if layer.bias is not None:
+                    zeros_(layer.bias)
+            elif isinstance(layer, nn.LayerNorm):
+                zeros_(layer.bias)
+                ones_(layer.weight)
+
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
+
+    def forward_tokens(self, x):
+        outs = []
+        for idx, block in enumerate(self.network):
+            x = block(x)
+            if idx in self.out_indices:
+                outs.append(x)
+        return outs
+
+    def forward(self, x):
+        x = self.patch_embed(x)
+        x = self.forward_tokens(x)
+        if self.mode is not 'multi_scale':
+            x = [
+                paddle.concat(
+                    [
+                        F.interpolate(
+                            feat, size=x[0].shape[-2:], mode='bilinear')
+                        for feat in x
+                    ],
+                    axis=1)
+            ]
+            self.feat_channels = [sum(self.feat_channels)]
+        return x
 
 
 class Attention4D(nn.Layer):
@@ -145,7 +260,7 @@ class Attention4D(nn.Layer):
         self.register_buffer('attention_bias_idxs_seg',
                              paddle.to_tensor(idxs).reshape([N, N]))
 
-    def forward(self, x):  # x (B,N,C)
+    def forward(self, x):
         B, C, H, W = x.shape
         if self.stride_conv is not None:
             x = self.stride_conv(x)
@@ -169,7 +284,7 @@ class Attention4D(nn.Layer):
                 self.attention_biases_seg.shape[0],
                 self.attention_bias_idxs_seg.shape[0],
                 self.attention_bias_idxs_seg.shape[1]
-            ])  # if self.training else self.ab
+            ])
 
         bias = F.interpolate(
             bias.unsqueeze(0), size=attn.shape[-2:], mode='bicubic')
@@ -220,7 +335,6 @@ class LGQuery(nn.Layer):
             nn.BatchNorm2D(out_dim), )
 
     def forward(self, x):
-        B, C, H, W = x.shape
         local_q = self.local(x)
         pool_q = self.pool(x)
         q = local_q + pool_q
@@ -249,7 +363,6 @@ class Attention4DDownsample(nn.Layer):
         self.d = int(attn_ratio * key_dim)
         self.dh = int(attn_ratio * key_dim) * num_heads
         self.attn_ratio = attn_ratio
-        h = self.dh + nh_kd * 2
 
         if out_dim is not None:
             self.out_dim = out_dim
@@ -319,7 +432,7 @@ class Attention4DDownsample(nn.Layer):
             paddle.to_tensor(
                 idxs, dtype=paddle.int64).reshape([N_, N]))
 
-    def forward(self, x):  # x (B,N,C)
+    def forward(self, x):
         B, C, H, W = x.shape
 
         q = self.q(x).flatten(2).reshape(
@@ -434,11 +547,6 @@ class Embedding(nn.Layer):
 
 
 class Mlp(nn.Layer):
-    """
-    Implementation of MLP with 1*1 convolutions.
-    Input: tensor with shape [B, C, H, W]
-    """
-
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -450,7 +558,6 @@ class Mlp(nn.Layer):
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         self.mid_conv = mid_conv
-        # self.mid_conv = False
         self.fc1 = nn.Conv2D(in_features, hidden_features, 1)
         self.act = act_layer()
         self.fc2 = nn.Conv2D(hidden_features, out_features, 1)
@@ -469,13 +576,6 @@ class Mlp(nn.Layer):
         self.norm2 = nn.BatchNorm2D(out_features)
         self.init_weight()
 
-    def init_weight(self):
-        for layer in self.sublayers():
-            if isinstance(layer, nn.Conv2D):
-                param_init.kaiming_normal_init(layer.weight)
-                if layer.bias is not None:
-                    zeros_(layer.bias)
-
     def forward(self, x):
         x = self.fc1(x)
         x = self.norm1(x)
@@ -491,6 +591,13 @@ class Mlp(nn.Layer):
 
         x = self.drop(x)
         return x
+
+    def init_weight(self):
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Conv2D):
+                param_init.kaiming_normal_init(layer.weight)
+                if layer.bias is not None:
+                    zeros_(layer.bias)
 
 
 class AttnFFN(nn.Layer):
@@ -635,159 +742,6 @@ def meta_blocks(dim,
     return blocks
 
 
-class EfficientFormer(nn.Layer):
-    def __init__(self,
-                 layers,
-                 in_channels=3,
-                 mode='multi_scale',
-                 embed_dims=None,
-                 mlp_ratios=4,
-                 downsamples=None,
-                 pool_size=3,
-                 norm_layer=nn.BatchNorm2D,
-                 act_layer=nn.GELU,
-                 num_classes=1000,
-                 down_patch_size=3,
-                 down_stride=2,
-                 down_pad=1,
-                 drop_rate=0.,
-                 drop_path_rate=0.,
-                 use_layer_scale=True,
-                 layer_scale_init_value=1e-5,
-                 fork_feat=False,
-                 pretrained=None,
-                 vit_num=0,
-                 distillation=True,
-                 resolution=512,
-                 e_ratios=expansion_ratios_L,
-                 **kwargs):
-        super().__init__()
-
-        self.pretrained = pretrained
-        self.mode = mode
-
-        if not fork_feat:
-            self.num_classes = num_classes
-        self.fork_feat = fork_feat
-        self.feat_channels = [32, 64, 144, 288]
-
-        self.patch_embed = stem(3, embed_dims[0], act_layer=act_layer)
-
-        network = []
-        for i in range(len(layers)):
-            stage = meta_blocks(
-                embed_dims[i],
-                i,
-                layers,
-                pool_size=pool_size,
-                mlp_ratio=mlp_ratios,
-                act_layer=act_layer,
-                norm_layer=norm_layer,
-                drop_rate=drop_rate,
-                drop_path_rate=drop_path_rate,
-                use_layer_scale=use_layer_scale,
-                layer_scale_init_value=layer_scale_init_value,
-                resolution=math.ceil(resolution / (2**(i + 2))),
-                vit_num=vit_num,
-                e_ratios=e_ratios)
-            network.append(stage)
-            if i >= len(layers) - 1:
-                break
-            if downsamples[i] or embed_dims[i] != embed_dims[i + 1]:
-                # downsampling between two stages
-                if i >= 2:
-                    asub = True
-                else:
-                    asub = False
-                network.append(
-                    Embedding(
-                        patch_size=down_patch_size,
-                        stride=down_stride,
-                        padding=down_pad,
-                        in_chans=embed_dims[i],
-                        embed_dim=embed_dims[i + 1],
-                        resolution=math.ceil(resolution / (2**(i + 2))),
-                        asub=asub,
-                        act_layer=act_layer,
-                        norm_layer=norm_layer, ))
-
-        self.network = nn.LayerList(network)
-
-        if self.fork_feat:
-            # add a norm layer for each output
-            self.out_indices = [0, 2, 4, 6]
-        else:
-            # Classifier head
-            self.norm = norm_layer(embed_dims[-1])
-            self.head = nn.Linear(
-                embed_dims[-1], num_classes) if num_classes > 0 \
-                else nn.Identity()
-            self.dist = distillation
-            if self.dist:
-                self.dist_head = nn.Linear(
-                    embed_dims[-1], num_classes) if num_classes > 0 \
-                    else nn.Identity()
-
-    def init_weight(self):
-        for layer in self.sublayers():
-            if isinstance(layer, nn.Conv2D):
-                param_init.normal_init(layer.weight, std=0.001)
-            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                param_init.constant_init(layer.weight, value=1.0)
-                param_init.constant_init(layer.bias, value=0.0)
-            elif isinstance(layer, nn.Linear):
-                trunc_normal_(layer.weight)
-                if layer.bias is not None:
-                    zeros_(layer.bias)
-            elif isinstance(layer, nn.LayerNorm):
-                zeros_(layer.bias)
-                ones_(layer.weight)
-
-        if self.pretrained is not None:
-            utils.load_pretrained_model(self, self.pretrained)
-
-    def forward_tokens(self, x):
-        outs = []
-        for idx, block in enumerate(self.network):
-            x = block(x)
-            if self.fork_feat and idx in self.out_indices:
-                # norm_layer = getattr(self, f'norm{idx}')
-                # x_out = norm_layer(x)
-                outs.append(x)
-        if self.fork_feat:
-            return outs
-        return x
-
-    def forward(self, x):
-        x = self.patch_embed(x)
-        x = self.forward_tokens(x)
-        if self.fork_feat:
-            if self.mode is not 'multi_scale':
-                x = paddle.concat(
-                    [
-                        F.interpolate(
-                            feat, size=x[0].shape[-2:], mode='bilinear')
-                        for feat in x
-                    ],
-                    axis=1)
-                # otuput features of four stages for dense prediction
-                self.feat_channels = [sum(self.feat_channels)]
-                return [x]
-            else:
-                return x
-        # print(x.size())
-        x = self.norm(x)
-        if self.dist:
-            cls_out = self.head(x.flatten(2).mean(-1)), self.dist_head(
-                x.flatten(2).mean(-1))
-            if not self.training:
-                cls_out = (cls_out[0] + cls_out[1]) / 2
-        else:
-            cls_out = self.head(x.flatten(2).mean(-1))
-        # for image classification
-        return cls_out
-
-
 @manager.BACKBONES.add_component
 class efficientformerv2_s0(EfficientFormer):
     def __init__(self, **kwargs):
@@ -795,7 +749,6 @@ class efficientformerv2_s0(EfficientFormer):
             layers=EfficientFormer_depth['S0'],
             embed_dims=EfficientFormer_width['S0'],
             downsamples=[True, True, True, True],
-            fork_feat=True,
             drop_path_rate=0.,
             vit_num=2,
             e_ratios=expansion_ratios_S0,
@@ -809,7 +762,6 @@ class efficientformerv2_s1(EfficientFormer):
             layers=EfficientFormer_depth['S1'],
             embed_dims=EfficientFormer_width['S1'],
             downsamples=[True, True, True, True],
-            fork_feat=True,
             drop_path_rate=0.,
             vit_num=2,
             e_ratios=expansion_ratios_S1,
@@ -823,7 +775,6 @@ class efficientformerv2_s2(EfficientFormer):
             layers=EfficientFormer_depth['S2'],
             embed_dims=EfficientFormer_width['S2'],
             downsamples=[True, True, True, True],
-            fork_feat=True,
             drop_path_rate=0.02,
             vit_num=4,
             e_ratios=expansion_ratios_S2,
@@ -837,7 +788,6 @@ class efficientformerv2_l(EfficientFormer):
             layers=EfficientFormer_depth['L'],
             embed_dims=EfficientFormer_width['L'],
             downsamples=[True, True, True, True],
-            fork_feat=True,
             drop_path_rate=0.1,
             vit_num=6,
             e_ratios=expansion_ratios_L,
