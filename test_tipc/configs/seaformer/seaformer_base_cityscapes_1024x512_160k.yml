@@ -1,0 +1,43 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 8
+iters: 160000
+
+model:
+  type: SeaFormerSeg
+  backbone: 
+    type: SeaFormer_base
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/seaformer_base_imagenet_pretrained.zip
+  num_classes: 19
+  head_channels: 160
+  embed_dims: [128, 160]
+  is_dw: True
+  dropout_ratio: 0.1
+  align_corners: False
+  input_transform: 'multiple_select'
+
+
+optimizer:
+  type: AdamW
+  _inherited_: False
+  beta1: 0.9
+  beta2: 0.999
+  weight_decay: 0.01
+  custom_cfg:
+    - name: pos_emb
+      weight_decay_mult: 0.0
+    - name: head
+      lr_mult: 10.0
+    - name: norm
+      weight_decay_mult: 0.0
+
+lr_scheduler:
+  learning_rate: 0.00025
+  power: 1.0
+  warmup_iters: 1500
+  warmup_start_lr: 1.0e-6
+
+test_config:
+  is_slide: True
+  crop_size: [512, 512]
+  stride: [512, 512]
