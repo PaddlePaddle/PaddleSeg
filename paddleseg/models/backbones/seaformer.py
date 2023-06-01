@@ -23,6 +23,32 @@ from paddleseg.utils import utils
 
 
 class SeaFormer(nn.Layer):
+    """
+    The SeaFormer implementation based on PaddlePaddle.
+
+    The original article refers to
+    Qiang Wang, et, al. "SEAFORMER: SQUEEZE-ENHANCED AXIAL TRANSFORMER FOR MOBILE SEMANTIC SEGMENTATION"
+    (https://arxiv.org/pdf/2301.13156.pdf).
+
+    Args:
+        in_channels (int, optional): The channels of input image. Default: 3.
+        cfg (list[list], optional): Two values in the tuple indicate the indices of output of backbone. Defaulte: 
+                      [[[3, 1, 16, 1], [3, 4, 32, 2], [3, 3, 32, 1]],
+                       [[5, 3, 64, 2], [5, 3, 64, 1]],
+                       [[3, 3, 128, 2], [3, 3, 128, 1]], [[5, 4, 192, 2]],
+                       [[3, 6, 256, 2]]]
+        channels (list[int], optional): Number of channels hidden layer. Default: [16, 32, 64, 128, 192, 256].
+        embed_dims (list, optional): The size of embedding dimensions. Default: [192, 256].
+        key_dims (list[int], optional): The unique number of key dimension. Default: [16, 24].
+        depths (list[int], optional): The depth of every layer. Default: [4, 4].
+        num_heads (int, optional): The number of heads for evary layer. Default: 8.
+        attn_ratios (int, optional): Argument of expansion ratio of BasicLayer. Default: 2.
+        mlp_ratios (list[int], optional): Argument of expansion ratio of MlP layers. Default: [2, 4].
+        drop_path_ratio (int, optional): Argument of drop path ratio. Default: 0.1.
+        act_layer (nn.Layer, optional): Activation function for model. Default: nn.ReLU6.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
+
     def __init__(self,
                  in_channels=3,
                  cfgs=[[[3, 1, 16, 1], [3, 4, 32, 2], [3, 3, 32, 1]],
