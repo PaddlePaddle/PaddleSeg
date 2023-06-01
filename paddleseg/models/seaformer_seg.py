@@ -18,29 +18,7 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
-
-
-class FusionBlock(nn.Layer):
-    def __init__(self, inp: int, oup: int, embed_dim: int):
-        super().__init__()
-
-        self.local_embedding = layers.ConvBN(
-            inp, embed_dim, kernel_size=1, bias_attr=False)
-        self.global_act = layers.ConvBN(
-            oup, embed_dim, kernel_size=1, bias_attr=False)
-        self.act = nn.Hardsigmoid()
-
-    def forward(self, x_l, x_g):
-        B, C, H, W = x_l.shape
-        local_feat = self.local_embedding(x_l)
-        global_act = self.global_act(x_g)
-        sig_act = F.interpolate(
-            self.act(global_act),
-            size=[H, W],
-            mode='bilinear',
-            align_corners=False)
-        out = local_feat * sig_act
-        return out
+from paddleseg.utils import utils
 
 
 @manager.MODELS.add_component
@@ -62,6 +40,7 @@ class SeaFormerSeg(nn.Layer):
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         input_transform (str, optional): An argument of data format backbone's output. Default: 'multiple_select'.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,
@@ -73,7 +52,8 @@ class SeaFormerSeg(nn.Layer):
                  is_dw=True,
                  dropout_ratio=0.1,
                  align_corners=False,
-                 input_transform='multiple_select'):
+                 input_transform='multiple_select',
+                 pretrained=None):
 
         super().__init__()
         self.head_channels = head_channels
@@ -85,6 +65,7 @@ class SeaFormerSeg(nn.Layer):
         self.align_corners = align_corners
 
         self.embed_dims = embed_dims
+        self.pretrained = pretrained
 
         self.linear_fuse = layers.ConvBNReLU(
             self.head_channels,
@@ -104,6 +85,8 @@ class SeaFormerSeg(nn.Layer):
                 in_channels[i + 1],
                 embed_dim=embed_dims[i])
             setattr(self, f"fuse{i + 1}", fuse)
+
+        self.init_weight()
 
     def forward(self, inputs):
         B, C, H, W = inputs.shape
@@ -143,3 +126,30 @@ class SeaFormerSeg(nn.Layer):
                 align_corners=self.align_corners)
         ]
         return x
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
+
+class FusionBlock(nn.Layer):
+    def __init__(self, inp: int, oup: int, embed_dim: int):
+        super().__init__()
+
+        self.local_embedding = layers.ConvBN(
+            inp, embed_dim, kernel_size=1, bias_attr=False)
+        self.global_act = layers.ConvBN(
+            oup, embed_dim, kernel_size=1, bias_attr=False)
+        self.act = nn.Hardsigmoid()
+
+    def forward(self, x_l, x_g):
+        B, C, H, W = x_l.shape
+        local_feat = self.local_embedding(x_l)
+        global_act = self.global_act(x_g)
+        sig_act = F.interpolate(
+            self.act(global_act),
+            size=[H, W],
+            mode='bilinear',
+            align_corners=False)
+        out = local_feat * sig_act
+        return out
