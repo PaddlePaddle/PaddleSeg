@@ -7,7 +7,7 @@ model:
   type: EfficientFormerSeg
   backbone:
     type: EfficientFormerv2_s2
-    pretrained: pretrained/eformer_s_2_pretrained.pdparams
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/efficientformerv2_s2/pretrain/eformer_s2_pretrained.pdparams
   backbone_indices: [0, 1, 2, 3]
   channels: 19
 
