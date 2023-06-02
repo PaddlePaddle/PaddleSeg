@@ -2,7 +2,7 @@
 
 ## Reference
 
-> Yanyu Li, Ju Hu, Yang Wen, Georgios Evangelidis and Kamyar Salahi. "SeaFormer: Rethinking Vision Transformers for MobileNet Size and Speed." arXiv:2301.13156v4.
+> Yanyu Li, Ju Hu, Yang Wen, Georgios Evangelidis and Kamyar Salahi. "Rethinking Vision Transformers for MobileNet Size and Speed." arXiv:2212.08059.
 
 ## Performance
 

@@ -10,6 +10,15 @@ model:
     pretrained: pretrained/eformer_s_2_pretrained.pdparams
   backbone_indices: [0, 1, 2, 3]
   channels: 19
+
+val_dataset:
+  transforms:
+    - type: Resize
+      target_size: [1024, 512]
+      keep_ratio: True
+      size_divisor: 32
+    - type: Normalize
+  mode: val
   
 optimizer:
   type: AdamW
