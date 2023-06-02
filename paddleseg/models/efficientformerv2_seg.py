@@ -1,4 +1,17 @@
-# Copyright (c) OpenMMLab. All rights reserved.
+# copyright (c) 2023 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
 
 import paddle.nn as nn
@@ -10,26 +23,53 @@ from paddleseg.utils import utils
 
 @manager.MODELS.add_component
 class EfficientFormerSeg(nn.Layer):
+    """
+    The EfficientFormerV2 implementation based on PaddlePaddle.
+
+    The original article refers to Yanyu Li, Ju Hu, Yang Wen, Georgios Evangelidis, 
+    Kamyar Salahi, Yanzhi Wang, Sergey Tulyakov, Jian Ren. 
+    "Rethinking Vision Transformers for MobileNet Size and Speed". 
+    (https://arxiv.org/pdf/2212.08059.pdf).
+
+    Args:
+        backbone (paddle.nn.Layer): Backbone networks.
+        num_classes (int): The unique number of target classes.
+        backbone_indices (list[int], optional): The values in the tuple indicate the indices of output of backbone.
+            Default: [0, 1, 2, 3].
+        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
+        add_extra_convs (bool|str): An argument about whether to add extra conv or not or where to add extra conv. Default: False.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
+
     def __init__(self,
                  backbone,
                  num_classes,
-                 in_channels=3,
+                 backbone_indices=[0, 1, 2, 3],
                  align_corners=False,
+                 channels=128,
+                 add_extra_convs=False,
                  pretrained=None):
         super().__init__()
         self.align_corners = align_corners
         self.backbone = backbone
         self.pretrained = pretrained
-        self.neck = FPN(in_channels=[32, 64, 144, 288],
-                        out_channels=256,
-                        num_outs=4)
+        backbone_channels = [
+            backbone.feat_channels[i] for i in backbone_indices
+        ]
+        self.neck = EfficientFormerFPNNeck(
+            in_channels=backbone_channels,
+            out_channels=256,
+            num_outs=4,
+            add_extra_convs=add_extra_convs)
         self.head = EfficientFormerFPN(
             in_channels=[256, 256, 256, 256],
             in_index=[0, 1, 2, 3],
             feature_strides=[4, 8, 16, 32],
-            channels=128,
+            channels=channels,
             dropout_ratio=0.1,
-            num_classes=num_classes)
+            num_classes=num_classes,
+            align_corners=self.align_corners)
 
         self.init_weight()
 
@@ -53,7 +93,7 @@ class EfficientFormerSeg(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
 
-class FPN(nn.Layer):
+class EfficientFormerFPNNeck(nn.Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -63,7 +103,7 @@ class FPN(nn.Layer):
                  add_extra_convs=False,
                  extra_convs_on_inputs=False,
                  relu_before_extra_convs=False):
-        super(FPN, self).__init__()
+        super().__init__()
 
         assert isinstance(in_channels, list)
         self.in_channels = in_channels

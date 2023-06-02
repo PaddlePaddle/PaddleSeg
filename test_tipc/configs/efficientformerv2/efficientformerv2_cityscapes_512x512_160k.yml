@@ -6,9 +6,10 @@ iters: 40000
 model:
   type: EfficientFormerSeg
   backbone:
-    type: efficientformerv2_s2
+    type: EfficientFormerv2_s2
     pretrained: pretrained/eformer_s_2_pretrained.pdparams
-  num_classes: 19
+  backbone_indices: [0, 1, 2, 3]
+  channels: 19
   
 optimizer:
   type: AdamW

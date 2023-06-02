@@ -6,8 +6,11 @@ iters: 40000
 model:
   type: EfficientFormerSeg
   backbone:
-    type: efficientformerv2_s2
+    type: EfficientFormerv2_s2
     pretrained: pretrained/eformer_s_2_pretrained.pdparams
+  num_classes: 150
+  backbone_indices: [0, 1, 2, 3]
+  channels: 128
 
 val_dataset:
   transforms:
@@ -28,9 +31,3 @@ lr_scheduler:
   learning_rate: 0.0006
   power: 0.9
   end_lr: 1.0e-6
-  
-
-test_config:
-  is_slide: False
-  crop_size: [512, 512]
-  stride: [512, 512]

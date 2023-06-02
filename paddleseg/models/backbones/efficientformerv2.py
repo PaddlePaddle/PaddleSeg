@@ -1,10 +1,24 @@
-import copy
+# copyright (c) 2023 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import math
+import itertools
+
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-import math
 
-import itertools
 from paddleseg.utils import utils
 from paddleseg.cvlibs import manager, param_init
 from paddleseg.models.backbones.transformer_utils import *
@@ -53,6 +67,37 @@ expansion_ratios_S0 = {
 
 
 class EfficientFormer(nn.Layer):
+    """
+    The EfficientFormerV2 implementation based on PaddlePaddle.
+
+    The original article refers to Yanyu Li, Ju Hu, Yang Wen, Georgios Evangelidis, 
+    Kamyar Salahi, Yanzhi Wang, Sergey Tulyakov, Jian Ren. 
+    "Rethinking Vision Transformers for MobileNet Size and Speed". 
+    (https://arxiv.org/pdf/2212.08059.pdf).
+
+    Args:
+        layers (List): The depth of every stage.
+        in_channels (int, optional): The channels of input image. Default: 3.
+        embed_dims (List[int]): The width of every stage. Default: None.
+        mlp_ratios (int, optional): The radio of the mlp. Default:4
+        downsamples (list[bool], optional): whether use the downsamples in the model. Default: None.
+        pool_size (int, optional): The kernel size of the pool layer. Default:3
+        norm_layer (nn.Layer, optional): The norm layer type. Default: nn.BatchNorm2D
+        act_layer (nn.Layer, optional): The activate function type. Default: nn.GELU
+        num_classes (int, optional): The num of the classes. Default: 150
+        down_patch_size (int, optional): The patch size of down sample. Default: 3
+        down_stride (int, optional): The stride size of the down sample. Default: 2
+        down_pad (int, optional): The padding size of the down sample. Default: 1
+        drop_rate (float, optional): The drop rate in meta_blocks. Default: 0.
+        drop_path_rate (float, optional): The drop path rate in meta_blocks. Default: 0.02
+        use_layer_scale (bool, optional): Whether use the multi-scale layer. Default: True
+        layer_scale_init_value (float, optional): The initial value of token. Default: 1e-5
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+        vit_num (int, optional): The num of vit stages. Default: 0.
+        resolution (int, optional): The resolution of the input image. Default: 512.
+        e_ratios (int): The ratios in the meta_blocks.
+    """
+
     def __init__(self,
                  layers,
                  in_channels=3,
@@ -82,7 +127,7 @@ class EfficientFormer(nn.Layer):
 
         self.feat_channels = [32, 64, 144, 288]
 
-        self.patch_embed = stem(3, embed_dims[0], act_layer=act_layer)
+        self.patch_embed = stem(in_channels, embed_dims[0], act_layer=act_layer)
 
         network = []
         for i in range(len(layers)):
@@ -125,6 +170,7 @@ class EfficientFormer(nn.Layer):
         self.network = nn.LayerList(network)
 
         self.out_indices = [0, 2, 4, 6]
+        self.feat_channels = embed_dims
 
         self.init_weight()
 
@@ -743,7 +789,7 @@ def meta_blocks(dim,
 
 
 @manager.BACKBONES.add_component
-class efficientformerv2_s0(EfficientFormer):
+class Efficientformerv2_s0(EfficientFormer):
     def __init__(self, **kwargs):
         super().__init__(
             layers=EfficientFormer_depth['S0'],
@@ -756,7 +802,7 @@ class efficientformerv2_s0(EfficientFormer):
 
 
 @manager.BACKBONES.add_component
-class efficientformerv2_s1(EfficientFormer):
+class EfficientFormerv2_s1(EfficientFormer):
     def __init__(self, **kwargs):
         super().__init__(
             layers=EfficientFormer_depth['S1'],
@@ -769,7 +815,7 @@ class efficientformerv2_s1(EfficientFormer):
 
 
 @manager.BACKBONES.add_component
-class efficientformerv2_s2(EfficientFormer):
+class EfficientFormerv2_s2(EfficientFormer):
     def __init__(self, **kwargs):
         super().__init__(
             layers=EfficientFormer_depth['S2'],
@@ -782,7 +828,7 @@ class efficientformerv2_s2(EfficientFormer):
 
 
 @manager.BACKBONES.add_component
-class efficientformerv2_l(EfficientFormer):
+class EfficientFormerv2_l(EfficientFormer):
     def __init__(self, **kwargs):
         super().__init__(
             layers=EfficientFormer_depth['L'],
