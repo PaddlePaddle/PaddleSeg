@@ -38,6 +38,7 @@ class EfficientFormerSeg(nn.Layer):
             Default: [0, 1, 2, 3].
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the output size of feature
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
+        channels (int, optional): The number of hidden channels of segmentation head. Default: 128.
         add_extra_convs (bool|str): An argument about whether to add extra conv or not or where to add extra conv. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
