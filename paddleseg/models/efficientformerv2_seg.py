@@ -38,7 +38,7 @@ class EfficientFormerSeg(nn.Layer):
             Default: [0, 1, 2, 3].
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the output size of feature
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
-        channels (int, optional): The number of hidden channels of segmentation head. Default: 128.
+        head_channels (int, optional): The number of hidden channels of segmentation head. Default: 128.
         add_extra_convs (bool|str): An argument about whether to add extra conv or not or where to add extra conv. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
@@ -48,7 +48,7 @@ class EfficientFormerSeg(nn.Layer):
                  num_classes,
                  backbone_indices=[0, 1, 2, 3],
                  align_corners=False,
-                 channels=128,
+                 head_channels=128,
                  add_extra_convs=False,
                  pretrained=None):
         super().__init__()
@@ -67,7 +67,7 @@ class EfficientFormerSeg(nn.Layer):
             in_channels=[256, 256, 256, 256],
             in_index=[0, 1, 2, 3],
             feature_strides=[4, 8, 16, 32],
-            channels=channels,
+            channels=head_channels,
             dropout_ratio=0.1,
             num_classes=num_classes,
             align_corners=self.align_corners)
