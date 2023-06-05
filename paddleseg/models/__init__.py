@@ -70,6 +70,7 @@ from .topformer import TopFormer
 from .rtformer import RTFormer
 from .upernet_vit_adapter import UPerNetViTAdapter
 from .lpsnet import LPSNet
+from .efficientformerv2_seg import EfficientFormerSeg
 from .maskformer import MaskFormer
 from .segnext import SegNeXt
 from .knet import KNet
