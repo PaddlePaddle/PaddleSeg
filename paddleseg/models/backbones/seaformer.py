@@ -27,7 +27,7 @@ class SeaFormer(nn.Layer):
     The SeaFormer implementation based on PaddlePaddle.
 
     The original article refers to
-    Qiang Wang, et, al. "SEAFORMER: SQUEEZE-ENHANCED AXIAL TRANSFORMER FOR MOBILE SEMANTIC SEGMENTATION"
+    Qiang Wan, et, al. "SEAFORMER: SQUEEZE-ENHANCED AXIAL TRANSFORMER FOR MOBILE SEMANTIC SEGMENTATION"
     (https://arxiv.org/pdf/2301.13156.pdf).
 
     Args:
@@ -35,7 +35,8 @@ class SeaFormer(nn.Layer):
         cfg (list[list], optional): Two values in the tuple indicate the indices of output of backbone. Defaulte: 
                       [[[3, 1, 16, 1], [3, 4, 32, 2], [3, 3, 32, 1]],
                        [[5, 3, 64, 2], [5, 3, 64, 1]],
-                       [[3, 3, 128, 2], [3, 3, 128, 1]], [[5, 4, 192, 2]],
+                       [[3, 3, 128, 2], [3, 3, 128, 1]], 
+                       [[5, 4, 192, 2]],
                        [[3, 6, 256, 2]]]
         channels (list[int], optional): Number of channels hidden layer. Default: [16, 32, 64, 128, 192, 256].
         embed_dims (list, optional): The size of embedding dimensions. Default: [192, 256].
@@ -474,9 +475,9 @@ def SeaFormer_tiny(pretrained, **kwags):
         pretrained=pretrained,
         cfgs=[[[3, 1, 16, 1], [3, 4, 16, 2], [3, 3, 16, 1]],
               [[5, 3, 32, 2], [5, 3, 32, 1]], [[3, 3, 64, 2], [3, 3, 64, 1]],
-              [[5, 3, 160, 2]], [[3, 6, 192, 2]]],
+              [[5, 3, 128, 2]], [[3, 6, 160, 2]]],
         emb_dims=[128, 160],
-        channels=[16, 24, 48, 96, 160, 192],
+        channels=[16, 16, 32, 64, 128, 160],
         depths=[2, 2],
         num_heads=4,
         **kwags)
@@ -491,9 +492,9 @@ def SeaFormer_small(pretrained, **kwags):
         pretrained=pretrained,
         cfgs=[[[3, 1, 16, 1], [3, 4, 24, 2], [3, 3, 24, 1]],
               [[5, 3, 48, 2], [5, 3, 48, 1]], [[3, 3, 96, 2], [3, 3, 96, 1]],
-              [[5, 3, 128, 2]], [[3, 6, 160, 2]]],
+              [[5, 4, 160, 2]], [[3, 6, 192, 2]]],
         emb_dims=[160, 192],
-        channels=[16, 16, 32, 64, 128, 160],
+        channels=[16, 24, 48, 96, 160, 192],
         depths=[3, 3],
         num_heads=6,
         **kwags)
