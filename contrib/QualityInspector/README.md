@@ -68,7 +68,7 @@ QualityInspector部分可视化效果如下：
   * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/30883834/213601179-0813a896-11e1-4514-b612-d145e068ba86.jpeg"  width = "200" />  
+<img src="https://paddleseg.bj.bcebos.com/images/seg_qr_code.png"  width = "200" />  
 </div>
 
 
