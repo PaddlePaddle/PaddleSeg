@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from paddle.fluid.dataloader.collate import default_collate_fn
+import paddle
+paddle_version = paddle.__version__[:3]
+# paddle version < 2.5.0 and not develop
+if paddle_version not in ["2.5", "0.0"]:
+    from paddle.fluid.dataloader.collate import default_collate_fn
+# paddle version >= 2.5.0 or develop
+else:
+    from paddle.io.dataloader.collate import default_collate_fn
 
 
 class SegCollate(object):
