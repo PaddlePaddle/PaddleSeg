@@ -23,6 +23,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 
 ```shell
 cd PaddleSeg/Matting
+pip install "paddleseg>=2.5"
 pip install -r requirements.txt
 ```
 
