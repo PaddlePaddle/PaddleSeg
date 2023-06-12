@@ -65,6 +65,7 @@ def parse_args():
         help="Export the model with fixed input shape, such as 1 3 1024 1024.",
         type=int,
         default=None)
+    parser.add_argument('--for_fd', action='store_true')
 
     return parser.parse_args()
 
@@ -94,10 +95,16 @@ def main(args):
         net.__class__.__name__, shape=shape, trimap=args.trimap)
 
     net = paddle.jit.to_static(net, input_spec=input_spec)
-    save_path = os.path.join(args.save_dir, 'model')
+    if args.for_fd:
+        save_name = 'inference'
+        yaml_name = 'inference.yml'
+    else:
+        save_name = 'model'
+        yaml_name = 'deploy.yaml'
+    save_path = os.path.join(args.save_dir, save_name)
     paddle.jit.save(net, save_path)
 
-    yml_file = os.path.join(args.save_dir, 'deploy.yaml')
+    yml_file = os.path.join(args.save_dir, yaml_name)
     with open(yml_file, 'w') as file:
         transforms = cfg.val_dataset_cfg.get('transforms', [{
             'type': 'Normalize'
@@ -105,8 +112,8 @@ def main(args):
         data = {
             'Deploy': {
                 'transforms': transforms,
-                'model': 'model.pdmodel',
-                'params': 'model.pdiparams',
+                'model': save_name + '.pdmodel',
+                'params': save_name + '.pdiparams',
                 'input_shape': shape
             },
             'ModelName': net.__class__.__name__
