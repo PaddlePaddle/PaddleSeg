@@ -47,5 +47,5 @@
 + 欢迎加入PaddleSeg的微信用户群👫（扫码填写简单问卷即可入群），大家可以领取30G重磅学习大礼包🎁，也可以和值班同学、各界大佬直接进行交流。
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg" width = "200" />  
+<img src="https://paddleseg.bj.bcebos.com/images/seg_qr_code.png" width = "200" />  
 </div>
