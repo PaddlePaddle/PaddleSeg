@@ -41,7 +41,7 @@ The following is demonstration videos (due to the video is large, the loading wi
 * If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
 <div align="center">
-<img src="https://user-images.githubusercontent.com/30883834/213601179-0813a896-11e1-4514-b612-d145e068ba86.jpeg"  width = "200" />  
+<img src="https://paddleseg.bj.bcebos.com/images/seg_qr_code.png"  width = "200" />  
 </div>
 
 ## 4 PP-HumanSeg Models
