@@ -16,12 +16,12 @@
 DEFINE_string(model_dir, "", "Directory of the inference model. "
                              "It constains deploy.yaml and infer models");
 DEFINE_string(img_path, "", "Path of the test image.");
-DECLARE_string(devices);
+DECLARE_string(devices);  // 'devices' was already defined in paddle/fluid/inference/io.cc
 DEFINE_bool(use_trt, false, "Wether enable TensorRT when use GPU. Defualt: false.");
 DEFINE_string(trt_precision, "fp32", "The precision of TensorRT, support fp32, fp16 and int8. Default: fp32");
 DEFINE_bool(use_trt_dynamic_shape, false, "Wether enable dynamic shape when use GPU and TensorRT. Defualt: false.");
 DEFINE_string(dynamic_shape_path, "", "If set dynamic_shape_path, it read the dynamic shape for TRT.");
-DECLARE_bool(use_mkldnn);
+DECLARE_bool(use_mkldnn);  // 'use_mkldnn' was already defined in paddle/phi/core/flags.cc
 DEFINE_string(save_dir, "", "Directory of the output image.");
 
 typedef struct YamlConfig {
