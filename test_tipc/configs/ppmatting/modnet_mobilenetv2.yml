@@ -33,11 +33,11 @@ model:
   type: MODNet
   backbone:
     type: MobileNetV2
-    pretrained: https://paddleseg.bj.bcebos.com/matting/models/MobileNetV2_pretrained/model.pdparams
+    pretrained: Null
   pretrained: Null
 
 optimizer:
-  type: sgd
+  type: SGD
   momentum: 0.9
   weight_decay: 4.0e-5
 

@@ -52,7 +52,7 @@ The MedicalSeg panorama is as follows, and its main features include:
 **MedicalSeg just released! If you find any problem using it or want to share any future develop suggestions, please open a github issue or join us by scanning the following QR code.**
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+<img src="https://paddleseg.bj.bcebos.com/images/seg_qr_code.png"  width = "200" />  
 </div>
 
 

@@ -120,6 +120,8 @@ def parse_args():
         default='gpu',
         choices=['cpu', 'gpu', 'xpu', 'npu'],
         type=str)
+    parser.add_argument(
+        '--opts', help='Update the key-value pairs of all options.', nargs='+')
 
     return parser.parse_args()
 
@@ -127,7 +129,7 @@ def parse_args():
 def main(args):
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
-    cfg = Config(args.cfg)
+    cfg = Config(args.cfg, opts=args.opts)
     builder = SegBuilder(cfg)
 
     utils.show_env_info()

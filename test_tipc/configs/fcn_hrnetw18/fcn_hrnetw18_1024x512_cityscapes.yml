@@ -28,14 +28,15 @@ model:
   type: FCN
   backbone:
     type: HRNet_W18
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+    pretrained: Null
     padding_same: False
   num_classes: 19
   backbone_indices: [-1]
   bias: False
 
 optimizer:
-  type: sgd
+  type: SGD
+  momentum: 0.9
   weight_decay: 0.0005
 
 lr_scheduler:

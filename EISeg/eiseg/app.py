@@ -23,7 +23,7 @@ import webbrowser
 from easydict import EasyDict as edict
 
 from qtpy import QtGui, QtCore, QtWidgets
-from qtpy.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QApplication
+from qtpy.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QApplication, QDialog
 from qtpy.QtGui import QImage, QPixmap
 from qtpy.QtCore import Qt, QByteArray, QVariant, QCoreApplication
 import cv2
@@ -33,7 +33,7 @@ import paddle
 import paddle.nn.functional as F
 
 from eiseg import pjpath, __APPNAME__, logger
-from widget import ShortcutWidget, PolygonAnnotation, LabelCorresWidget
+from widget import ShortcutWidget, PolygonAnnotation, LabelCorresWidget, CustomDialog
 from controller import InteractiveController
 from ui import Ui_EISeg
 import util
@@ -41,6 +41,7 @@ from util import COCO
 from util import check_cn, normcase
 from util.voc import VocAnnotations
 from util.jsencoder import JSEncoder
+from util.masktococo import saveMaskToCOCO
 
 import plugin.remotesensing as rs
 from plugin.medical import med
@@ -104,6 +105,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.video = InferenceCore()
         self.video_images = None
         self.video_masks = None
+        self.video_first = None
 
         self.det = DetInfer()
 
@@ -215,10 +217,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         self.formats = [
             img_ext,  # 自然图像
-            [".dcm"],  # 医学影像
+            [".dcm", ".tif", ".tiff"],  # 医学影像（tiff格式的X光数据）
             rs_ext,  # 遥感影像
             video_ext,  # 视频
         ]
+
+        self.rs_tiff_support = None
 
         # 遥感
         self.raster = None
@@ -326,6 +330,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "open_folder",
             "OpenFolder",
             tr("打开一个文件夹下所有的图像进行标注"), )
+        convert_mask = action(
+            tr("&加载分割标签图像"),
+            self.loadMaskImage,
+            "convert_mask",
+            "Convert",
+            tr("将分割的图像和图像标签转换为EISeg可以读取多边形的格式"), )
         change_output_dir = action(
             tr("&改变标签保存路径"),
             partial(self.changeOutputDir, None),
@@ -701,6 +711,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             fileMenu=(
                 open_image,
                 open_folder,
+                convert_mask,
                 change_output_dir,
                 load_param,
                 clear_recent,
@@ -1264,14 +1275,15 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.focusToLable(lab.idx)
 
     # 多边形标注
-    def createPoly(self, curr_polygon, color):
+    def createPoly(self, curr_polygon, color, label_idx=None):
         if curr_polygon is None:
             return
         for points in curr_polygon:
             if len(points) < 3:
                 continue
+            l_idx = self.currLabelIdx if label_idx is None else label_idx
             poly = PolygonAnnotation(
-                self.controller.labelList[self.currLabelIdx].idx,
+                self.controller.labelList[l_idx].idx,
                 self.controller.image.shape,
                 self.delPolygon,
                 self.setDirty,
@@ -1328,7 +1340,19 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if poly.labelIndex == idx:
                     pts = np.int32([np.array(poly.scnenePoints)])
                     cv2.fillPoly(pesudo, pts=pts, color=idx)
-        return pesudo
+        return pesudo.astype("uint8")
+
+    def createPolygonFromMask(self, mask):
+        m_shape = mask.shape
+        for i_clas in np.unique(mask):
+            if i_clas == 0:
+                continue
+            tmp_mask = (mask == i_clas).astype("uint8") * 255
+            curr_polygon = util.get_polygon(
+                tmp_mask, img_size=m_shape,
+                building=self.boundaryRegular.isChecked())
+            color = self.controller.labelList[i_clas - 1].color
+            self.createPoly(curr_polygon, color, i_clas - 1)
 
     def openRecentImage(self, file_path):
         self.queueEvent(partial(self.loadImage, file_path))
@@ -1405,6 +1429,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.listFiles.clear()
 
         # 3. 扫描文件夹下所有图片
+        self.rs_tiff_support is None
         # 3.1 获取所有文件名
         imagePaths = os.listdir(inputDir)
         exts = tuple(f for fmts in self.formats for f in fmts)
@@ -1414,9 +1439,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if len(imagePaths) == 0:
             return
         # 3.2 设置默认输出路径
-        if self.outputDir is None:
-            # 没设置为文件夹下的 label 文件夹
-            self.outputDir = osp.join(inputDir, "label")
+        self.outputDir = osp.join(inputDir, "label")
         if not osp.exists(self.outputDir):
             os.makedirs(self.outputDir)
         # 3.3 有重名图片，标签保留原来拓展名
@@ -1461,6 +1484,19 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 2. 判断图像类型，打开
         # TODO: 加用户指定类型的功能
         image = None
+        self.video_first = None
+
+        # tiff数据判断类型
+        if path.lower().endswith((".tif", ".tiff")) and self.rs_tiff_support is None:
+            tiff_checked_dialog = CustomDialog(
+                self, 
+                self.tr("tiff格式检查"),
+                self.tr("检测到当前图像为tiff格式，请指定其为遥感数据还是医疗数据"),
+                self.tr("遥感数据"),
+                self.tr("医疗数据")
+            )
+            if (tiff_checked_dialog.exec_()):
+                self.rs_tiff_support = tiff_checked_dialog.rs_support
 
         # 直接if会报错，因为打开遥感图像后多波段不存在，现在把遥感图像的单独抽出来了
         # 自然图像
@@ -1478,7 +1514,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     image, _ = self.grid.getGrid(0, 0)
 
         # 医学影像
-        if path.lower().endswith(tuple(self.formats[1])):
+        if path.lower().endswith(tuple(self.formats[1])) and \
+            self.rs_tiff_support is not True:
             if not self.dockStatus[5]:
                 res = self.warn(
                     self.tr("未启用医疗组件"),
@@ -1512,7 +1549,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         # 遥感图像
         if path.lower().endswith(tuple(self.formats[
-                2])):  # imghdr.what(path) == "tiff":
+                2])) and self.rs_tiff_support:  # imghdr.what(path) == "tiff":
             if not self.dockStatus[4]:
                 res = self.warn(
                     self.tr("未打开遥感组件"),
@@ -1576,6 +1613,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.sldTime.setMaximum(self.video.num_frames - 1)
             image = self.video_images[self.video.cursur]
             self.sldTime.setProperty("value", 0)
+            self.video_first = True
             # 清空3d显示
             if self.TDDock.isVisible():
                 self.vtkWidget.init()
@@ -1590,7 +1628,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.image = image
         self.controller.setImage(image, self.type_seg)
         self.updateImage(True)
-
         # 2. 加载标签
         self.load_label_success = self.loadLabel(path)
         self.addRecentFile(path)
@@ -1750,17 +1787,24 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.turnImg(delta, True)
 
     def finishObject(self):
-        if not self.controller or self.image is None:
+        if self.image is None:
             return
-        current_mask, curr_polygon = self.controller.finishObject(
-            building=self.boundaryRegular.isChecked())
-        if curr_polygon is not None:
+        if self.controller is not None:
+            current_mask, curr_polygon = self.controller.finishObject(
+                building=self.boundaryRegular.isChecked())
+            if curr_polygon is not None:
+                self.updateImage()
+                if current_mask is not None:
+                    # current_mask = current_mask.astype(np.uint8) * 255
+                    # polygon = util.get_polygon(current_mask)
+                    color = self.controller.labelList[self.currLabelIdx].color
+                    self.createPoly(curr_polygon, color)
+        if self.video_first is False:
+            self._video_pause()
             self.updateImage()
-            if current_mask is not None:
-                # current_mask = current_mask.astype(np.uint8) * 255
-                # polygon = util.get_polygon(current_mask)
-                color = self.controller.labelList[self.currLabelIdx].color
-                self.createPoly(curr_polygon, color)
+            current_mask = self.getVideoMask()
+            if current_mask is not None and len(self.scene.polygon_items) == 0:
+                self.createPolygonFromMask(current_mask)
         # 状态改变
         if self.status == self.EDITING:
             self.status = self.ANNING
@@ -1770,10 +1814,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.status = self.EDITING
             for p in self.scene.polygon_items:
                 p.setAnning(isAnning=False)
-        current_mask = self.getMask()
-        if self.video_images is not None:
-            if current_mask.max() != 0:
-                self.video_masks[self.video.cursur] = current_mask
 
     def completeLastMask(self):
         # 返回最后一个标签是否完成，false就是还有带点的
@@ -1954,13 +1994,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             if self.save_status["pseudo_color"]:
                 pseudoPath, ext = osp.splitext(savePath)
                 pseudoPath = pseudoPath + "_pseudo" + ext
-                pseudo = np.zeros([s[0], s[1], 3], dtype="uint8")
+                # color
+                bin_colormap = np.zeros((256, 3))
+                for idx, lab in enumerate(self.controller.labelList):
+                    bin_colormap[idx + 1, :] = lab.color
+                palette = bin_colormap.astype(np.uint8)
                 # mask = self.controller.result_mask
-                mask = mask_output
-                # print(pseudo.shape, mask.shape)
-                for lab in self.controller.labelList:
-                    pseudo[mask == lab.idx, :] = lab.color[::-1]
-                cv2.imencode(ext, pseudo)[1].tofile(pseudoPath)
+                mask = mask_output.astype(np.uint8)
+                visualimg = Image.fromarray(mask, "P")
+                visualimg.putpalette(palette)
+                visualimg.save(pseudoPath, format='PNG')
 
             # 4.3 保存前景抠图
             if self.save_status["cutout"]:
@@ -2913,6 +2956,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def sframeChanged(self):
         if self.video_images is None:
             return
+        if len(self.scene.polygon_items) > 0:
+            self.video_masks[self.video.cursur] = self.getMask()
         self.textTime.setText(str(self.sldTime.value()))
         self.video.cursur = int(self.textTime.text())
         self.controller.setImage(self.video_images[self.video.cursur])
@@ -2923,18 +2968,18 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def turnPreFrame(self):
         if self.video_images is None:
             return
-        self.video.cursur -= 1
-        if self.video.cursur < 0:
-            self.video.cursur = self.video.num_frames - 1
-        self.sldTime.setProperty("value", self.video.cursur)
+        v_cursur = self.video.cursur - 1
+        if v_cursur < 0:
+            v_cursur = self.video.num_frames - 1
+        self.sldTime.setProperty("value", v_cursur)
 
     def turnNextFrame(self):
         if self.video_images is None:
             return
-        self.video.cursur += 1
-        if self.video.cursur > self.video.num_frames - 1:
-            self.video.cursur = 0
-        self.sldTime.setProperty("value", self.video.cursur)
+        v_cursur = self.video.cursur + 1
+        if v_cursur > self.video.num_frames - 1:
+            v_cursur = 0
+        self.sldTime.setProperty("value", v_cursur)
 
     def show_current_frame(self):
         self.viz = overlay_davis(self.video_images[self.video.cursur],
@@ -2957,21 +3002,27 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.warn(self.tr("图片格式无法播放"), self.tr("请先加载视频"))
             return
         if self.timer.isActive():
-            self.timer.stop()
-            self.videoPlay.setText(self.tr("播放"))
-            self.videoPlay.setIcon(
-                QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
+            self._video_pause()
         else:
-            # self.delAllPolygon()
-            self.timer.start(1000 // self.ratio)
-            self.videoPlay.setText(self.tr("暂停"))
-            self.videoPlay.setIcon(
-                QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))
+            self._video_play()
+
+    def _video_pause(self):
+        self.timer.stop()
+        self.image = self.video_images[self.video.cursur]
+        self.videoPlay.setText(self.tr("播放"))
+        self.videoPlay.setIcon(
+            QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
+            
+    def _video_play(self):
+        self.timer.start(1000 // self.ratio)
+        self.videoPlay.setText(self.tr("暂停"))
+        self.videoPlay.setIcon(
+            QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))
 
     def getVideoMask(self):
-        if self.video_masks is not None:
+        try:
             return self.video_masks[self.video.cursur]
-        else:
+        except (TypeError, KeyError):
             return None
 
     def on_propgation(self):
@@ -2996,6 +3047,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             # return
         print('-------------start propgation----------------')
         self.statusbar.showMessage(self.tr("开始传播"))
+        self.btnPropagate.setEnabled(False)
         # set object
         self.video.set_objects(int(max(self.video.k, current_mask.max())))
         self.video.set_images(self.video_images)
@@ -3011,6 +3063,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         end = time.time()
         print("propagation time cost", end - start)
         self.statusbar.showMessage(self.tr("传播完成!"), 5000)
+        self.btnPropagate.setEnabled(True)
+        self.video_first = False
         # 传播进度条重置
         self.proPropagete.setValue(0)
         self.proPropagete.setFormat('0%')
@@ -3361,3 +3415,28 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         with open(path, "w", encoding="utf-8") as f:
             for label in labelName:
                 f.write(label + "\n")
+
+    def loadMaskImage(self):
+        options = (QtWidgets.QFileDialog.ShowDirsOnly |
+                   QtWidgets.QFileDialog.DontResolveSymlinks)
+        if self.settings.value("use_qt_widget", False, type=bool):
+            options = options | QtWidgets.QFileDialog.DontUseNativeDialog
+        imgDir = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            self.tr("选择图片文件夹") + " - " + __APPNAME__,
+            "",
+            options, )
+        if not osp.exists(imgDir):
+            return
+        maskDir = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            self.tr("选择标签文件夹") + " - " + __APPNAME__,
+            "",
+            options, )
+        if not osp.exists(maskDir):
+            return
+        try:
+            saveMaskToCOCO(imgDir, maskDir)
+            self.statusbar.showMessage(self.tr("转换完成"), 10000)
+        except:
+            self.statusbar.showMessage(self.tr("转换失败"), 10000)

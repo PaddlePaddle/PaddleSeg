@@ -243,13 +243,21 @@ class ResizeByShort:
 
     Args:
         short_size (int): The target size of short side.
+        max_size(int): The maximum length of resized image's long edge, if the resized image's long edge exceed this length, short size will be adjusted.
     """
 
-    def __init__(self, short_size):
+    def __init__(self, short_size, max_size=1e10):
+        if isinstance(short_size, list):
+            short_size = random.choice(short_size)
         self.short_size = short_size
+        self.max_size = max_size
 
     def __call__(self, data):
+        h, w = data['img'].shape[0:2]
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
+        if self.short_size / min(h, w) * max(h, w) > self.max_size:
+            self.short_size = int((self.max_size / max(h, w)) * min(h, w))
+
         data['img'] = functional.resize_short(data['img'], self.short_size)
         for key in data.get('gt_fields', []):
             data[key] = functional.resize_short(data[key], self.short_size,
@@ -550,6 +558,11 @@ class RandomPaddingCrop:
         crop_size (tuple, optional): The target cropping size. Default: (512, 512).
         im_padding_value (float, optional): The padding value of raw image. Default: 127.5.
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
+        category_max_ratio (float, optional): The maximum ratio that single category could occupy. 
+            Default: 1.0.
+        ignore_index (int, optional): The value that should be ignored in the annotation image. 
+            Default: 255.
+        loop_times (int, optional): The maximum number of attempts to crop an image. Default: 10.
 
     Raises:
         TypeError: When crop_size is neither list nor tuple.
@@ -559,72 +572,95 @@ class RandomPaddingCrop:
     def __init__(self,
                  crop_size=(512, 512),
                  im_padding_value=127.5,
-                 label_padding_value=255):
+                 label_padding_value=255,
+                 category_max_ratio=1.0,
+                 ignore_index=255,
+                 loop_times=10):
         if isinstance(crop_size, list) or isinstance(crop_size, tuple):
             if len(crop_size) != 2:
                 raise ValueError(
-                    'Type of `crop_size` is list or tuple. It should include 2 elements, but it is {}'
+                    'Type of `crop_size` is list or tuple. It should include 2 elements, but it is {}.'
                     .format(crop_size))
         else:
             raise TypeError(
-                "The type of `crop_size` is invalid. It should be list or tuple, but it is {}"
+                "The type of `crop_size` is invalid. It should be list or tuple, but it is {}."
                 .format(type(crop_size)))
-        self.crop_size = crop_size
+        if category_max_ratio <= 0:
+            raise ValueError(
+                "The value of `category_max_ratio` must be greater than 0, but got {}.".
+                format(category_max_ratio))
+        if loop_times <= 0:
+            raise ValueError(
+                "The value of `loop_times` must be greater than 0, but got {}.".
+                format(loop_times))
+
+        self.crop_size = tuple(reversed(crop_size))
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
+        self.category_max_ratio = category_max_ratio
+        self.ignore_index = ignore_index
+        self.loop_times = loop_times
 
-    def __call__(self, data):
+    def _get_crop_coordinates(self, origin_size):
+        margin_h = max(origin_size[0] - self.crop_size[0], 0)
+        margin_w = max(origin_size[1] - self.crop_size[1], 0)
+        offset_h = np.random.randint(0, margin_h + 1)
+        offset_w = np.random.randint(0, margin_w + 1)
+        crop_y1, crop_y2 = offset_h, offset_h + self.crop_size[0]
+        crop_x1, crop_x2 = offset_w, offset_w + self.crop_size[1]
 
-        if isinstance(self.crop_size, int):
-            crop_width = self.crop_size
-            crop_height = self.crop_size
-        else:
-            crop_width = self.crop_size[0]
-            crop_height = self.crop_size[1]
+        return crop_x1, crop_y1, crop_x2, crop_y2
 
-        img_height = data['img'].shape[0]
-        img_width = data['img'].shape[1]
-
-        if img_height == crop_height and img_width == crop_width:
-            return data
-        else:
-            pad_height = max(crop_height - img_height, 0)
-            pad_width = max(crop_width - img_width, 0)
-            img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
-            if (pad_height > 0 or pad_width > 0):
-                data['img'] = cv2.copyMakeBorder(
-                    data['img'],
+    def _padding(self, data):
+        img_shape = data['img'].shape[:2]
+        pad_height = max(self.crop_size[0] - img_shape[0], 0)
+        pad_width = max(self.crop_size[1] - img_shape[1], 0)
+        img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
+        if (pad_height > 0 or pad_width > 0):
+            data['img'] = cv2.copyMakeBorder(
+                data['img'],
+                0,
+                pad_height,
+                0,
+                pad_width,
+                cv2.BORDER_CONSTANT,
+                value=(self.im_padding_value, ) * img_channels)
+            for key in data.get('gt_fields', []):
+                data[key] = cv2.copyMakeBorder(
+                    data[key],
                     0,
                     pad_height,
                     0,
                     pad_width,
                     cv2.BORDER_CONSTANT,
-                    value=(self.im_padding_value, ) * img_channels)
-                for key in data.get('gt_fields', []):
-                    data[key] = cv2.copyMakeBorder(
-                        data[key],
-                        0,
-                        pad_height,
-                        0,
-                        pad_width,
-                        cv2.BORDER_CONSTANT,
-                        value=self.label_padding_value)
-                img_height = data['img'].shape[0]
-                img_width = data['img'].shape[1]
+                    value=self.label_padding_value)
+        return data
 
-            if crop_height > 0 and crop_width > 0:
-                h_off = np.random.randint(img_height - crop_height + 1)
-                w_off = np.random.randint(img_width - crop_width + 1)
+    def __call__(self, data):
+        img_shape = data['img'].shape[:2]
+        if img_shape[0] == self.crop_size[0] and img_shape[1] == self.crop_size[
+                1]:
+            return data
 
-                if data['img'].ndim == 2:
-                    data['img'] = data['img'][h_off:(crop_height + h_off),
-                                              w_off:(w_off + crop_width)]
-                else:
-                    data['img'] = data['img'][h_off:(crop_height + h_off),
-                                              w_off:(w_off + crop_width), :]
-                for key in data.get('gt_fields', []):
-                    data[key] = data[key][h_off:(crop_height + h_off), w_off:(
-                        w_off + crop_width)]
+        data = self._padding(data)
+        img_shape = data['img'].shape[:2]
+        crop_coordinates = self._get_crop_coordinates(img_shape)
+
+        if self.category_max_ratio < 1.0:
+            for _ in range(self.loop_times):
+                seg_temp = functional.crop(data["label"], crop_coordinates)
+                labels, cnt = np.unique(seg_temp, return_counts=True)
+                cnt = cnt[labels != self.ignore_index]
+                if len(cnt) > 1 and np.max(cnt) / np.sum(
+                        cnt) < self.category_max_ratio:
+                    data['img'] = seg_temp
+                    break
+                crop_coordinates = self._get_crop_coordinates(img_shape)
+        else:
+            data['img'] = functional.crop(data['img'], crop_coordinates)
+        for key in data.get("gt_fields", []):
+            data[key] = functional.crop(data[key], crop_coordinates)
+
         return data
 
 
@@ -1125,4 +1161,62 @@ class RandomAffine:
                 flags=cv2.INTER_NEAREST,
                 borderMode=cv2.BORDER_CONSTANT,
                 borderValue=self.label_padding_value)
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class GenerateInstanceTargets:
+    """
+    Generate instance targets from ground-truth labels.
+
+    Args:
+        num_classes (int): The number of classes.
+        ignore_index (int, optional): Specifies a target value that is ignored. Default: 255.
+    """
+
+    def __init__(self, num_classes, ignore_index=255):
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+
+    def __call__(self, data):
+        if 'label' in data:
+            sem_seg_gt = data['label']
+            instances = {"image_shape": data['img'].shape[1:]}
+            classes = np.unique(sem_seg_gt)
+            classes = classes[classes != self.ignore_index]
+
+            # To make data compatible with dataloader
+            classes_cpt = np.array([
+                self.ignore_index
+                for _ in range(self.num_classes - len(classes))
+            ])
+            classes_cpt = np.append(classes, classes_cpt)
+            instances["gt_classes"] = np.asarray(classes_cpt).astype('int64')
+
+            masks = []
+            for cid in classes:
+                masks.append(sem_seg_gt == cid)  # [C, H, W] 
+
+            shape = [self.num_classes - len(masks)] + list(data['label'].shape)
+            masks_cpt = np.zeros(shape, dtype='int64')
+
+            if len(masks) == 0:
+                # Some images do not have annotation and will all be ignored
+                instances['gt_masks'] = np.zeros(
+                    (self.num_classes, sem_seg_gt.shape[-2],
+                     sem_seg_gt.shape[-1]),
+                    dtype='int64')
+
+            else:
+                instances['gt_masks'] = np.concatenate(
+                    [
+                        np.stack([
+                            np.ascontiguousarray(x).astype('float32')
+                            for x in masks
+                        ]), masks_cpt
+                    ],
+                    axis=0)
+
+            data['instances'] = instances
+
         return data

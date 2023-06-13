@@ -1,0 +1,46 @@
+_base_: '../_base_/ade20k.yml'
+
+batch_size: 8
+iters: 160000
+
+model:
+  type: SeaFormerSeg
+  backbone: 
+    type: SeaFormer_base
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/seaformer_base_imagenet_pretrained.zip
+  num_classes: 150
+  head_channels: 160
+  embed_dims: [128, 160]
+  is_dw: True
+  dropout_ratio: 0.1
+  align_corners: False
+  input_transform: 'multiple_select'
+
+val_dataset:
+  transforms:
+    - type: Resize
+      target_size: [2048, 512]
+      keep_ratio: True
+      size_divisor: 32
+    - type: Normalize
+  mode: val
+
+optimizer:
+  _inherited_: False
+  type: AdamW
+  beta1: 0.9
+  beta2: 0.999
+  weight_decay: 0.01
+  custom_cfg:
+    - name: pos_emb
+      weight_decay_mult: 0.0
+    - name: head
+      lr_mult: 10.0
+    - name: norm
+      weight_decay_mult: 0.0
+
+lr_scheduler:
+  learning_rate: 0.00025
+  power: 1.0
+  warmup_iters: 1500
+  warmup_start_lr: 1.0e-6

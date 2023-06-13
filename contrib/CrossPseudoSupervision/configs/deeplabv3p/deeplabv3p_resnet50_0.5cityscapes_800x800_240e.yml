@@ -1,0 +1,155 @@
+batch_size: 8 # total batch size
+nepochs: 240
+labeled_ratio: 2 #  The ratio of total data to marked data, if 2, is 1/2, i.e. 0.5.
+
+train_dataset:
+  type: CityscapesCPS
+  dataset_root: data/city
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [800, 800]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  train_path: data/city/config_new/subset_train/train_aug_labeled_1-2.txt # train_aug_labeled_1-{label_ratio}.txt
+  unsupervised: False
+  mode: train
+
+unsupervised_train_dataset:
+  type: CityscapesCPS
+  dataset_root: data/city
+  train_path: data/city/config_new/subset_train/train_aug_unlabeled_1-2.txt # train_aug_unlabeled_1-{label_ratio}.txt
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [800, 800]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  unsupervised: True
+  mode: train
+
+batch_transforms:
+  type: BoxMaskGenerator
+  prop_range: [0.25, 0.5]
+  n_boxes: 3
+  random_aspect_ratio: True
+  prop_by_area: True
+  within_bounds: True
+  invert: True
+
+val_dataset:
+  type: CityscapesCPS
+  dataset_root: data/city
+  val_path: data/city/config_new/val.txt
+  transforms:
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  mode: val
+
+
+optimizer_l:
+  type: SGD
+  momentum: 0.9
+  weight_decay: 1.0e-4
+  custom_cfg:
+    - name: bias
+      weight_decay_mult: 0.0
+    - name: bn
+      weight_decay_mult: 0.0
+    - name: norm
+      weight_decay_mult: 0.0
+    - name: downsample.1
+      weight_decay_mult: 0.0
+    - name: backbone.conv1.1
+      weight_decay_mult: 0.0
+    - name: backbone.conv1.4
+      weight_decay_mult: 0.0
+
+optimizer_r:
+  type: SGD
+  momentum: 0.9
+  weight_decay: 1.0e-4
+  custom_cfg:
+    - name: bias
+      weight_decay_mult: 0.0
+    - name: bn
+      weight_decay_mult: 0.0
+    - name: norm
+      weight_decay_mult: 0.0
+    - name: downsample.1
+      weight_decay_mult: 0.0
+    - name: backbone.conv1.1
+      weight_decay_mult: 0.0
+    - name: backbone.conv1.4
+      weight_decay_mult: 0.0
+
+
+lr_scheduler_l:
+  type: PolynomialDecay
+  learning_rate: 0.02
+  end_lr: 0
+  power: 0.9
+
+lr_scheduler_r:
+  type: PolynomialDecay
+  learning_rate: 0.02
+  end_lr: 0
+  power: 0.9
+
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: ProbOhemCrossEntropy2D
+      min_kept: 100000 # 50000 * batch_size per gpu
+    - type: ProbOhemCrossEntropy2D
+      min_kept: 100000 # 50000 * batch_size per gpu
+  coef: [5, 1, 1]
+
+test_config:
+  is_slide: True
+  crop_size: [800, 800]
+  stride: [532, 532]
+
+
+model:
+  type: CPSDeeplabV3P
+  num_classes: 19
+  backbone_l:
+    type: ResNet50
+    deep_stem: True
+    stem_width: 64
+    as_backbone: True
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/cross_pseudo_supervision/backbone/resnet50_v1c.pdparams
+    in_channels: 3
+  backbone_r:
+    type: ResNet50
+    deep_stem: True
+    stem_width: 64
+    as_backbone: True
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/cross_pseudo_supervision/backbone/resnet50_v1c.pdparams
+    in_channels: 3
+  bn_eps: 1.0e-5
+  bn_momentum: 0.9
+  aspp_out_channels: 256
+  align_corners: True
+  pretrained: null

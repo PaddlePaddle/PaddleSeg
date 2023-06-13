@@ -1,4 +1,4 @@
-# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from paddleseg.cvlibs.manager import ComponentManager, BACKBONES, TRANSFORMS, OPTIMIZERS
+from paddleseg.cvlibs.manager import ComponentManager, BACKBONES, TRANSFORMS, OPTIMIZERS, LOSSES
 
-# NOTE: Models, datasets, losses, and postprocessors are very different in the 
+# NOTE: Models, datasets, and postprocessors are very different in the 
 # panoptic segmentation task, compared with the semantic segmentation task,
 # while most of the backbones and transforms can be reused.
 MODELS = ComponentManager("models")
 DATASETS = ComponentManager("datasets")
-LOSSES = ComponentManager("losses")
 POSTPROCESSORS = ComponentManager("postprocessors")
+RUNNERS = ComponentManager("runners")

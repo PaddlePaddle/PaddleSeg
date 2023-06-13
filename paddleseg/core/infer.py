@@ -95,8 +95,8 @@ def slide_inference(model, im, crop_size, stride):
     w_crop, h_crop = crop_size
     w_stride, h_stride = stride
     # calculate the crop nums
-    rows = np.int(np.ceil(1.0 * (h_im - h_crop) / h_stride)) + 1
-    cols = np.int(np.ceil(1.0 * (w_im - w_crop) / w_stride)) + 1
+    rows = int(np.ceil(1.0 * (h_im - h_crop) / h_stride)) + 1
+    cols = int(np.ceil(1.0 * (w_im - w_crop) / w_stride)) + 1
     # prevent negative sliding rounds when imgs after scaling << crop_size
     rows = 1 if h_im <= h_crop else rows
     cols = 1 if w_im <= w_crop else cols
@@ -208,12 +208,13 @@ def aug_inference(model,
     final_logit = 0
     h_input, w_input = im.shape[-2], im.shape[-1]
     flip_comb = flip_combination(flip_horizontal, flip_vertical)
+    num_augs = len(scales) * len(flip_comb)
     for scale in scales:
         h = int(h_input * scale + 0.5)
         w = int(w_input * scale + 0.5)
-        im = F.interpolate(im, [h, w], mode='bilinear')
+        im_scale = F.interpolate(im, [h, w], mode='bilinear')
         for flip in flip_comb:
-            im_flip = tensor_flip(im, flip)
+            im_flip = tensor_flip(im_scale, flip)
             logit = inference(
                 model,
                 im_flip,
@@ -222,10 +223,11 @@ def aug_inference(model,
                 stride=stride)
             logit = tensor_flip(logit, flip)
             logit = F.interpolate(logit, [h_input, w_input], mode='bilinear')
-
-            logit = F.softmax(logit, axis=1)
-            final_logit = final_logit + logit
-
+            # Accumulate final logits in place
+            final_logit += logit
+    # We average the accumulated logits to make the numeric values of `final_logit`
+    # comparable to single-scale logits
+    final_logit /= num_augs
     final_logit = reverse_transform(final_logit, trans_info, mode='bilinear')
     pred = paddle.argmax(final_logit, axis=1, keepdim=True, dtype='int32')
 

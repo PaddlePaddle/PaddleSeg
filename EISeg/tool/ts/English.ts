@@ -24,6 +24,16 @@
         <translation>Open folder to annotate</translation>
     </message>
     <message>
+        <location filename="../../eiseg/app.py" line="332"/>
+        <source>&amp;加载分割标签图像</source>
+        <translation>&amp;Load segmented mask</translation>
+    </message>
+    <message>
+        <location filename="../../eiseg/app.py" line="336"/>
+        <source>将分割的图像和图像标签转换为EISeg可以读取多边形的格式</source>
+        <translation>Convert segmented mask into a format could loaded</translation>
+    </message>
+    <message>
         <location filename="../../eiseg/app.py" line="324"/>
         <source>&amp;改变标签保存路径</source>
         <translation>&amp;Change save path</translation>
@@ -1102,6 +1112,26 @@
         <location filename="../../eiseg/app.py" line="3302"/>
         <source>请先点击新建标签或是导入标签，然后打开图像文件，即可开始手动画框标注！</source>
         <translation>Please click &quot;Add Label&quot; or &quot;Import Label&quot; first, then open the image file to start manual annotation!</translation>
+    </message>
+    <message>
+        <location filename="../../eiseg/app.py" line="3412"/>
+        <source>选择图片文件夹</source>
+        <translation>Select images folder</translation>
+    </message>
+    <message>
+        <location filename="../../eiseg/app.py" line="3419"/>
+        <source>选择标签文件夹</source>
+        <translation>Select masks folder</translation>
+    </message>
+    <message>
+        <location filename="../../eiseg/app.py" line="3426"/>
+        <source>转换完成</source>
+        <translation>Conversion done</translation>
+    </message>
+    <message>
+        <location filename="../../eiseg/app.py" line="3428"/>
+        <source>转换失败</source>
+        <translation>Conversion failed</translation>
     </message>
     <message>
         <location filename="../../eiseg/widget/shortcut.py" line="55"/>

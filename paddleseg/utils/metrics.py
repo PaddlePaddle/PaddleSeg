@@ -50,13 +50,13 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
         pred_i = paddle.logical_and(pred == i, mask)
         label_i = label == i
         intersect_i = paddle.logical_and(pred_i, label_i)
-        pred_area.append(paddle.sum(paddle.cast(pred_i, "int32")))
-        label_area.append(paddle.sum(paddle.cast(label_i, "int32")))
-        intersect_area.append(paddle.sum(paddle.cast(intersect_i, "int32")))
+        pred_area.append(paddle.sum(paddle.cast(pred_i, "int64")))
+        label_area.append(paddle.sum(paddle.cast(label_i, "int64")))
+        intersect_area.append(paddle.sum(paddle.cast(intersect_i, "int64")))
 
-    pred_area = paddle.concat(pred_area)
-    label_area = paddle.concat(label_area)
-    intersect_area = paddle.concat(intersect_area)
+    pred_area = paddle.stack(pred_area)
+    label_area = paddle.stack(label_area)
+    intersect_area = paddle.stack(intersect_area)
 
     return intersect_area, pred_area, label_area
 

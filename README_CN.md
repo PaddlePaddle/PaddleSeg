@@ -21,10 +21,13 @@
 </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
-* [2022-11-30] :fire:  PaddleSeg 2.7版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
-  * 发布实时人像抠图模型[PP-MattingV2](./Matting/)：推理速度提升44.6%，平均误差减小17.91%，完美超越此前SOTA模型，支持零成本开箱即用。
-  * 发布3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)：涵盖3D医疗影像交互式标注工具EISeg-Med3D、3个高精分割模型，集成并优化前沿分割方案nnUNet-D。
-  * 官方发布轻量级语义分割模型[RTFormer](./configs/rtformer/)：由百度提出并发表于NeurIPS 2022，在公开数据集上实现SOTA性能。
+
+* [2023-04-11] :fire:  PaddleSeg 2.8版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
+  * 开源飞桨版本视觉大模型[Segment Anything Model](./contrib/SegmentAnything)，提供演示Demo，支持全图分割的功能、使用提示输入分割的功能。
+  * 发布超轻量级语义分割SOTA模型[PP-MobileSeg](./configs/pp_mobileseg)：在ADE20K数据集上，PP-MobileSeg对比此前最优模型，精度提升1.5%、速度提升42.3%、参数量减少34.9%。
+  * 发布工业质检全流程解决方案[QualityInspector v0.5](./contrib/QualityInspector)：提供统一可配置的算法Pipeline，集成检测和分割模型库，支持3种无监督异常检测算法，支持工业级指标评测、分析、调优等功能。
+  * 发布通用的全景分割解决方案[PanopticSeg v0.5](./contrib/PanopticSeg)：提供全景分割的全流程开发功能，集成2个前沿高精模型，具备灵活的二次开发能力。
+* [2022-11-30] PaddleSeg 2.7版本发布实时人像抠图模型[PP-MattingV2](./Matting/)、3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)、轻量级语义分割模型[RTFormer](./configs/rtformer/)。
 * [2022-07-20] PaddleSeg 2.6版本发布实时人像分割SOTA方案[PP-HumanSegV2](./contrib/PP-HumanSeg)、高性能智能标注工具[EISeg v1.0](./EISeg)正式版、ImageNet分割伪标签数据预训练方法PSSL，开源PP-MattingV1代码和预训练模型。
 * [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-MattingV1，3D医疗影像开发套件MedicalSegV1，交互式分割工具EISeg v0.5。
 * [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSegV1，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
@@ -42,7 +45,7 @@
 
 ## <img src="./docs/images/feature.png" width="20"/> 特性
 
-* **高精度**：跟踪学术界的前沿分割技术，结合高精度训练的骨干网络，提供40+主流分割网络、140+的高质量预训练模型，效果优于其他开源实现。
+* **高精度**：跟踪学术界的前沿分割技术，结合高精度训练的骨干网络，提供45+主流分割网络、150+的高质量预训练模型，效果优于其他开源实现。
 
 * **高性能**：使用多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
 
@@ -64,7 +67,7 @@
   * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
   * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+<img src="https://paddleseg.bj.bcebos.com/images/seg_qr_code.png"  width = "200" />  
 </div>
 
 ## <img src="./docs/images/model.png" width="20"/> 产品矩阵
@@ -88,6 +91,7 @@
         <details><summary><b>语义分割模型</b></summary>
           <ul>
             <li><a href="./configs/pp_liteseg">PP-LiteSeg</a> </li>
+            <li><a href="./configs/pp_mobileseg">PP-MobileSeg</a> </li>
             <li><a href="./configs/deeplabv3p">DeepLabV3P</a> </li>
             <li><a href="./configs/ocrnet">OCRNet</a> </li>
             <li><a href="./configs/mobileseg">MobileSeg</a> </li>
@@ -138,6 +142,13 @@
             <li><a href="./configs/uhrnet">UHRNet</a></li>
             <li><a href="./configs/topformer">TopFormer</a></li>
             <li><a href="./configs/mscale_ocrnet">MscaleOCRNet-PSA</a></li>
+            <li><a href="./configs/cae">CAE</a></li>
+            <li><a href="./configs/maskformer">MaskFormer</a></li>
+            <li><a href="./configs/vit_adapter">ViT-Adapter</a></li>
+            <li><a href="./configs/hrformer">HRFormer</a></li>
+            <li><a href="./configs/lpsnet">LPSNet</a></li>
+            <li><a href="./configs/segnext">SegNeXt</a></li>
+            <li><a href="./configs/knet">K-Net</a></li>
           </ul>
         </details>
         <details><summary><b>交互式分割模型</b></summary>
@@ -154,11 +165,13 @@
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
+              <li><a href="./Matting/configs/rvm">RVM</a></li>
           </ul>
         </details>
         <details><summary><b>全景分割</b></summary>
           <ul>
-            <li><a href="./contrib/PanopticDeepLab/README_CN.md">Panoptic-DeepLab</a></li>
+            <li><a href="./contrib/PanopticSeg/configs/mask2former">Mask2Former</a></li>
+            <li><a href="./contrib/PanopticSeg/configs/panoptic_deeplab">Panoptic-DeepLab</a></li>
           </ul>
         </details>
       </td>
@@ -177,6 +190,9 @@
             <li><a href="./paddleseg/models/backbones/vision_transformer.py">VIT</a></li>
             <li><a href="./paddleseg/models/backbones/mix_transformer.py">MixVIT</a></li>
             <li><a href="./paddleseg/models/backbones/swin_transformer.py">Swin Transformer</a></li>
+            <li><a href="./paddleseg/models/backbones/top_transformer.py">TopTransformer</a></li>
+            <li><a href="./paddleseg/models/backbones/hrformer.py">HRTransformer</a></li>
+            <li><a href="./paddleseg/models/backbones/mscan.py">MSCAN</a></li>
           </ul>
         </details>
         <details><summary><b>损失函数</b></summary>
@@ -256,6 +272,11 @@
         </details>
       </td>
       <td>
+        <details><summary><b>分割一切模型</b></summary>
+          <ul>
+              <li><a href="./contrib/SegmentAnything">SegmentAnything</a></li>
+          </ul>
+        </details>
         <details><summary><b>模型选型工具</b></summary>
           <ul>
               <li><a href="./configs/smrt">PaddleSMRT</a></li>
@@ -354,6 +375,18 @@
 
 #### 超轻量级模型，分割mIoU一般、推理算量低，适合部署在服务器端X86 CPU和移动端ARM CPU。
 
+
+| 模型名称 | 骨干网络 | ADE20K精度mIoU(%) | 骁龙855推理延时(ms) | 参数量(M) | 配置文件 |
+|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+|TopFormer-Base|TopTransformer-Base|38.28|480.6|5.13|[config](./configs/topformer/)
+|PP-MobileSeg-Base|StrideFormer-Base|41.57|265.5|5.62|[config](./configs/pp_mobileseg/)|
+|TopFormer-Tiny|TopTransformer-Tiny|32.46|490.3|1.41|[config](./configs/topformer/)
+|PP-MobileSeg-Tiny|StrideFormer-Tiny|36.39|215.3|1.61|[config](./configs/pp_mobileseg/)|
+
+
+测试条件:
+* 针对小米9手机，使用[PaddleLite](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/README_en.md)预测库的CPP API，ARMV8编译，单线程，输入图像维度是1x3x512x512。测试模型在带有最后一个argmax算子的条件下进行测试。
+
 | 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS)  | 骁龙855推理速度(FPS)|  配置文件 |
 |:-------- |:--------:|:---------------------:|:---------------------:|:-----------------:|:--------:|
 | MobileSeg      | MobileNetV2              | 73.94                 | 67.57          | 27.01   | [yml](./configs/mobileseg/)  |
@@ -393,6 +426,7 @@
     * [导出ONNX模型](./docs/model_export_onnx_cn.md)
 
 * 模型部署
+    * [FastDeploy部署](./deploy/fastdeploy)
     * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference_cn.md)
     * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference_cn.md)
     * [Paddle Lite部署](./docs/deployment/lite/lite_cn.md)
@@ -437,11 +471,16 @@
 * [使用PP-HumanSegV2进行人像分割](https://aistudio.baidu.com/aistudio/projectdetail/4504982?contributionType=1)
 * [使用PP-HumanSegV1进行人像分割](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
 * [使用PP-LiteSeg进行遥感道路分割](https://aistudio.baidu.com/aistudio/projectdetail/3873145?contributionType=1)
+* [PaddleSeg实战之人脸部件分割与变妆](https://aistudio.baidu.com/aistudio/projectdetail/5326422)
 * [PaddleSeg实战之小数据集3D椎骨分割](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
 * [PaddleSeg实战之车道线图像分割](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
 * [PaddleSeg动态图API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
 * [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 * [车路协同：交互式分割技术在智慧建图中的应用和实践](https://aistudio.baidu.com/aistudio/projectdetail/5089472)
+* [基于PaddleSeg的美甲预览机](https://aistudio.baidu.com/aistudio/projectdetail/5156312)
+* [基于PaddleSeg的钢筋长度超限监控](https://aistudio.baidu.com/aistudio/projectdetail/5633532)
+
+更多范例项目可参考：[『图像分割经典项目集』用PaddleSeg能做什么？](https://aistudio.baidu.com/aistudio/projectdetail/5436669)
 
 ## 许可证书
 本项目的发布受Apache 2.0 license许可认证。
