@@ -48,7 +48,10 @@ def parse_args():
         help="Select the op to be appended to the last of inference model, default: argmax."
         "In PaddleSeg, the output of trained model is logit (H*C*H*W). We can apply argmax and"
         "softmax op to the logit according the actual situation.")
-    parser.add_argument('--for_fd', action='store_true')
+    parser.add_argument(
+        '--for_fd',
+        action='store_true',
+        help="Export the model to FD-compatible format.")
 
     return parser.parse_args()
 

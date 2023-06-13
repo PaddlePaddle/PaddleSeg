@@ -65,7 +65,10 @@ def parse_args():
         help="Export the model with fixed input shape, such as 1 3 1024 1024.",
         type=int,
         default=None)
-    parser.add_argument('--for_fd', action='store_true')
+    parser.add_argument(
+        '--for_fd',
+        action='store_true',
+        help="Export the model to FD-compatible format.")
 
     return parser.parse_args()
 

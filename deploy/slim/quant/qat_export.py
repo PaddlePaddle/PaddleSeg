@@ -58,7 +58,10 @@ def parse_args():
         dest='with_softmax',
         help='Add the softmax operation at the end of the network',
         action='store_true')
-    parser.add_argument('--for_fd', action='store_true')
+    parser.add_argument(
+        '--for_fd',
+        action='store_true',
+        help="Export the model to FD-compatible format.")
 
     return parser.parse_args()
 
