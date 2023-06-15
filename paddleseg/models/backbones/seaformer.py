@@ -526,7 +526,7 @@ def SeaFormer_base(pretrained, **kwags):
 def SeaFormer_large(pretrained, **kwags):
     seaformer = SeaFormer(
         pretrained=pretrained,
-        cfgs=[[[3, 3, 32, 1], [3, 4, 64, 2], [3, 3, 64, 1]],
+        cfgs=[[[3, 3, 32, 1], [3, 4, 64, 2], [3, 4, 64, 1]],
               [[5, 4, 128, 2], [5, 4, 128, 1]],
               [[3, 4, 192, 2], [3, 4, 192, 1]], [[5, 4, 256, 2]],
               [[3, 6, 320, 2]]],

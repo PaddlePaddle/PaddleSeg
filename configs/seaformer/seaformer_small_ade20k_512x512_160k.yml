@@ -4,7 +4,7 @@ model:
   type: SeaFormerSeg
   backbone: 
     type: SeaFormer_small
-    pretrained: pretrained/seaformer_small.pdparams
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/backbone/seaformer_small_imagenet_pretrained.pdparams
   num_classes: 150
   head_channels: 128
   embed_dims: [96, 128]
