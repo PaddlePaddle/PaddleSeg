@@ -27,6 +27,7 @@ model_path=test_tipc/output/${model_name}/
 
 
 # Install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 pip install -r test_tipc/requirements.txt
 # Install current version of PaddleSeg
