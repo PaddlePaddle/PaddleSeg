@@ -47,6 +47,11 @@ def parse_args():
         default='gpu',
         choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
         type=str)
+    parser.add_argument(
+        '--device_id',
+        help='Set the device id for predicting model.',
+        default=0,
+        type=int)
 
     # Data augment params
     parser.add_argument(
@@ -123,7 +128,8 @@ def main(args):
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
-    utils.set_device(args.device)
+    device = f"{args.device}:{args.device_id}"
+    utils.set_device(device)
 
     model = builder.model
     transforms = Compose(builder.val_transforms)
