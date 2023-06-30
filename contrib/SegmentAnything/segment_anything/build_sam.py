@@ -95,6 +95,7 @@ def build_sam_vit_t(checkpoint=None):
     mobile_sam.eval()
     if checkpoint is not None:
         load_entire_model(mobile_sam, checkpoint)
+    mobile_sam.image_encoder.build_abs()
     return mobile_sam
 
 sam_model_registry = {

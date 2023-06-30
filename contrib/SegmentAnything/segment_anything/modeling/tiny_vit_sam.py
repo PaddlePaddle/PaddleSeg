@@ -6,14 +6,17 @@ from paddle.nn import functional as F
 
 # NOTE: All the DropPath and parameters initialization are commented out due to sam do not support to train.
 
+
 class Conv2d_BN(nn.Sequential):
-    def __init__(self, a, b, ks=1, stride=1, pad=0, dilation=1,
-                 groups=1, bn_weight_init=1.):
+    def __init__(
+        self, a, b, ks=1, stride=1, pad=0, dilation=1, groups=1, bn_weight_init=1.0
+    ):
         super().__init__()
-        self.add_sublayer('c', nn.Conv2D(
-            a, b, ks, stride, pad, dilation, groups, bias_attr=False))
+        self.add_sublayer(
+            "c", nn.Conv2D(a, b, ks, stride, pad, dilation, groups, bias_attr=False)
+        )
         bn = nn.BatchNorm2D(b)
-        self.add_sublayer('bn', bn)
+        self.add_sublayer("bn", bn)
 
     @paddle.no_grad()
     def fuse(self):
@@ -36,10 +39,12 @@ class Conv2d_BN(nn.Sequential):
             out_channels=c._out_channels,
             kernel_size=c._kernel_size,
             stride=c._stride,
-            padding=c._padding)
+            padding=c._padding,
+        )
         conv.weight.set_value(weight)
         conv.bias.set_value(bias)
         return conv
+
 
 class PatchEmbed(nn.Layer):
     def __init__(self, in_chans, embed_dim, resolution, activation):
@@ -48,8 +53,7 @@ class PatchEmbed(nn.Layer):
             resolution = (resolution,) * 2
         img_size = resolution
         self.patches_resolution = (img_size[0] // 4, img_size[1] // 4)
-        self.num_patches = self.patches_resolution[0] * \
-            self.patches_resolution[1]
+        self.num_patches = self.patches_resolution[0] * self.patches_resolution[1]
         self.in_chans = in_chans
         self.embed_dim = embed_dim
         n = embed_dim
@@ -64,8 +68,7 @@ class PatchEmbed(nn.Layer):
 
 
 class MBConv(nn.Layer):
-    def __init__(self, in_chans, out_chans, expand_ratio,
-                 activation, drop_path):
+    def __init__(self, in_chans, out_chans, expand_ratio, activation, drop_path):
         super().__init__()
         self.in_chans = in_chans
         self.hidden_chans = int(in_chans * expand_ratio)
@@ -74,12 +77,17 @@ class MBConv(nn.Layer):
         self.conv1 = Conv2d_BN(in_chans, self.hidden_chans, ks=1)
         self.act1 = activation()
 
-        self.conv2 = Conv2d_BN(self.hidden_chans, self.hidden_chans,
-                               ks=3, stride=1, pad=1, groups=self.hidden_chans)
+        self.conv2 = Conv2d_BN(
+            self.hidden_chans,
+            self.hidden_chans,
+            ks=3,
+            stride=1,
+            pad=1,
+            groups=self.hidden_chans,
+        )
         self.act2 = activation()
 
-        self.conv3 = Conv2d_BN(
-            self.hidden_chans, out_chans, ks=1, bn_weight_init=0.0)
+        self.conv3 = Conv2d_BN(self.hidden_chans, out_chans, ks=1, bn_weight_init=0.0)
         self.act3 = activation()
 
         # self.drop_path = DropPath(
@@ -103,6 +111,7 @@ class MBConv(nn.Layer):
 
         return x
 
+
 class PatchMerging(nn.Layer):
     def __init__(self, input_resolution, dim, out_dim, activation):
         super().__init__()
@@ -112,9 +121,9 @@ class PatchMerging(nn.Layer):
         self.out_dim = out_dim
         self.act = activation()
         self.conv1 = Conv2d_BN(dim, out_dim, 1, 1, 0)
-        stride_c=2
-        if(out_dim==320 or out_dim==448 or out_dim==576):
-            stride_c=1
+        stride_c = 2
+        if out_dim == 320 or out_dim == 448 or out_dim == 576:
+            stride_c = 1
         self.conv2 = Conv2d_BN(out_dim, out_dim, 3, stride_c, 1, groups=out_dim)
         self.conv3 = Conv2d_BN(out_dim, out_dim, 1, 1, 0)
 
@@ -123,7 +132,7 @@ class PatchMerging(nn.Layer):
             H, W = self.input_resolution
             B = len(x)
             # (B, C, H, W)
-            x = x.view(B, H, W, -1).permute(0, 3, 1, 2)
+            x = x.reshape((B, H, W, -1)).transpose((0, 3, 1, 2))
 
         x = self.conv1(x)
         x = self.act(x)
@@ -131,35 +140,46 @@ class PatchMerging(nn.Layer):
         x = self.conv2(x)
         x = self.act(x)
         x = self.conv3(x)
-        x = x.flatten(2).transpose(1, 2)
+        x = x.flatten(2).transpose((0, 2, 1))
         return x
 
 
 class ConvLayer(nn.Layer):
-    def __init__(self, dim, input_resolution, depth,
-                 activation,
-                 drop_path=0., 
-                 downsample=None,
-                 out_dim=None,
-                 conv_expand_ratio=4.
-                 ):
-
+    def __init__(
+        self,
+        dim,
+        input_resolution,
+        depth,
+        activation,
+        drop_path=0.0,
+        downsample=None,
+        out_dim=None,
+        conv_expand_ratio=4.0,
+    ):
         super().__init__()
         self.dim = dim
         self.input_resolution = input_resolution
         self.depth = depth
 
         # build blocks
-        self.blocks = nn.LayerList([
-            MBConv(dim, dim, conv_expand_ratio, activation,
-                   drop_path[i] if isinstance(drop_path, list) else drop_path,
-                   )
-            for i in range(depth)])
+        self.blocks = nn.LayerList(
+            [
+                MBConv(
+                    dim,
+                    dim,
+                    conv_expand_ratio,
+                    activation,
+                    drop_path[i] if isinstance(drop_path, list) else drop_path,
+                )
+                for i in range(depth)
+            ]
+        )
 
         # patch merging layer
         if downsample is not None:
             self.downsample = downsample(
-                input_resolution, dim=dim, out_dim=out_dim, activation=activation)
+                input_resolution, dim=dim, out_dim=out_dim, activation=activation
+            )
         else:
             self.downsample = None
 
@@ -170,9 +190,16 @@ class ConvLayer(nn.Layer):
             x = self.downsample(x)
         return x
 
+
 class Mlp(nn.Layer):
-    def __init__(self, in_features, hidden_features=None,
-                 out_features=None, act_layer=nn.GELU, drop=0.):
+    def __init__(
+        self,
+        in_features,
+        hidden_features=None,
+        out_features=None,
+        act_layer=nn.GELU,
+        drop=0.0,
+    ):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -192,15 +219,13 @@ class Mlp(nn.Layer):
         x = self.drop(x)
         return x
 
+
 class Attention(nn.Layer):
-    def __init__(self, dim, key_dim, num_heads=8,
-                 attn_ratio=4,
-                 resolution=(14, 14)
-                 ):
+    def __init__(self, dim, key_dim, num_heads=8, attn_ratio=4, resolution=(14, 14)):
         super().__init__()
         assert isinstance(resolution, tuple) and len(resolution) == 2
         self.num_heads = num_heads
-        self.scale = key_dim ** -0.5
+        self.scale = key_dim**-0.5
         self.key_dim = key_dim
         self.nh_kd = nh_kd = key_dim * num_heads
         self.d = int(attn_ratio * key_dim)
@@ -212,8 +237,7 @@ class Attention(nn.Layer):
         self.qkv = nn.Linear(dim, h)
         self.proj = nn.Linear(self.dh, dim)
 
-        points = list(itertools.product(
-            range(resolution[0]), range(resolution[1])))
+        points = list(itertools.product(range(resolution[0]), range(resolution[1])))
         N = len(points)
         attention_offsets = {}
         idxs = []
@@ -223,18 +247,26 @@ class Attention(nn.Layer):
                 if offset not in attention_offsets:
                     attention_offsets[offset] = len(attention_offsets)
                 idxs.append(attention_offsets[offset])
-        self.attention_biases = self.create_parameter(shape=(num_heads, len(attention_offsets)), dtype='float32', default_initializer=nn.initializer.Constant(0.0))
-        self.register_buffer('attention_bias_idxs',
-                             paddle.to_tensor(idxs, dtype=paddle.int64).reshape((N, N)),
-                             persistable=False)
+        self.attention_biases = self.create_parameter(
+            shape=(num_heads, len(attention_offsets)),
+            dtype="float32",
+            default_initializer=nn.initializer.Constant(0.0),
+        )
+        self.register_buffer(
+            "attention_bias_idxs",
+            paddle.to_tensor(idxs, dtype=paddle.int64).reshape((N, N)),
+            persistable=False,
+        )
 
     @paddle.no_grad()
-    def train(self):
-        super().train()
-        if hasattr(self, 'ab'):
-            del self.ab
-        else:
-            self.ab = self.attention_biases[:, self.attention_bias_idxs]
+    def build_ab(self):
+        idxs = self.attention_bias_idxs.reshape([-1]).tolist()
+        ab = []
+        for i in range(self.attention_biases.shape[0]):
+            temp = self.attention_biases[i]
+            ab.append(temp[idxs])
+        self.ab = paddle.stack(ab)
+        self.ab = self.ab.reshape((-1, *self.attention_bias_idxs.shape))
 
     def forward(self, x):  # x (B,N,C)
         B, N, _ = x.shape
@@ -244,26 +276,23 @@ class Attention(nn.Layer):
 
         qkv = self.qkv(x)
         # (B, N, num_heads, d)
-        q, k, v = qkv.view(B, N, self.num_heads, -
-                           1).split([self.key_dim, self.key_dim, self.d], dim=3)
-        # (B, num_heads, N, d)
-        q = q.permute(0, 2, 1, 3)
-        k = k.permute(0, 2, 1, 3)
-        v = v.permute(0, 2, 1, 3)
-
-        attn = (
-            (q @ k.transpose(-2, -1)) * self.scale
-            +
-            (self.attention_biases[:, self.attention_bias_idxs]
-             if self.training else self.ab)
+        q, k, v = qkv.reshape((B, N, self.num_heads, -1)).split(
+            [self.key_dim, self.key_dim, self.d], axis=3
         )
-        attn = attn.softmax(dim=-1)
-        x = (attn @ v).transpose(1, 2).reshape((B, N, self.dh))
+        # (B, num_heads, N, d)
+        q = q.transpose((0, 2, 1, 3))
+        k = k.transpose((0, 2, 1, 3))
+        v = v.transpose((0, 2, 1, 3))
+
+        attn = (q @ k.transpose((0, 1, 3, 2))) * self.scale + self.ab
+        attn = F.softmax(attn, axis=-1)
+        x = (attn @ v).transpose((0, 2, 1, 3)).reshape((B, N, self.dh))
         x = self.proj(x)
         return x
 
+
 class TinyViTBlock(nn.Layer):
-    r""" TinyViT Block.
+    r"""TinyViT Block.
 
     Args:
         dim (int): Number of input channels.
@@ -278,37 +307,50 @@ class TinyViTBlock(nn.Layer):
         activation: the activation function. Default: nn.GELU
     """
 
-    def __init__(self, dim, input_resolution, num_heads, window_size=7,
-                 mlp_ratio=4., drop=0., drop_path=0.,
-                 local_conv_size=3,
-                 activation=nn.GELU,
-                 ):
+    def __init__(
+        self,
+        dim,
+        input_resolution,
+        num_heads,
+        window_size=7,
+        mlp_ratio=4.0,
+        drop=0.0,
+        drop_path=0.0,
+        local_conv_size=3,
+        activation=nn.GELU,
+    ):
         super().__init__()
         self.dim = dim
         self.input_resolution = input_resolution
         self.num_heads = num_heads
-        assert window_size > 0, 'window_size must be greater than 0'
+        assert window_size > 0, "window_size must be greater than 0"
         self.window_size = window_size
         self.mlp_ratio = mlp_ratio
 
         # self.drop_path = DropPath(
         #     drop_path) if drop_path > 0. else nn.Identity()
 
-        assert dim % num_heads == 0, 'dim must be divisible by num_heads'
+        assert dim % num_heads == 0, "dim must be divisible by num_heads"
         head_dim = dim // num_heads
 
         window_resolution = (window_size, window_size)
-        self.attn = Attention(dim, head_dim, num_heads,
-                              attn_ratio=1, resolution=window_resolution)
+        self.attn = Attention(
+            dim, head_dim, num_heads, attn_ratio=1, resolution=window_resolution
+        )
 
         mlp_hidden_dim = int(dim * mlp_ratio)
         mlp_activation = activation
-        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim,
-                       act_layer=mlp_activation, drop=drop)
+        self.mlp = Mlp(
+            in_features=dim,
+            hidden_features=mlp_hidden_dim,
+            act_layer=mlp_activation,
+            drop=drop,
+        )
 
         pad = local_conv_size // 2
         self.local_conv = Conv2d_BN(
-            dim, dim, ks=local_conv_size, stride=1, pad=pad, groups=dim)
+            dim, dim, ks=local_conv_size, stride=1, pad=pad, groups=dim
+        )
 
     def forward(self, x):
         H, W = self.input_resolution
@@ -318,44 +360,49 @@ class TinyViTBlock(nn.Layer):
         if H == self.window_size and W == self.window_size:
             x = self.attn(x)
         else:
-            x = x.view(B, H, W, C)
-            pad_b = (self.window_size - H %
-                     self.window_size) % self.window_size
-            pad_r = (self.window_size - W %
-                     self.window_size) % self.window_size
+            x = x.reshape((B, H, W, C))
+            pad_b = (self.window_size - H % self.window_size) % self.window_size
+            pad_r = (self.window_size - W % self.window_size) % self.window_size
             padding = pad_b > 0 or pad_r > 0
 
             if padding:
-                x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b))
+                x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b, 0, 0))
 
             pH, pW = H + pad_b, W + pad_r
             nH = pH // self.window_size
             nW = pW // self.window_size
             # window partition
-            x = x.view(B, nH, self.window_size, nW, self.window_size, C).transpose(2, 3).reshape((
-                B * nH * nW, self.window_size * self.window_size, C))
+            x = (
+                x.reshape((B, nH, self.window_size, nW, self.window_size, C))
+                .transpose((0, 1, 3, 2, 4, 5))
+                .reshape((B * nH * nW, self.window_size * self.window_size, C))
+            )
             x = self.attn(x)
             # window reverse
-            x = x.view(B, nH, nW, self.window_size, self.window_size,
-                       C).transpose(2, 3).reshape((B, pH, pW, C))
+            x = (
+                x.reshape((B, nH, nW, self.window_size, self.window_size, C))
+                .transpose((0, 1, 3, 2, 4, 5))
+                .reshape((B, pH, pW, C))
+            )
 
             if padding:
-                x = x[:, :H, :W].contiguous()
+                x = x[:, :H, :W]
 
-            x = x.view(B, L, C)
+            x = x.reshape((B, L, C))
 
         # x = res_x + self.drop_path(x)
 
-        x = x.transpose(1, 2).reshape(B, C, H, W)
+        x = x.transpose((0, 2, 1)).reshape((B, C, H, W))
         x = self.local_conv(x)
-        x = x.view(B, C, L).transpose(1, 2)
+        x = x.reshape((B, C, L)).transpose((0, 2, 1))
 
         # x = x + self.drop_path(self.mlp(x))
         x = x + self.mlp(x)
         return x
 
+
 class BasicLayer(nn.Layer):
-    """ A basic TinyViT layer for one stage.
+    """A basic TinyViT layer for one stage.
 
     Args:
         dim (int): Number of input channels.
@@ -372,36 +419,51 @@ class BasicLayer(nn.Layer):
         out_dim: the output dimension of the layer. Default: dim
     """
 
-    def __init__(self, dim, input_resolution, depth, num_heads, window_size,
-                 mlp_ratio=4., drop=0.,
-                 drop_path=0., downsample=None, 
-                 local_conv_size=3,
-                 activation=nn.GELU,
-                 out_dim=None
-                 ):
-
+    def __init__(
+        self,
+        dim,
+        input_resolution,
+        depth,
+        num_heads,
+        window_size,
+        mlp_ratio=4.0,
+        drop=0.0,
+        drop_path=0.0,
+        downsample=None,
+        local_conv_size=3,
+        activation=nn.GELU,
+        out_dim=None,
+    ):
         super().__init__()
         self.dim = dim
         self.input_resolution = input_resolution
         self.depth = depth
 
         # build blocks
-        self.blocks = nn.LayerList([
-            TinyViTBlock(dim=dim, input_resolution=input_resolution,
-                         num_heads=num_heads, window_size=window_size,
-                         mlp_ratio=mlp_ratio,
-                         drop=drop,
-                         drop_path=drop_path[i] if isinstance(
-                             drop_path, list) else drop_path,
-                         local_conv_size=local_conv_size,
-                         activation=activation,
-                         )
-            for i in range(depth)])
+        self.blocks = nn.LayerList(
+            [
+                TinyViTBlock(
+                    dim=dim,
+                    input_resolution=input_resolution,
+                    num_heads=num_heads,
+                    window_size=window_size,
+                    mlp_ratio=mlp_ratio,
+                    drop=drop,
+                    drop_path=drop_path[i]
+                    if isinstance(drop_path, list)
+                    else drop_path,
+                    local_conv_size=local_conv_size,
+                    activation=activation,
+                )
+                for i in range(depth)
+            ]
+        )
 
         # patch merging layer
         if downsample is not None:
             self.downsample = downsample(
-                input_resolution, dim=dim, out_dim=out_dim, activation=activation)
+                input_resolution, dim=dim, out_dim=out_dim, activation=activation
+            )
         else:
             self.downsample = None
 
@@ -412,11 +474,20 @@ class BasicLayer(nn.Layer):
             x = self.downsample(x)
         return x
 
+
 class LayerNorm2d(nn.Layer):
     def __init__(self, num_channels: int, eps: float = 1e-6) -> None:
         super().__init__()
-        self.weight = self.create_parameter(shape=(num_channels, ),dtype="float32", default_initializer=nn.initializer.Constant(1.0))
-        self.bias = self.create_parameter(shape=(num_channels, ),dtype="float32", default_initializer=nn.initializer.Constant(0.0))
+        self.weight = self.create_parameter(
+            shape=(num_channels,),
+            dtype="float32",
+            default_initializer=nn.initializer.Constant(1.0),
+        )
+        self.bias = self.create_parameter(
+            shape=(num_channels,),
+            dtype="float32",
+            default_initializer=nn.initializer.Constant(0.0),
+        )
         self.eps = eps
 
     def forward(self, x):
@@ -428,19 +499,24 @@ class LayerNorm2d(nn.Layer):
 
 
 class TinyViT(nn.Layer):
-    def __init__(self, img_size=224, in_chans=3, num_classes=1000,
-                 embed_dims=[96, 192, 384, 768], depths=[2, 2, 6, 2],
-                 num_heads=[3, 6, 12, 24],
-                 window_sizes=[7, 7, 14, 7],
-                 mlp_ratio=4.,
-                 drop_rate=0.,
-                 drop_path_rate=0.1,
-                 mbconv_expand_ratio=4.0,
-                 local_conv_size=3,
-                 layer_lr_decay=1.0,
-                 ):
+    def __init__(
+        self,
+        img_size=224,
+        in_chans=3,
+        num_classes=1000,
+        embed_dims=[96, 192, 384, 768],
+        depths=[2, 2, 6, 2],
+        num_heads=[3, 6, 12, 24],
+        window_sizes=[7, 7, 14, 7],
+        mlp_ratio=4.0,
+        drop_rate=0.0,
+        drop_path_rate=0.1,
+        mbconv_expand_ratio=4.0,
+        local_conv_size=3,
+        layer_lr_decay=1.0,
+    ):
         super().__init__()
-        self.img_size=img_size
+        self.img_size = img_size
         self.num_classes = num_classes
         self.depths = depths
         self.num_layers = len(depths)
@@ -448,32 +524,38 @@ class TinyViT(nn.Layer):
 
         activation = nn.GELU
 
-        self.patch_embed = PatchEmbed(in_chans=in_chans,
-                                      embed_dim=embed_dims[0],
-                                      resolution=img_size,
-                                      activation=activation)
+        self.patch_embed = PatchEmbed(
+            in_chans=in_chans,
+            embed_dim=embed_dims[0],
+            resolution=img_size,
+            activation=activation,
+        )
 
         patches_resolution = self.patch_embed.patches_resolution
         self.patches_resolution = patches_resolution
 
         # stochastic depth
-        dpr = [x.item() for x in paddle.linspace(0, drop_path_rate,
-                                                sum(depths))]  # stochastic depth decay rule
+        dpr = [
+            x.item() for x in paddle.linspace(0, drop_path_rate, sum(depths))
+        ]  # stochastic depth decay rule
 
         # build layers
         self.layers = nn.LayerList()
         for i_layer in range(self.num_layers):
-            kwargs = dict(dim=embed_dims[i_layer],
-                        input_resolution=(patches_resolution[0] // (2 ** (i_layer-1 if i_layer == 3 else i_layer)),
-                                patches_resolution[1] // (2 ** (i_layer-1 if i_layer == 3 else i_layer))),
-                          depth=depths[i_layer],
-                          drop_path=dpr[sum(depths[:i_layer]):sum(depths[:i_layer + 1])],
-                          downsample=PatchMerging if (
-                              i_layer < self.num_layers - 1) else None,
-                          out_dim=embed_dims[min(
-                              i_layer + 1, len(embed_dims) - 1)],
-                          activation=activation,
-                          )
+            kwargs = dict(
+                dim=embed_dims[i_layer],
+                input_resolution=(
+                    patches_resolution[0]
+                    // (2 ** (i_layer - 1 if i_layer == 3 else i_layer)),
+                    patches_resolution[1]
+                    // (2 ** (i_layer - 1 if i_layer == 3 else i_layer)),
+                ),
+                depth=depths[i_layer],
+                drop_path=dpr[sum(depths[:i_layer]) : sum(depths[: i_layer + 1])],
+                downsample=PatchMerging if (i_layer < self.num_layers - 1) else None,
+                out_dim=embed_dims[min(i_layer + 1, len(embed_dims) - 1)],
+                activation=activation,
+            )
             if i_layer == 0:
                 layer = ConvLayer(
                     conv_expand_ratio=mbconv_expand_ratio,
@@ -486,13 +568,15 @@ class TinyViT(nn.Layer):
                     mlp_ratio=self.mlp_ratio,
                     drop=drop_rate,
                     local_conv_size=local_conv_size,
-                    **kwargs)
+                    **kwargs,
+                )
             self.layers.append(layer)
 
         # Classifier head
         self.norm_head = nn.LayerNorm(embed_dims[-1])
-        self.head = nn.Linear(
-            embed_dims[-1], num_classes) if num_classes > 0 else nn.Identity()
+        self.head = (
+            nn.Linear(embed_dims[-1], num_classes) if num_classes > 0 else nn.Identity()
+        )
 
         # init weights
         # self.apply(self._init_weights)
@@ -514,6 +598,7 @@ class TinyViT(nn.Layer):
             ),
             LayerNorm2d(256),
         )
+
     def set_layer_lr_decay(self, layer_lr_decay):
         decay_rate = layer_lr_decay
 
@@ -533,8 +618,7 @@ class TinyViT(nn.Layer):
                 block.apply(lambda x: _set_lr_scale(x, lr_scales[i]))
                 i += 1
             if layer.downsample is not None:
-                layer.downsample.apply(
-                    lambda x: _set_lr_scale(x, lr_scales[i - 1]))
+                layer.downsample.apply(lambda x: _set_lr_scale(x, lr_scales[i - 1]))
         assert i == depth
         for m in [self.norm_head, self.head]:
             m.apply(lambda x: _set_lr_scale(x, lr_scales[-1]))
@@ -544,7 +628,7 @@ class TinyViT(nn.Layer):
 
         def _check_lr_scale(m):
             for p in m.parameters():
-                assert hasattr(p, 'lr_scale'), p.param_name
+                assert hasattr(p, "lr_scale"), p.param_name
 
         self.apply(_check_lr_scale)
 
@@ -557,6 +641,12 @@ class TinyViT(nn.Layer):
     #         nn.init.constant_(m.bias, 0)
     #         nn.init.constant_(m.weight, 1.0)
 
+    @paddle.no_grad()
+    def build_abs(self):
+        for m in self.sublayers():
+            if isinstance(m, Attention):
+                m.build_ab()
+
     def forward_features(self, x):
         # x: (N, C, H, W)
         x = self.patch_embed(x)
@@ -567,70 +657,15 @@ class TinyViT(nn.Layer):
         for i in range(start_i, len(self.layers)):
             layer = self.layers[i]
             x = layer(x)
-        B,_,C=x.size()
-        x = x.view(B, 64, 64, C)
-        x=x.permute(0, 3, 1, 2)
-        x=self.neck(x)
+        B, _, C = x.shape
+        x = x.reshape((B, 64, 64, C))
+        x = x.transpose((0, 3, 1, 2))
+        x = self.neck(x)
         return x
 
     def forward(self, x):
         x = self.forward_features(x)
-        #x = self.norm_head(x)
-        #x = self.head(x)
+        # x = self.norm_head(x)
+        # x = self.head(x)
+        print(x.shape)
         return x
-
-
-def tiny_vit_5m_224(num_classes=1000, drop_path_rate=0.0):
-    return TinyViT(
-        num_classes=num_classes,
-        embed_dims=[64, 128, 160, 320],
-        depths=[2, 2, 6, 2],
-        num_heads=[2, 4, 5, 10],
-        window_sizes=[7, 7, 14, 7],
-        drop_path_rate=drop_path_rate,
-    )
-
-def tiny_vit_11m_224(num_classes=1000, drop_path_rate=0.1):
-    return TinyViT(
-        num_classes=num_classes,
-        embed_dims=[64, 128, 256, 448],
-        depths=[2, 2, 6, 2],
-        num_heads=[2, 4, 8, 14],
-        window_sizes=[7, 7, 14, 7],
-        drop_path_rate=drop_path_rate,
-    )
-
-
-def tiny_vit_21m_224(num_classes=1000, drop_path_rate=0.2):
-    return TinyViT(
-        num_classes=num_classes,
-        embed_dims=[96, 192, 384, 576],
-        depths=[2, 2, 6, 2],
-        num_heads=[3, 6, 12, 18],
-        window_sizes=[7, 7, 14, 7],
-        drop_path_rate=drop_path_rate,
-    )
-
-
-def tiny_vit_21m_384(num_classes=1000, drop_path_rate=0.1):
-    return TinyViT(
-        img_size=384,
-        num_classes=num_classes,
-        embed_dims=[96, 192, 384, 576],
-        depths=[2, 2, 6, 2],
-        num_heads=[3, 6, 12, 18],
-        window_sizes=[12, 12, 24, 12],
-        drop_path_rate=drop_path_rate,
-    )
-
-
-def tiny_vit_21m_512(num_classes=1000, drop_path_rate=0.1):
-    return TinyViT(
-        img_size=512,
-        num_classes=num_classes,
-        embed_dims=[96, 192, 384, 576],
-        depths=[2, 2, 6, 2],
-        num_heads=[3, 6, 12, 18],
-        window_sizes=[16, 16, 32, 16],
-        drop_path_rate=drop_path_rate,
-    )
