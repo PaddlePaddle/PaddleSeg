@@ -26,7 +26,6 @@ from paddleseg.utils import logger, utils
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Export Inference Model.')
-    # parser.add_argument("--config", default='./config.yml', help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
         default="./model.pdparams",
@@ -112,7 +111,7 @@ def main(args):
             else:
                 return 'cpu'
 
-        # @paddle.no_grad()
+        @paddle.no_grad()
         def forward(
                 self,
                 batched_input: List[Dict[str, Any]],
@@ -162,16 +161,6 @@ def main(args):
             outputs = []
             for image_record, curr_embedding in zip(batched_input,
                                                     image_embeddings):
-                # if "point_coords" in image_record:
-                #     points = (image_record["point_coords"],
-                #               image_record["point_labels"])
-                # else:
-                #     points = None
-
-                # sparse_embeddings, dense_embeddings = self.prompt_encoder(
-                #     points=points,
-                #     boxes=image_record.get("boxes", None),
-                #     masks=image_record.get("mask_inputs", None), )
                 sparse_embeddings, dense_embeddings = self.prompt_encoder(
                     points=None,
                     boxes=None,
@@ -235,8 +224,6 @@ def main(args):
             h, w = x.shape[-2:]
             padh = self.image_encoder.img_size - h
             padw = self.image_encoder.img_size - w
-            # import pdb; pdb.set_trace()
-            # x = F.pad(x, (0, padw, 0, padh))
             padding = paddle.full([4], 0, dtype='int32')
             padding[1] = padw
             padding[3] = padh
