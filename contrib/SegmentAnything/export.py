@@ -243,27 +243,6 @@ def main(args):
             x = F.pad(x, padding)
             return x.squeeze(0)
 
-
-    # class WrappedModel(paddle.nn.Layer):
-    #     def __init__(self, model, output_op):
-    #         super().__init__()
-    #         self.model = model
-    #         self.output_op = output_op
-    #         assert output_op in ['argmax', 'softmax'], \
-    #             "output_op should in ['argmax', 'softmax']"
-    #
-    #     def forward(self, x, y):
-    #         # import pdb; pdb.set_trace()
-    #         outs = self.model(x, y)
-    #         new_outs = []
-    #         for out in outs:
-    #             if self.output_op == 'argmax':
-    #                 out = paddle.argmax(out, axis=1, dtype='int32')
-    #             elif self.output_op == 'softmax':
-    #                 out = paddle.nn.functional.softmax(out, axis=1)
-    #             new_outs.append(out)
-    #         return new_outs
-
     encoder_embed_dim = 1280
     encoder_depth = 32
     encoder_num_heads = 16
@@ -312,45 +291,28 @@ def main(args):
         state_dict = paddle.load(args.model_path)
         model.set_dict(state_dict)
         logger.info('Loaded trained params successfully.')
-    # if args.output_op != 'none':
-    #     model = WrappedModel(model, args.output_op)
 
     shape = [None, 3, None, None] if args.input_shape is None \
         else args.input_shape
-    # input_spec = [[paddle.static.InputSpec(shape=[None], name='batched_input')],
-                  # paddle.static.InputSpec(shape=[None], dtype='bool', name='multimask_output')]
+    
     input_spec = [[{
                     'image': paddle.static.InputSpec(shape=[3, None, None], name='image'),
                     'original_size': paddle.static.InputSpec(shape=[None, None], name='original_size'),
-                    # 'point_coords': paddle.static.InputSpec(shape=[None], name='point_coords'),
-                    # 'point_labels': paddle.static.InputSpec(shape=[None], name='point_labels'),
-                    # 'boxes': paddle.static.InputSpec(shape=[None, None], name='boxes'),
-                    # 'mask_inputs': paddle.static.InputSpec(shape=[None], name='mask_inputs')
-                    }],
-                  # paddle.static.InputSpec(shape=[None], name='multimask_output')
         True
     ]
 
-    # output_spec = [
-    #     "masks": masks,
-    #     "iou_predictions": iou_predictions,
-    #     "low_res_logits": low_res_masks]
+
 
     model.eval()
     model = paddle.jit.to_static(model, input_spec=input_spec)
     paddle.jit.save(model, os.path.join(args.save_dir, 'model'))
-
-    # output_dtype = 'int32' if args.output_op == 'argmax' else 'float32'
 
     # TODO add test config
     deploy_info = {
         'Deploy': {
             'model': 'model.pdmodel',
             'params': 'model.pdiparams',
-            # 'transforms': transforms,
             'input_shape': shape,
-            # 'output_op': args.output_op,
-            # 'output_dtype': output_dtype
         }
     }
     msg = '\n---------------Deploy Information---------------\n'
