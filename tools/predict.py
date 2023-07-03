@@ -128,7 +128,10 @@ def main(args):
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
-    device = f"{args.device}:{args.device_id}"
+    if args.device != 'cpu':
+        device = f"{args.device}:{args.device_id}"
+    else:
+        device = args.device
     utils.set_device(device)
 
     model = builder.model
