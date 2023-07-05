@@ -51,7 +51,7 @@ parser.add_argument(
     type=str,
     default="vit_l",
     required=True,
-    help="The type of model to load, in ['vit_h', 'vit_l', 'vit_b', 'vit_l']", )
+    help="The type of model to load, in ['vit_h', 'vit_l', 'vit_b', 'vit_t']", )
 
 parser.add_argument(
     "--convert-to-rle",

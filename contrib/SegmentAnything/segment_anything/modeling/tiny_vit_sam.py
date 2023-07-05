@@ -3,9 +3,173 @@ import itertools
 import paddle
 from paddle import nn
 from paddle.nn import functional as F
+from .common import LayerNorm2d
 
 # NOTE: All the DropPath and parameters initialization are commented out due to sam do not support to train.
 
+class TinyViT(nn.Layer):
+    def __init__(
+        self,
+        img_size=224,
+        in_chans=3,
+        num_classes=1000,
+        embed_dims=[96, 192, 384, 768],
+        depths=[2, 2, 6, 2],
+        num_heads=[3, 6, 12, 24],
+        window_sizes=[7, 7, 14, 7],
+        mlp_ratio=4.0,
+        drop_rate=0.0,
+        drop_path_rate=0.1,
+        mbconv_expand_ratio=4.0,
+        local_conv_size=3,
+        layer_lr_decay=1.0,
+    ):
+        super().__init__()
+        self.img_size = img_size
+        self.num_classes = num_classes
+        self.depths = depths
+        self.num_layers = len(depths)
+        self.mlp_ratio = mlp_ratio
+
+        activation = nn.GELU
+
+        self.patch_embed = PatchEmbed(
+            in_chans=in_chans,
+            embed_dim=embed_dims[0],
+            resolution=img_size,
+            activation=activation,
+        )
+
+        patches_resolution = self.patch_embed.patches_resolution
+        self.patches_resolution = patches_resolution
+
+        # stochastic depth
+        dpr = [
+            x.item() for x in paddle.linspace(0, drop_path_rate, sum(depths))
+        ]  # stochastic depth decay rule
+
+        # build layers
+        self.layers = nn.LayerList()
+        for i_layer in range(self.num_layers):
+            kwargs = dict(
+                dim=embed_dims[i_layer],
+                input_resolution=(
+                    patches_resolution[0]
+                    // (2 ** (i_layer - 1 if i_layer == 3 else i_layer)),
+                    patches_resolution[1]
+                    // (2 ** (i_layer - 1 if i_layer == 3 else i_layer)),
+                ),
+                depth=depths[i_layer],
+                drop_path=dpr[sum(depths[:i_layer]) : sum(depths[: i_layer + 1])],
+                downsample=PatchMerging if (i_layer < self.num_layers - 1) else None,
+                out_dim=embed_dims[min(i_layer + 1, len(embed_dims) - 1)],
+                activation=activation,
+            )
+            if i_layer == 0:
+                layer = ConvLayer(
+                    conv_expand_ratio=mbconv_expand_ratio,
+                    **kwargs,
+                )
+            else:
+                layer = BasicLayer(
+                    num_heads=num_heads[i_layer],
+                    window_size=window_sizes[i_layer],
+                    mlp_ratio=self.mlp_ratio,
+                    drop=drop_rate,
+                    local_conv_size=local_conv_size,
+                    **kwargs,
+                )
+            self.layers.append(layer)
+
+        # Classifier head
+        self.norm_head = nn.LayerNorm(embed_dims[-1])
+        self.head = (
+            nn.Linear(embed_dims[-1], num_classes) if num_classes > 0 else nn.Identity()
+        )
+
+        # init weights
+        # self.apply(self._init_weights)
+        self.set_layer_lr_decay(layer_lr_decay)
+        self.neck = nn.Sequential(
+            nn.Conv2D(
+                embed_dims[-1],
+                256,
+                kernel_size=1,
+                bias_attr=False,
+            ),
+            LayerNorm2d(256),
+            nn.Conv2D(
+                256,
+                256,
+                kernel_size=3,
+                padding=1,
+                bias_attr=False,
+            ),
+            LayerNorm2d(256),
+        )
+
+    def set_layer_lr_decay(self, layer_lr_decay):
+        decay_rate = layer_lr_decay
+
+        # layers -> blocks (depth)
+        depth = sum(self.depths)
+        lr_scales = [decay_rate ** (depth - i - 1) for i in range(depth)]
+
+        def _set_lr_scale(m, scale):
+            for p in m.parameters():
+                p.lr_scale = scale
+
+        self.patch_embed.apply(lambda x: _set_lr_scale(x, lr_scales[0]))
+        i = 0
+        for layer in self.layers:
+            for block in layer.blocks:
+                block.apply(lambda x: _set_lr_scale(x, lr_scales[i]))
+                i += 1
+            if layer.downsample is not None:
+                layer.downsample.apply(lambda x: _set_lr_scale(x, lr_scales[i - 1]))
+        assert i == depth
+        for m in [self.norm_head, self.head]:
+            m.apply(lambda x: _set_lr_scale(x, lr_scales[-1]))
+
+        for k, p in self.named_parameters():
+            p.param_name = k
+
+        def _check_lr_scale(m):
+            for p in m.parameters():
+                assert hasattr(p, "lr_scale"), p.param_name
+
+        self.apply(_check_lr_scale)
+
+    # def _init_weights(self, m):
+    #     if isinstance(m, nn.Linear):
+    #         trunc_normal_(m.weight, std=.02)
+    #         if isinstance(m, nn.Linear) and m.bias is not None:
+    #             nn.init.constant_(m.bias, 0)
+    #     elif isinstance(m, nn.LayerNorm):
+    #         nn.init.constant_(m.bias, 0)
+    #         nn.init.constant_(m.weight, 1.0)
+
+    @paddle.no_grad()
+    def build_abs(self):
+        for m in self.sublayers():
+            if isinstance(m, Attention):
+                m.build_ab()
+
+    def forward(self, x):
+        # x: (N, C, H, W)
+        x = self.patch_embed(x)
+
+        x = self.layers[0](x)
+        start_i = 1
+
+        for i in range(start_i, len(self.layers)):
+            layer = self.layers[i]
+            x = layer(x)
+        B, _, C = x.shape
+        x = x.reshape((B, 64, 64, C))
+        x = x.transpose((0, 3, 1, 2))
+        x = self.neck(x)
+        return x
 
 class Conv2d_BN(nn.Sequential):
     def __init__(
@@ -17,33 +181,6 @@ class Conv2d_BN(nn.Sequential):
         )
         bn = nn.BatchNorm2D(b)
         self.add_sublayer("bn", bn)
-
-    @paddle.no_grad()
-    def fuse(self):
-        c, bn = self._sub_layers.values()
-        kernel = c.weight
-        conv_bias = c.bias if c.bias is not None else 0
-        running_mean = bn._mean
-        running_var = bn._variance
-        gamma = bn.weight
-        beta = bn.bias
-        eps = bn._epsilon
-
-        std = paddle.sqrt(running_var + eps)
-        t = (gamma / std).reshape((-1, 1, 1, 1))
-
-        weight = kernel * t
-        bias = beta + (conv_bias - running_mean) * gamma / std
-        conv = nn.Conv2D(
-            in_channels=c._in_channels,
-            out_channels=c._out_channels,
-            kernel_size=c._kernel_size,
-            stride=c._stride,
-            padding=c._padding,
-        )
-        conv.weight.set_value(weight)
-        conv.bias.set_value(bias)
-        return conv
 
 
 class PatchEmbed(nn.Layer):
@@ -260,12 +397,13 @@ class Attention(nn.Layer):
 
     @paddle.no_grad()
     def build_ab(self):
+        # self.ab = self.attention_biases[:, self.attention_bias_idxs]
         idxs = self.attention_bias_idxs.reshape([-1]).tolist()
         ab = []
         for i in range(self.attention_biases.shape[0]):
             temp = self.attention_biases[i]
             ab.append(temp[idxs])
-        self.ab = paddle.stack(ab)
+        self.ab = paddle.concat(ab)
         self.ab = self.ab.reshape((-1, *self.attention_bias_idxs.shape))
 
     def forward(self, x):  # x (B,N,C)
@@ -283,7 +421,8 @@ class Attention(nn.Layer):
         q = q.transpose((0, 2, 1, 3))
         k = k.transpose((0, 2, 1, 3))
         v = v.transpose((0, 2, 1, 3))
-
+        
+        # only for infer
         attn = (q @ k.transpose((0, 1, 3, 2))) * self.scale + self.ab
         attn = F.softmax(attn, axis=-1)
         x = (attn @ v).transpose((0, 2, 1, 3)).reshape((B, N, self.dh))
@@ -472,200 +611,4 @@ class BasicLayer(nn.Layer):
             x = blk(x)
         if self.downsample is not None:
             x = self.downsample(x)
-        return x
-
-
-class LayerNorm2d(nn.Layer):
-    def __init__(self, num_channels: int, eps: float = 1e-6) -> None:
-        super().__init__()
-        self.weight = self.create_parameter(
-            shape=(num_channels,),
-            dtype="float32",
-            default_initializer=nn.initializer.Constant(1.0),
-        )
-        self.bias = self.create_parameter(
-            shape=(num_channels,),
-            dtype="float32",
-            default_initializer=nn.initializer.Constant(0.0),
-        )
-        self.eps = eps
-
-    def forward(self, x):
-        u = x.mean(1, keepdim=True)
-        s = (x - u).pow(2).mean(1, keepdim=True)
-        x = (x - u) / paddle.sqrt(s + self.eps)
-        x = self.weight[:, None, None] * x + self.bias[:, None, None]
-        return x
-
-
-class TinyViT(nn.Layer):
-    def __init__(
-        self,
-        img_size=224,
-        in_chans=3,
-        num_classes=1000,
-        embed_dims=[96, 192, 384, 768],
-        depths=[2, 2, 6, 2],
-        num_heads=[3, 6, 12, 24],
-        window_sizes=[7, 7, 14, 7],
-        mlp_ratio=4.0,
-        drop_rate=0.0,
-        drop_path_rate=0.1,
-        mbconv_expand_ratio=4.0,
-        local_conv_size=3,
-        layer_lr_decay=1.0,
-    ):
-        super().__init__()
-        self.img_size = img_size
-        self.num_classes = num_classes
-        self.depths = depths
-        self.num_layers = len(depths)
-        self.mlp_ratio = mlp_ratio
-
-        activation = nn.GELU
-
-        self.patch_embed = PatchEmbed(
-            in_chans=in_chans,
-            embed_dim=embed_dims[0],
-            resolution=img_size,
-            activation=activation,
-        )
-
-        patches_resolution = self.patch_embed.patches_resolution
-        self.patches_resolution = patches_resolution
-
-        # stochastic depth
-        dpr = [
-            x.item() for x in paddle.linspace(0, drop_path_rate, sum(depths))
-        ]  # stochastic depth decay rule
-
-        # build layers
-        self.layers = nn.LayerList()
-        for i_layer in range(self.num_layers):
-            kwargs = dict(
-                dim=embed_dims[i_layer],
-                input_resolution=(
-                    patches_resolution[0]
-                    // (2 ** (i_layer - 1 if i_layer == 3 else i_layer)),
-                    patches_resolution[1]
-                    // (2 ** (i_layer - 1 if i_layer == 3 else i_layer)),
-                ),
-                depth=depths[i_layer],
-                drop_path=dpr[sum(depths[:i_layer]) : sum(depths[: i_layer + 1])],
-                downsample=PatchMerging if (i_layer < self.num_layers - 1) else None,
-                out_dim=embed_dims[min(i_layer + 1, len(embed_dims) - 1)],
-                activation=activation,
-            )
-            if i_layer == 0:
-                layer = ConvLayer(
-                    conv_expand_ratio=mbconv_expand_ratio,
-                    **kwargs,
-                )
-            else:
-                layer = BasicLayer(
-                    num_heads=num_heads[i_layer],
-                    window_size=window_sizes[i_layer],
-                    mlp_ratio=self.mlp_ratio,
-                    drop=drop_rate,
-                    local_conv_size=local_conv_size,
-                    **kwargs,
-                )
-            self.layers.append(layer)
-
-        # Classifier head
-        self.norm_head = nn.LayerNorm(embed_dims[-1])
-        self.head = (
-            nn.Linear(embed_dims[-1], num_classes) if num_classes > 0 else nn.Identity()
-        )
-
-        # init weights
-        # self.apply(self._init_weights)
-        self.set_layer_lr_decay(layer_lr_decay)
-        self.neck = nn.Sequential(
-            nn.Conv2D(
-                embed_dims[-1],
-                256,
-                kernel_size=1,
-                bias_attr=False,
-            ),
-            LayerNorm2d(256),
-            nn.Conv2D(
-                256,
-                256,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False,
-            ),
-            LayerNorm2d(256),
-        )
-
-    def set_layer_lr_decay(self, layer_lr_decay):
-        decay_rate = layer_lr_decay
-
-        # layers -> blocks (depth)
-        depth = sum(self.depths)
-        lr_scales = [decay_rate ** (depth - i - 1) for i in range(depth)]
-        print("LR SCALES:", lr_scales)
-
-        def _set_lr_scale(m, scale):
-            for p in m.parameters():
-                p.lr_scale = scale
-
-        self.patch_embed.apply(lambda x: _set_lr_scale(x, lr_scales[0]))
-        i = 0
-        for layer in self.layers:
-            for block in layer.blocks:
-                block.apply(lambda x: _set_lr_scale(x, lr_scales[i]))
-                i += 1
-            if layer.downsample is not None:
-                layer.downsample.apply(lambda x: _set_lr_scale(x, lr_scales[i - 1]))
-        assert i == depth
-        for m in [self.norm_head, self.head]:
-            m.apply(lambda x: _set_lr_scale(x, lr_scales[-1]))
-
-        for k, p in self.named_parameters():
-            p.param_name = k
-
-        def _check_lr_scale(m):
-            for p in m.parameters():
-                assert hasattr(p, "lr_scale"), p.param_name
-
-        self.apply(_check_lr_scale)
-
-    # def _init_weights(self, m):
-    #     if isinstance(m, nn.Linear):
-    #         trunc_normal_(m.weight, std=.02)
-    #         if isinstance(m, nn.Linear) and m.bias is not None:
-    #             nn.init.constant_(m.bias, 0)
-    #     elif isinstance(m, nn.LayerNorm):
-    #         nn.init.constant_(m.bias, 0)
-    #         nn.init.constant_(m.weight, 1.0)
-
-    @paddle.no_grad()
-    def build_abs(self):
-        for m in self.sublayers():
-            if isinstance(m, Attention):
-                m.build_ab()
-
-    def forward_features(self, x):
-        # x: (N, C, H, W)
-        x = self.patch_embed(x)
-
-        x = self.layers[0](x)
-        start_i = 1
-
-        for i in range(start_i, len(self.layers)):
-            layer = self.layers[i]
-            x = layer(x)
-        B, _, C = x.shape
-        x = x.reshape((B, 64, 64, C))
-        x = x.transpose((0, 3, 1, 2))
-        x = self.neck(x)
-        return x
-
-    def forward(self, x):
-        x = self.forward_features(x)
-        # x = self.norm_head(x)
-        # x = self.head(x)
-        print(x.shape)
         return x
