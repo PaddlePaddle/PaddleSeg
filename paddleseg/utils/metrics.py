@@ -54,9 +54,9 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
         label_area.append(paddle.sum(paddle.cast(label_i, "int64")))
         intersect_area.append(paddle.sum(paddle.cast(intersect_i, "int64")))
 
-    pred_area = paddle.concat(pred_area)
-    label_area = paddle.concat(label_area)
-    intersect_area = paddle.concat(intersect_area)
+    pred_area = paddle.stack(pred_area)
+    label_area = paddle.stack(label_area)
+    intersect_area = paddle.stack(intersect_area)
 
     return intersect_area, pred_area, label_area
 
