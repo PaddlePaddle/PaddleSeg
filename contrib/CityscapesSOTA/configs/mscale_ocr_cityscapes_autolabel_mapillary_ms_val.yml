@@ -43,3 +43,35 @@ train_dataset:
       mean: [0.485, 0.456, 0.406]
       std: [0.229, 0.224, 0.225]
   mode: train
+
+# Placeholder
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0001
+
+lr_scheduler:
+  type: polynomialdecay
+  learning_rate: 0.005
+  power: 2
+  end_lr: 0.0
+
+loss:
+  types:
+    - type: diceloss
+    - type: diceloss
+    - type: diceloss
+    - type: diceloss
+    - type: bootstrappedcrossentropyloss
+      min_k: 100000
+      loss_th: 0.05
+    - type: bootstrappedcrossentropyloss
+      min_k: 100000
+      loss_th: 0.05
+    - type: bootstrappedcrossentropyloss
+      min_k: 100000
+      loss_th: 0.05
+    - type: bootstrappedcrossentropyloss
+      min_k: 100000
+      loss_th: 0.05
+  coef: [1, 0.4, 0.05, 0.05, 1, 0.4, 0.05, 0.05]

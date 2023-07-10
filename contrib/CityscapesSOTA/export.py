@@ -18,7 +18,7 @@ import os
 import paddle
 import yaml
 
-from paddleseg.cvlibs import Config
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.utils import logger
 import datasets, models
 
@@ -81,7 +81,8 @@ class SavedSegmentationNet(paddle.nn.Layer):
 def main(args):
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     cfg = Config(args.config)
-    net = cfg.model
+    builder = SegBuilder(cfg)
+    net = builder.model
 
     if args.model_path is not None:
         para_state_dict = paddle.load(args.model_path)
@@ -116,7 +117,7 @@ def main(args):
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
-        transforms = cfg.export_config.get('transforms', [{
+        transforms = cfg.val_dataset_cfg.get('transforms', [{
             'type': 'Normalize'
         }])
         output_dtype = 'int32' if output_op == 'argmax' else 'float32'
