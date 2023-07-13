@@ -33,6 +33,12 @@ def parse_args():
     parser.add_argument(
         '--model_path', help='The path of model for export', type=str)
     parser.add_argument(
+        "--input_shape",
+        nargs='+',
+        help="Export the model with fixed input shape, e.g., `--input_shape 1 3 1024 1024`.",
+        type=int,
+        default=None)
+    parser.add_argument(
         '--save_dir',
         help='The directory for saving the exported model',
         type=str,
@@ -52,6 +58,10 @@ def parse_args():
         dest='with_softmax',
         help='Add the softmax operation at the end of the network',
         action='store_true')
+    parser.add_argument(
+        '--for_fd',
+        action='store_true',
+        help="Export the model to FD-compatible format.")
 
     return parser.parse_args()
 
@@ -85,14 +95,19 @@ def main(args):
     new_net = net if output_op == 'none' else WrappedModel(net, output_op)
 
     new_net.eval()
-    save_path = os.path.join(args.save_dir, 'model')
-    input_spec = [
-        paddle.static.InputSpec(
-            shape=[None, 3, None, None], dtype='float32')
-    ]
+    if args.for_fd:
+        save_name = 'inference'
+        yaml_name = 'inference.yml'
+    else:
+        save_name = 'model'
+        yaml_name = 'deploy.yaml'
+    save_path = os.path.join(args.save_dir, save_name)
+    shape = [None, 3, None, None] if args.input_shape is None \
+        else args.input_shape
+    input_spec = [paddle.static.InputSpec(shape=shape, dtype='float32')]
     quantizer.save_quantized_model(new_net, save_path, input_spec=input_spec)
 
-    yml_file = os.path.join(args.save_dir, 'deploy.yaml')
+    yml_file = os.path.join(args.save_dir, yaml_name)
     with open(yml_file, 'w') as file:
         transforms = cfg.val_dataset_cfg.get('transforms', [{
             'type': 'Normalize'
@@ -100,8 +115,8 @@ def main(args):
         data = {
             'Deploy': {
                 'transforms': transforms,
-                'model': 'model.pdmodel',
-                'params': 'model.pdiparams'
+                'model': save_name + '.pdmodel',
+                'params': save_name + '.pdiparams'
             }
         }
         yaml.dump(data, file)

@@ -22,7 +22,7 @@ import paddle
 from paddleslim.dygraph import L1NormFilterPruner
 from paddleslim.analysis import dygraph_flops
 
-from paddleseg.cvlibs.config import Config, SegBuilder
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.core.val import evaluate
 from paddleseg.core.train import train
 from paddleseg.utils import logger, utils

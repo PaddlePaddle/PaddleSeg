@@ -48,6 +48,10 @@ def parse_args():
         help="Select the op to be appended to the last of inference model, default: argmax."
         "In PaddleSeg, the output of trained model is logit (H*C*H*W). We can apply argmax and"
         "softmax op to the logit according the actual situation.")
+    parser.add_argument(
+        '--for_fd',
+        action='store_true',
+        help="Export the model to FD-compatible format.")
 
     return parser.parse_args()
 
@@ -76,7 +80,13 @@ def main(args):
     input_spec = [paddle.static.InputSpec(shape=shape, dtype='float32')]
     model.eval()
     model = paddle.jit.to_static(model, input_spec=input_spec)
-    paddle.jit.save(model, os.path.join(args.save_dir, 'model'))
+    if args.for_fd:
+        save_name = 'inference'
+        yaml_name = 'inference.yml'
+    else:
+        save_name = 'model'
+        yaml_name = 'deploy.yaml'
+    paddle.jit.save(model, os.path.join(args.save_dir, save_name))
 
     # save deploy.yaml
     val_dataset_cfg = cfg.val_dataset_cfg
@@ -87,8 +97,8 @@ def main(args):
     # TODO add test config
     deploy_info = {
         'Deploy': {
-            'model': 'model.pdmodel',
-            'params': 'model.pdiparams',
+            'model': save_name + '.pdmodel',
+            'params': save_name + '.pdiparams',
             'transforms': transforms,
             'input_shape': shape,
             'output_op': args.output_op,
@@ -99,7 +109,7 @@ def main(args):
     msg += str(yaml.dump(deploy_info))
     logger.info(msg)
 
-    yml_file = os.path.join(args.save_dir, 'deploy.yaml')
+    yml_file = os.path.join(args.save_dir, yaml_name)
     with open(yml_file, 'w') as file:
         yaml.dump(deploy_info, file)
 

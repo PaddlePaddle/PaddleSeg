@@ -30,7 +30,7 @@ setup(
     author='PaddlePaddle Author',
     author_email='',
     install_requires=REQUIRED_PACKAGES,
-    packages=find_packages(),
+    packages=find_packages(include=['paddleseg', 'paddleseg.*']),
     # PyPI package information.
     classifiers=[
         'Development Status :: 4 - Beta',
