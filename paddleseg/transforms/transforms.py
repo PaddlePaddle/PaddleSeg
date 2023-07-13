@@ -60,11 +60,11 @@ class Compose:
         if 'img' not in data.keys():
             raise ValueError("`data` must include `img` key.")
         if isinstance(data['img'], str):
-            data['img'] = cv2.imread(data['img'],
-                                     self.read_flag).astype('float32')
-        if data['img'] is None:
-            raise ValueError('Can\'t read The image file {}!'.format(data[
-                'img']))
+            img = cv2.imread(data['img'], self.read_flag)
+            if img is None:
+                raise ValueError('Can\'t read The image file {}!'.format(data['img']))
+            data['img'] = img.astype('float32')
+
         if not isinstance(data['img'], np.ndarray):
             raise TypeError("Image type is not numpy.")
 
