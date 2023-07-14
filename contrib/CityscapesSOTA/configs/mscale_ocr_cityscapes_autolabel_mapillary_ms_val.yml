@@ -44,7 +44,6 @@ train_dataset:
       std: [0.229, 0.224, 0.225]
   mode: train
 
-# Placeholder
 optimizer:
   type: sgd
   momentum: 0.9
