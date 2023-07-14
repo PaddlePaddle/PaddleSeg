@@ -31,7 +31,7 @@ class Compose:
     The shape of input data to all operations is [height, width, channels].
 
     Args:
-        transforms (list): A list contains data pre-processing or augmentation. Empty list means only reading images, no transformation.
+        transforms (list): A list contains data pre-processing or augmentation. An empty list means only reading images, no transformation.
         to_rgb (bool, optional): If converting image to RGB color space. Default: True.
         img_channels (int, optional): The image channels used to check the loaded image. Default: 3.
 
