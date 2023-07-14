@@ -59,6 +59,7 @@ class Compose:
         """
         if 'img' not in data.keys():
             raise ValueError("`data` must include `img` key.")
+        # data['img'] is numpy array in eg1800 and supervisely
         if data['img'] is None:
             raise TypeError(
                 "Expect `data[img]` to be str or np.ndarray, but got NoneType.")
