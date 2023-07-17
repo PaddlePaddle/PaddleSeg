@@ -29,6 +29,8 @@ random.seed(100)
 
 @manager.DATASETS.add_component
 class CityscapesAutolabeling(paddle.io.Dataset):
+    NUM_CLASSES = 19
+    IMG_CHANNELS = 3
     """
     Cityscapes dataset with fine data, coarse data and autolabelled data.
     Source: https://www.cityscapes-dataset.com/
