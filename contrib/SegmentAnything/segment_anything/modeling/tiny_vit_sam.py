@@ -267,7 +267,7 @@ class PatchMerging(nn.Layer):
     def forward(self, x):
         if x.ndim == 3:
             H, W = self.input_resolution
-            B = len(x)
+            B = x.shape[0]
             # (B, C, H, W)
             x = x.reshape((B, H, W, -1)).transpose((0, 3, 1, 2))
 
@@ -435,7 +435,7 @@ class TinyViTBlock(nn.Layer):
 
     Args:
         dim (int): Number of input channels.
-        input_resolution (tuple[int, int]): Input resulotion.
+        input_resolution (tuple[int, int]): Input resolution.
         num_heads (int): Number of attention heads.
         window_size (int): Window size.
         mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
@@ -530,6 +530,7 @@ class TinyViTBlock(nn.Layer):
             x = x.reshape((B, L, C))
 
         # x = res_x + self.drop_path(x)
+        x = res_x + x
 
         x = x.transpose((0, 2, 1)).reshape((B, C, H, W))
         x = self.local_conv(x)
