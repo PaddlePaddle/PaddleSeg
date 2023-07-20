@@ -3,6 +3,7 @@ import itertools
 import paddle
 from paddle import nn
 from paddle.nn import functional as F
+
 from .common import LayerNorm2d
 
 # NOTE: All the DropPath and parameters initialization are commented out due to sam do not support to train.
