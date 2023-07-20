@@ -2,7 +2,7 @@
 model_name:ocrnet_hrnetw48
 python:python3.7
 gpu_list:0|0,1
-Global.use_gpu:null|null
+--device:gpu
 --precision:null
 --iters:lite_train_lite_infer=20|lite_train_whole_infer=20|whole_train_whole_infer=1000
 --save_dir:
