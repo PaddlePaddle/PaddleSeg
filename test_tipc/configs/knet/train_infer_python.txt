@@ -2,7 +2,7 @@
 model_name:knet
 python:python3.7
 gpu_list:0|0,1
-Global.use_gpu:null|null
+--device:gpu
 --precision:null
 --iters:lite_train_lite_infer=20|lite_train_whole_infer=20|whole_train_whole_infer=1000
 --save_dir:
@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 null:null
 ##
 trainer:norm_train
-norm_train:tools/train.py --config test_tipc/configs/knet/knet_resnet50_cityscapes_1024x512_80k --device gpu --save_interval 500 --seed 100  --num_workers 8
+norm_train:tools/train.py --config test_tipc/configs/knet/knet_resnet50_cityscapes_1024x512_80k.yml --device gpu --save_interval 500 --seed 100  --num_workers 8
 pact_train:null
 fpgm_train:null
 distill_train:null
