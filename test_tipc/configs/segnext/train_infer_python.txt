@@ -27,7 +27,7 @@ null:null
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:tools/export.py --config test_tipc/configs/segnext/segnext_mscan_tiny_1024x1024_cityscapes_160k.yml --input_shape 1 3 1024 2048
+norm_export:tools/export.py --config test_tipc/configs/segnext/segnext_mscan_t_cityscapes_1024x1024_160k.yml --input_shape 1 3 1024 2048
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -35,7 +35,7 @@ export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/segnext/model.pdparams
-infer_export:tools/export.py --config test_tipc/configs/segnext/segnext_mscan_tiny_1024x1024_cityscapes_160k.yml --input_shape 1 3 1024 2048
+infer_export:tools/export.py --config test_tipc/configs/segnext/segnext_mscan_t_cityscapes_1024x1024_160k.yml --input_shape 1 3 1024 2048
 infer_quant:False
 inference:deploy/python/infer.py
 --device:cpu|gpu
