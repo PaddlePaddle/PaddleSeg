@@ -21,14 +21,14 @@ import argparse
 import os
 import sys
 
-import paddle
 import numpy as np
-
-from paddleseg.cvlibs import Config
-from paddleseg.utils import get_sys_env, logger, op_flops_funs
-from paddle.hapi.dynamic_flops import (count_parameters, register_hooks,
-                                       count_io_info)
+import paddle
+from paddle.hapi.dynamic_flops import (count_io_info, count_parameters,
+                                       register_hooks)
 from paddle.hapi.static_flops import Table
+
+from paddleseg.cvlibs import Config, SegBuilder
+from paddleseg.utils import get_sys_env, logger, op_flops_funs
 
 
 def parse_args():
@@ -140,10 +140,11 @@ def analyze(args):
     paddle.set_device('cpu')
 
     cfg = Config(args.config)
+    builder = SegBuilder(cfg)
 
     custom_ops = {paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn}
     inputs = paddle.randn(args.input_shape)
-    _dynamic_flops(cfg.model, inputs, custom_ops=custom_ops, print_detail=True)
+    _dynamic_flops(builder.model, inputs, custom_ops=custom_ops, print_detail=True)
 
 
 if __name__ == '__main__':
