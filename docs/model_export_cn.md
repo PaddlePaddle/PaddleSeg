@@ -42,13 +42,22 @@ python tools/export.py \
 注意：
 * 如果部署模型时，出现和shape相关的问题，请尝试指定input_shape。
 
-## 3. 预测模型文件
+## 3. 导出dynamic_shape.pdtxt(可选，当使用TensorRT加速，并开启dynamic_shape时，可直接加载该文件)
+```shell
+python deploy/python/collect_dynamic_shape.py \
+       --config output/inference_model/deploy.yaml \
+       --image_path path/to/test/image \
+       --dynamic_shape_path output/inference_model/dynamic_shape.pbtxt
+```
+
+## 4. 预测模型文件
 
 如下是导出的预测模型文件。
 
 ```shell
 output/inference_model
   ├── deploy.yaml            # 部署相关的配置文件，主要说明数据预处理方式等信息
+  ├── dynamic_shape.pdtxt    # 用于TensorRT加速的dynamic shape信息
   ├── model.pdmodel          # 预测模型的拓扑结构文件
   ├── model.pdiparams        # 预测模型的权重文件
   └── model.pdiparams.info   # 参数额外信息，一般无需关注
