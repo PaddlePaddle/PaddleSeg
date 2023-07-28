@@ -142,7 +142,7 @@ def compute_class_connectiveity(pred_conn, label_conn, pred_num_conn,
         pair_conn_num = 0
 
         for j in range(1, pred_num_conn):
-            pred_j_mask = pred_conn[:, :, j]
+            pred_j_mask = pred_conn[:, :, j].contiguous()
             pred_j = pred_j_mask * pred
 
             iou = compute_iou(pred_j, label_i, zero)
