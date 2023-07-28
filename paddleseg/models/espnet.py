@@ -345,10 +345,11 @@ class DownSampler(nn.Layer):
                 inputs.shape[0], inputs.shape[1], paddle.shape(inputs)[2],
                 paddle.shape(inputs)[3]
             ])
-            while w2 != w1:
-                inputs = F.avg_pool2d(
-                    inputs, kernel_size=3, padding=1, stride=2)
-                w2 = paddle.shape(inputs)[2]
+            with paddle.fluid.framework._stride_in_no_check_dy2st_diff():
+                while w2 != w1:
+                    inputs = F.avg_pool2d(
+                        inputs, kernel_size=3, padding=1, stride=2)
+                    w2 = paddle.shape(inputs)[2]
 
             output = output + self.shortcut_layer(inputs)
         return self._act(output)
