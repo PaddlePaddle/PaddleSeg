@@ -40,7 +40,7 @@ model_link = {
     'vit_b':
     "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_b/model.pdparams",
     'vit_t':
-    "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_t/model.pdparams",
+    "https://paddleseg.bj.bcebos.com/dygraph/paddlesegAnything/vit_t/model.pdparam",
     'clip_b_32':
     "https://bj.bcebos.com/paddleseg/dygraph/clip/vit_b_32_pretrain/clip_vit_b_32.pdparams"
 }

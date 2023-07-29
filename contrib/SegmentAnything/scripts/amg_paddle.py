@@ -38,7 +38,7 @@ model_link = {
     'vit_b':
     "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_b/model.pdparams",
     'vit_t':
-    "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_t/model.pdparams",
+    "https://paddleseg.bj.bcebos.com/dygraph/paddlesegAnything/vit_t/model.pdparam"
 }
 
 parser = argparse.ArgumentParser(description=(
