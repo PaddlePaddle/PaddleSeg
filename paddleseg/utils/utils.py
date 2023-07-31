@@ -63,13 +63,13 @@ def set_device(device):
     env_info = get_sys_env()
     if 'gpu' in device and env_info['Paddle compiled with cuda'] \
         and env_info['GPUs used']:
-        place = device
-    elif 'xpu' in device and paddle.is_compiled_with_xpu():
-        place = device
-    elif 'npu' in device and paddle.is_compiled_with_custom_device('npu'):
-        place = device
-    elif 'mlu' in device and paddle.is_compiled_with_mlu():
-        place = device
+        place = 'gpu'
+    elif device == 'xpu' and paddle.is_compiled_with_xpu():
+        place = 'xpu'
+    elif device == 'npu' and paddle.is_compiled_with_custom_device('npu'):
+        place = 'npu'
+    elif device == 'mlu' and paddle.is_compiled_with_custom_device('mlu'):
+        place = 'mlu'
     else:
         place = 'cpu'
     paddle.set_device(place)
