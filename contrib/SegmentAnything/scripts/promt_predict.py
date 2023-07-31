@@ -33,7 +33,9 @@ model_link = {
     'vit_l':
     "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_l/model.pdparams",
     'vit_b':
-    "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_b/model.pdparams"
+    "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_b/model.pdparams",
+    'vit_t':
+    "https://paddleseg.bj.bcebos.com/dygraph/paddlesegAnything/vit_t/model.pdparam"
 }
 
 
@@ -48,19 +50,20 @@ def get_args():
         type=str,
         default="vit_l",
         required=True,
-        help="The type of model to load, in ['vit_h', 'vit_l', 'vit_b']", )
+        help="The type of model to load, in ['vit_h', 'vit_l', 'vit_b', 'vit_t']",
+    )
     parser.add_argument(
         '--point_prompt',
         type=int,
         nargs='+',
         default=None,
-        help='point promt.')
+        help='point prompt.')
     parser.add_argument(
         '--box_prompt',
         type=int,
         nargs='+',
         default=None,
-        help='box promt format as xyxy.')
+        help='box prompt format as xyxy.')
     parser.add_argument(
         '--output_path',
         type=str,
