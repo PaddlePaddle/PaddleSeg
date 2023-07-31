@@ -106,7 +106,6 @@ sam_model_registry = {
     "vit_t": build_sam_vit_t,
 }
 
-
 def _build_sam(
         encoder_embed_dim,
         encoder_depth,
