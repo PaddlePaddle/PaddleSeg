@@ -262,16 +262,16 @@ def train(model,
             model.clear_gradients()
             avg_loss += float(loss)
             if not avg_loss_list:
-                avg_loss_list = [l.numpy() for l in loss_list]
+                avg_loss_list = [float(l) for l in loss_list]
             else:
                 for i in range(len(loss_list)):
-                    avg_loss_list[i] += loss_list[i].numpy()
+                    avg_loss_list[i] += float(loss_list[i])
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=batch_size)
 
             if (iter) % log_iters == 0 and local_rank == 0:
                 avg_loss /= log_iters
-                avg_loss_list = [l.item() / log_iters for l in avg_loss_list]
+                avg_loss_list = [l / log_iters for l in avg_loss_list]
                 remain_iters = iters - iter
                 avg_train_batch_cost = batch_cost_averager.get_average()
                 avg_train_reader_cost = reader_cost_averager.get_average()
