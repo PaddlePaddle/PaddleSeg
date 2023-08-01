@@ -28,3 +28,9 @@ from .hrf import HRF
 from .chase_db1 import CHASEDB1
 from .pp_humanseg14k import PPHumanSeg14K
 from .pssl import PSSLDataset
+
+from paddleseg.cvlibs import manager
+
+# for PaddleX
+SegDataset = Dataset
+manager.DATASETS._components_dict['SegDataset'] = SegDataset
