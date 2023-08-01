@@ -28,9 +28,9 @@ function func_set_params() {
     local key=$1
     local value=$2
     local sep="${3-=}"
-    if [ ${key}x = "null"x ];then
+    if [ ${key}x = "null"x ]; then
         echo " "
-    elif [[ ${value} = "null" ]] || [[ ${value} = " " ]] || [ ${#value} -le 0 ];then
+    elif [[ ${value} = "null" ]] || [[ ${value} = " " ]] || [ ${#value} -le 0 ]; then
         echo " "
     else 
         echo "${key}${sep}${value}"
@@ -82,19 +82,20 @@ function download_and_unzip_dataset() {
 
     local ds_path="${ds_dir}/${ds_name}"
     local zip_name="${url##*/}"
+    local zip_path="${ds_dir}/${zip_name}"
 
     if [ ${clear} = 'True' ]; then
         rm -rf "${ds_path}"
     fi
 
-    wget -O "${ds_dir}/${zip_name}" "${url}" --no-check-certificate
+    wget -O "${zip_path}" "${url}" --no-check-certificate
     
+    unzip "${zip_path}" -d "${ds_dir}"
     # The extracted file/directory must have the same name as the zip file.
-    cd "${ds_dir}" && unzip "${zip_name}"
-    if [ "${zip_name%.*}" != "${ds_name}" ]; then
-        mv "${zip_name%.*}" "${ds_name}"
+    local extd_path="${ds_dir}/${zip_name%.*}"
+    if [ ! "${extd_path}" -ef "${ds_path}" ]; then
+        mv "${extd_path}" "${ds_path}"
     fi
-    cd -
 }
 
 function parse_extra_args() {

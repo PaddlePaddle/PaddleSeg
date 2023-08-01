@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
       ort_session_handler.preprocess(image, BISENETV2_CITYSCAPES_IMAGE_HEIGHT, BISENETV2_CITYSCAPES_IMAGE_WIDTH);
 
   // output data's type might change for each different model
-  auto output_data = ort_session_handler.run<int64_t>({input_data});
+  auto output_data = ort_session_handler.run<int32_t>({input_data});
 
   // postprocess
   // this might change for each different model

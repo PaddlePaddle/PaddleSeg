@@ -38,6 +38,7 @@ from .dnlnet import *
 from .setr import *
 from .sfnet import *
 from .pphumanseg_lite import *
+from .seaformer_seg import SeaFormerSeg
 from .mla_transformer import MLATransformer
 from .portraitnet import PortraitNet
 from .stdcseg import STDCSeg
@@ -61,9 +62,16 @@ from .ddrnet import DDRNet_23
 from .ccnet import CCNet
 from .mobileseg import MobileSeg
 from .upernet import UPerNet
+from .upernet_cae import UPerNetCAE
 from .sinet import SINet
 from .lraspp import LRASPP
 from .mscale_ocrnet import MscaleOCRNet
 from .topformer import TopFormer
 from .rtformer import RTFormer
+from .upernet_vit_adapter import UPerNetViTAdapter
 from .lpsnet import LPSNet
+from .efficientformerv2_seg import EfficientFormerSeg
+from .maskformer import MaskFormer
+from .segnext import SegNeXt
+from .knet import KNet
+from .pp_mobileseg import PPMobileSeg

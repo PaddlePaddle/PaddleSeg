@@ -22,7 +22,7 @@ import paddle
 from paddleslim.dygraph import L1NormFilterPruner
 from paddleslim.analysis import dygraph_flops
 
-from paddleseg.cvlibs.config import Config, SegBuilder
+from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.core.val import evaluate
 from paddleseg.core.train import train
 from paddleseg.utils import logger, utils
@@ -77,6 +77,8 @@ def parse_args():
         help='Num workers for data loader',
         type=int,
         default=0)
+    parser.add_argument(
+        '--opts', help='Update the key-value pairs of all options.', nargs='+')
 
     return parser.parse_args()
 
@@ -128,7 +130,8 @@ def main(args):
         args.cfg,
         iters=args.retraining_iters,
         batch_size=args.batch_size,
-        learning_rate=args.learning_rate)
+        learning_rate=args.learning_rate,
+        opts=args.opts)
     builder = SegBuilder(cfg)
 
     train_dataset = builder.train_dataset

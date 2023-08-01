@@ -5,7 +5,7 @@ iters: 60000
 
 
 optimizer:
-  type: sgd
+  type: SGD
   weight_decay: 0.0002
 
 loss:
@@ -23,7 +23,7 @@ model:
   type: HRNetW48Contrast
   backbone:
     type: HRNet_W48
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
+    pretrained: Null
   bb_channels: 720
   drop_prob: 0.1
   proj_dim: 720

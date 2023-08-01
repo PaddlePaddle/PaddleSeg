@@ -47,5 +47,5 @@ Panoptic segmentation is an image parsing task that unifies the typically distin
 + Please scan the following QR code and join PaddleSeg WeChat group to communicate with us.
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg" width = "200" />  
+<img src="https://paddleseg.bj.bcebos.com/images/seg_qr_code.png" width = "200" />  
 </div>

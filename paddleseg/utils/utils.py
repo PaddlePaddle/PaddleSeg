@@ -14,7 +14,6 @@
 
 import os
 import contextlib
-import filelock
 import tempfile
 import random
 from urllib.parse import urlparse, unquote
@@ -62,15 +61,15 @@ def show_cfg_info(config):
 
 def set_device(device):
     env_info = get_sys_env()
-    if device == 'gpu' and env_info['Paddle compiled with cuda'] \
+    if 'gpu' in device and env_info['Paddle compiled with cuda'] \
         and env_info['GPUs used']:
-        place = 'gpu'
-    elif device == 'xpu' and paddle.is_compiled_with_xpu():
-        place = 'xpu'
-    elif device == 'npu' and paddle.is_compiled_with_npu():
-        place = 'npu'
-    elif device == 'mlu' and paddle.is_compiled_with_mlu():
-        place = 'mlu'
+        place = device
+    elif 'xpu' in device and paddle.is_compiled_with_xpu():
+        place = device
+    elif 'npu' in device and paddle.is_compiled_with_custom_device('npu'):
+        place = device
+    elif 'mlu' in device and paddle.is_compiled_with_custom_device('mlu'):
+        place = device
     else:
         place = 'cpu'
     paddle.set_device(place)
@@ -134,14 +133,14 @@ def download_pretrained_model(pretrained_model):
         filename = 'model.pdparams'
 
     with generate_tempdir() as _dir:
-        with filelock.FileLock(os.path.join(seg_env.TMP_HOME, savename)):
-            pretrained_model = download_file_and_uncompress(
-                pretrained_model,
-                savepath=_dir,
-                extrapath=seg_env.PRETRAINED_MODEL_HOME,
-                extraname=savename,
-                filename=filename)
-            pretrained_model = os.path.join(pretrained_model, filename)
+        pretrained_model = download_file_and_uncompress(
+            pretrained_model,
+            savepath=_dir,
+            cover=False,
+            extrapath=seg_env.PRETRAINED_MODEL_HOME,
+            extraname=savename,
+            filename=filename)
+        pretrained_model = os.path.join(pretrained_model, filename)
     return pretrained_model
 
 

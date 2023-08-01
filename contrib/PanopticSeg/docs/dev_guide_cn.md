@@ -26,12 +26,15 @@ PanopticSeg
 │   │   ├── info_dicts.py: 用于存储模型预测结果、样本信息等内容的数据容器。
 │   │   └── manager.py: 用于注册和管理组件。
 │   ├── datasets: 数据集读取接口的实现。
+│   ├── deploy: 部署相关 API 实现。
 │   ├── models: 模型具体实现。
 │   │   ├── backbones: 骨干网络实现。
 │   │   ├── losses: 损失函数实现。
 │   │   ├── ops: 外部算子实现。
+│   │   ├── common.py: 公用组件。
 │   │   └── param_init.py: 用于权重初始化的辅助函数和类。
 │   ├── postprocessors: 后处理逻辑实现。
+│   ├── runners: 执行器实现。
 │   ├── transforms: 数据变换（预处理和增强）算子实现。
 │   │   └── generate_targets: 训练阶段用于生成损失函数需要的参考输入的算子。
 │   └── utils: 辅助函数和类。

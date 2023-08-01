@@ -210,7 +210,7 @@ class GSCNNHead(nn.Layer):
             input_shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
-        edge_out = F.sigmoid(cs)  # Ouput of shape stream
+        edge_out = F.sigmoid(cs)  # Output of shape stream
 
         cat = paddle.concat([edge_out, canny], axis=1)
         acts = self.cw(cat)

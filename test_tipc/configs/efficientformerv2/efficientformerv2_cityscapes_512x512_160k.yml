@@ -1,0 +1,31 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 8
+iters: 40000
+
+model:
+  type: EfficientFormerSeg
+  backbone:
+    type: EfficientFormerv2_s2
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/efficientformerv2_s2/pretrain/eformer_s2_pretrained.pdparams
+  backbone_indices: [0, 1, 2, 3]
+  channels: 19
+
+val_dataset:
+  transforms:
+    - type: Resize
+      target_size: [1024, 512]
+      keep_ratio: True
+      size_divisor: 32
+    - type: Normalize
+  mode: val
+  
+optimizer:
+  type: AdamW
+  _inherited_: False
+  weight_decay: 1.0e-4
+
+lr_scheduler:
+  learning_rate: 0.0006
+  power: 0.9
+  end_lr: 1.0e-6

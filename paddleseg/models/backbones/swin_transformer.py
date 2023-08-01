@@ -714,6 +714,52 @@ class SwinTransformer(nn.Layer):
 
 
 @manager.BACKBONES.add_component
+class SwinTransformer_tiny_patch4_window7_224_maskformer(SwinTransformer):
+    def __init__(self, **kwargs):
+        super().__init__(
+            pretrain_img_size=224,
+            embed_dim=96,
+            depths=[2, 2, 6, 2],
+            num_heads=[3, 6, 12, 24],
+            window_size=7,
+            drop_path_rate=0.3,
+            patch_norm=True,
+            **kwargs)
+
+        self._out_features = ["res2", "res3", "res4", "res5"]
+
+        self._out_feature_strides = {
+            "res2": 4,
+            "res3": 8,
+            "res4": 16,
+            "res5": 32,
+        }
+        self._out_feature_channels = {
+            "res2": self.feat_channels[0],
+            "res3": self.feat_channels[1],
+            "res4": self.feat_channels[2],
+            "res5": self.feat_channels[3],
+        }
+
+    def forward(self, x):
+        outputs = {}
+        y = super(SwinTransformer_tiny_patch4_window7_224_maskformer,
+                  self).forward(x)
+        for i, k in enumerate(self._out_features):
+            outputs[k] = y[i]
+        return outputs
+
+    def output_shape(self):
+        return {
+            name: {
+                "channels": self._out_feature_channels[name],
+                "stride": self._out_feature_strides[name]
+            }
+            for name in self._out_features
+        }
+
+
+@manager.BACKBONES.add_component
 def SwinTransformer_tiny_patch4_window7_224(**kwargs):
     model = SwinTransformer(
         pretrain_img_size=224,
@@ -724,6 +770,52 @@ def SwinTransformer_tiny_patch4_window7_224(**kwargs):
         **kwargs)
 
     return model
+
+
+@manager.BACKBONES.add_component
+class SwinTransformer_small_patch4_window7_224_maskformer(SwinTransformer):
+    def __init__(self, **kwargs):
+        super().__init__(
+            pretrain_img_size=224,
+            embed_dim=96,
+            depths=[2, 2, 18, 2],
+            num_heads=[3, 6, 12, 24],
+            window_size=7,
+            drop_path_rate=0.3,
+            patch_norm=True,
+            **kwargs)
+
+        self._out_features = ["res2", "res3", "res4", "res5"]
+
+        self._out_feature_strides = {
+            "res2": 4,
+            "res3": 8,
+            "res4": 16,
+            "res5": 32,
+        }
+        self._out_feature_channels = {
+            "res2": self.feat_channels[0],
+            "res3": self.feat_channels[1],
+            "res4": self.feat_channels[2],
+            "res5": self.feat_channels[3],
+        }
+
+    def forward(self, x):
+        outputs = {}
+        y = super(SwinTransformer_small_patch4_window7_224_maskformer,
+                  self).forward(x)
+        for i, k in enumerate(self._out_features):
+            outputs[k] = y[i]
+        return outputs
+
+    def output_shape(self):
+        return {
+            name: {
+                "channels": self._out_feature_channels[name],
+                "stride": self._out_feature_strides[name]
+            }
+            for name in self._out_features
+        }
 
 
 @manager.BACKBONES.add_component
@@ -753,6 +845,52 @@ def SwinTransformer_base_patch4_window7_224(**kwargs):
 
 
 @manager.BACKBONES.add_component
+class SwinTransformer_base_patch4_window7_384_maskformer(SwinTransformer):
+    def __init__(self, **kwargs):
+        super().__init__(
+            pretrain_img_size=384,
+            embed_dim=128,
+            depths=[2, 2, 18, 2],
+            num_heads=[4, 8, 16, 32],
+            window_size=12,
+            drop_path_rate=0.3,
+            patch_norm=True,
+            **kwargs)
+
+        self._out_features = ["res2", "res3", "res4", "res5"]
+
+        self._out_feature_strides = {
+            "res2": 4,
+            "res3": 8,
+            "res4": 16,
+            "res5": 32,
+        }
+        self._out_feature_channels = {
+            "res2": self.feat_channels[0],
+            "res3": self.feat_channels[1],
+            "res4": self.feat_channels[2],
+            "res5": self.feat_channels[3],
+        }
+
+    def forward(self, x):
+        outputs = {}
+        y = super(SwinTransformer_base_patch4_window7_384_maskformer,
+                  self).forward(x)
+        for i, k in enumerate(self._out_features):
+            outputs[k] = y[i]
+        return outputs
+
+    def output_shape(self):
+        return {
+            name: {
+                "channels": self._out_feature_channels[name],
+                "stride": self._out_feature_strides[name]
+            }
+            for name in self._out_features
+        }
+
+
+@manager.BACKBONES.add_component
 def SwinTransformer_base_patch4_window12_384(**kwargs):
     model = SwinTransformer(
         pretrain_img_size=384,
@@ -776,6 +914,52 @@ def SwinTransformer_large_patch4_window7_224(**kwargs):
         **kwargs)
 
     return model
+
+
+@manager.BACKBONES.add_component
+class SwinTransformer_large_patch4_window7_384_maskformer(SwinTransformer):
+    def __init__(self, **kwargs):
+        super().__init__(
+            pretrain_img_size=384,
+            embed_dim=192,
+            depths=[2, 2, 18, 2],
+            num_heads=[6, 12, 24, 48],
+            window_size=12,
+            drop_path_rate=0.3,
+            patch_norm=True,
+            **kwargs)
+
+        self._out_features = ["res2", "res3", "res4", "res5"]
+
+        self._out_feature_strides = {
+            "res2": 4,
+            "res3": 8,
+            "res4": 16,
+            "res5": 32,
+        }
+        self._out_feature_channels = {
+            "res2": self.feat_channels[0],
+            "res3": self.feat_channels[1],
+            "res4": self.feat_channels[2],
+            "res5": self.feat_channels[3],
+        }
+
+    def forward(self, x):
+        outputs = {}
+        y = super(SwinTransformer_large_patch4_window7_384_maskformer,
+                  self).forward(x)
+        for i, k in enumerate(self._out_features):
+            outputs[k] = y[i]
+        return outputs
+
+    def output_shape(self):
+        return {
+            name: {
+                "channels": self._out_feature_channels[name],
+                "stride": self._out_feature_strides[name]
+            }
+            for name in self._out_features
+        }
 
 
 @manager.BACKBONES.add_component

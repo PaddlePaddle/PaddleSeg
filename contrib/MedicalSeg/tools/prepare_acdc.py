@@ -17,6 +17,7 @@ import shutil
 import os.path as osp
 from preprocess_utils.file_and_folder_operations import *
 from preprocess_utils.geometry import *
+from preprocess_utils.path_utils import join_paths
 
 from tqdm import tqdm
 
@@ -32,15 +33,15 @@ class PrepACDC():
         super().__init__()
 
         self.folder = raw_dataset_dir
-        self.clean_folder = osp.join(dataset_root, clean_dataset_dir)
-        self.phase_path = osp.join(dataset_root, phase_dir)
+        self.clean_folder = join_paths(dataset_root, clean_dataset_dir)
+        self.phase_path = join_paths(dataset_root, phase_dir)
 
     def generate_txt(self, split=0.2):
         """generate the train_list.txt and val_list.txt"""
 
         txtname = [
-            os.path.join(self.phase_path, 'train_list.txt'),
-            os.path.join(self.phase_path, 'val_list.txt')
+            join_paths(self.phase_path, 'train_list.txt'),
+            join_paths(self.phase_path, 'val_list.txt')
         ]
         val_len = int(split * len(self.filenames))
 
@@ -55,17 +56,16 @@ class PrepACDC():
                                                                filename))
 
     def load_save(self, new_spacing):
-        self.image_path = os.path.join(self.phase_path, "images")
-        self.label_path = os.path.join(self.phase_path, "labels")
+        self.image_path = join_paths(self.phase_path, "images")
+        self.label_path = join_paths(self.phase_path, "labels")
         maybe_mkdir_p(self.image_path)
         maybe_mkdir_p(self.label_path)
-        data_lists = os.listdir(os.path.join(self.clean_folder, "imagesTr"))
+        data_lists = os.listdir(join_paths(self.clean_folder, "imagesTr"))
         self.filenames = [filename.split(".")[0] for filename in data_lists]
         for filename in tqdm(data_lists):
-            nimg = nib.load(
-                os.path.join(self.clean_folder, "imagesTr", filename))
+            nimg = nib.load(join_paths(self.clean_folder, "imagesTr", filename))
             nlabel = nib.load(
-                os.path.join(self.clean_folder, "labelsTr", filename))
+                join_paths(self.clean_folder, "labelsTr", filename))
             data_arrary = nimg.get_data()
             label_array = nlabel.get_data()
             original_spacing = nimg.header["pixdim"][1:4]
@@ -80,12 +80,12 @@ class PrepACDC():
             new_data_array = np.transpose(new_data_array, [2, 0, 1])
             new_label_array = np.transpose(new_label_array, [2, 0, 1])
             np.save(
-                os.path.join(self.image_path,
-                             filename.replace(r".nii.gz", '.npy')),
+                join_paths(self.image_path,
+                           filename.replace(r".nii.gz", '.npy')),
                 new_data_array)
             np.save(
-                os.path.join(self.label_path,
-                             filename.replace(r".nii.gz", '.npy')),
+                join_paths(self.label_path,
+                           filename.replace(r".nii.gz", '.npy')),
                 new_label_array)
 
     def clean_raw_data(self):
@@ -107,7 +107,7 @@ class PrepACDC():
                 i[:-7] + "_gt.nii.gz" for i in data_files_train
             ]
             for d, s in zip(data_files_train, corresponding_seg_files):
-                patient_identifier = d.split("/")[-1][:-7]
+                patient_identifier = os.path.split(d)[1][:-7]
                 all_train_files.append(patient_identifier + "_0000.nii.gz")
                 shutil.copy(d,
                             join(self.clean_folder, "imagesTr",

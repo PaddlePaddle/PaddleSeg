@@ -1,0 +1,31 @@
+# common arguments
+device: gpu
+seed: 3
+save_path: output/
+
+# dataset arguments
+batch_size: 1
+num_workers: 0
+category: bottle  # Category name for MvTec AD dataset, also support one of [textures, objects, all]
+resize: [256, 256]
+data_path: data/mvtec_anomaly_detection
+
+# train arguments
+epochs: 100
+do_eval: True  # After training, whether to eval model;
+backbone: resnet18  # Support resnet18, resnet34, resnet50, resnet101
+
+lr: 0.4
+momentum: 0.9
+weight_decay: 1.0e-4
+
+# val and predict arguments
+model_path: output/bottle/best.pdparams
+
+# val arguments
+compute_pro: False
+
+# predict arguments
+save_pic: True
+img_path: data/mvtec_anomaly_detection/bottle/test/broken_large/000.png
+threshold: 0.01

@@ -62,7 +62,7 @@ MedicalSeg 模型预测可视化效果如下。
   * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
   * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
+<img src="https://paddleseg.bj.bcebos.com/images/seg_qr_code.png"  width = "200" />  
 </div>
 
 ## <img src="https://user-images.githubusercontent.com/34859558/188419267-bd117697-7456-4c72-8cbe-1272264d4fe4.png" width="25"/> 3D智能标注EISeg-Med3D

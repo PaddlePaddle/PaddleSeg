@@ -1,0 +1,62 @@
+
+batch_size: 16
+iters: 40000
+
+train_dataset:
+  type: Dataset
+  num_classes: 6
+  dataset_root: ./
+  train_path: dataset/MT_dataset/train.txt
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [256, 256]
+    - type: RandomHorizontalFlip
+    #- type: CopyPaste
+    #  prob: 0.5
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  num_classes: 6
+  type: Dataset
+  dataset_root: ./
+  val_path: dataset/MT_dataset/val.txt
+  transforms:
+    - type: Normalize
+  mode: val
+
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+
+model:
+  type: OCRNet
+  backbone:
+    type: HRNet_W18
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+  num_classes: 6
+  backbone_indices: [0]
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]

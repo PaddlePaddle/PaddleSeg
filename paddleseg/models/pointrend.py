@@ -238,7 +238,7 @@ class PointHead(nn.Layer):
         self.scale_factor = scale_factor
         self.subdivision_steps = subdivision_steps
         self.subdivision_num_points = paddle.to_tensor(
-            subdivision_num_points, dtype="int32")
+            [subdivision_num_points], dtype="int32")
         self.dropout_ratio = dropout_ratio
         self.coarse_pred_each_layer = coarse_pred_each_layer
         self.align_corners = align_corners
@@ -419,9 +419,9 @@ class PointHead(nn.Layer):
 
         num_points = self.subdivision_num_points
         uncertainty_map = uncertainty_func(seg_logits)
-        batch_size = paddle.shape(uncertainty_map)[0]
-        height = paddle.shape(uncertainty_map)[2]
-        width = paddle.shape(uncertainty_map)[3]
+        batch_size = paddle.shape(uncertainty_map)[0:1]
+        height = paddle.shape(uncertainty_map)[2:3]
+        width = paddle.shape(uncertainty_map)[3:4]
         h_step = 1.0 / height
         w_step = 1.0 / width
 

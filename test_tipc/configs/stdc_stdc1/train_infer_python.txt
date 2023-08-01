@@ -2,7 +2,7 @@
 model_name:stdc_stdc1
 python:python3.7
 gpu_list:0|0,1
-Global.use_gpu:null|null
+--device:gpu
 --precision:null
 --iters:lite_train_lite_infer=20|lite_train_whole_infer=20|whole_train_whole_infer=1000
 --save_dir:
@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 null:null
 ##
 trainer:norm_train
-norm_train:tools/train.py --config test_tipc/configs/stdc_stdc1/stdc1_seg_cityscapes_1024x512_80k.yml --device gpu --do_eval --save_interval 500 --seed 100
+norm_train:tools/train.py --config test_tipc/configs/stdc_stdc1/stdc1_seg_cityscapes_1024x512_80k.yml --device gpu --save_interval 500 --seed 100 --num_workers 24
 pact_train:null
 fpgm_train:null
 distill_train:null
@@ -21,7 +21,7 @@ null:null
 null:null
 ##
 ===========================eval_params===========================
-eval:null
+eval:tools/val.py --config test_tipc/configs/stdc_stdc1/stdc1_seg_cityscapes_1024x512_80k.yml --device gpu --num_workers 24
 null:null
 ##
 ===========================export_params===========================
@@ -52,3 +52,12 @@ inference:deploy/python/infer.py
 --model_name:stdc_stdc1
 ===========================infer_benchmark_params==========================
 random_infer_input:[{float32,[3,1024,2048]}]
+===========================to_static_train_benchmark_params===========================
+to_static_train:--opts to_static_training=True
+===========================train_benchmark_params==========================
+batch_size:4
+fp_items:fp16|fp32
+epoch:400
+--profiler_options:'batch_range=[10,20];state=GPU;tracer_option=Default;profile_path=model.profile'
+flags:FLAGS_eager_delete_tensor_gb=0.0;FLAGS_fraction_of_gpu_memory_to_use=0.98;FLAGS_conv_workspace_size_limit=4096;FLAGS_cudnn_deterministic=False
+log_iters:15;repeats:500

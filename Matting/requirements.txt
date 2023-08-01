@@ -1,4 +1,4 @@
-paddleseg >= 2.5
+# paddleseg >= 2.5
 pymatting
 scikit-image
 numba

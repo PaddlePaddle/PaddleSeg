@@ -150,8 +150,8 @@ def get_moreDA_augmentation(dataloader_train,
 
     tr_transforms.append(RemoveLabelTransform(-1, 0))
 
-    if params.get("move_last_seg_chanel_to_data") is not None and params.get(
-            "move_last_seg_chanel_to_data"):
+    if params.get("move_last_seg_channel_to_data") is not None and params.get(
+            "move_last_seg_channel_to_data"):
         tr_transforms.append(
             MoveSegAsOneHotToData(
                 1, params.get("all_segmentation_labels"), 'seg', 'data'))
@@ -224,8 +224,8 @@ def get_moreDA_augmentation(dataloader_train,
         val_transforms.append(
             SegChannelSelectionTransform(params.get("selected_seg_channels")))
 
-    if params.get("move_last_seg_chanel_to_data") is not None and params.get(
-            "move_last_seg_chanel_to_data"):
+    if params.get("move_last_seg_channel_to_data") is not None and params.get(
+            "move_last_seg_channel_to_data"):
         val_transforms.append(
             MoveSegAsOneHotToData(
                 1, params.get("all_segmentation_labels"), 'seg', 'data'))
