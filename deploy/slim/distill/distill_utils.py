@@ -262,7 +262,7 @@ def distill_train(distill_model,
                 avg_out_distill_loss /= log_iters
                 avg_feature_distill_loss /= log_iters
                 avg_out_loss_list = [
-                    l[0] / log_iters for l in avg_out_loss_list
+                    l.item() / log_iters for l in avg_out_loss_list
                 ]
                 remain_iters = iters - iter
                 avg_train_batch_cost = batch_cost_averager.get_average()

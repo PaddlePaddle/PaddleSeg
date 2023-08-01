@@ -160,7 +160,7 @@ def train(model,
 
             if (iter) % log_iters == 0:
                 avg_loss /= log_iters
-                avg_loss_list = [l[0] / log_iters for l in avg_loss_list]
+                avg_loss_list = [l.item() / log_iters for l in avg_loss_list]
                 mdice /= log_iters
                 channel_dice_array = channel_dice_array / log_iters
 
