@@ -9,7 +9,7 @@
 - pip/pip3(9.0.1+)，64位版本
 - CUDA >= 10.2
 - cuDNN >= 7.6
-- PaddlePaddle (版本>=2.4)
+- PaddlePaddle (版本==2.5)
 
 ## 2 本地安装说明
 
