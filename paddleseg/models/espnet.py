@@ -345,7 +345,16 @@ class DownSampler(nn.Layer):
                 inputs.shape[0], inputs.shape[1], paddle.shape(inputs)[2],
                 paddle.shape(inputs)[3]
             ])
-            with paddle.fluid.framework._stride_in_no_check_dy2st_diff():
+            if hasattr(paddle.framework, "_no_check_dy2st_diff"):
+                # TODO(wanghuancoder): _no_check_dy2st_diff is used to turn off the checking of behavior
+                # inconsistency between dynamic graph and static graph. _no_check_dy2st_diff should be
+                # removed after static graphs support inplace and stride.
+                with paddle.framework._no_check_dy2st_diff():
+                    while w2 != w1:
+                        inputs = F.avg_pool2d(
+                            inputs, kernel_size=3, padding=1, stride=2)
+                        w2 = paddle.shape(inputs)[2]
+            else:
                 while w2 != w1:
                     inputs = F.avg_pool2d(
                         inputs, kernel_size=3, padding=1, stride=2)
