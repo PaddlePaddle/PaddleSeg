@@ -137,7 +137,7 @@ def train(model,
     if to_static_training:
         model = paddle.jit.to_static(model)
         logger.info("Successfully applied `paddle.jit.to_static`")
-        
+
     # Bind components to runner
     if nranks > 1:
         runner.bind(model=ddp_model, criteria=losses, optimizer=optimizer)
@@ -175,7 +175,7 @@ def train(model,
 
             loss, loss_list = launcher.train_step(
                 data=data, return_loss_list=True)
-            
+
             train_profiler.add_profiler_step(profiler_options)
 
             avg_loss += float(loss)
@@ -191,7 +191,7 @@ def train(model,
             if (iter) % log_iters == 0 and local_rank == 0:
                 lr = launcher.runner.optimizer.get_lr()
                 avg_loss /= log_iters
-                avg_loss_list = [l[0] / log_iters for l in avg_loss_list]
+                avg_loss_list = [l.item() / log_iters for l in avg_loss_list]
                 remain_iters = iters - iter
                 avg_train_batch_cost = batch_cost_averager.get_average()
                 avg_train_reader_cost = reader_cost_averager.get_average()

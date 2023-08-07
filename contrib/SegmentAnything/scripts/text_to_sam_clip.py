@@ -39,6 +39,8 @@ model_link = {
     "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_l/model.pdparams",
     'vit_b':
     "https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_b/model.pdparams",
+    'vit_t':
+    "https://paddleseg.bj.bcebos.com/dygraph/paddlesegAnything/vit_t/model.pdparam",
     'clip_b_32':
     "https://bj.bcebos.com/paddleseg/dygraph/clip/vit_b_32_pretrain/clip_vit_b_32.pdparams"
 }
@@ -53,7 +55,7 @@ parser.add_argument(
     type=str,
     default="vit_h",
     required=True,
-    help="The type of model to load, in ['vit_h', 'vit_l', 'vit_b']", )
+    help="The type of model to load, in ['vit_h', 'vit_l', 'vit_b', 'vit_t']", )
 
 
 def download(img):

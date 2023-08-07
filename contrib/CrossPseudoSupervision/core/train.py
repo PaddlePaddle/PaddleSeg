@@ -297,7 +297,7 @@ def train(model,
             current_iter = epoch * niters_per_epoch + idx + 1
             if ((current_iter % log_iters) == 0) and (local_rank == 0):
                 avg_loss /= log_iters
-                avg_loss_list = [l[0] / log_iters for l in avg_loss_list]
+                avg_loss_list = [l.item() / log_iters for l in avg_loss_list]
                 remain_iters = total_iters - current_iter
                 avg_train_batch_cost = batch_cost_averager.get_average()
                 avg_train_reader_cost = reader_cost_averager.get_average()
