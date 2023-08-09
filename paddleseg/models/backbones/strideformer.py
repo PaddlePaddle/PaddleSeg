@@ -103,15 +103,11 @@ class StrideFormer(nn.Layer):
         self.inj_type = inj_type
         if self.inj_type == "AAM":
             self.inj_module = InjectionMultiSumallmultiallsum(
-                in_channels=out_feat_chs,
-                activations=act_layer,
-                out_channels=out_channels)
+                in_channels=out_feat_chs, out_channels=out_channels)
             self.feat_channels = [out_channels, ]
         elif self.inj_type == "AAMSx8":
             self.inj_module = InjectionMultiSumallmultiallsumSimpx8(
-                in_channels=out_feat_chs,
-                activations=act_layer,
-                out_channels=out_channels)
+                in_channels=out_feat_chs, out_channels=out_channels)
             self.feat_channels = [out_channels, ]
         elif self.inj_type == 'origin':
             for i in range(len(dims)):
@@ -641,11 +637,11 @@ class BasicLayer(nn.Layer):
 
 
 class Fusion_block(nn.Layer):
-    def __init__(self, inp, oup, embed_dim, activations=None) -> None:
+    def __init__(self, inp, oup, embed_dim) -> None:
         super(Fusion_block, self).__init__()
         self.local_embedding = ConvBNAct(inp, embed_dim, kernel_size=1)
         self.global_act = ConvBNAct(oup, embed_dim, kernel_size=1)
-        self.act = activations()
+        self.act = nn.Sigmoid()
 
     def forward(self, x_l, x_g):
         '''
@@ -669,10 +665,7 @@ class Fusion_block(nn.Layer):
 
 
 class InjectionMultiSumallmultiallsum(nn.Layer):
-    def __init__(self,
-                 in_channels=(64, 128, 256, 384),
-                 activations=None,
-                 out_channels=256):
+    def __init__(self, in_channels=(64, 128, 256, 384), out_channels=256):
         super(InjectionMultiSumallmultiallsum, self).__init__()
         self.embedding_list = nn.LayerList()
         self.act_embedding_list = nn.LayerList()
@@ -684,7 +677,7 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
             self.act_embedding_list.append(
                 ConvBNAct(
                     in_channels[i], out_channels, kernel_size=1))
-            self.act_list.append(activations())
+            self.act_list.append(nn.Sigmoid())
 
     def forward(self, inputs):  # x_x8, x_x16, x_x32, x_x64 
         low_feat1 = F.interpolate(inputs[0], scale_factor=0.5, mode="bilinear")
@@ -713,10 +706,7 @@ class InjectionMultiSumallmultiallsum(nn.Layer):
 
 
 class InjectionMultiSumallmultiallsumSimpx8(nn.Layer):
-    def __init__(self,
-                 in_channels=(64, 128, 256, 384),
-                 activations=None,
-                 out_channels=256):
+    def __init__(self, in_channels=(64, 128, 256, 384), out_channels=256):
         super(InjectionMultiSumallmultiallsumSimpx8, self).__init__()
         self.embedding_list = nn.LayerList()
         self.act_embedding_list = nn.LayerList()
@@ -730,7 +720,7 @@ class InjectionMultiSumallmultiallsumSimpx8(nn.Layer):
                 self.act_embedding_list.append(
                     ConvBNAct(
                         in_channels[i], out_channels, kernel_size=1))
-                self.act_list.append(activations())
+                self.act_list.append(nn.Sigmoid())
 
     def forward(self, inputs):
         # x_x8, x_x16, x_x32
