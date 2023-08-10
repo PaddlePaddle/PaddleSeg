@@ -139,6 +139,8 @@ def main(args):
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('The number of images: {}'.format(len(image_list)))
 
+    test_config.pop('auc_roc')
+
     predict(
         model,
         model_path=args.model_path,
