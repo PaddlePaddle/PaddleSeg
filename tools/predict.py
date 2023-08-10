@@ -17,10 +17,10 @@ import os
 
 import paddle
 
-from paddleseg.cvlibs import manager, Config, SegBuilder
-from paddleseg.utils import get_sys_env, logger, get_image_list, utils
 from paddleseg.core import predict
+from paddleseg.cvlibs import Config, SegBuilder, manager
 from paddleseg.transforms import Compose
+from paddleseg.utils import get_image_list, get_sys_env, logger, utils
 
 
 def parse_args():
@@ -105,6 +105,8 @@ def merge_test_config(cfg, args):
     test_config = cfg.test_config
     if 'aug_eval' in test_config:
         test_config.pop('aug_eval')
+    if 'auc_roc' in test_config:
+        test_config.pop('auc_roc')
     if args.aug_pred:
         test_config['aug_pred'] = args.aug_pred
         test_config['scales'] = args.scales
@@ -138,8 +140,6 @@ def main(args):
     transforms = Compose(builder.val_transforms)
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('The number of images: {}'.format(len(image_list)))
-
-    test_config.pop('auc_roc')
 
     predict(
         model,
