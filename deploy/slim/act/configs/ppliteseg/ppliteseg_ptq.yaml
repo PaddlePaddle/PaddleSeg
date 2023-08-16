@@ -1,0 +1,27 @@
+Global:
+  reader_config: configs/datasets/cityscapes_1024x512_scale1.0.yml
+  model_dir: ./liteseg_tiny_scale1.0
+  model_filename: model.pdmodel
+  params_filename: model.pdiparams
+
+QuantPost:
+  batch_size: 32
+  batch_nums: 50  # can't be none
+  algo: 'hist'
+  hist_percent: 0.999
+  recon_level: None 
+  regions: None
+  bias_correction: False # it is correction
+  epochs: 20
+  lr: 0.1
+  simulate_activation_quant: False
+  skip_tensor_list: None
+
+TrainConfig:
+  epochs: 20
+  eval_iter: 180
+  learning_rate: 0.0005
+  optimizer_builder:
+    optimizer: 
+      type: SGD
+    weight_decay: 4.0e-05  
