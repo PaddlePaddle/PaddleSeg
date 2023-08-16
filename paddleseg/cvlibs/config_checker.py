@@ -74,6 +74,14 @@ class DefaultPrimaryRule(Rule):
             'No {} specified in the configuration file.'.format(i)
 
 
+class DataPrimaryRule(Rule):
+    def check_and_correct(self, cfg):
+        items = ['batch_size', 'val_dataset', 'train_dataset']
+        for i in items:
+            assert i in cfg.dic, \
+            'No {} specified in the configuration file.'.format(i)
+
+
 class DefaultLossRule(Rule):
     def __init__(self, loss_name):
         super().__init__()
