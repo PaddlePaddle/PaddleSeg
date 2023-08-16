@@ -13,7 +13,7 @@
 
 ## 1.简介
 
-本示例将以语义分割模型[PP-HumanSeg-Lite](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib/PP-HumanSeg#portrait-segmentation)为例，介绍如何使用PaddleSeg中Inference部署模型进行自动压缩。本示例使用的自动压缩策略为非结构化稀疏、蒸馏和量化、蒸馏。
+本示例将以语义分割模型[PP-Liteseg](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/pp_liteseg)为例，介绍如何使用PaddleSlim中的ACT压缩工具型进行自动压缩。本示例使用的自动压缩策略为量化蒸馏训练和离线量化。
 
 ## 2.Benchmark
 
