@@ -17,18 +17,21 @@
 
 ## 2.Benchmark
 
-| 模型 | 策略  | Total IoU | ARM CPU耗时(ms)<br>thread=1 | Nvidia GPU耗时(ms)| 配置文件 | Inference模型  |
+| 模型 | 策略  | Total IoU (%) | CPU耗时(ms)<br>thread=10<br>mkldnn=on| Nvidia GPU耗时(ms)<br>TRT=off| 配置文件 | Inference模型  |
 |:-----:|:-----:|:----------:|:---------:| :------:|:------:|:------:|
 | OCRNet_HRNetW48 |Baseline |todo| todo| todo|todo|todo|
-| OCRNet_HRNetW48 | 离线量化 |todo| todo| todo|todo|todo|
+| OCRNet_HRNetW48 | 量化训练QAT |todo| todo| todo|todo|todo|
 | SegFormer-B0  |Baseline |todo| todo| todo|todo|todo|
-| SegFormer-B0  |离线量化 |todo| todo| todo|todo|todo|
-| PP-LiteSeg-Tiny  |Baseline |todo| todo| todo|todo|todo|
-| PP-LiteSeg-Tiny  |离线量化 |todo| todo| todo|todo|todo|
+| SegFormer-B0  |量化训练QAT |todo| todo| todo|todo|todo|
+| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | - | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
+| PP-LiteSeg-Tiny  |量化训练QAT | 76.24 | 450.19 | - | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
 | PP-MobileSeg-Base  |Baseline |todo| todo| todo|todo|todo|
-| PP-MobileSeg-Base  |离线量化 |todo| todo| todo|todo|todo|
+| PP-MobileSeg-Base  |量化训练QAT |todo| todo| todo|todo|todo|
 
-- ARM CPU测试环境：`高通骁龙855处理器`；
+- CPU测试环境：
+  - Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
+  - cpu thread: 10
+
 
 - Nvidia GPU测试环境：
 
@@ -167,10 +170,9 @@ python -m paddle.distributed.launch run.py --config_path='./configs/ppliteseg/pp
 
 ```shell
 python paddle_inference_eval.py \
-      --model_path=save_sparse_model_ptq \
+      --model_path=save_quant_model_qat \
       --dataset='cityscape' \
       --dataset_config=configs/datasets/cityscapes_1024x512_scale1.0.yml \
-      --use_trt=True \
       --precision=int8
 ```
 
@@ -178,7 +180,7 @@ python paddle_inference_eval.py \
 
 ```shell
 python paddle_inference_eval.py \
-      --model_path=save_sparse_model_ptq \
+      --model_path=save_quant_model_qat \
       --dataset='cityscape' \
       --dataset_config=configs/datasets/cityscapes_1024x512_scale1.0.yml \
       --device=CPU \
@@ -195,13 +197,56 @@ python paddle_inference_eval.py \
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
 python paddle_inference_eval.py \
-      --model_path=save_sparse_model_ptq \
+      --model_path=liteseg_tiny_scale1.0 \
       --dataset='cityscape' \
-       --image_file=cityscapes_demo.jpg \
-      --use_trt=True \
-      --precision=int8
+       --image_file=cityscapes_demo.png \
+      --use_trt=False \
+      --precision=fp32 \
+      --save_file res_qat_fp32.png
 ```
 
+```shell
+wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
+
+python paddle_inference_eval.py \
+      --model_path=save_quant_model_qat \
+      --dataset='cityscape' \
+       --image_file=cityscapes_demo.png \
+      --use_trt=False \
+      --precision=int8 \
+      --save_file res_qat_int8.png
+```
+
+<table><tbody>
+
+<tr>
+<td>
+原始图片
+</td>
+<td>
+<img src="https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png" width="340" height="200">
+</td>
+</tr>
+
+<tr>
+<td>
+FP32推理结果
+</td>
+<td>
+<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/34859558/76ef63a8-09de-455d-a451-cdaf75bde2dc" width="340" height="200">
+</td>
+</tr>
+
+<tr>
+<td>
+Int8推理结果
+</td>
+<td>
+<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/34859558/d8d29a38-e024-4b81-ab5a-74bf573b3349" width="340" height="200">
+</td>
+</tr>
+
+</tbody></table>
 
 ### 4.3 更多部署教程
 

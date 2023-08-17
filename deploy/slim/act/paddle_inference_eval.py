@@ -101,9 +101,8 @@ def predict_image(args):
     transform = T.Compose(transforms)
 
     # Step1: Load image and preprocess
-    im = cv2.imread(args.image_file).astype("float32")
-    data, _ = transform(im)
-    data = np.array(data)[np.newaxis, :]
+    data = transform({'img': args.image_file})
+    data = data['img'][np.newaxis, :]
 
     # Step2: Prepare prdictor
     predictor, rerun_flag = load_predictor(args)

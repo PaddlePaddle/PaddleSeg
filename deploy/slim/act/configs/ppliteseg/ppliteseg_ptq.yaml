@@ -7,7 +7,7 @@ Global:
 QuantPost:
   batch_size: 32
   batch_nums: 50  # can't be none
-  algo: 'hist'
+  algo: 'mse'
   hist_percent: 0.999
   recon_level: None 
   regions: None
