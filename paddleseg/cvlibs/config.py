@@ -63,8 +63,7 @@ class Config(object):
                  batch_size: Optional[int]=None,
                  iters: Optional[int]=None,
                  opts: Optional[list]=None,
-                 checker: Optional[checker.ConfigChecker]=None,
-                 slim_config=False):
+                 checker: Optional[checker.ConfigChecker]=None):
         assert os.path.exists(path), \
             'Config path ({}) does not exist'.format(path)
         assert path.endswith('yml') or path.endswith('yaml'), \
@@ -79,10 +78,7 @@ class Config(object):
             opts=opts)
 
         if checker is None:
-            if not slim_config:
-                checker = self._build_default_checker()
-            else:
-                checker = self._build_slim_checker()
+            checker = self._build_default_checker()
         checker.apply_all_rules(self)
 
     @property
@@ -150,12 +146,6 @@ class Config(object):
         # Distillation losses
         rules.append(checker.DefaultLossRule('distill_loss'))
         rules.append(checker.DefaultSyncIgnoreIndexRule('distill_loss'))
-
-        return checker.ConfigChecker(rules, allow_update=True)
-
-    @classmethod
-    def _build_slim_checker(cls):
-        rules = [checker.DataPrimaryRule()]
 
         return checker.ConfigChecker(rules, allow_update=True)
 
