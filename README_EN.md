@@ -40,7 +40,7 @@ English | [简体中文](README_CN.md)
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> Introduction
 
-PaddleSeg is an end-to-end high-efficent development toolkit for image segmentation based on PaddlePaddle, which helps both developers and researchers in the whole process of designing segmentation models, training models, optimizing performance and inference speed, and deploying models. A lot of well-trained models and various real-world applications in both industry and academia help users conveniently build hands-on experiences in image segmentation.
+PaddleSeg is an end-to-end high-efficient development toolkit for image segmentation based on PaddlePaddle, which helps both developers and researchers in the whole process of designing segmentation models, training models, optimizing performance and inference speed, and deploying models. A lot of well-trained models and various real-world applications in both industry and academia help users conveniently build hands-on experiences in image segmentation.
 
 <div align="center">
 <img src="https://github.com/shiyutang/files/raw/main/teasor_new.gif"  width = "800" />  
@@ -447,7 +447,7 @@ Note that:
 
 **Welcome to Contribute**
 
-* [API Documention](./docs/apis)
+* [API Documentation](./docs/apis)
 
 *  Advanced Development
     * [Detailed Configuration File](./docs/design/use/use.md)

@@ -33,10 +33,10 @@ The part of the image covered by the mask can be extracted to complete foregroun
 * 2022.07
   * Release PP-Matting code. Add ClosedFormMatting, KNNMatting, FastMatting, LearningBaseMatting and RandomWalksMatting traditional machine learning algorithms.
   Add GCA model.
-  * upport to specify metrics for evaluation. Support to specify metrics for evaluation.
+  *Support to specify metrics for evaluation. Support to specify metrics for evaluation.
 * 2022.04
   * **Release self developed high accuracy matting SOTA model PP-Matting**. Add PP-HumanMatting high-resolution human matting model.
-  * Add Grad, Conn evaluation metrics. Add foreground evaluation funciton, which use [ML](https://arxiv.org/pdf/2006.14970.pdf) algorithm to evaluate foreground when prediction or background replacement.
+  * Add Grad, Conn evaluation metrics. Add foreground evaluation function, which use [ML](https://arxiv.org/pdf/2006.14970.pdf) algorithm to evaluate foreground when prediction or background replacement.
   * Add GradientLoss and LaplacianLoss. Add RandomSharpen, RandomSharpen, RandomReJpeg, RSSN data augmentation strategies.
 
 * 2021.11
@@ -61,7 +61,7 @@ The model zoo includes our self developded high accuracy model PP-Matting and li
     For high accuracy, this model is recommended. Two pre-trained models are opened source with 512 and 1024 resolution level.
 
 - PP-MattingV2 is a lite matting SOTA model developed by PaddleSeg. It extracts high-level semantc informating by double-pyramid pool and spatial attention,
-    and uses multi-level feature fusion mechanism for both semantic and detail prediciton.
+    and uses multi-level feature fusion mechanism for both semantic and detail prediction.
 
 | Model | SAD | MSE | Grad | Conn |Params(M) | FLOPs(G) | FPS | Config File | Checkpoint | Inference Model |
 | - | - | -| - | - | - | - | -| - | - | - |

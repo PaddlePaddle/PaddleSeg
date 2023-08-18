@@ -13,7 +13,7 @@
 
 </div>
 
-##  <img src="https://user-images.githubusercontent.com/34859558/188422593-4bc47c72-866a-4374-b9ed-1308c3453165.png" width="30"/> Brief Introduciton
+##  <img src="https://user-images.githubusercontent.com/34859558/188422593-4bc47c72-866a-4374-b9ed-1308c3453165.png" width="30"/> Brief Introduction
 3D medical data annotation is an important part of training 3D image segmentation models and promotes disease diagnosis and treatment prediction, but 3D medical data annotation relies on time-consuming and laborious manual annotation by professionals. The low labeling efficiency leads to the lack of large-scale labeling data, which seriously hinders the development of medical AI. To solve this problem, we launched EISeg-Med3D, an intelligent annotation platform for 3D medical images based on interactive segmentation.
 
 EISeg-Med3D is a 3D slicer extension for performing **E**fficient **I**nteractive **Seg**mentation on **Med**ical image in **3D** medical images. Users will guide a deep learning model to perform segmentation by providing positive and negative points. It is simple to install, easy to use and accurate, which can achieve ten times efficiency lift compares to manual labelling. At present, our medical annotation provides the try-on experience on the specified [MRI vertebral data](https://aistudio.baidu.com/aistudio/datasetdetail/81211). If there is a need for 3D annotation on other data, you can make a [contact](https://github.com/PaddlePaddle/PaddleSeg/issues/new/choose).
@@ -48,7 +48,7 @@ EISeg-Med3D is a 3D slicer extension for performing **E**fficient **I**nteractiv
 - [2022-09] EISeg-Med3D is officially released, **a user-friendly, efficient and intelligent 3D medical image annotation platform** including high-precision models on specified vertebral data.
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190049708-7a1cee3c-322b-4263-9ed0-23051825b1a6.png" width="30"/> EISeg-Med3D Model
-The EISeg-Med 3D model structure is shown in the figure below. We innovatively introduce the 3D model into the medical interactive segmentation, and modify the point sampler module and the click feature  extrator of RITM to be compatible with 3D data, so as to directly label 3D medical images. Compared with 2D interactive annotation on 3D images, our method is more acurate and more efficient.
+The EISeg-Med 3D model structure is shown in the figure below. We innovatively introduce the 3D model into the medical interactive segmentation, and modify the point sampler module and the click feature extractor of RITM to be compatible with 3D data, so as to directly label 3D medical images. Compared with 2D interactive annotation on 3D images, our method is more accurate and more efficient.
 
 The overall model includes two parts: click generation module, click feature generation module, click feature and input image fusion and segmentation model:
 * Click generation module 3D click sampler: generate the positive and negative click through sampling on the 3D labelled data directly, where the positive point is a random point at the center of the 3D target segment, and the negative point is a random point at the edge of the 3D target segment.
@@ -172,7 +172,7 @@ click on the  ```...``` button of ```Model Path```, choose local file of ```.pdo
 #### 5. Start to label
 * Click ```Add/Remove``` in ```Segment Editor``` to add or remove the label. You can change the name of added label by double click the label item.
 * Choose the label you want to label and click on the ```Positive Point``` or ```Negative Point``` to enter interactive label mode。
-* Click on ```Finish Segment``` button to finish annotation of current segment, you can further edit the annotatioin using tools in segment editor or you can repeat previous step to label next category. If you finished the annotation on this case, you can click on the ```Finish Scan``` button.
+* Click on ```Finish Segment``` button to finish annotation of current segment, you can further edit the annotation using tools in segment editor or you can repeat previous step to label next category. If you finished the annotation on this case, you can click on the ```Finish Scan``` button.
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/48357642/187882400-8ee24469-6cb7-4c6a-acf8-df0e14e3f2a7.PNG" width="70.6%" height="20%">
@@ -204,4 +204,4 @@ EISeg-Med3D is released under the [Apache 2.0 license](LICENSE).
 
 ## <img src="https://user-images.githubusercontent.com/34859558/188446803-06c54d50-f2aa-4a53-8e08-db2253df52fd.png" width="30"/> Attribution
 
-Thanks to  <a href="https://www.flaticon.com/free-icons/idea" title="idea icons"> Idea icons created by Vectors Market - Flaticon</a> for facsinating icons.
+Thanks to  <a href="https://www.flaticon.com/free-icons/idea" title="idea icons"> Idea icons created by Vectors Market - Flaticon</a> for fascinating icons.
