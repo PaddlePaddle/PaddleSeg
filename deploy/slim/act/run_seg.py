@@ -35,6 +35,11 @@ def argsparser():
         default=None,
         help="path of compression strategy config.")
     parser.add_argument(
+        '--data_config_path',
+        type=str,
+        default=None,
+        help="path of data config.")
+    parser.add_argument(
         '--save_dir',
         type=str,
         default=None,
@@ -69,7 +74,6 @@ def eval_function(exe, compiled_test_program, test_feed_names, test_fetch_list):
         paddle.enable_static()
 
         label = np.array(label).astype('int64')
-        ori_shape = np.array(label).shape[-2:]
 
         image = np.array(image)
         logits = exe.run(compiled_test_program,
@@ -99,12 +103,11 @@ def eval_function(exe, compiled_test_program, test_feed_names, test_fetch_list):
         if iters % 100 == 0:
             print("Eval iter:", iters)
 
-    class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
-                                       label_area_all)
-    class_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
+    _, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
+                               label_area_all)
+    _, acc = metrics.accuracy(intersect_area_all, pred_area_all)
     kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
-    class_dice, mdice = metrics.dice(intersect_area_all, pred_area_all,
-                                     label_area_all)
+    _, mdice = metrics.dice(intersect_area_all, pred_area_all, label_area_all)
 
     infor = "[EVAL] #Images: {} mIoU: {:.4f} Acc: {:.4f} Kappa: {:.4f} Dice: {:.4f}".format(
         len(eval_dataset), miou, acc, kappa, mdice)
@@ -139,7 +142,7 @@ def main(args):
         place = paddle.CPUPlace()
         paddle.set_device('cpu')
     # step1: load dataset config and create dataloader
-    data_cfg = PaddleSegDataConfig(config['reader_config'], slim_config=True)
+    data_cfg = PaddleSegDataConfig(args.data_config_path)
     builder = SegBuilder(data_cfg)
 
     train_dataset = builder.train_dataset
@@ -164,7 +167,6 @@ def main(args):
         config['params_filename'])  # get the name of forward input
     train_dataloader = reader_wrapper(train_loader, input_name)
 
-    nranks = paddle.distributed.get_world_size()
     rank_id = paddle.distributed.get_rank()
 
     # step2: create and instance of AutoCompression

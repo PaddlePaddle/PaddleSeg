@@ -45,31 +45,24 @@
 
 #### 3.1 准备环境
 
-- PaddlePaddle >= 2.4 （可从[Paddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)下载安装）
-- PaddleSlim >= 2.4
+- PaddlePaddle == 2.5 （可从[Paddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)下载安装）
+- PaddleSlim == 2.5
 - PaddleSeg == develop
-- smac == 1.4.0
 
 安装paddlepaddle：
 ```shell
 # CPU
-pip install paddlepaddle==2.4.2
-# GPU 以Ubuntu、CUDA 11.2为例
-python -m pip install paddlepaddle-gpu==2.4.2.post102 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+python -m pip install paddlepaddle==2.5.1 -i https://pypi.tuna.tsinghua.edu.cn/simple
+# GPU 以Ubuntu、CUDA 10.2为例
+python -m pip install paddlepaddle-gpu==2.5.1.post102 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 ```
 
 安装paddleslim：
 ```shell
-pip install paddleslim
-```
-
-准备paddleslim示例代码：
-```shell
-git clone https://github.com/PaddlePaddle/PaddleSlim.git
+pip install paddleslim==2.5
 ```
 
 安装paddleseg develop和对应包：
-
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 cd PaddleSeg/
@@ -107,7 +100,7 @@ python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1
 
 #### 3.4 自动压缩并产出模型
 
-自动压缩示例通过run.py脚本启动，会使用接口 ```paddleslim.auto_compression.AutoCompression``` 对模型进行自动压缩。首先要配置config文件中模型路径、数据集路径、蒸馏、量化、稀疏化和训练等部分的参数，配置完成后便可对模型进行非结构化稀疏、蒸馏和量化、蒸馏。
+自动压缩示例通过run_seg.py脚本启动，会使用接口 ```paddleslim.auto_compression.AutoCompression``` 对模型进行自动压缩。首先要配置config文件中模型路径、数据集路径、蒸馏、量化、稀疏化和训练等部分的参数，配置完成后便可对模型进行非结构化稀疏、蒸馏和量化、蒸馏。
 
 当只设置训练参数，并在config文件中 ```Global``` 配置中传入 ```deploy_hardware``` 字段时(默认为gpu)，将自动搜索压缩策略进行压缩。进行自动压缩的运行命令如下：
 
@@ -115,11 +108,11 @@ python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1
 ```shell
 # 单卡启动
 export CUDA_VISIBLE_DEVICES=0
-python run.py --config_path='./configs/ppliteseg/ppliteseg_ptq.yaml' --save_dir='./save_quant_model_ptq'
+python run_seg.py --config_path='./configs/ppliteseg/ppliteseg_ptq.yaml' --save_dir='./save_quant_model_ptq' --data_config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
 
 # 多卡启动
 export CUDA_VISIBLE_DEVICES=0,1
-python -m paddle.distributed.launch run.py --config_path='./configs/ppliteseg/ppliteseg_ptq.yaml' --save_dir='./save_quant_model_ptq'
+python -m paddle.distributed.launch run_seg.py --config_path='./configs/ppliteseg/ppliteseg_ptq.yaml' --save_dir='./save_quant_model_ptq' --data_config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
 ```
 
 - 自行配置量化参数进行量化和蒸馏训练，配置参数含义详见[自动压缩超参文档](https://github.com/PaddlePaddle/PaddleSlim/blob/27dafe1c722476f1b16879f7045e9215b6f37559/demo/auto_compression/hyperparameter_tutorial.md)。具体命令如下所示：
@@ -127,11 +120,11 @@ python -m paddle.distributed.launch run.py --config_path='./configs/ppliteseg/pp
 ```shell
 # 单卡启动
 export CUDA_VISIBLE_DEVICES=0
-python run.py --config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat'
+python run_seg.py --config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat' --data_config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
 
 # 多卡启动
 export CUDA_VISIBLE_DEVICES=0,1
-python -m paddle.distributed.launch run.py --config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat'
+python -m paddle.distributed.launch run_seg.py --config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat' --data_config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
 ```
 
 压缩完成后会在`save_dir`中产出压缩好的预测模型，可直接预测部署。
