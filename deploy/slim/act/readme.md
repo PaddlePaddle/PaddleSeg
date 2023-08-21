@@ -20,13 +20,13 @@
 | 模型 | 策略  | Total IoU (%) | CPU耗时(ms)<br>thread=10<br>mkldnn=on| Nvidia GPU耗时(ms)<br>TRT=off| 配置文件 | Inference模型  |
 |:-----:|:-----:|:----------:|:---------:| :------:|:------:|:------:|
 | OCRNet_HRNetW48 |Baseline |todo| todo| todo|todo|todo|
-| OCRNet_HRNetW48 | 量化训练QAT |todo| todo| todo|todo|todo|
+| OCRNet_HRNetW48 | 量化蒸馏训练 |todo| todo| todo|todo|todo|
 | SegFormer-B0  |Baseline |todo| todo| todo|todo|todo|
-| SegFormer-B0  |量化训练QAT |todo| todo| todo|todo|todo|
+| SegFormer-B0  |量化蒸馏训练 |todo| todo| todo|todo|todo|
 | PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | - | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
-| PP-LiteSeg-Tiny  |量化训练QAT | 76.24 | 450.19 | - | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
+| PP-LiteSeg-Tiny  |量化蒸馏训练 | 76.24 | 450.19 | - | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
 | PP-MobileSeg-Base  |Baseline |todo| todo| todo|todo|todo|
-| PP-MobileSeg-Base  |量化训练QAT |todo| todo| todo|todo|todo|
+| PP-MobileSeg-Base  |量化蒸馏训练 |todo| todo| todo|todo|todo|
 
 - CPU测试环境：
   - Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
@@ -80,7 +80,7 @@ python setup.py install
 
 - 示例数据集: cityscapes数据集的一个子集，用于快速跑通压缩和推理流程，不能用该数据集复现 benchmark 表中的压缩效果。[下载链接](https://bj.bcebos.com/v1/paddle-slim-models/data/mini_cityscapes/mini_cityscapes.tar)
 
-准备好数据后，需要放入到`deploy/slim/act`目录下。
+准备好数据后，需要放入到`deploy/slim/act/data/cityscapes`目录下。
 
 #### 3.3 准备预测模型
 
@@ -108,11 +108,11 @@ python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1
 ```shell
 # 单卡启动
 export CUDA_VISIBLE_DEVICES=0
-python run_seg.py --config_path='./configs/ppliteseg/ppliteseg_ptq.yaml' --save_dir='./save_quant_model_ptq' --data_config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
+python run_seg.py --act_config_path='./configs/ppliteseg/ppliteseg_ptq.yaml' --save_dir='./save_quant_model_ptq' --config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
 
 # 多卡启动
 export CUDA_VISIBLE_DEVICES=0,1
-python -m paddle.distributed.launch run_seg.py --config_path='./configs/ppliteseg/ppliteseg_ptq.yaml' --save_dir='./save_quant_model_ptq' --data_config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
+python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppliteseg/ppliteseg_ptq.yaml' --save_dir='./save_quant_model_ptq' --config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
 ```
 
 - 自行配置量化参数进行量化和蒸馏训练，配置参数含义详见[自动压缩超参文档](https://github.com/PaddlePaddle/PaddleSlim/blob/27dafe1c722476f1b16879f7045e9215b6f37559/demo/auto_compression/hyperparameter_tutorial.md)。具体命令如下所示：
@@ -120,11 +120,11 @@ python -m paddle.distributed.launch run_seg.py --config_path='./configs/pplitese
 ```shell
 # 单卡启动
 export CUDA_VISIBLE_DEVICES=0
-python run_seg.py --config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat' --data_config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
+python run_seg.py --act_config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat' --config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
 
 # 多卡启动
 export CUDA_VISIBLE_DEVICES=0,1
-python -m paddle.distributed.launch run_seg.py --config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat' --data_config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
+python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat' --config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
 ```
 
 压缩完成后会在`save_dir`中产出压缩好的预测模型，可直接预测部署。

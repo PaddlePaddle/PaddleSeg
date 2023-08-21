@@ -17,7 +17,7 @@ import argparse
 import random
 import paddle
 import numpy as np
-from paddleseg.cvlibs import Config as PaddleSegDataConfig
+from paddleseg.cvlibs import Config
 from paddleseg.cvlibs import SegBuilder
 from paddleseg.utils import worker_init_fn, metrics
 from paddleseg.core.infer import reverse_transform
@@ -26,6 +26,8 @@ from paddleslim.auto_compression import AutoCompression
 from paddleslim.common import load_config as load_slim_config
 from paddleslim.common.dataloader import get_feed_vars
 
+eval_dataset = None
+
 
 def argsparser():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -33,12 +35,12 @@ def argsparser():
         '--config_path',
         type=str,
         default=None,
-        help="path of compression strategy config.")
+        help="path of the config include data config.")
     parser.add_argument(
-        '--data_config_path',
+        '--act_config_path',
         type=str,
         default=None,
-        help="path of data config.")
+        help="path of the auto compression config.")
     parser.add_argument(
         '--save_dir',
         type=str,
@@ -53,6 +55,18 @@ def argsparser():
 
 
 def eval_function(exe, compiled_test_program, test_feed_names, test_fetch_list):
+    """
+    计算模型在验证集上的评估指标。
+    
+    Args:
+        exe: 执行器。
+        compiled_test_program: 编译后的测试程序。
+        test_feed_names: 测试输入的名称。
+        test_fetch_list: 测试需要获取的变量列表。
+    
+    Returns:
+        miou: IoU 平均值。
+    """
     batch_sampler = paddle.io.BatchSampler(
         eval_dataset, batch_size=1, shuffle=False, drop_last=False)
     loader = paddle.io.DataLoader(
@@ -71,11 +85,9 @@ def eval_function(exe, compiled_test_program, test_feed_names, test_fetch_list):
 
     for iters, data in enumerate(loader):
         image, label = data['img'], data['label']
-        paddle.enable_static()
-
         label = np.array(label).astype('int64')
-
         image = np.array(image)
+
         logits = exe.run(compiled_test_program,
                          feed={test_feed_names[0]: image},
                          fetch_list=test_fetch_list,
@@ -130,30 +142,31 @@ def reader_wrapper(reader, input_name):
 
 
 def main(args):
-    all_config = load_slim_config(args.config_path)
-    assert "Global" in all_config, f"Key 'Global' not found in config file. \n{all_config}"
-    config = all_config["Global"]
-
+    paddle.enable_static()
     rank_id = paddle.distributed.get_rank()
+
     if args.devices == 'gpu':
         place = paddle.CUDAPlace(rank_id)
         paddle.set_device('gpu')
     else:
         place = paddle.CPUPlace()
         paddle.set_device('cpu')
+
     # step1: load dataset config and create dataloader
-    data_cfg = PaddleSegDataConfig(args.data_config_path)
+    act_config = load_slim_config(args.act_config_path)
+    assert os.path.exists(
+        args.config_path), f"config path does't exist: {args.config_path}"
+
+    data_cfg = Config(args.config_path)
     builder = SegBuilder(data_cfg)
 
     train_dataset = builder.train_dataset
     global eval_dataset
     eval_dataset = builder.val_dataset
-    batch_size = config.get('batch_size')
+    batch_size = data_cfg.batch_size
+
     batch_sampler = paddle.io.DistributedBatchSampler(
-        train_dataset,
-        batch_size=batch_size if batch_size else data_cfg.batch_size,
-        shuffle=True,
-        drop_last=True)
+        train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
     train_loader = paddle.io.DataLoader(
         train_dataset,
         places=[place],
@@ -163,30 +176,28 @@ def main(args):
         worker_init_fn=worker_init_fn)
 
     input_name = get_feed_vars(
-        config['model_dir'], config['model_filename'],
-        config['params_filename'])  # get the name of forward input
+        act_config['Global']['model_dir'],
+        act_config['Global']['model_filename'], act_config['Global'][
+            'params_filename'])  # get the name of forward input
     train_dataloader = reader_wrapper(train_loader, input_name)
-
-    rank_id = paddle.distributed.get_rank()
 
     # step2: create and instance of AutoCompression
     ac = AutoCompression(
-        model_dir=config['model_dir'],
-        model_filename=config['model_filename'],
-        params_filename=config['params_filename'],
+        model_dir=act_config['Global']['model_dir'],
+        model_filename=act_config['Global']['model_filename'],
+        params_filename=act_config['Global']['params_filename'],
         save_dir=args.save_dir,
-        config=all_config,
+        config=act_config,
         train_dataloader=train_dataloader,
         eval_callback=eval_function if rank_id == 0 else None,
-        deploy_hardware=config.get('deploy_hardware') or None,
-        input_shapes=config.get('input_shapes', None))
+        deploy_hardware=act_config['Global'].get('deploy_hardware') or None,
+        input_shapes=act_config['Global'].get('input_shapes', None))
 
     # step3: start the compression job
     ac.compress()
 
 
 if __name__ == '__main__':
-    paddle.enable_static()
     parser = argsparser()
     args = parser.parse_args()
     main(args)
