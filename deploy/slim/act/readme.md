@@ -156,7 +156,7 @@ python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppli
 python test_seg.py \
       --model_path=save_quant_model_qat \
       --dataset='cityscape' \
-      --dataset_config=configs/datasets/cityscapes_1024x512_scale1.0.yml \
+      --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
       --precision=int8
 ```
 
@@ -166,7 +166,7 @@ python test_seg.py \
 python test_seg.py \
       --model_path=save_quant_model_qat \
       --dataset='cityscape' \
-      --dataset_config=configs/datasets/cityscapes_1024x512_scale1.0.yml \
+      --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
       --device=CPU \
       --use_mkldnn=True \
       --precision=int8 \
@@ -183,7 +183,7 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 python test_seg.py \
       --model_path=liteseg_tiny_scale1.0 \
       --dataset='cityscape' \
-       --image_file=cityscapes_demo.png \
+      --image_file=cityscapes_demo.png \
       --use_trt=False \
       --precision=fp32 \
       --save_file res_qat_fp32.png

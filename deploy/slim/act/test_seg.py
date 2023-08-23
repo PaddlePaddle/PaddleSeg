@@ -20,7 +20,7 @@ import cv2
 import numpy as np
 import paddle
 import paddleseg.transforms as T
-from paddleseg.cvlibs import Config as PaddleSegDataConfig
+from paddleseg.cvlibs import Config
 from paddleseg.core.infer import reverse_transform
 from paddleseg.utils.visualize import get_pseudo_color_map
 from paddleseg.utils import metrics
@@ -157,7 +157,7 @@ def eval(args):
     # DataLoader need run on cpu
     paddle.set_device("cpu")
 
-    data_cfg = PaddleSegDataConfig(args.dataset_config, slim_config=True)
+    data_cfg = Config(args.config)
     builder = SegBuilder(data_cfg)
 
     eval_dataset = builder.val_dataset
@@ -277,10 +277,7 @@ if __name__ == "__main__":
         choices=["human", "cityscape"],
         help="The type of given image which can be 'human' or 'cityscape'.", )
     parser.add_argument(
-        "--dataset_config",
-        type=str,
-        default=None,
-        help="path of dataset config.")
+        "--config", type=str, default=None, help="path to config.")
     parser.add_argument(
         "--benchmark",
         type=bool,
