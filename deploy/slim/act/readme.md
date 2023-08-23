@@ -57,9 +57,12 @@ python -m pip install paddlepaddle==2.5.1 -i https://pypi.tuna.tsinghua.edu.cn/s
 python -m pip install paddlepaddle-gpu==2.5.1.post102 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 ```
 
-安装paddleslim：
+安装paddleslim 2.5：
 ```shell
-pip install paddleslim==2.5
+git clone https://github.com/PaddlePaddle/PaddleSlim.git && cd PaddleSlim/
+git fetch origin release/2.5
+git checkout release/2.5
+python setup.py install  
 ```
 
 安装paddleseg develop和对应包：
@@ -102,20 +105,8 @@ python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1
 
 自动压缩示例通过run_seg.py脚本启动，会使用接口 ```paddleslim.auto_compression.AutoCompression``` 对模型进行自动压缩。首先要配置config文件中模型路径、数据集路径、蒸馏、量化、稀疏化和训练等部分的参数，配置完成后便可对模型进行非结构化稀疏、蒸馏和量化、蒸馏。
 
-当只设置训练参数，并在config文件中 ```Global``` 配置中传入 ```deploy_hardware``` 字段时(默认为gpu)，将自动搜索压缩策略进行压缩。进行自动压缩的运行命令如下：
 
-- 自行配置稀疏参数进行离线量化，配置参数含义详见[自动压缩超参文档](https://github.com/PaddlePaddle/PaddleSlim/blob/27dafe1c722476f1b16879f7045e9215b6f37559/demo/auto_compression/hyperparameter_tutorial.md)。具体命令如下所示：
-```shell
-# 单卡启动
-export CUDA_VISIBLE_DEVICES=0
-python run_seg.py --act_config_path='./configs/ppliteseg/ppliteseg_ptq.yaml' --save_dir='./save_quant_model_ptq' --config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
-
-# 多卡启动
-export CUDA_VISIBLE_DEVICES=0,1
-python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppliteseg/ppliteseg_ptq.yaml' --save_dir='./save_quant_model_ptq' --config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
-```
-
-- 自行配置量化参数进行量化和蒸馏训练，配置参数含义详见[自动压缩超参文档](https://github.com/PaddlePaddle/PaddleSlim/blob/27dafe1c722476f1b16879f7045e9215b6f37559/demo/auto_compression/hyperparameter_tutorial.md)。具体命令如下所示：
+- 自行配置量化参数进行量化蒸馏训练，配置参数含义详见[自动压缩超参文档](https://github.com/PaddlePaddle/PaddleSlim/blob/27dafe1c722476f1b16879f7045e9215b6f37559/demo/auto_compression/hyperparameter_tutorial.md)。具体命令如下所示：
 
 ```shell
 # 单卡启动
@@ -162,7 +153,7 @@ python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppli
 准备好预测模型，并且修改dataset_config中数据集路径为正确的路径后，启动测试：
 
 ```shell
-python paddle_inference_eval.py \
+python test_seg.py \
       --model_path=save_quant_model_qat \
       --dataset='cityscape' \
       --dataset_config=configs/datasets/cityscapes_1024x512_scale1.0.yml \
@@ -172,7 +163,7 @@ python paddle_inference_eval.py \
 - MKLDNN预测：
 
 ```shell
-python paddle_inference_eval.py \
+python test_seg.py \
       --model_path=save_quant_model_qat \
       --dataset='cityscape' \
       --dataset_config=configs/datasets/cityscapes_1024x512_scale1.0.yml \
@@ -189,7 +180,7 @@ python paddle_inference_eval.py \
 ```shell
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
-python paddle_inference_eval.py \
+python test_seg.py \
       --model_path=liteseg_tiny_scale1.0 \
       --dataset='cityscape' \
        --image_file=cityscapes_demo.png \
@@ -201,7 +192,7 @@ python paddle_inference_eval.py \
 ```shell
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
-python paddle_inference_eval.py \
+python test_seg.py \
       --model_path=save_quant_model_qat \
       --dataset='cityscape' \
        --image_file=cityscapes_demo.png \
@@ -248,3 +239,23 @@ Int8推理结果
 - [Paddle Lite部署](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.5/docs/deployment/lite/lite.md)
 
 ## 5.FAQ
+### 1. paddleslim 和 paddleseg 存在opencv的版本差异？
+
+**A**：去除Paddleslim中requirements.txt的opencv版本限制后重新安装
+
+### 2. 报错：Distill_node_pair config wrong, the length need to be an even number ？
+<td>
+<img src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/c4c7624a-a31c-4278-af4e-c0a2a34fa22b" width="200" height="340">
+</td>
+
+**A**：蒸馏配置中的node需要设置成网络的输出节点。1. 使用netron打开静态图模型model.pdmodel，2. 修改node为最后一层卷积的输出名字。
+<td>
+<img src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/b714040a-eec1-43df-af11-a233bd4cb59b" width="2340" height="100">
+</td>
+
+<img width="1000" alt="e589cdafd43796aed4c1b11c6828fefd" src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/c75c0749-898b-4187-a9f9-363cfe92b1a4">
+
+
+### 3. 量化蒸馏训练精度很低？
+![2d916558811eb5f1bbb388025ddda21c](https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/cc9bcc26-1568-4ab9-96f3-ff181486637c)
+**A**：去除量化训练的输出结果，重新运行一次，这是由于网络训练到局部极值点导致。
