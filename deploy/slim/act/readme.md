@@ -13,7 +13,7 @@
 
 ## 1.简介
 
-本示例将以语义分割模型[PP-Liteseg](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/pp_liteseg)为例，介绍如何使用PaddleSlim中的ACT压缩工具型进行自动压缩。本示例使用的自动压缩策略为量化蒸馏训练和离线量化。
+本示例将以语义分割模型[PP-Liteseg](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/pp_liteseg)为例，介绍如何使用PaddleSlim中的ACT压缩工具型进行自动压缩。本示例使用的自动压缩策略为量化蒸馏训练。
 
 ## 2.Benchmark
 
@@ -36,8 +36,8 @@
 - Nvidia GPU测试环境：
 
   - 硬件：NVIDIA Tesla V100 单卡
-  - 软件：CUDA 10.2, cuDNN 7.6.5, TensorRT 8.0
-  - 测试配置：batch_size: 32
+  - 软件：CUDA 10.2, cuDNN 7.6.5, TensorRT-7.2.3.4
+  - 测试配置：batch_size: 4
 
 - 测速要求：
   - 批量测试取平均：单张图片上测速时间会有浮动，因此测速需要跑10遍warmup，再跑100次取平均。现有test_seg的批量测试已经集成该功能。
@@ -83,13 +83,11 @@ python setup.py install
 
 #### 3.2 准备数据集
 
-开发者可下载开源数据集 (如[Cityscapes](https://bj.bcebos.com/v1/paddle-slim-models/data/mini_cityscapes/mini_cityscapes.tar)) 或自定义语义分割数据集。请参考[PaddleSeg数据准备文档](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.5/docs/data/marker/marker_cn.md)来检查、对齐数据格式即可。
+1. 开发者可下载开源数据集 (如[Cityscapes](https://bj.bcebos.com/v1/paddle-slim-models/data/mini_cityscapes/mini_cityscapes.tar)) 或参考[PaddleSeg数据准备文档](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.5/docs/data/marker/marker_cn.md#4%E6%95%B0%E6%8D%AE%E9%9B%86%E6%96%87%E4%BB%B6%E6%95%B4%E7%90%86)来自定义语义分割数据集。
 
-本示例使用示例开源数据集 Cityscapes 数据集为例介绍如何对PP-Liteseg-Tiny进行自动压缩。示例数据集仅用于快速跑通自动压缩流程，并不能复现出 benckmark 表中的压缩效果。
+2. 本示例使用示例开源数据集 Cityscapes 数据集为例介绍如何对PP-Liteseg-Tiny进行自动压缩。示例数据集仅用于快速跑通自动压缩流程，并不能复现出 benckmark 表中的压缩效果。[下载链接](https://bj.bcebos.com/v1/paddle-slim-models/data/mini_cityscapes/mini_cityscapes.tar)
 
-- 示例数据集: cityscapes数据集的一个子集，用于快速跑通压缩和推理流程，不能用该数据集复现 benchmark 表中的压缩效果。[下载链接](https://bj.bcebos.com/v1/paddle-slim-models/data/mini_cityscapes/mini_cityscapes.tar)
-
-准备好数据后，需要放入到`deploy/slim/act/data/cityscapes`目录下。
+3. 准备好数据后，需要放入到`deploy/slim/act/data/cityscapes`目录下。
 
 #### 3.3 准备预测模型
 
@@ -102,11 +100,9 @@ wget https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc1_citysca
 python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml --model_path model.pdparams  --save_dir liteseg_tiny_scale1.0
 ```
 
-- 导出模型后，需要指定模型路径到 model_filename 和 params_filename。
+- 导出模型后，需要指定模型路径到配置文件中的 model_filename 和 params_filename。
+- 预测模型的格式为：`model.pdmodel` 和 `model.pdiparams`两个，带`pdmodel`的是模型文件，带`pdiparams`后缀的是权重文件。
 
-预测模型的格式为：`model.pdmodel` 和 `model.pdiparams`两个，带`pdmodel`的是模型文件，带`pdiparams`后缀的是权重文件。
-
-注：其他像`__model__`和`__params__`分别对应`model.pdmodel` 和 `model.pdiparams`文件。
 
 #### 3.4 自动压缩并产出模型
 
@@ -134,8 +130,11 @@ python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppli
 
 #### 4.1 Paddle Inference 验证性能
 
-输出的量化模型也是静态图模型，静态图模型在GPU上可以使用TensorRT进行加速，在CPU上可以使用MKLDNN进行加速。预测可以参考[预测文档](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.8/docs/deployment/inference/python_inference_cn.md)
+输出的量化模型也是静态图模型，静态图模型在GPU上可以使用TensorRT进行加速，在CPU上可以使用MKLDNN进行加速。预测可以参考[预测文档](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.8/docs/deployment/inference/python_inference_cn.md)。
 
+TensorRT预测环境配置：
+1. 如果使用 TesorRT 预测引擎，需安装 ```WITH_TRT=ON``` 的Paddle，上述paddle下载的2.5满足打开TensorRT编译的要求。
+2. 使用TensorRT预测需要进一步安装TensorRT，安装TensorRT的方式参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)。
 
 以下字段用于配置预测参数：
 
@@ -152,11 +151,6 @@ python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppli
 | use_mkldnn | 是否启用```MKL-DNN```加速库，注意```use_mkldnn```，在device为```CPU```时生效。  |
 | cpu_threads | CPU预测时，使用CPU线程数量，默认10  |
 | precision | 预测时精度，可选：`fp32`, `fp16`, `int8`。 |
-
-
-TensorRT预测环境配置：
-1. 如果使用 TesorRT 预测引擎，需安装 ```WITH_TRT=ON``` 的Paddle，上述paddle下载的2.5满足打开TensorRT编译的要求。
-2. 使用TensorRT预测需要进一步安装TensorRT，安装TensorRT的方式参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)。
 
 
 准备好预测模型，并且修改dataset_config中数据集路径为正确的路径后，启动测试：
@@ -287,18 +281,23 @@ Int8推理结果
 - [Paddle Lite部署](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.5/docs/deployment/lite/lite.md)
 
 ## 5.FAQ
+
 ### 1. paddleslim 和 paddleseg 存在opencv的版本差异？
 
-**A**：去除Paddleslim中requirements.txt的opencv版本限制后重新安装
+**A**：去除Paddleslim中requirements.txt的opencv版本限制后重新安装。
 
 ### 2. 报错：Distill_node_pair config wrong, the length need to be an even number ？
 <td>
 <img src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/c4c7624a-a31c-4278-af4e-c0a2a34fa22b" width="200" height="340">
 </td>
 
-**A**：蒸馏配置中的node需要设置成网络的输出节点。1. 使用netron打开静态图模型model.pdmodel，2. 修改node为最后一层卷积的输出名字。
+**A**：蒸馏配置中的node需要设置成网络的输出节点。
+
+1. 使用netron打开静态图模型model.pdmodel；
+2. 修改QAT配置中node为最后一层卷积的输出名字。
+
 <td>
-<img src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/b714040a-eec1-43df-af11-a233bd4cb59b" width="2340" height="100">
+<img src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/b714040a-eec1-43df-af11-a233bd4cb59b" width="1240" height="100">
 </td>
 
 <img width="1000" alt="e589cdafd43796aed4c1b11c6828fefd" src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/c75c0749-898b-4187-a9f9-363cfe92b1a4">
@@ -309,10 +308,10 @@ Int8推理结果
 
 **A**：去除量化训练的输出结果，重新运行一次，这是由于网络训练到局部极值点导致。
 
-### 4. TensorRT推理说找不到
+### 4. TensorRT推理报错：TensorRT dynamic library not found.
 
 <td>
-<img src="https://user-images.githubusercontent.com/5997715/185016439-140e3c4a-002d-4c18-b0a8-d861a418d1e2.png" width="1340" height="200">
+<img src="https://user-images.githubusercontent.com/5997715/185016439-140e3c4a-002d-4c18-b0a8-d861a418d1e2.png" width="1540" height="220">
 </td>
 
 **A**：参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)，查看是否有版本不匹配或者路径没有配置。
