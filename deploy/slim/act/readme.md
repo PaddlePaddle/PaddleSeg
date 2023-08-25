@@ -17,14 +17,14 @@
 
 ## 2.Benchmark
 
-| 模型 | 策略  | Total IoU (%) | CPU耗时(ms)<br>thread=10<br>mkldnn=on| Nvidia GPU耗时(ms)<br>TRT=off| 配置文件 | Inference模型  |
+| 模型 | 策略  | Total IoU (%) | CPU耗时(ms)<br>thread=10<br>mkldnn=on| Nvidia GPU耗时(ms)<br>TRT=on| 配置文件 | Inference模型  |
 |:-----:|:-----:|:----------:|:---------:| :------:|:------:|:------:|
 | OCRNet_HRNetW48 |Baseline |todo| todo| todo|todo|todo|
 | OCRNet_HRNetW48 | 量化蒸馏训练 |todo| todo| todo|todo|todo|
 | SegFormer-B0  |Baseline |todo| todo| todo|todo|todo|
 | SegFormer-B0  |量化蒸馏训练 |todo| todo| todo|todo|todo|
-| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | - | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
-| PP-LiteSeg-Tiny  |量化蒸馏训练 | 76.24 | 450.19 | - | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
+| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | 1262.0ms | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
+| PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | 1212.7ms | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
 | PP-MobileSeg-Base  |Baseline |todo| todo| todo|todo|todo|
 | PP-MobileSeg-Base  |量化蒸馏训练 |todo| todo| todo|todo|todo|
 
@@ -67,6 +67,7 @@ python setup.py install
 
 安装paddleseg develop和对应包：
 ```shell
+cd ..
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 cd PaddleSeg/
 git fetch develop
@@ -90,6 +91,7 @@ python setup.py install
 - 通过下面的指令可以对ppliteseg-tiny的模型进行导出，其他的模型导出可以参照[导出指南](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.8/docs/model_export_cn.md)：
 
 ```shell
+cd PaddleSeg/
 wget https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k/model.pdparams
 
 python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml --model_path model.pdparams  --save_dir liteseg_tiny_scale1.0
@@ -111,10 +113,12 @@ python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1
 ```shell
 # 单卡启动
 export CUDA_VISIBLE_DEVICES=0
+cd PaddleSeg/deploy/slim/act/
 python run_seg.py --act_config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat' --config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
 
 # 多卡启动
 export CUDA_VISIBLE_DEVICES=0,1
+cd PaddleSeg/deploy/slim/act/
 python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat' --config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
 ```
 
@@ -147,22 +151,27 @@ python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppli
 
 - TensorRT预测：
 
-环境配置：如果使用 TesorRT 预测引擎，需安装 ```WITH_TRT=ON``` 的Paddle，下载地址：[Python预测库](https://paddleinference.paddlepaddle.org.cn/master/user_guides/download_lib.html#python)
+环境配置：
+1. 如果使用 TesorRT 预测引擎，需安装 ```WITH_TRT=ON``` 的Paddle，上述paddle下载的2.5满足打开TensorRT编译的要求。
+2. 使用TensorRT预测需要进一步安装TensorRT，安装TensorRT的方式参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)。
 
 
 准备好预测模型，并且修改dataset_config中数据集路径为正确的路径后，启动测试：
 
 ```shell
+cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
       --model_path=save_quant_model_qat \
       --dataset='cityscape' \
       --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
-      --precision=int8
+      --precision=int8 \
+      --use_trt True
 ```
 
 - MKLDNN预测：
 
 ```shell
+cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
       --model_path=save_quant_model_qat \
       --dataset='cityscape' \
@@ -180,23 +189,26 @@ python test_seg.py \
 ```shell
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
+cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
       --model_path=liteseg_tiny_scale1.0 \
       --dataset='cityscape' \
       --image_file=cityscapes_demo.png \
-      --use_trt=False \
+      --use_trt=True \
       --precision=fp32 \
       --save_file res_qat_fp32.png
 ```
 
 ```shell
+cd PaddleSeg/deploy/slim/act/
+
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
 python test_seg.py \
       --model_path=save_quant_model_qat \
       --dataset='cityscape' \
        --image_file=cityscapes_demo.png \
-      --use_trt=False \
+      --use_trt=True \
       --precision=int8 \
       --save_file res_qat_int8.png
 ```
@@ -258,4 +270,5 @@ Int8推理结果
 
 ### 3. 量化蒸馏训练精度很低？
 ![2d916558811eb5f1bbb388025ddda21c](https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/cc9bcc26-1568-4ab9-96f3-ff181486637c)
+
 **A**：去除量化训练的输出结果，重新运行一次，这是由于网络训练到局部极值点导致。
