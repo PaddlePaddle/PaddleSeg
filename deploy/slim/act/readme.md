@@ -23,8 +23,8 @@
 | OCRNet_HRNetW48 | 量化蒸馏训练 |todo| todo| todo|todo|todo|
 | SegFormer-B0  |Baseline |todo| todo| todo|todo|todo|
 | SegFormer-B0  |量化蒸馏训练 |todo| todo| todo|todo|todo|
-| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | 1262.0ms | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
-| PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | 1212.7ms | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
+| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | 16.3 | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
+| PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | 13.1 | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
 | PP-MobileSeg-Base  |Baseline |todo| todo| todo|todo|todo|
 | PP-MobileSeg-Base  |量化蒸馏训练 |todo| todo| todo|todo|todo|
 
@@ -38,6 +38,11 @@
   - 硬件：NVIDIA Tesla V100 单卡
   - 软件：CUDA 10.2, cuDNN 7.6.5, TensorRT 8.0
   - 测试配置：batch_size: 32
+
+- 测速要求：
+  - 批量测试取平均：单张图片上测速时间会有浮动，因此测速需要跑10遍warmup，再跑100次取平均。现有test_seg的批量测试已经集成该功能。
+  - 确认TRT加速：检查下int8模型是否开启了trt int8模式，确认预测中有没有trt pass，比如看下有无这个pass：trt_delete_weight_dequant_linear_op_pass
+  - 确认是否开启了动态shape的功能？如果是，则需要跑两遍，第一次会在采集shape大小，需要以第二次的时间为准，
 
 下面将以开源数据集为例介绍如何对PP-Liteseg进行自动压缩。
 
@@ -149,14 +154,14 @@ python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppli
 | precision | 预测时精度，可选：`fp32`, `fp16`, `int8`。 |
 
 
-- TensorRT预测：
-
-环境配置：
+TensorRT预测环境配置：
 1. 如果使用 TesorRT 预测引擎，需安装 ```WITH_TRT=ON``` 的Paddle，上述paddle下载的2.5满足打开TensorRT编译的要求。
 2. 使用TensorRT预测需要进一步安装TensorRT，安装TensorRT的方式参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)。
 
 
 准备好预测模型，并且修改dataset_config中数据集路径为正确的路径后，启动测试：
+
+##### 4.1.1 基于压缩模型进行基于GPU的批量测试：
 
 ```shell
 cd PaddleSeg/deploy/slim/act/
@@ -167,6 +172,28 @@ python test_seg.py \
       --precision=int8 \
       --use_trt True
 ```
+预期结果：
+
+![image](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/75119e54-28c1-4b3c-8c91-ab5ba6afb677)
+
+
+##### 4.1.2 基于压缩前模型进行基于GPU的批量测试：
+
+```shell
+cd PaddleSeg/deploy/slim/act/
+python test_seg.py \
+      --model_path=liteseg_tiny_scale1.0 \
+      --dataset='cityscape' \
+      --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
+      --precision=fp32 \
+      --use_trt True
+```
+预期结果：
+
+![image](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/d46c911f-2880-41ad-b0cc-c092eb9fbb05)
+
+
+##### 4.1.3 基于压缩模型进行基于CPU的批量测试：
 
 - MKLDNN预测：
 
@@ -184,7 +211,7 @@ python test_seg.py \
 
 #### 4.2 Paddle Inference 测试单张图片
 
-基于量化模型测试单张图片：
+##### 4.2.1 基于压缩前模型测试单张图片：
 
 ```shell
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
@@ -198,6 +225,10 @@ python test_seg.py \
       --precision=fp32 \
       --save_file res_qat_fp32.png
 ```
+预期结果：
+![61eae26a87f70cd906e4025db4f2a476](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/dc93b323-60e3-48b9-aac2-e2a165ca6a3c)
+
+##### 4.2.2  基于压缩模型测试单张图片：
 
 ```shell
 cd PaddleSeg/deploy/slim/act/
@@ -212,6 +243,11 @@ python test_seg.py \
       --precision=int8 \
       --save_file res_qat_int8.png
 ```
+
+预期结果：
+![dfed09fe2adad3e1660fd51593a283fb](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/c67ed087-20e3-4c47-aedd-69a4bb6dff5a)
+
+#####  4.2.3 图片结果对比
 
 <table><tbody>
 
@@ -272,3 +308,11 @@ Int8推理结果
 ![2d916558811eb5f1bbb388025ddda21c](https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/cc9bcc26-1568-4ab9-96f3-ff181486637c)
 
 **A**：去除量化训练的输出结果，重新运行一次，这是由于网络训练到局部极值点导致。
+
+### 4. TensorRT推理说找不到
+
+<td>
+<img src="https://user-images.githubusercontent.com/5997715/185016439-140e3c4a-002d-4c18-b0a8-d861a418d1e2.png" width="1340" height="200">
+</td>
+
+**A**：参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)，查看是否有版本不匹配或者路径没有配置。

@@ -442,6 +442,7 @@
     * [量化](./docs/deployment/slim/quant/quant_cn.md)
     * [蒸馏](./docs/deployment/slim/distill/distill_cn.md)
     * [裁剪](./docs/deployment/slim/prune/prune_cn.md)
+    * [自动压缩](./docs/deployment/slim/act/readme.md)
 
 * [常见问题汇总](./docs/faq/faq/faq_cn.md)
 
