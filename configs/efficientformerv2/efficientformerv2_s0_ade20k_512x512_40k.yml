@@ -1,0 +1,6 @@
+_base_: 'efficientformerv2_s2_ade20k_512x512_40k.yml'
+
+model:
+  backbone:
+    type: EfficientFormerv2_s0
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/efficientformerv2_s0/pretrain/eformer_s0_pretrained.pdparams
