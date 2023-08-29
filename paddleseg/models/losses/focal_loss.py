@@ -96,9 +96,8 @@ class MultiClassFocalLoss(nn.Layer):
             and does not contribute to the input gradient. Default ``255``.
     """
 
-    def __init__(self, num_class, alpha=1.0, gamma=2.0, ignore_index=255):
+    def __init__(self, alpha=1.0, gamma=2.0, ignore_index=255):
         super().__init__()
-        self.num_class = num_class
         self.alpha = alpha
         self.gamma = gamma
         self.ignore_index = ignore_index

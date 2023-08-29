@@ -76,7 +76,10 @@ class OhemCrossEntropyLoss(nn.Layer):
             threshold = self.thresh
             if self.min_kept > 0:
                 index = prob.argsort()
-                threshold_index = index[min(len(index), self.min_kept) - 1]
+                if hasattr(paddle.Tensor, "contiguous"):
+                    threshold_index = index[min(len(index), self.min_kept) - 1].contiguous()
+                else:
+                    threshold_index = index[min(len(index), self.min_kept) - 1]
                 threshold_index = int(threshold_index)
                 if prob[threshold_index] > self.thresh:
                     threshold = prob[threshold_index]

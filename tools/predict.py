@@ -17,10 +17,10 @@ import os
 
 import paddle
 
-from paddleseg.cvlibs import manager, Config, SegBuilder
-from paddleseg.utils import get_sys_env, logger, get_image_list, utils
 from paddleseg.core import predict
+from paddleseg.cvlibs import Config, SegBuilder, manager
 from paddleseg.transforms import Compose
+from paddleseg.utils import get_image_list, get_sys_env, logger, utils
 
 
 def parse_args():
@@ -47,6 +47,11 @@ def parse_args():
         default='gpu',
         choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
         type=str)
+    parser.add_argument(
+        '--device_id',
+        help='Set the device id for predicting model.',
+        default=0,
+        type=int)
 
     # Data augment params
     parser.add_argument(
@@ -100,6 +105,8 @@ def merge_test_config(cfg, args):
     test_config = cfg.test_config
     if 'aug_eval' in test_config:
         test_config.pop('aug_eval')
+    if 'auc_roc' in test_config:
+        test_config.pop('auc_roc')
     if args.aug_pred:
         test_config['aug_pred'] = args.aug_pred
         test_config['scales'] = args.scales
@@ -123,7 +130,11 @@ def main(args):
 
     utils.show_env_info()
     utils.show_cfg_info(cfg)
-    utils.set_device(args.device)
+    if args.device != 'cpu':
+        device = f"{args.device}:{args.device_id}"
+    else:
+        device = args.device
+    utils.set_device(device)
 
     model = builder.model
     transforms = Compose(builder.val_transforms)

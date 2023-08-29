@@ -130,7 +130,7 @@ def mean_iou(intersect_area, pred_area, label_area):
             iou = 0
         else:
             iou = intersect_area[i] / union[i]
-        class_iou.append(iou)
+        class_iou.append(float(iou))
     miou = np.mean(class_iou)
     return np.array(class_iou), miou
 
@@ -158,7 +158,7 @@ def dice(intersect_area, pred_area, label_area):
             dice = 0
         else:
             dice = (2 * intersect_area[i]) / union[i]
-        class_dice.append(dice)
+        class_dice.append(float(dice))
     mdice = np.mean(class_dice)
     return np.array(class_dice), mdice
 
@@ -184,7 +184,7 @@ def accuracy(intersect_area, pred_area):
             acc = 0
         else:
             acc = intersect_area[i] / pred_area[i]
-        class_acc.append(acc)
+        class_acc.append(float(acc))
     macc = np.sum(intersect_area) / np.sum(pred_area)
     return np.array(class_acc), macc
 
@@ -215,8 +215,8 @@ def class_measurement(intersect_area, pred_area, label_area):
             else intersect_area[i] / pred_area[i]
         recall = 0 if label_area[i] == 0 \
             else intersect_area[i] / label_area[i]
-        class_precision.append(precision)
-        class_recall.append(recall)
+        class_precision.append(float(precision))
+        class_recall.append(float(recall))
 
     return mean_acc, np.array(class_precision), np.array(class_recall)
 

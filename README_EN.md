@@ -66,7 +66,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 * If you have any questions, suggestions or feature requests, please do not hesitate to create an issue in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Please scan the following QR code to join PaddleSeg WeChat group to communicate with us:
 <div align="center">
-<img src="https://user-images.githubusercontent.com/30883834/213601179-0813a896-11e1-4514-b612-d145e068ba86.jpeg"  width = "200" />  
+<img src="https://paddleseg.bj.bcebos.com/images/seg_qr_code.png"  width = "200" />  
 </div>
 
 
@@ -442,6 +442,7 @@ Note that:
     * [Quantization](./docs/deployment/slim/quant/quant.md)
     * [Distillation](./docs/deployment/slim/distill/distill.md)
     * [Pruning](./docs/deployment/slim/prune/prune.md)
+    * [Auto Compression](./docs/deployment/slim/act/readme.md)
 
 * [FAQ](./docs/faq/faq/faq.md)
 
