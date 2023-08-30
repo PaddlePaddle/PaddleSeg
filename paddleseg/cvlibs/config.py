@@ -78,10 +78,7 @@ class Config(object):
             opts=opts)
 
         if checker is None:
-            if not slim_config:
-                checker = self._build_default_checker()
-            else:
-                checker = self._build_slim_checker()
+            checker = self._build_default_checker()
         checker.apply_all_rules(self)
 
     @property
@@ -149,12 +146,6 @@ class Config(object):
         # Distillation losses
         rules.append(checker.DefaultLossRule('distill_loss'))
         rules.append(checker.DefaultSyncIgnoreIndexRule('distill_loss'))
-
-        return checker.ConfigChecker(rules, allow_update=True)
-
-    @classmethod
-    def _build_slim_checker(cls):
-        rules = [checker.DataPrimaryRule()]
 
         return checker.ConfigChecker(rules, allow_update=True)
 
