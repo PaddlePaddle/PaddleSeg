@@ -1,5 +1,4 @@
 Global:
-  reader_config: configs/datasets/cityscapes_1024x512_scale1.0.yml
   model_dir: ./liteseg_tiny_scale1.0
   model_filename: model.pdmodel
   params_filename: model.pdiparams
@@ -7,7 +6,7 @@ Global:
 QuantPost:
   batch_size: 32
   batch_nums: 50  # can't be none
-  algo: 'hist'
+  algo: 'mse'
   hist_percent: 0.999
   recon_level: None 
   regions: None

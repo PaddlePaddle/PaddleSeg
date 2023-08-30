@@ -63,8 +63,7 @@ class Config(object):
                  batch_size: Optional[int]=None,
                  iters: Optional[int]=None,
                  opts: Optional[list]=None,
-                 checker: Optional[checker.ConfigChecker]=None,
-                 slim_config=False):
+                 checker: Optional[checker.ConfigChecker]=None):
         assert os.path.exists(path), \
             'Config path ({}) does not exist'.format(path)
         assert path.endswith('yml') or path.endswith('yaml'), \

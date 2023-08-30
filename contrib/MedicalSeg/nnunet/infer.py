@@ -245,7 +245,7 @@ def main(args):
     assert len(args.model_paths) == len(
         args.param_paths
     ), "The number of pdmodel is not the same with pdiparams. {} != {}.".format(
-        len(args.model_paths), len(args.params_paths))
+        len(args.model_paths), len(args.param_paths))
     print("model type: ", args.model_type)
     print("The plan path: ", args.plan_path)
     print("The model paths: ", args.model_paths)
