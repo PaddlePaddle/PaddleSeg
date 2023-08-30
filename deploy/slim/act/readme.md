@@ -244,7 +244,6 @@ python test_seg.py \
 #####  4.2.3 图片结果对比
 
 <table><tbody>
-
 <tr>
 <td>
 原始图片
