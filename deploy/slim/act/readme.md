@@ -25,8 +25,8 @@
 | SegFormer-B0  |量化蒸馏训练 |todo| todo| todo|todo|todo|
 | PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | 16.3 | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
 | PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | 13.1 | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
-| PP-MobileSeg-Base  |Baseline |todo| todo| todo|todo|todo|
-| PP-MobileSeg-Base  |量化蒸馏训练 |todo| todo| todo|todo|todo|
+| PP-MobileSeg-Base  |Baseline |41.55| todo| todo| - | - |
+| PP-MobileSeg-Base  |量化蒸馏训练 |todo| todo| todo| [config](configs/ppmobileseg/ppmobileseg_qat.yml)|todo|
 
 - CPU测试环境：
   - Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
@@ -64,10 +64,7 @@ python -m pip install paddlepaddle-gpu==2.5.1.post102 -f https://www.paddlepaddl
 
 安装paddleslim 2.5：
 ```shell
-git clone https://github.com/PaddlePaddle/PaddleSlim.git && cd PaddleSlim/
-git fetch origin release/2.5
-git checkout release/2.5
-python setup.py install  
+pip install paddleslim@git+https://gitee.com/paddlepaddle/PaddleSlim.git@release/2.5
 ```
 
 安装paddleseg develop和对应包：
@@ -314,3 +311,7 @@ Int8推理结果
 </td>
 
 **A**：参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)，查看是否有版本不匹配或者路径没有配置。
+
+### 5. ImportError: cannot import name 'MSRA' from 'paddle.fluid.initializer':
+
+**A** 需要安装paddleslim 2.5，其适配了paddle2.5
