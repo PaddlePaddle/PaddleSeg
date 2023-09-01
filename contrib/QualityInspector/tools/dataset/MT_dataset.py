@@ -58,7 +58,7 @@ def _create_output_path(output_path):
     Create output directories for training and validation images and annotations.
     """
     image_output_path = os.path.join(output_path, "images")
-    anno_output_path = os.path.join(output_path, "anno")
+    anno_output_path = os.path.join(output_path, "annos")
     train_img_path = os.path.join(image_output_path, "train")
     val_img_path = os.path.join(image_output_path, "val")
     train_anno_path = os.path.join(anno_output_path, "train")
