@@ -156,11 +156,11 @@ TensorRT预测环境配置：
 ```shell
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
-      --model_path=segformer_qat \
+      --model_path=save_quant_model_qat \
       --dataset='cityscapes' \
       --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
       --precision=int8 \
-      --use_trt True
+      --use_trt=True
 ```
 预期结果：
 
@@ -172,11 +172,11 @@ python test_seg.py \
 ```shell
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
-      --model_path=/ssd2/tangshiyu/Code/PaddleSeg/deploy/slim/act/models/ocrnet/static \
+      --model_path=liteseg_tiny_scale1.0/ \
       --dataset='cityscapes' \
       --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
       --precision=fp32 \
-      --use_trt True
+      --use_trt=True
 ```
 预期结果：
 
