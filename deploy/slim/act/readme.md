@@ -74,9 +74,6 @@ pip install paddleslim@git+https://gitee.com/paddlepaddle/PaddleSlim.git@release
 cd ..
 git clone https://github.com/PaddlePaddle/PaddleSeg.git -b develop
 cd PaddleSeg/
-git fetch origin develop
-git checkout FETCH_HEAD
-git checkout -b develop
 python setup.py install
 ```
 
