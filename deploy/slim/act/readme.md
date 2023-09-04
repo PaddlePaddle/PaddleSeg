@@ -22,7 +22,7 @@
 | OCRNet_HRNetW48 |Baseline |82.15| 4242.5 | 57.8 | - | https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_export.zip|
 | OCRNet_HRNetW48 | 量化蒸馏训练 |82.05| 4856.8 | 57.5|[config](configs/ocrnet/ocrnet_hrnetw48_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
 | SegFormer-B0*  |Baseline | 75.23| 285.4| 34.3|-| https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_b0_export.zip|
-| SegFormer-B0*  |量化蒸馏训练 | 75.34 | 284.1| 35.7|[config](configs/segformer/segformer_b0_qat.yaml| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
+| SegFormer-B0*  |量化蒸馏训练 | 75.22 | 284.1| 35.7|[config](configs/segformer/segformer_b0_qat.yaml| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
 | PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | 16.3 | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
 | PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | 13.1 | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
 | PP-MobileSeg-Base  |Baseline |41.55| - | - | - | https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade_export.zip |
@@ -72,9 +72,9 @@ pip install paddleslim@git+https://gitee.com/paddlepaddle/PaddleSlim.git@release
 安装paddleseg develop和对应包：
 ```shell
 cd ..
-git clone https://github.com/PaddlePaddle/PaddleSeg.git
+git clone https://github.com/PaddlePaddle/PaddleSeg.git -b develop
 cd PaddleSeg/
-git fetch develop
+git fetch origin develop
 git checkout FETCH_HEAD
 git checkout -b develop
 python setup.py install
@@ -321,3 +321,7 @@ Int8推理结果
 ### 6. ValueError: The axis is expected to be in range of [0,0) but got:
 
 **A**: 需要安装paddleseg devleop版本，如果确定已经安装，建议使用`pip uninstall paddleseg`卸载后重新安装。
+
+### 7. NotImplementedError：delete weight dequant op pass is not supported for per channel quantization
+
+**A**：参考https://github.com/PaddlePaddle/Paddle/issues/56619，并参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)安装TensorRT。
