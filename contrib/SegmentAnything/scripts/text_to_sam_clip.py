@@ -218,7 +218,7 @@ def gradio_display():
 
     demo = gr.TabbedInterface(
         [demo_mask_sam, ], ['SAM+CLIP(Text to Segment)'],
-        title=" 🔥 Text to Segment Anything with PaddleSeg 🔥")
+        theme=" 🔥 Text to Segment Anything with PaddleSeg 🔥")
     demo.launch(
         server_name="0.0.0.0", enable_queue=False, server_port=8078, share=True)
 
