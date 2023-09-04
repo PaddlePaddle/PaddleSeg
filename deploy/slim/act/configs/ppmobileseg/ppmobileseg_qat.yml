@@ -16,8 +16,8 @@ QuantAware:
   - depthwise_conv2d
 
 TrainConfig:
-  epochs: 20
-  eval_iter: 180
+  epochs: 2
+  eval_iter: 1000
   learning_rate: 0.0005
   optimizer_builder:
     optimizer: 

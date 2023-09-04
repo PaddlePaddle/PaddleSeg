@@ -94,8 +94,8 @@ def eval_function(exe, compiled_test_program, test_feed_names, test_fetch_list):
                          return_numpy=True)
 
         paddle.disable_static()
-        logit = logits[0]
-
+        logit = logits[
+            0]  # logit shape is 3, except  data['trans_info'] needs to be empty
         logit = reverse_transform(
             paddle.to_tensor(logit), data['trans_info'], mode='bilinear')
         pred = paddle.to_tensor(logit)

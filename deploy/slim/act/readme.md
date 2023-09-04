@@ -19,14 +19,16 @@
 
 | 模型 | 策略  | Total IoU (%) | CPU耗时(ms)<br>thread=10<br>mkldnn=on| Nvidia GPU耗时(ms)<br>TRT=on| 配置文件 | Inference模型  |
 |:-----:|:-----:|:----------:|:---------:| :------:|:------:|:------:|
-| OCRNet_HRNetW48 |Baseline |todo| todo| todo|todo|todo|
-| OCRNet_HRNetW48 | 量化蒸馏训练 |todo| todo| todo|todo|todo|
-| SegFormer-B0  |Baseline |todo| todo| todo|todo|todo|
-| SegFormer-B0  |量化蒸馏训练 |todo| todo| todo|todo|todo|
+| OCRNet_HRNetW48 |Baseline |82.15| 4242.5 | 57.8 | - | https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_export.zip|
+| OCRNet_HRNetW48 | 量化蒸馏训练 |82.05| 4856.8 | 57.5|[config](configs/ocrnet/ocrnet_hrnetw48_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
+| SegFormer-B0*  |Baseline | 75.23| 285.4| 34.3|-| https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_b0_export.zip|
+| SegFormer-B0*  |量化蒸馏训练 | 75.34 | 284.1| 35.7|[config](configs/segformer/segformer_b0_qat.yaml| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
 | PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | 16.3 | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
 | PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | 13.1 | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
-| PP-MobileSeg-Base  |Baseline |41.55| todo| todo| - | - |
-| PP-MobileSeg-Base  |量化蒸馏训练 |todo| todo| todo| [config](configs/ppmobileseg/ppmobileseg_qat.yml)|todo|
+| PP-MobileSeg-Base  |Baseline |41.55| - | - | - | https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade_export.zip |
+| PP-MobileSeg-Base  |量化蒸馏训练 |37.83| - | -| [config](configs/ppmobileseg/ppmobileseg_qat.yml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade.zip)|
+
+* SegFormer-B0 is tested under inference optimizer is false
 
 - CPU测试环境：
   - Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
@@ -140,7 +142,7 @@ TensorRT预测环境配置：
 | model_path | inference 模型文件所在目录，该目录下需要有文件 .pdmodel 和 .pdiparams 两个文件 |
 | model_filename | inference_model_dir文件夹下的模型文件名称 |
 | params_filename | inference_model_dir文件夹下的参数文件名称 |
-| dataset | 选择数据集的类型，可选：`human`, `cityscape`。  |
+| dataset | 选择数据集的类型，可选：`human`, `cityscapes`, `ade`。  |
 | dataset_config | 数据集配置的config  |
 | image_file | 待测试单张图片的路径，如果设置image_file，则dataset_config将无效。   |
 | device | 预测时的设备，可选：`CPU`, `GPU`。  |
@@ -157,8 +159,8 @@ TensorRT预测环境配置：
 ```shell
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
-      --model_path=save_quant_model_qat \
-      --dataset='cityscape' \
+      --model_path=segformer_qat \
+      --dataset='cityscapes' \
       --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
       --precision=int8 \
       --use_trt True
@@ -173,8 +175,8 @@ python test_seg.py \
 ```shell
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
-      --model_path=liteseg_tiny_scale1.0 \
-      --dataset='cityscape' \
+      --model_path=/ssd2/tangshiyu/Code/PaddleSeg/deploy/slim/act/models/ocrnet/static \
+      --dataset='cityscapes' \
       --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
       --precision=fp32 \
       --use_trt True
@@ -192,7 +194,7 @@ python test_seg.py \
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
       --model_path=save_quant_model_qat \
-      --dataset='cityscape' \
+      --dataset='cityscapes' \
       --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
       --device=CPU \
       --use_mkldnn=True \
@@ -210,7 +212,7 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
       --model_path=liteseg_tiny_scale1.0 \
-      --dataset='cityscape' \
+      --dataset='cityscapes' \
       --image_file=cityscapes_demo.png \
       --use_trt=True \
       --precision=fp32 \
@@ -228,8 +230,8 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
 python test_seg.py \
       --model_path=save_quant_model_qat \
-      --dataset='cityscape' \
-       --image_file=cityscapes_demo.png \
+      --dataset='cityscapes' \
+      --image_file=cityscapes_demo.png \
       --use_trt=True \
       --precision=int8 \
       --save_file res_qat_int8.png
@@ -315,3 +317,7 @@ Int8推理结果
 ### 5. ImportError: cannot import name 'MSRA' from 'paddle.fluid.initializer':
 
 **A** 需要安装paddleslim 2.5，其适配了paddle2.5
+
+### 6. ValueError: The axis is expected to be in range of [0,0) but got:
+
+**A**: 需要安装paddleseg devleop版本，如果确定已经安装，建议使用`pip uninstall paddleseg`卸载后重新安装。

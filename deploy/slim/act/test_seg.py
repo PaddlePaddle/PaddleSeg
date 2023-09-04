@@ -36,7 +36,7 @@ def _transforms(dataset):
         transforms.append(T.PaddingByAspectRatio(aspect_ratio=1.77777778))
         transforms.append(T.Resize(target_size=[398, 224]))
         transforms.append(T.Normalize())
-    elif dataset == "cityscape":
+    elif dataset == "cityscapes" or dataset == "ade":
         transforms.append(T.Normalize())
     return transforms
 
@@ -69,6 +69,7 @@ def load_predictor(args):
         if os.path.exists(dynamic_shape_file):
             pred_cfg.enable_tuned_tensorrt_dynamic_shape(dynamic_shape_file,
                                                          True)
+            # pred_cfg.exp_disable_tensorrt_ops(["reshape2"])
             print("trt set dynamic shape done!")
             precision_map = {
                 "fp16": PrecisionType.Half,
@@ -274,8 +275,8 @@ if __name__ == "__main__":
         "--dataset",
         type=str,
         default="human",
-        choices=["human", "cityscape"],
-        help="The type of given image which can be 'human' or 'cityscape'.", )
+        choices=["human", "cityscapes", 'ade'],
+        help="The type of given image which can be 'human' or 'cityscapes'.", )
     parser.add_argument(
         "--config", type=str, default=None, help="path to config.")
     parser.add_argument(

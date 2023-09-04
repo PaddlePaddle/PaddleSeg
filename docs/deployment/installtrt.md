@@ -29,6 +29,7 @@ TensorRT是用于在NVDIA GPU上加速预测的C++库，可以搭配Paddle Infer
 - 即便如此，提示什么库缺失，还是可以下载对应的库解压（比如我这里的cudnn8），并链接到对应的库排除掉找不到库依赖的问题，我后续就是链接到libcudnn8.so后正确推理的。
 
     ```bash
+    cd Tensorrt.xx/lib
     # check the dependencies of libnvinfer.so.8
     ldd libnvinfer.so.8
     # output means all the dependencies can be found
