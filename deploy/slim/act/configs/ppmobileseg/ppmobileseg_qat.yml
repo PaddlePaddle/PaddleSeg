@@ -1,5 +1,5 @@
 Global:
-  model_dir: ./ppmobileseg_base_ade
+  model_dir: ./ppmobileseg_base_export
   model_filename: model.pdmodel
   params_filename: model.pdiparams
 
@@ -10,13 +10,13 @@ Distillation:
   - conv2d_211.tmp_0 # change to the name of the output of the last conv in the model.pdmodel in netron
 
 QuantAware:
-  onnx_format: True
+  onnx_format: False
   quantize_op_types:
   - conv2d
   - depthwise_conv2d
 
 TrainConfig:
-  epochs: 2
+  epochs: 20
   eval_iter: 1000
   learning_rate: 0.0005
   optimizer_builder:

@@ -90,6 +90,7 @@ def load_predictor(args):
             print("Start collect dynamic shape...")
             rerun_flag = True
 
+    pred_cfg.exp_disable_tensorrt_ops(["reshape2"])
     predictor = create_predictor(pred_cfg)
     return predictor, rerun_flag
 
