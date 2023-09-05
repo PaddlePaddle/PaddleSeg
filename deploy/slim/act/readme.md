@@ -170,7 +170,7 @@ python test_seg.py \
 ```
 预期结果：
 
-![image](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/75119e54-28c1-4b3c-8c91-ab5ba6afb677)
+<img src="https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/75119e54-28c1-4b3c-8c91-ab5ba6afb677" width="600" height="150">
 
 
 ##### 4.1.2 基于压缩前模型进行基于GPU的批量测试：
@@ -186,7 +186,7 @@ python test_seg.py \
 ```
 预期结果：
 
-![image](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/d46c911f-2880-41ad-b0cc-c092eb9fbb05)
+<img src="https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/d46c911f-2880-41ad-b0cc-c092eb9fbb05" width="600" height="150">
 
 
 ##### 4.1.3 基于压缩模型进行基于CPU的批量测试：
@@ -222,7 +222,7 @@ python test_seg.py \
       --save_file res_qat_fp32.png
 ```
 预期结果：
-![61eae26a87f70cd906e4025db4f2a476](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/dc93b323-60e3-48b9-aac2-e2a165ca6a3c)
+<img src="https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/dc93b323-60e3-48b9-aac2-e2a165ca6a3c" width="800" height="600">
 
 ##### 4.2.2  基于压缩模型测试单张图片：
 
