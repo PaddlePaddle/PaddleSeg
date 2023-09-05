@@ -22,7 +22,7 @@
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
 
-* [2023-09-01] :fire::fire:  飞桨AI套件 [PaddleX](http://10.136.157.23:8080/paddle/paddleX) 发布全新2.0版本， 围绕飞桨模型提供了一站式、全流程、高效率的开发平台，希望助力AI技术快速落地、使人人成为AI Developer！欢迎大家使用和共建。
+* [2023-09-01] :fire::fire: 飞桨AI套件 [PaddleX](https://www.paddlepaddle.org.cn/paddle/paddleX) 发布全新版本，围绕飞桨精选模型提供了一站式、全流程、高效率的开发平台，希望助力AI技术快速落地、使人人成为AI Developer！欢迎大家使用和共建。
 * [2023-04-11] PaddleSeg 2.8版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
   * 开源飞桨版本视觉大模型[Segment Anything Model](./contrib/SegmentAnything)，提供演示Demo，支持全图分割的功能、使用提示输入分割的功能。
   * 发布超轻量级语义分割SOTA模型[PP-MobileSeg](./configs/pp_mobileseg)：在ADE20K数据集上，PP-MobileSeg对比此前最优模型，精度提升1.5%、速度提升42.3%、参数量减少34.9%。
@@ -60,18 +60,22 @@
 
 ## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
-飞桨AI套件([PaddleX](http://10.136.157.23:8080/paddle/paddleX))提供了飞桨模型训压推一站式全流程高效率开发平台，其使命是助力AI技术快速落地，愿景是使人人成为AI Developer！
-   - PaddleX 目前覆盖图像分类、目标检测、图像分割、3D、OCR和时序预测等领域方向，已内置了36种基础单模型，例如RT-DETR、PP-YOLOE、PP-HGNet、PP-LCNet、PP-LiteSeg等；集成了12种实用的产业方案，例如PP-OCRv4、PP-ChatOCR、PP-ShiTu、PP-TS、车载路面垃圾检测、野生动物违禁制品识别等。
-   - PaddleX 提供了“工具箱”和“开发者”两种AI开发模式。工具箱模式可以无代码调优关键超参，开发者模式可以低代码进行单模型训压推和多模型串联推理，同时支持云端和本地端。
-   - PaddleX 还支持联创开发，利润分成！目前 PaddleX 正在快速迭代，欢迎广大的个人开发者和企业开发者参与进来，共创繁荣的 AI 技术生态！
+飞桨AI套件（PaddleX）—— 精选产业实用模型的一站式开发平台。包含如下特点：
+* 【优质的算法库】包含10大任务领域的36个精选模型，实现在一个平台中完成不同任务模型算法的开发。更多领域模型持续丰富中！PaddleX还提供完善的模型训练推理benchmark数据，服务开发者基于业务需求选择最合适的模型。
+* 【简易的开发方式】工具箱/开发者双模式联动，无代码+低代码开发方式，四步完成数据、训练、验证、部署的全流程AI开发。
+* 【高效的训练部署】沉淀百度算法团队的最佳调优策略，实现每个模型都能最快最优地收敛。完善的部署SDK支持，实现跨平台、跨硬件的快速产业级部署（服务化部署能力完善中）。
+* 【丰富的国产硬件支持】PaddleX除了具有在AI Studio云端能力外，还沉淀了windows本地端，正在继续丰富Linux版本、昆仑芯版本、昇腾版本、寒武纪版本。
+* 【共赢的联创共建】除了便捷地开发AI应用外，PaddleX还为大家提供了获取商业收益的机会，为企业探索更多商业空间。
 
-微信扫描下面二维码添加运营同学，并回复paddlex，运营同学会邀请您加入官方交流群，获得更高效的问题答疑。
+作为一款高效的开发神器，PaddleX值得每一位开发者拥有。
 
+PaddleX官网地址：https://www.paddlepaddle.org.cn/paddle/paddleX
+
+微信扫描下面二维码添加运营同学，并回复【paddlex】，运营同学会邀请您加入官方交流群，获得更高效的问题答疑。
 <div align="center">
 <img src="https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/dygraph/doc/joinus_paddlex.jpg"  width = "150" height = "150",caption='' />
 <p>飞桨AI套件【PaddleX】技术交流群二维码</p>
 </div>
-
 
 ## <img src="./docs/images/model.png" width="20"/> 产品矩阵
 
