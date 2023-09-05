@@ -23,7 +23,7 @@
 | OCRNet_HRNetW48 | 量化蒸馏训练 |82.05| 4856.8 | 57.5|[config](configs/ocrnet/ocrnet_hrnetw48_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
 | SegFormer-B0*  |Baseline | 75.23| 285.4| 34.3|-| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_b0_export.zip) |
 | SegFormer-B0*  |量化蒸馏训练 | 75.22 | 284.1| 35.7|[config](configs/segformer/segformer_b0_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
-| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | 16.3 | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
+| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | 16.3 | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/ppliteseg_tiny_scale1.0_export.zip)|
 | PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | 13.1 | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
 | PP-MobileSeg-Base  |Baseline |41.55| - | - | - | [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade_export.zip) |
 | PP-MobileSeg-Base  |量化蒸馏训练 |37.83| - | -| [config](configs/ppmobileseg/ppmobileseg_qat.yml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade.zip)|
@@ -93,7 +93,7 @@ python setup.py install
 cd PaddleSeg/
 wget https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k/model.pdparams
 
-python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml --model_path model.pdparams  --save_dir liteseg_tiny_scale1.0
+python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml --model_path model.pdparams  --save_dir ppliteseg_tiny_scale1.0_export
 ```
 
 - 导出模型后，需要指定模型路径到配置文件中的 model_filename 和 params_filename。
@@ -178,7 +178,7 @@ python test_seg.py \
 ```shell
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
-      --model_path=liteseg_tiny_scale1.0/ \
+      --model_path=ppliteseg_tiny_scale1.0_export/ \
       --dataset='cityscapes' \
       --config="configs/datasets/pp_liteseg_1.0_data.yml" \
       --precision=fp32 \
@@ -214,7 +214,7 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
-      --model_path=liteseg_tiny_scale1.0 \
+      --model_path=ppliteseg_tiny_scale1.0_export \
       --dataset='cityscapes' \
       --image_file=cityscapes_demo.png \
       --use_trt=True \
