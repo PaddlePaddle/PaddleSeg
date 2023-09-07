@@ -19,26 +19,27 @@
 
 | 模型 | 策略  | Total IoU (%) | CPU耗时(ms)<br>thread=10<br>mkldnn=on| Nvidia GPU耗时(ms)<br>TRT=on| 配置文件 | Inference模型  |
 |:-----:|:-----:|:----------:|:---------:| :------:|:------:|:------:|
-| OCRNet_HRNetW48 |Baseline |82.15| 4242.5 | 57.8 | - | [mode](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_export.zip)|
-| OCRNet_HRNetW48 | 量化蒸馏训练 |82.05| 4856.8 | 57.5|[config](configs/ocrnet/ocrnet_hrnetw48_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
-| SegFormer-B0*  |Baseline | 75.23| 285.4| 34.3|-| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_b0_export.zip) |
-| SegFormer-B0*  |量化蒸馏训练 | 75.22 | 284.1| 35.7|[config](configs/segformer/segformer_b0_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
-| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | 16.3 | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/ppliteseg_tiny_scale1.0_export.zip)|
-| PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | 13.1 | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
-| PP-MobileSeg-Base  |Baseline |41.55| - | - | - | [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade_export.zip) |
-| PP-MobileSeg-Base  |量化蒸馏训练 |37.83| - | -| [config](configs/ppmobileseg/ppmobileseg_qat.yml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade.zip)|
+| OCRNet_HRNetW48 |Baseline |82.15| **4332.2** | **154.9** | - | [mode](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_export.zip)|
+| OCRNet_HRNetW48 | 量化蒸馏训练 |82.03| **3728.7** | **59.8**|[config](configs/ocrnet/ocrnet_hrnetw48_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
+| SegFormer-B0*  |Baseline | 75.27| 285.4| 34.3 |-| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_b0_export.zip) |
+| SegFormer-B0*  |量化蒸馏训练 | 75.22 | 284.1| 35.7|[config](configs/segformer/segformer_b0_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_qat.zip) |
+| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | **11.9** | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
+| PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | **7.5** | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
+| PP-MobileSeg-Base  |Baseline |41.55| **311.1** | **17.8** | - | [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade_export.zip) |
+| PP-MobileSeg-Base  |量化蒸馏训练 |39.08| **303.6** | **16.2**| [config](configs/ppmobileseg/ppmobileseg_qat.yml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade.zip)|
 
-* SegFormer-B0 is tested under inference optimizer is false, because gpu_cpu_map_matmul_v2_to_mul_pass raise an error.
+* SegFormer-B0 is tested on CPU under deleted gpu_cpu_map_matmul_v2_to_mul_pass because it will raise an error.
+* PP-MobileSeg-Base is tested on ADE20K dataset, while others are tested on cityscapes.
 
 - CPU测试环境：
-  - Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
+  - Intel(R) Xeon(R) Gold 6271C CPU @ 2.60GHz
   - cpu thread: 10
 
 
 - Nvidia GPU测试环境：
 
   - 硬件：NVIDIA Tesla V100 单卡
-  - 软件：CUDA 10.2, cuDNN 7.6.5, TensorRT-7.2.3.4
+  - 软件：CUDA 11.2, cudnn 8.1.0, TensorRT-8.0.3.4
   - 测试配置：batch_size: 4
 
 - 测速要求：

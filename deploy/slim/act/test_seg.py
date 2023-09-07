@@ -91,6 +91,9 @@ def load_predictor(args):
             rerun_flag = True
 
     pred_cfg.exp_disable_tensorrt_ops(["reshape2"])
+    # pred_cfg.delete_pass("gpu_cpu_map_matmul_v2_to_mul_pass")
+    # pred_cfg.delete_pass("delete_quant_dequant_linear_op_pass")
+    # pred_cfg.delete_pass("delete_weight_dequant_linear_op_pass")
     predictor = create_predictor(pred_cfg)
     return predictor, rerun_flag
 

@@ -1,4 +1,4 @@
-_base_: '../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml'
+_base_: '../../../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml'
 
 train_dataset:
   transforms:
