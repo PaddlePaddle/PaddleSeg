@@ -19,24 +19,27 @@
 
 | 模型 | 策略  | Total IoU (%) | CPU耗时(ms)<br>thread=10<br>mkldnn=on| Nvidia GPU耗时(ms)<br>TRT=on| 配置文件 | Inference模型  |
 |:-----:|:-----:|:----------:|:---------:| :------:|:------:|:------:|
-| OCRNet_HRNetW48 |Baseline |todo| todo| todo|todo|todo|
-| OCRNet_HRNetW48 | 量化蒸馏训练 |todo| todo| todo|todo|todo|
-| SegFormer-B0  |Baseline |todo| todo| todo|todo|todo|
-| SegFormer-B0  |量化蒸馏训练 |todo| todo| todo|todo|todo|
-| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | 16.3 | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
-| PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | 13.1 | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
-| PP-MobileSeg-Base  |Baseline |todo| todo| todo|todo|todo|
-| PP-MobileSeg-Base  |量化蒸馏训练 |todo| todo| todo|todo|todo|
+| OCRNet_HRNetW48 |Baseline |82.15| **4332.2** | **154.9** | - | [mode](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_export.zip)|
+| OCRNet_HRNetW48 | 量化蒸馏训练 |82.03| **3728.7** | **59.8**|[config](configs/ocrnet/ocrnet_hrnetw48_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
+| SegFormer-B0*  |Baseline | 75.27| 285.4| 34.3 |-| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_b0_export.zip) |
+| SegFormer-B0*  |量化蒸馏训练 | 75.22 | 284.1| 35.7|[config](configs/segformer/segformer_b0_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_qat.zip) |
+| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | **11.9** | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
+| PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | **7.5** | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
+| PP-MobileSeg-Base  |Baseline |41.55| **311.1** | **17.8** | - | [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade_export.zip) |
+| PP-MobileSeg-Base  |量化蒸馏训练 |39.08| **303.6** | **16.2**| [config](configs/ppmobileseg/ppmobileseg_qat.yml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade.zip)|
+
+* SegFormer-B0 is tested on CPU under deleted gpu_cpu_map_matmul_v2_to_mul_pass because it will raise an error.
+* PP-MobileSeg-Base is tested on ADE20K dataset, while others are tested on cityscapes.
 
 - CPU测试环境：
-  - Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
+  - Intel(R) Xeon(R) Gold 6271C CPU @ 2.60GHz
   - cpu thread: 10
 
 
 - Nvidia GPU测试环境：
 
   - 硬件：NVIDIA Tesla V100 单卡
-  - 软件：CUDA 10.2, cuDNN 7.6.5, TensorRT-7.2.3.4
+  - 软件：CUDA 11.2, cudnn 8.1.0, TensorRT-8.0.3.4
   - 测试配置：batch_size: 4
 
 - 测速要求：
@@ -64,20 +67,14 @@ python -m pip install paddlepaddle-gpu==2.5.1.post102 -f https://www.paddlepaddl
 
 安装paddleslim 2.5：
 ```shell
-git clone https://github.com/PaddlePaddle/PaddleSlim.git && cd PaddleSlim/
-git fetch origin release/2.5
-git checkout release/2.5
-python setup.py install  
+pip install paddleslim@git+https://gitee.com/paddlepaddle/PaddleSlim.git@release/2.5
 ```
 
 安装paddleseg develop和对应包：
 ```shell
 cd ..
-git clone https://github.com/PaddlePaddle/PaddleSeg.git
+git clone https://github.com/PaddlePaddle/PaddleSeg.git -b develop
 cd PaddleSeg/
-git fetch develop
-git checkout FETCH_HEAD
-git checkout -b develop
 python setup.py install
 ```
 
@@ -97,7 +94,7 @@ python setup.py install
 cd PaddleSeg/
 wget https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k/model.pdparams
 
-python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml --model_path model.pdparams  --save_dir liteseg_tiny_scale1.0
+python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml --model_path model.pdparams  --save_dir ppliteseg_tiny_scale1.0_export
 ```
 
 - 导出模型后，需要指定模型路径到配置文件中的 model_filename 和 params_filename。
@@ -115,12 +112,18 @@ python tools/export.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1
 # 单卡启动
 export CUDA_VISIBLE_DEVICES=0
 cd PaddleSeg/deploy/slim/act/
-python run_seg.py --act_config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat' --config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
+python run_seg.py \
+      --act_config_path='./configs/ppliteseg/ppliteseg_qat.yaml' \
+      --save_dir='./save_quant_model_qat'  \
+      --config_path="configs/datasets/pp_liteseg_1.0_data.yml"
 
 # 多卡启动
 export CUDA_VISIBLE_DEVICES=0,1
 cd PaddleSeg/deploy/slim/act/
-python -m paddle.distributed.launch run_seg.py --act_config_path='./configs/ppliteseg/ppliteseg_qat.yaml' --save_dir='./save_quant_model_qat' --config_path ../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml
+python -m paddle.distributed.launch run_seg.py \
+      --act_config_path='./configs/ppliteseg/ppliteseg_qat.yaml' \
+      --save_dir='./save_quant_model_qat'  \
+      --config_path="configs/datasets/pp_liteseg_1.0_data.yml"
 ```
 
 压缩完成后会在`save_dir`中产出压缩好的预测模型，可直接预测部署。
@@ -143,7 +146,7 @@ TensorRT预测环境配置：
 | model_path | inference 模型文件所在目录，该目录下需要有文件 .pdmodel 和 .pdiparams 两个文件 |
 | model_filename | inference_model_dir文件夹下的模型文件名称 |
 | params_filename | inference_model_dir文件夹下的参数文件名称 |
-| dataset | 选择数据集的类型，可选：`human`, `cityscape`。  |
+| dataset | 选择数据集的类型，可选：`human`, `cityscapes`, `ade`。  |
 | dataset_config | 数据集配置的config  |
 | image_file | 待测试单张图片的路径，如果设置image_file，则dataset_config将无效。   |
 | device | 预测时的设备，可选：`CPU`, `GPU`。  |
@@ -161,14 +164,14 @@ TensorRT预测环境配置：
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
       --model_path=save_quant_model_qat \
-      --dataset='cityscape' \
-      --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
+      --dataset='cityscapes' \
+      --config="configs/datasets/pp_liteseg_1.0_data.yml" \
       --precision=int8 \
-      --use_trt True
+      --use_trt=True
 ```
 预期结果：
 
-![image](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/75119e54-28c1-4b3c-8c91-ab5ba6afb677)
+<img src="https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/75119e54-28c1-4b3c-8c91-ab5ba6afb677" width="600" height="150">
 
 
 ##### 4.1.2 基于压缩前模型进行基于GPU的批量测试：
@@ -176,15 +179,15 @@ python test_seg.py \
 ```shell
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
-      --model_path=liteseg_tiny_scale1.0 \
-      --dataset='cityscape' \
-      --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
+      --model_path=ppliteseg_tiny_scale1.0_export/ \
+      --dataset='cityscapes' \
+      --config="configs/datasets/pp_liteseg_1.0_data.yml" \
       --precision=fp32 \
-      --use_trt True
+      --use_trt=True
 ```
 预期结果：
 
-![image](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/d46c911f-2880-41ad-b0cc-c092eb9fbb05)
+<img src="https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/d46c911f-2880-41ad-b0cc-c092eb9fbb05" width="600" height="150">
 
 
 ##### 4.1.3 基于压缩模型进行基于CPU的批量测试：
@@ -195,8 +198,8 @@ python test_seg.py \
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
       --model_path=save_quant_model_qat \
-      --dataset='cityscape' \
-      --config=../../../configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k.yml \
+      --dataset='cityscapes' \
+      --config="configs/datasets/pp_liteseg_1.0_data.yml" \
       --device=CPU \
       --use_mkldnn=True \
       --precision=int8 \
@@ -212,15 +215,15 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
 cd PaddleSeg/deploy/slim/act/
 python test_seg.py \
-      --model_path=liteseg_tiny_scale1.0 \
-      --dataset='cityscape' \
+      --model_path=ppliteseg_tiny_scale1.0_export \
+      --dataset='cityscapes' \
       --image_file=cityscapes_demo.png \
       --use_trt=True \
       --precision=fp32 \
       --save_file res_qat_fp32.png
 ```
 预期结果：
-![61eae26a87f70cd906e4025db4f2a476](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/dc93b323-60e3-48b9-aac2-e2a165ca6a3c)
+<img src="https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/dc93b323-60e3-48b9-aac2-e2a165ca6a3c" width="800" height="600">
 
 ##### 4.2.2  基于压缩模型测试单张图片：
 
@@ -231,20 +234,20 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
 python test_seg.py \
       --model_path=save_quant_model_qat \
-      --dataset='cityscape' \
-       --image_file=cityscapes_demo.png \
+      --dataset='cityscapes' \
+      --image_file=cityscapes_demo.png \
       --use_trt=True \
       --precision=int8 \
       --save_file res_qat_int8.png
 ```
 
 预期结果：
-![dfed09fe2adad3e1660fd51593a283fb](https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/c67ed087-20e3-4c47-aedd-69a4bb6dff5a)
+
+<img src="https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/c67ed087-20e3-4c47-aedd-69a4bb6dff5a" width="800" height="700">
 
 #####  4.2.3 图片结果对比
 
 <table><tbody>
-
 <tr>
 <td>
 原始图片
@@ -288,7 +291,7 @@ Int8推理结果
 
 ### 2. 报错：Distill_node_pair config wrong, the length need to be an even number ？
 <td>
-<img src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/c4c7624a-a31c-4278-af4e-c0a2a34fa22b" width="200" height="340">
+<img src="https://github.com/PaddlePaddle/PaddleSlim/assets/34859558/c9687940-f08f-4eac-bccf-1b98517de771" width="800" height="340">
 </td>
 
 **A**：蒸馏配置中的node需要设置成网络的输出节点。
@@ -297,21 +300,34 @@ Int8推理结果
 2. 修改QAT配置中node为最后一层卷积的输出名字。
 
 <td>
-<img src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/b714040a-eec1-43df-af11-a233bd4cb59b" width="1240" height="100">
+<img src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/b714040a-eec1-43df-af11-a233bd4cb59b" width="800" height="100">
 </td>
 
-<img width="1000" alt="e589cdafd43796aed4c1b11c6828fefd" src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/c75c0749-898b-4187-a9f9-363cfe92b1a4">
+<img width="800" alt="e589cdafd43796aed4c1b11c6828fefd" src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/c75c0749-898b-4187-a9f9-363cfe92b1a4">
 
 
 ### 3. 量化蒸馏训练精度很低？
-![2d916558811eb5f1bbb388025ddda21c](https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/cc9bcc26-1568-4ab9-96f3-ff181486637c)
+<img width="800" alt="2d916558811eb5f1bbb388025ddda21c" src="https://github.com/PaddlePaddle/PaddleOCR/assets/34859558/cc9bcc26-1568-4ab9-96f3-ff181486637c">
+
 
 **A**：去除量化训练的输出结果，重新运行一次，这是由于网络训练到局部极值点导致。
 
 ### 4. TensorRT推理报错：TensorRT dynamic library not found.
 
 <td>
-<img src="https://user-images.githubusercontent.com/5997715/185016439-140e3c4a-002d-4c18-b0a8-d861a418d1e2.png" width="1540" height="220">
+<img src="https://user-images.githubusercontent.com/5997715/185016439-140e3c4a-002d-4c18-b0a8-d861a418d1e2.png" width="800" height="220">
 </td>
 
 **A**：参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)，查看是否有版本不匹配或者路径没有配置。
+
+### 5. ImportError: cannot import name 'MSRA' from 'paddle.fluid.initializer':
+
+**A** 需要安装paddleslim 2.5，其适配了paddle2.5
+
+### 6. ValueError: The axis is expected to be in range of [0,0) but got:
+
+**A**: 需要安装paddleseg devleop版本，如果确定已经安装，建议使用`pip uninstall paddleseg`卸载后重新安装。
+
+### 7. NotImplementedError：delete weight dequant op pass is not supported for per channel quantization
+
+**A**：参考https://github.com/PaddlePaddle/Paddle/issues/56619，并参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)安装TensorRT。

@@ -1,5 +1,5 @@
 Global:
-  model_dir: ./ppliteseg_tiny_scale1.0_export
+  model_dir: ./ocrnet_export
   model_filename: model.pdmodel
   params_filename: model.pdiparams
 
@@ -7,7 +7,7 @@ Distillation:
   alpha: 1.0
   loss: l2
   node:
-  - conv2d_94.tmp_0 # change to the name of the output of the last conv in the model.pdmodel in netron
+  - conv2d_631.tmp_0 # change to the name of the output of the last conv in the model.pdmodel in netron
 
 QuantAware:
   onnx_format: False
@@ -23,4 +23,3 @@ TrainConfig:
     optimizer: 
       type: SGD
     weight_decay: 4.0e-05  
-
