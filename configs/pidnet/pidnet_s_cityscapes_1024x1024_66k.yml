@@ -1,0 +1,55 @@
+
+_base_: '../_base_/cityscapes_1024x1024.yml'
+
+batch_size: 6
+iters: 66000
+
+model:
+  type: PIDNet
+  m: 2
+  n: 3
+  num_classes: 19
+  planes: 32
+  ppm_planes: 96
+  head_planes: 128
+  augment: True
+  pretrained: PIDNet_S_ImageNet.pdparams
+
+train_dataset:
+  type: EdgeCityscapes
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 1024]
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  edge: true
+
+val_dataset:
+  type: EdgeCityscapes
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
+
+optimizer:
+  type: SGD
+  momentum: 0.9
+  weight_decay: 0.0005
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+      min_kept: 131072
+      thresh: 0.9
+    - type: BCELoss
+      edge_label: True
+    - type: OhemCrossEntropyLoss
+      min_kept: 131072
+      thresh: 0.9
+  coef: [0.4, 1.0, 10.0, 1.0]

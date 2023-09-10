@@ -251,12 +251,14 @@ class BasicBlock(nn.Layer):
                  out_channels,
                  stride=1,
                  downsample=None,
-                 no_relu=False):
+                 no_relu=False,
+                 bias=None):
         super().__init__()
-        self.conv1 = conv2d(in_channels, out_channels, 3, stride, 1)
+        self.conv1 = conv2d(
+            in_channels, out_channels, 3, stride, 1, bias_attr=bias)
         self.bn1 = bn2d(out_channels)
         self.relu = nn.ReLU()
-        self.conv2 = conv2d(out_channels, out_channels, 3, 1, 1)
+        self.conv2 = conv2d(out_channels, out_channels, 3, 1, 1, bias_attr=bias)
         self.bn2 = bn2d(out_channels)
         self.downsample = downsample
         self.stride = stride
