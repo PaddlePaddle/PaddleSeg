@@ -57,14 +57,13 @@ class Config(object):
 
     """
 
-    def __init__(
-            self,
-            path: str,
-            learning_rate: Optional[float]=None,
-            batch_size: Optional[int]=None,
-            iters: Optional[int]=None,
-            opts: Optional[list]=None,
-            checker: Optional[checker.ConfigChecker]=None, ):
+    def __init__(self,
+                 path: str,
+                 learning_rate: Optional[float]=None,
+                 batch_size: Optional[int]=None,
+                 iters: Optional[int]=None,
+                 opts: Optional[list]=None,
+                 checker: Optional[checker.ConfigChecker]=None):
         assert os.path.exists(path), \
             'Config path ({}) does not exist'.format(path)
         assert path.endswith('yml') or path.endswith('yaml'), \
