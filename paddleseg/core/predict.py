@@ -58,7 +58,8 @@ def predict(model,
             is_slide=False,
             stride=None,
             crop_size=None,
-            custom_color=None):
+            custom_color=None,
+            use_multilabel=False):
     """
     predict and visualize the image_list.
 
@@ -79,6 +80,7 @@ def predict(model,
         crop_size (tuple|list, optional):  The crop size of sliding window, the first is width and the second is height.
             It should be provided when `is_slide` is True.
         custom_color (list, optional): Save images with a custom color map. Default: None, use paddleseg's default color map.
+        use_multilabel (bool, optional): Whether to enable multilabel mode. Default: False.
 
     """
     utils.utils.load_entire_model(model, model_path)
@@ -110,7 +112,8 @@ def predict(model,
                     flip_vertical=flip_vertical,
                     is_slide=is_slide,
                     stride=stride,
-                    crop_size=crop_size)
+                    crop_size=crop_size,
+                    use_multilabel=use_multilabel)
             else:
                 pred, _ = infer.inference(
                     model,
@@ -118,7 +121,8 @@ def predict(model,
                     trans_info=data['trans_info'],
                     is_slide=is_slide,
                     stride=stride,
-                    crop_size=crop_size)
+                    crop_size=crop_size,
+                    use_multilabel=use_multilabel)
             pred = paddle.squeeze(pred)
             pred = pred.numpy().astype('uint8')
 
@@ -132,13 +136,14 @@ def predict(model,
 
             # save added image
             added_image = utils.visualize.visualize(
-                im_path, pred, color_map, weight=0.6)
+                im_path, pred, color_map, weight=0.6, use_multilabel=use_multilabel)
             added_image_path = os.path.join(added_saved_dir, im_file)
             mkdir(added_image_path)
             cv2.imwrite(added_image_path, added_image)
 
             # save pseudo color prediction
-            pred_mask = utils.visualize.get_pseudo_color_map(pred, color_map)
+            pred_mask = utils.visualize.get_pseudo_color_map(
+                pred, color_map, use_multilabel=use_multilabel)
             pred_saved_path = os.path.join(
                 pred_saved_dir, os.path.splitext(im_file)[0] + ".png")
             mkdir(pred_saved_path)
