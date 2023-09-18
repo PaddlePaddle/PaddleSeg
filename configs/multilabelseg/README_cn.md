@@ -1,4 +1,4 @@
-[English](README_EN.md) | 简体中文
+[English](README.md) | 简体中文
 
 # 基于 PaddleSeg 的多标签语义分割
 
