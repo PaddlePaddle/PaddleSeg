@@ -13,6 +13,9 @@ train_dataset:
       brightness_range: 0.4
       contrast_range: 0.4
       saturation_range: 0.4
+    - type: Normalize
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
   num_classes: 3
   train_path: data/UWMGI/train.txt
   mode: train
@@ -24,6 +27,8 @@ val_dataset:
     - type: Resize
       target_size: [256, 256]
     - type: Normalize
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
   num_classes: 3
   val_path: data/UWMGI/val.txt
   mode: val
