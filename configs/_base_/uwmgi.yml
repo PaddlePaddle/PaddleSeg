@@ -5,12 +5,8 @@ train_dataset:
   type: Dataset
   dataset_root: data/UWMGI
   transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
-      max_scale_factor: 2.0
-      scale_step_size: 0.25
-    - type: RandomPaddingCrop
-      crop_size: [256, 256]
+    - type: Resize
+      target_size: [256, 256]
     - type: RandomHorizontalFlip
     - type: RandomVerticalFlip
     - type: RandomDistort
