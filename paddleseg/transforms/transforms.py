@@ -1231,3 +1231,17 @@ class GenerateInstanceTargets:
             data['instances'] = instances
 
         return data
+
+
+@manager.TRANSFORMS.add_component
+class AddMultiLabelAuxiliaryCategory:
+    """
+    Add a complementary set of unions labeled with corresponding mask for other categories as an auxiliary category.
+    """
+
+    def __call__(self, data):
+        if 'label' in data:
+            aux_label = (data['label'].sum(axis=-1, keepdims=True) == 0).astype('uint8')
+            data['label'] = np.concatenate([aux_label, data['label']], axis=-1)
+
+        return data
