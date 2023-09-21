@@ -7,9 +7,12 @@
 多标签语义分割是一种图像分割任务，它的目的是将图像中的每个像素分配到多个类别中，而不是只有一个类别。这样可以更好地表达图像中的复杂信息，例如不同物体的重叠、遮挡、边界等。多标签语义分割有许多应用场景，例如医学图像分析、遥感图像解译、自动驾驶等。
 
 <p align="center">
-<img src="https://github.com/MINGtoMING/cache_ppseg_multilabelseg_readme_imgs/tree/main/assets/case15_day0_slice_0065.jpg">
-<img src="https://github.com/MINGtoMING/cache_ppseg_multilabelseg_readme_imgs/tree/main/assets/case122_day18_slice_0092.jpg">
-<img src="https://github.com/MINGtoMING/cache_ppseg_multilabelseg_readme_imgs/tree/main/assets/case130_day20_slice_0072.jpg">
+<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/ea6bb360-75de-4e06-9910-44c7d2fdbe6c">
+<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/e2781865-db7e-4f46-98b2-3ef731e8bef1">
+<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/9e587935-fd6f-459e-b798-0164eb98f44d">
+<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/299a54fa-8290-421d-8b4d-978a3e38b106">
+<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/56dc59e2-12f9-4dbe-92b6-60639aaa5cd3">
+<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/7bf48017-b39b-4c9a-be4e-159dc27076a8">
 </p>
 
 + *以上效果展示图基于 [UWMGI](https://www.kaggle.com/competitions/uw-madison-gi-tract-image-segmentation/)数据集中的图片使用训练的模型所得到的推理结果。*
@@ -76,18 +79,17 @@ train_dataset:
   type: Dataset
   dataset_root: data/UWMGI
   transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
-      max_scale_factor: 2.0
-      scale_step_size: 0.25
-    - type: RandomPaddingCrop
-      crop_size: [256, 256]
+    - type: Resize
+      target_size: [256, 256]
     - type: RandomHorizontalFlip
     - type: RandomVerticalFlip
     - type: RandomDistort
       brightness_range: 0.4
       contrast_range: 0.4
       saturation_range: 0.4
+    - type: Normalize
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
   num_classes: 3
   train_path: data/UWMGI/train.txt
   mode: train
@@ -99,6 +101,8 @@ val_dataset:
     - type: Resize
       target_size: [256, 256]
     - type: Normalize
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
   num_classes: 3
   val_path: data/UWMGI/val.txt
   mode: val
