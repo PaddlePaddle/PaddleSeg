@@ -423,12 +423,12 @@ class Refiner(nn.Layer):
         x = paddle.concat([hid, pha, tri], axis=1)
         x = F.interpolate(
             x,
-            paddle.concat((h_half, w_half)),
+            paddle.stack((h_half, w_half)),
             mode='bilinear',
             align_corners=False)
         y = F.interpolate(
             src,
-            paddle.concat((h_half, w_half)),
+            paddle.stack((h_half, w_half)),
             mode='bilinear',
             align_corners=False)
 
