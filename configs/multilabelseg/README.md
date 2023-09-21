@@ -10,9 +10,6 @@ Multi-label semantic segmentation is an image segmentation task that aims to ass
 <img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/ea6bb360-75de-4e06-9910-44c7d2fdbe6c">
 <img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/e2781865-db7e-4f46-98b2-3ef731e8bef1">
 <img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/9e587935-fd6f-459e-b798-0164eb98f44d">
-<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/299a54fa-8290-421d-8b4d-978a3e38b106">
-<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/56dc59e2-12f9-4dbe-92b6-60639aaa5cd3">
-<img src="https://github.com/PaddlePaddle/PaddleSeg/assets/95759947/7bf48017-b39b-4c9a-be4e-159dc27076a8">
 </p>
 
 + *The above effect shows the inference results obtained from the model trained using images in the [UWMGI](https://www.kaggle.com/competitions/uw-madison-gi-tract-image-segmentation/) dataset*
