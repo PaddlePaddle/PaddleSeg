@@ -34,9 +34,10 @@
 下载UWMGI数据集的原始数据压缩包，并使用提供的脚本转换为PaddleSeg的[Dataset](../../paddleseg/datasets/dataset.py) API支持的格式。
 ```shell
 wget https://storage.googleapis.com/kaggle-competitions-data/kaggle-v2/27923/3495119/bundle/archive.zip?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1693533809&Signature=ThCLjIYxSXfk85lCbZ5Cz2Ta4g8AjwJv0%2FgRpqpchlZLLYxk3XRnrZqappboha0moC7FuqllpwlLfCambQMbKoUjCLylVQqF0mEsn0IaJdYwprWYY%2F4FJDT2lG0HdQfAxJxlUPonXeZyZ4pZjOrrVEMprxuiIcM2kpGk35h7ry5ajkmdQbYmNQHFAJK2iO%2F4a8%2F543zhZRWsZZVbQJHid%2BjfO6ilLWiAGnMFpx4Sh2B01TUde9hBCwpxgJv55Gs0a4Z1KNsBRly6uqwgZFYfUBAejySx4RxFB7KEuRowDYuoaRT8NhSkzT2i7qqdZjgHxkFZJpRMUlDcf1RSJVkvEA%3D%3D&response-content-disposition=attachment%3B+filename%3Duw-madison-gi-tract-image-segmentation.zip
-python tools/data/convert_uwmgi.py \
-    ./uw-madison-gi-tract-image-segmentation.zip \
-    ./data/UWMGI/ \
+python tools/data/convert_multilabel.py \
+    --dataset_type uwmgi \
+    --zip_input ./uw-madison-gi-tract-image-segmentation.zip \
+    --output ./data/UWMGI/ \
     --train_proportion 0.8 \
     --val_proportion 0.2
 # 可选
