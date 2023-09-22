@@ -136,7 +136,8 @@ def inference(model,
               trans_info=None,
               is_slide=False,
               stride=None,
-              crop_size=None):
+              crop_size=None,
+              use_multilabel=False):
     """
     Inference for image.
 
@@ -147,6 +148,7 @@ def inference(model,
         is_slide (bool): Whether to infer by sliding window. Default: False.
         crop_size (tuple|list). The size of sliding window, (w, h). It should be probided if is_slide is True.
         stride (tuple|list). The size of stride, (w, h). It should be probided if is_slide is True.
+        use_multilabel (bool, optional): Whether to enable multilabel mode. Default: False.
 
     Returns:
         Tensor: If ori_shape is not None, a prediction with shape (1, 1, h, w) is returned.
@@ -167,7 +169,10 @@ def inference(model,
         logit = logit.transpose((0, 3, 1, 2))
     if trans_info is not None:
         logit = reverse_transform(logit, trans_info, mode='bilinear')
-        pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
+        if not use_multilabel:
+            pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
+        else:
+            pred = (F.sigmoid(logit) > 0.5).astype('int32')
         return pred, logit
     else:
         return logit
@@ -181,7 +186,8 @@ def aug_inference(model,
                   flip_vertical=False,
                   is_slide=False,
                   stride=None,
-                  crop_size=None):
+                  crop_size=None,
+                  use_multilabel=False):
     """
     Infer with augmentation.
 
@@ -195,6 +201,7 @@ def aug_inference(model,
         is_slide (bool): Whether to infer by sliding wimdow. Default: False.
         crop_size (tuple|list). The size of sliding window, (w, h). It should be probided if is_slide is True.
         stride (tuple|list). The size of stride, (w, h). It should be probided if is_slide is True.
+        use_multilabel (bool, optional): Whether to enable multilabel mode. Default: False.
 
     Returns:
         Tensor: Prediction of image with shape (1, 1, h, w) is returned.
@@ -229,6 +236,9 @@ def aug_inference(model,
     # comparable to single-scale logits
     final_logit /= num_augs
     final_logit = reverse_transform(final_logit, trans_info, mode='bilinear')
-    pred = paddle.argmax(final_logit, axis=1, keepdim=True, dtype='int32')
+    if not use_multilabel:
+        pred = paddle.argmax(final_logit, axis=1, keepdim=True, dtype='int32')
+    else:
+        pred = (F.sigmoid(final_logit) > 0.5).astype('int32')
 
     return pred, final_logit

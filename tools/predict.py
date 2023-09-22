@@ -98,6 +98,13 @@ def parse_args():
         help='Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
         type=int)
 
+    # Set multi-label mode
+    parser.add_argument(
+        '--use_multilabel',
+        action='store_true',
+        default=False,
+        help='Whether to enable multilabel mode. Default: False.')
+
     return parser.parse_args()
 
 
@@ -118,6 +125,8 @@ def merge_test_config(cfg, args):
         test_config['stride'] = args.stride
     if args.custom_color:
         test_config['custom_color'] = args.custom_color
+    if args.use_multilabel:
+        test_config['use_multilabel'] = args.use_multilabel
     return test_config
 
 

@@ -1,0 +1,54 @@
+batch_size: 8
+iters: 160000
+
+train_dataset:
+  type: Dataset
+  dataset_root: data/UWMGI
+  transforms:
+    - type: Resize
+      target_size: [256, 256]
+    - type: RandomHorizontalFlip
+    - type: RandomVerticalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
+  num_classes: 3
+  train_path: data/UWMGI/train.txt
+  mode: train
+
+val_dataset:
+  type: Dataset
+  dataset_root: data/UWMGI
+  transforms:
+    - type: Resize
+      target_size: [256, 256]
+    - type: Normalize
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
+  num_classes: 3
+  val_path: data/UWMGI/val.txt
+  mode: val
+
+optimizer:
+  type: SGD
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.001
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: BCELoss
+        - type: LovaszHingeLoss
+      coef: [0.5, 0.5]
+  coef: [1]
