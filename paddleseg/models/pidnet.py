@@ -33,52 +33,48 @@ _interpolate = partial(F.interpolate, mode="bilinear", align_corners=False)
 @manager.MODELS.add_component
 class PIDNet(nn.Layer):
     def __init__(
-            self,
-            in_channels=3,
-            m=2,
-            n=3,
-            num_classes=19,
-            planes=64,
-            ppm_planes=96,
-            head_planes=128,
-            augment=True,
-            pretrained=None, ):
+        self,
+        in_channels=3,
+        m=2,
+        n=3,
+        num_classes=19,
+        planes=64,
+        ppm_planes=96,
+        head_planes=128,
+        augment=True,
+        pretrained=None,
+    ):
         super().__init__()
         self.augment = augment
-        self.pretrained = pretrained
+        self.pretrained=pretrained
 
         # I Branch
         self.conv1 = nn.Sequential(
-            nn.Conv2D(
-                in_channels, planes, kernel_size=3, stride=2, padding=1),
+            nn.Conv2D(in_channels, planes, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2D(planes),
             nn.ReLU(),
-            nn.Conv2D(
-                planes, planes, kernel_size=3, stride=2, padding=1),
+            nn.Conv2D(planes, planes, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2D(planes),
-            nn.ReLU(), )
+            nn.ReLU(),
+        )
 
         self.relu = nn.ReLU()
         self.layer1 = self._make_layer(BasicBlock, planes, planes, m)
-        self.layer2 = self._make_layer(
-            BasicBlock, planes, planes * 2, m, stride=2)
-        self.layer3 = self._make_layer(
-            BasicBlock, planes * 2, planes * 4, n, stride=2)
-        self.layer4 = self._make_layer(
-            BasicBlock, planes * 4, planes * 8, n, stride=2)
-        self.layer5 = self._make_layer(
-            Bottleneck, planes * 8, planes * 8, 2, stride=2)
+        self.layer2 = self._make_layer(BasicBlock, planes, planes * 2, m, stride=2)
+        self.layer3 = self._make_layer(BasicBlock, planes * 2, planes * 4, n, stride=2)
+        self.layer4 = self._make_layer(BasicBlock, planes * 4, planes * 8, n, stride=2)
+        self.layer5 = self._make_layer(Bottleneck, planes * 8, planes * 8, 2, stride=2)
 
         # P Branch
         self.compression3 = nn.Sequential(
-            nn.Conv2D(
-                planes * 4, planes * 2, kernel_size=1, bias_attr=False),
-            nn.BatchNorm2D(planes * 2), )
+            nn.Conv2D(planes * 4, planes * 2, kernel_size=1, bias_attr=False),
+            nn.BatchNorm2D(planes * 2),
+        )
 
         self.compression4 = nn.Sequential(
-            nn.Conv2D(
-                planes * 8, planes * 2, kernel_size=1, bias_attr=False),
-            nn.BatchNorm2D(planes * 2), )
+            nn.Conv2D(planes * 8, planes * 2, kernel_size=1, bias_attr=False),
+            nn.BatchNorm2D(planes * 2),
+        )
         self.pag3 = PagFM(planes * 2, planes)
         self.pag4 = PagFM(planes * 2, planes)
 
@@ -88,48 +84,37 @@ class PIDNet(nn.Layer):
 
         # D Branch
         if m == 2:
-            self.layer3_d = self._make_single_layer(BasicBlock, planes * 2,
-                                                    planes)
+            self.layer3_d = self._make_single_layer(BasicBlock, planes * 2, planes)
             self.layer4_d = self._make_layer(Bottleneck, planes, planes, 1)
             self.diff3 = nn.Sequential(
                 nn.Conv2D(
-                    planes * 4,
-                    planes,
-                    kernel_size=3,
-                    padding=1,
-                    bias_attr=False),
-                nn.BatchNorm2D(planes), )
+                    planes * 4, planes, kernel_size=3, padding=1, bias_attr=False
+                ),
+                nn.BatchNorm2D(planes),
+            )
             self.diff4 = nn.Sequential(
                 nn.Conv2D(
-                    planes * 8,
-                    planes * 2,
-                    kernel_size=3,
-                    padding=1,
-                    bias_attr=False),
-                nn.BatchNorm2D(planes * 2), )
+                    planes * 8, planes * 2, kernel_size=3, padding=1, bias_attr=False
+                ),
+                nn.BatchNorm2D(planes * 2),
+            )
             self.spp = PAPPM(planes * 16, ppm_planes, planes * 4)
             self.dfm = Light_Bag(planes * 4, planes * 4)
         else:
-            self.layer3_d = self._make_single_layer(BasicBlock, planes * 2,
-                                                    planes * 2)
-            self.layer4_d = self._make_single_layer(BasicBlock, planes * 2,
-                                                    planes * 2)
+            self.layer3_d = self._make_single_layer(BasicBlock, planes * 2, planes * 2)
+            self.layer4_d = self._make_single_layer(BasicBlock, planes * 2, planes * 2)
             self.diff3 = nn.Sequential(
                 nn.Conv2D(
-                    planes * 4,
-                    planes * 2,
-                    kernel_size=3,
-                    padding=1,
-                    bias_attr=False),
-                nn.BatchNorm2D(planes * 2), )
+                    planes * 4, planes * 2, kernel_size=3, padding=1, bias_attr=False
+                ),
+                nn.BatchNorm2D(planes * 2),
+            )
             self.diff4 = nn.Sequential(
                 nn.Conv2D(
-                    planes * 8,
-                    planes * 2,
-                    kernel_size=3,
-                    padding=1,
-                    bias_attr=False),
-                nn.BatchNorm2D(planes * 2), )
+                    planes * 8, planes * 2, kernel_size=3, padding=1, bias_attr=False
+                ),
+                nn.BatchNorm2D(planes * 2),
+            )
             self.spp = DAPPM(planes * 16, ppm_planes, planes * 4)
             self.dfm = Bag(planes * 4, planes * 4)
 
@@ -144,6 +129,7 @@ class PIDNet(nn.Layer):
 
         self.init_weight()
 
+
     def _make_layer(self, block, inplanes, planes, blocks, stride=1):
         downsample = None
         if stride != 1 or inplanes != planes * block.expansion:
@@ -153,8 +139,10 @@ class PIDNet(nn.Layer):
                     planes * block.expansion,
                     kernel_size=1,
                     stride=stride,
-                    bias_attr=False, ),
-                nn.BatchNorm2D(planes * block.expansion), )
+                    bias_attr=False,
+                ),
+                nn.BatchNorm2D(planes * block.expansion),
+            )
 
         layers = []
         layers.append(block(inplanes, planes, stride, downsample))
@@ -176,8 +164,10 @@ class PIDNet(nn.Layer):
                     planes * block.expansion,
                     kernel_size=1,
                     stride=stride,
-                    bias_attr=False, ),
-                nn.BatchNorm2D(planes * block.expansion), )
+                    bias_attr=False,
+                ),
+                nn.BatchNorm2D(planes * block.expansion),
+            )
 
         layer = block(inplanes, planes, stride, downsample, no_relu=True)
 
@@ -187,7 +177,6 @@ class PIDNet(nn.Layer):
         h, w = x.shape[-2:]
         width_output = x.shape[-1] // 8
         height_output = x.shape[-2] // 8
-
         x = self.conv1(x)
         x = self.layer1(x)
         x = self.relu(self.layer2(self.relu(x)))
@@ -196,8 +185,7 @@ class PIDNet(nn.Layer):
 
         x = self.relu(self.layer3(x))
         x_ = self.pag3(x_, self.compression3(x))
-        x_d = x_d + _interpolate(
-            self.diff3(x), size=[height_output, width_output])
+        x_d = x_d + _interpolate(self.diff3(x), size=[height_output, width_output])
         if self.augment:
             temp_p = x_
 
@@ -206,34 +194,26 @@ class PIDNet(nn.Layer):
         x_d = self.layer4_d(self.relu(x_d))
 
         x_ = self.pag4(x_, self.compression4(x))
-        x_d = x_d + _interpolate(
-            self.diff4(x), size=[height_output, width_output])
+        x_d = x_d + _interpolate(self.diff4(x), size=[height_output, width_output])
         if self.augment:
             temp_d = x_d
 
         x_ = self.layer5_(self.relu(x_))
         x_d = self.layer5_d(self.relu(x_d))
-        x = _interpolate(
-            self.spp(self.layer5(x)), size=[height_output, width_output])
+        x = _interpolate(self.spp(self.layer5(x)), size=[height_output, width_output])
         x_ = self.final_layer(self.dfm(x_, x, x_d))
         if self.training or self.augment:
             x_extra_p = self.seghead_p(temp_p)
             x_extra_d = self.seghead_d(temp_d)
             return [
-                F.interpolate(
-                    x_extra_p, mode='bilinear', size=[h, w],
-                    align_corners=True),
-                F.interpolate(
-                    x_, mode='bilinear', size=[h, w], align_corners=True),
-                F.interpolate(
-                    x_extra_d, mode='bilinear', size=[h, w],
-                    align_corners=True),
-            ]
+                    F.interpolate(x_extra_p, mode='bilinear', size=[h, w], align_corners=False),
+                    F.interpolate(x_, mode='bilinear', size=[h, w], align_corners=False),
+                    F.interpolate(x_extra_d, mode='bilinear', size=[h, w], align_corners=False),
+                    ]
         else:
             return [
-                F.interpolate(
-                    x_, mode='bilinear', size=[h, w], align_corners=True)
-            ]
+                    F.interpolate(x_, mode='bilinear', size=[h, w], align_corners=False)
+                    ]
 
     def loss_computation(self, logits_list, losses, data):
         loss_list = []
@@ -248,43 +228,33 @@ class PIDNet(nn.Layer):
         filler = paddle.ones_like(label) * losses['types'][0].ignore_index
         bd_label = paddle.where(F.sigmoid(logits_list[-1][:, 0, :, :]) > 0.8, label, filler)
         sb_loss = losses['coef'][3] * losses['types'][3](logits_list[-2], bd_label)
-        loss = bd_loss + sb_loss + s_loss
+        loss =  s_loss + bd_loss + sb_loss
         return [loss.mean()]
 
     def init_weight(self):
+        for m in self.sublayers():
+            if isinstance(m, nn.Conv2D):
+                param_init.kaiming_normal_init(m.weight)
+            elif isinstance(m, nn.BatchNorm2D):
+                param_init.constant_init(m.weight, value=1.0)
+                param_init.constant_init(m.bias, value=0.0)
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
-        else:
-            for m in self.sublayers():
-                if isinstance(m, nn.Conv2D):
-                    param_init.kaiming_normal_init(m.weight)
-                elif isinstance(m, nn.BatchNorm2D):
-                    param_init.constant_init(m.weight, value=1.0)
-                    param_init.constant_init(m.bias, value=0.0)
-
 
 class Bottleneck(nn.Layer):
     expansion = 2
 
-    def __init__(self,
-                 inplanes,
-                 planes,
-                 stride=1,
-                 downsample=None,
-                 no_relu=True):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, no_relu=True):
         super().__init__()
         self.conv1 = nn.Conv2D(inplanes, planes, kernel_size=1, bias_attr=False)
         self.bn1 = nn.BatchNorm2D(planes)
         self.conv2 = nn.Conv2D(
-            planes,
-            planes,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            bias_attr=False)
+            planes, planes, kernel_size=3, stride=stride, padding=1, bias_attr=False
+        )
         self.bn2 = nn.BatchNorm2D(planes)
         self.conv3 = nn.Conv2D(
-            planes, planes * self.expansion, kernel_size=1, bias_attr=False)
+            planes, planes * self.expansion, kernel_size=1, bias_attr=False
+        )
         self.bn3 = nn.BatchNorm2D(planes * self.expansion)
         self.relu = nn.ReLU()
         self.downsample = downsample
@@ -318,10 +288,12 @@ class SegmentHead(nn.Layer):
         super().__init__()
         self.bn1 = nn.BatchNorm2D(inplanes)
         self.conv1 = nn.Conv2D(
-            inplanes, interplanes, kernel_size=3, padding=1, bias_attr=False)
+            inplanes, interplanes, kernel_size=3, padding=1, bias_attr=False
+        )
         self.bn2 = nn.BatchNorm2D(interplanes)
         self.relu = nn.ReLU()
-        self.conv2 = nn.Conv2D(interplanes, outplanes, kernel_size=1, padding=0)
+        self.conv2 = nn.Conv2D(
+            interplanes, outplanes, kernel_size=1, padding=0)
         self.scale_factor = scale_factor
 
     def forward(self, x):
@@ -337,20 +309,19 @@ class SegmentHead(nn.Layer):
 
 def _build_scale(kernel_size, stride, padding, in_chan, out_chan):
     return nn.Sequential(
-        nn.AvgPool2D(
-            kernel_size, stride, padding, exclusive=False),
+        nn.AvgPool2D(kernel_size, stride, padding, exclusive=False),
         nn.BatchNorm2D(in_chan),
         nn.ReLU(),
-        nn.Conv2D(
-            in_chan, out_chan, 1, bias_attr=False), )
+        nn.Conv2D(in_chan, out_chan, 1, bias_attr=False),
+    )
 
 
 def _build_process(in_chan, out_chan, kernel_size=1, padding=0):
     return nn.Sequential(
         nn.BatchNorm2D(in_chan),
         nn.ReLU(),
-        nn.Conv2D(
-            in_chan, out_chan, kernel_size, padding=padding, bias_attr=False), )
+        nn.Conv2D(in_chan, out_chan, kernel_size, padding=padding, bias_attr=False),
+    )
 
 
 class DAPPM(nn.Layer):
@@ -364,8 +335,8 @@ class DAPPM(nn.Layer):
             nn.AdaptiveAvgPool2D((1, 1)),
             nn.BatchNorm2D(inplanes),
             nn.ReLU(),
-            nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+            nn.Conv2D(inplanes, branch_planes, kernel_size=1, bias_attr=False),
+        )
 
         self.scale0 = _build_process(inplanes, branch_planes)
 
@@ -373,8 +344,7 @@ class DAPPM(nn.Layer):
         self.process2 = _build_process(branch_planes, branch_planes, 3, 1)
         self.process3 = _build_process(branch_planes, branch_planes, 3, 1)
         self.process4 = _build_process(branch_planes, branch_planes, 3, 1)
-        self.compression = _build_process(branch_planes * 5, branch_planes, 3,
-                                          1)
+        self.compression = _build_process(branch_planes * 5, outplanes, 3, 1)
         self.shortcut = _build_process(inplanes, outplanes)
 
     def forward(self, x):
@@ -384,17 +354,25 @@ class DAPPM(nn.Layer):
 
         x_list.append(self.scale0(x))
         x_list.append(
-            self.process1((_interpolate(
-                self.scale1(x), size=[height, width]) + x_list[0])))
+            self.process1(
+                (_interpolate(self.scale1(x), size=[height, width]) + x_list[0])
+            )
+        )
         x_list.append(
-            self.process2((_interpolate(
-                self.scale2(x), size=[height, width]) + x_list[1])))
+            self.process2(
+                (_interpolate(self.scale2(x), size=[height, width]) + x_list[1])
+            )
+        )
         x_list.append(
-            self.process3((_interpolate(
-                self.scale3(x), size=[height, width]) + x_list[2])))
+            self.process3(
+                (_interpolate(self.scale3(x), size=[height, width]) + x_list[2])
+            )
+        )
         x_list.append(
-            self.process4((_interpolate(
-                self.scale4(x), size=[height, width]) + x_list[3])))
+            self.process4(
+                (_interpolate(self.scale4(x), size=[height, width]) + x_list[3])
+            )
+        )
 
         out = self.compression(paddle.concat(x_list, 1)) + self.shortcut(x)
         return out
@@ -411,8 +389,8 @@ class PAPPM(nn.Layer):
             nn.AdaptiveAvgPool2D((1, 1)),
             nn.BatchNorm2D(inplanes),
             nn.ReLU(),
-            nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+            nn.Conv2D(inplanes, branch_planes, kernel_size=1, bias_attr=False),
+        )
 
         self.scale0 = _build_process(inplanes, branch_planes)
 
@@ -425,10 +403,13 @@ class PAPPM(nn.Layer):
                 kernel_size=3,
                 padding=1,
                 groups=4,
-                bias_attr=False, ), )
+                bias_attr=False,
+            ),
+        )
 
         self.compression = _build_process(branch_planes * 5, outplanes)
         self.shortcut = _build_process(inplanes, outplanes)
+
 
     def forward(self, x):
         width = x.shape[-1]
@@ -436,45 +417,32 @@ class PAPPM(nn.Layer):
         scale_list = []
 
         x_ = self.scale0(x)
-        scale_list.append(
-            _interpolate(
-                self.scale1(x), size=[height, width]) + x_)
-        scale_list.append(
-            _interpolate(
-                self.scale2(x), size=[height, width]) + x_)
-        scale_list.append(
-            _interpolate(
-                self.scale3(x), size=[height, width]) + x_)
-        scale_list.append(
-            _interpolate(
-                self.scale4(x), size=[height, width]) + x_)
+        scale_list.append(_interpolate(self.scale1(x), size=[height, width]) + x_)
+        scale_list.append(_interpolate(self.scale2(x), size=[height, width]) + x_)
+        scale_list.append(_interpolate(self.scale3(x), size=[height, width]) + x_)
+        scale_list.append(_interpolate(self.scale4(x), size=[height, width]) + x_)
 
         scale_out = self.scale_process(paddle.concat(scale_list, 1))
-        out = self.compression(paddle.concat([x_, scale_out],
-                                             1)) + self.shortcut(x)
+        out = self.compression(paddle.concat([x_, scale_out], 1)) + self.shortcut(x)
         return out
 
 
 def _build_convbn(in_chan, out_chan):
     return nn.Sequential(
-        nn.Conv2D(
-            in_chan, out_chan, kernel_size=1, bias_attr=False),
-        nn.BatchNorm2D(out_chan), )
+        nn.Conv2D(in_chan, out_chan, kernel_size=1, bias_attr=False),
+        nn.BatchNorm2D(out_chan),
+    )
 
 
 class PagFM(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 mid_channels,
-                 after_relu=False,
-                 with_channel=False):
+    def __init__(self, in_channels, mid_channels, after_relu=False, with_channel=False):
         super().__init__()
         self.with_channel = with_channel
         self.after_relu = after_relu
         self.f_x = _build_convbn(in_channels, mid_channels)
         self.f_y = _build_convbn(in_channels, mid_channels)
         if with_channel:
-            self.up = _build_convbn(in_channels, mid_channels)
+            self.up = _build_convbn(mid_channels, in_channels)
 
         if after_relu:
             self.relu = nn.ReLU()
@@ -492,11 +460,10 @@ class PagFM(nn.Layer):
         if self.with_channel:
             sim_map = sigmoid(self.up(x_k * y_q))
         else:
-            sim_map = sigmoid(
-                paddle.unsqueeze(
-                    paddle.sum(x_k * y_q, axis=1), 1))
+            sim_map = sigmoid(paddle.unsqueeze(paddle.sum(x_k * y_q, axis=1), 1))
 
-        y = _interpolate(y, size=[input_size[2], input_size[3]])
+        y = _interpolate(
+            y, size=[input_size[2], input_size[3]])
         x = (1 - sim_map) * x + sim_map * y
 
         return x
@@ -523,15 +490,15 @@ class DDFMv2(nn.Layer):
         self.conv_p = nn.Sequential(
             nn.BatchNorm2D(in_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                in_channels, out_channels, kernel_size=1),
-            nn.BatchNorm2D(out_channels), )
+            nn.Conv2D(in_channels, out_channels, kernel_size=1, bias_attr=False),
+            nn.BatchNorm2D(out_channels),
+        )
         self.conv_i = nn.Sequential(
             nn.BatchNorm2D(in_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                in_channels, out_channels, kernel_size=2),
-            nn.BatchNorm2D(out_channels), )
+            nn.Conv2D(in_channels, out_channels, kernel_size=1, bias_attr=False),
+            nn.BatchNorm2D(out_channels),
+        )
 
     def forward(self, p, i, d):
         edge_att = sigmoid(d)
@@ -549,12 +516,8 @@ class Bag(nn.Layer):
         self.conv = nn.Sequential(
             nn.BatchNorm2D(in_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                in_channels,
-                out_channels,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False), )
+            nn.Conv2D(in_channels, out_channels, kernel_size=3, padding=1, bias_attr=False),
+        )
 
     def forward(self, p, i, d):
         edge_att = sigmoid(d)
