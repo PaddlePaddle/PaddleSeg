@@ -42,11 +42,13 @@ class CrossEntropyLoss(nn.Layer):
                  ignore_index=255,
                  top_k_percent_pixels=1.0,
                  avg_non_ignore=True,
+                 use_post_process=True,
                  data_format='NCHW'):
         super(CrossEntropyLoss, self).__init__()
         self.ignore_index = ignore_index
         self.top_k_percent_pixels = top_k_percent_pixels
         self.avg_non_ignore = avg_non_ignore
+        self.use_post_process = use_post_process
         self.EPS = 1e-8
         self.data_format = data_format
         if weight is not None:
@@ -88,7 +90,9 @@ class CrossEntropyLoss(nn.Layer):
             reduction='none',
             weight=self.weight)
 
-        return self._post_process_loss(logit, label, semantic_weights, loss)
+        if self.use_post_process:
+            return self._post_process_loss(logit, label, semantic_weights, loss)
+        return loss
 
     def _post_process_loss(self, logit, label, semantic_weights, loss):
         """

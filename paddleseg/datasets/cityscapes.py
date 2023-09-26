@@ -88,30 +88,3 @@ class Cityscapes(Dataset):
             [img_path, label_path]
             for img_path, label_path in zip(img_files, label_files)
         ]
-
-
-@manager.DATASETS.add_component
-class EdgeCityscapes(Cityscapes):
-    def __getitem__(self, idx):
-        data = {}
-        data['trans_info'] = []
-        image_path, label_path = self.file_list[idx]
-        data['img'] = image_path
-        data['label'] = label_path
-        # If key in gt_fields, the data[key] have transforms synchronous.
-        data['gt_fields'] = []
-        if self.mode == 'val':
-            data = self.transforms(data)
-            data['label'] = data['label'][np.newaxis, :, :]
-
-        else:
-            data['gt_fields'].append('label')
-            data = self.transforms(data)
-            if self.edge:
-                edge = cv2.Canny(data['label'], 0.1, 0.2)
-                kernel = np.ones((4, 4), np.uint8)
-                edge = edge[6:-6, 6:-6]
-                edge = np.pad(edge, ((6, 6), (6, 6)), mode='constant')
-                edge = (cv2.dilate(edge, kernel, iterations=1) > 50) * 1.0
-                data['edge'] = edge
-        return data

@@ -237,20 +237,19 @@ class PIDNet(nn.Layer):
 
     def loss_computation(self, logits_list, losses, data):
         loss_list = []
-        label = data['label']
+        label = paddle.cast(data['label'], 'int32')
         for i in range(2):
             logits = logits_list[i]
             loss_i = losses['types'][i]
             coef_i = losses['coef'][i]
             loss_list.append(coef_i * loss_i(logits, label))
-        loss_list.append(losses['coef'][2] * losses['types'][2](logits_list[2],
-                                                                data['edge']))
+        s_loss = sum(loss_list)
+        bd_loss = losses['coef'][2] * losses['types'][2](logits_list[2], data['edge'])
         filler = paddle.ones_like(label) * losses['types'][0].ignore_index
-        bd_label = paddle.where(
-            F.sigmoid(logits_list[-1][:, 0, :, :]) > 0.8, label, filler)
-        loss_list.append(losses['coef'][3] * losses['types'][3](logits_list[-2],
-                                                                bd_label))
-        return loss_list
+        bd_label = paddle.where(F.sigmoid(logits_list[-1][:, 0, :, :]) > 0.8, label, filler)
+        sb_loss = losses['coef'][3] * losses['types'][3](logits_list[-2], bd_label)
+        loss = bd_loss + sb_loss + s_loss
+        return [loss.mean()]
 
     def init_weight(self):
         if self.pretrained is not None:

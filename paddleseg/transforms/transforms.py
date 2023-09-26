@@ -95,6 +95,17 @@ class Compose:
         data['img'] = np.transpose(data['img'], (2, 0, 1))
         return data
 
+@manager.TRANSFORMS.add_component
+class AddEdgeLabel:
+    def __call__(self, data):
+        edge = cv2.Canny(data['label'], 0.1, 0.2)
+        kernel = np.ones((4, 4), np.uint8)
+        edge = edge[6:-6, 6:-6]
+        edge = np.pad(edge, ((6,6),(6,6)), mode='constant')
+        edge = (cv2.dilate(edge, kernel, iterations=1)>50)*1.0
+        data['gt_fields'].append('edge')
+        data['edge'] = edge
+        return data
 
 @manager.TRANSFORMS.add_component
 class RandomHorizontalFlip:

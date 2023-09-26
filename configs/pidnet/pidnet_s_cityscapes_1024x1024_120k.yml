@@ -1,8 +1,7 @@
-
 _base_: '../_base_/cityscapes_1024x1024.yml'
 
-batch_size: 6
-iters: 66000
+batch_size: 3
+iters: 120000
 
 model:
   type: PIDNet
@@ -16,20 +15,24 @@ model:
   pretrained: PIDNet_S_ImageNet.pdparams
 
 train_dataset:
-  type: EdgeCityscapes
   transforms:
+    - type: AddEdgeLabel
     - type: ResizeStepScaling
       min_scale_factor: 0.5
       max_scale_factor: 2.0
-      scale_step_size: 0.25
+      scale_step_size: 0.15
     - type: RandomPaddingCrop
       crop_size: [1024, 1024]
     - type: RandomHorizontalFlip
-    - type: Normalize
-  edge: true
+    - type:  Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
 
 val_dataset:
-  type: EdgeCityscapes
+  transforms:
+    - type:  Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
 
 lr_scheduler:
   type: PolynomialDecay
@@ -44,12 +47,17 @@ optimizer:
 loss:
   types:
     - type: CrossEntropyLoss
+      weight: [ 0.8373, 0.918, 0.866, 1.0345, 1.0166, 0.9969, 0.9754, 1.0489, 0.8786, 1.0023, 0.9539, 0.9843, 1.1116, 0.9037, 1.0865, 1.0955, 1.0865, 1.1529, 1.0507 ]
+      use_post_process: false
     - type: OhemCrossEntropyLoss
       min_kept: 131072
       thresh: 0.9
+      weight: [ 0.8373, 0.918, 0.866, 1.0345, 1.0166, 0.9969, 0.9754, 1.0489, 0.8786, 1.0023, 0.9539, 0.9843, 1.1116, 0.9037, 1.0865, 1.0955, 1.0865, 1.1529, 1.0507 ]
     - type: BCELoss
+      weight: dynamic
       edge_label: True
     - type: OhemCrossEntropyLoss
       min_kept: 131072
       thresh: 0.9
+      weight: [ 0.8373, 0.918, 0.866, 1.0345, 1.0166, 0.9969, 0.9754, 1.0489, 0.8786, 1.0023, 0.9539, 0.9843, 1.1116, 0.9037, 1.0865, 1.0955, 1.0865, 1.1529, 1.0507 ]
   coef: [0.4, 1.0, 10.0, 1.0]
