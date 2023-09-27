@@ -40,7 +40,7 @@ python3 tools/convert_tools/convert_mask_to_roi.py --image_path dataset/MT_datas
 
 检测：
 ```bash
-python3 tools/det/eval.py -c configs/det/hrnet/faster_rcnn_hrnetv2p_w18_3x_defect.yml -o weights=./output/faster_rcnn_hrnetv2p_w18_3x_defect/model_final.pdparams
+python3 tools/det/train.py -c configs/det/hrnet/faster_rcnn_hrnetv2p_w18_3x_defect.yml -o weights=./output/faster_rcnn_hrnetv2p_w18_3x_defect/model_final.pdparams
 ```
 
 RoI分割：
