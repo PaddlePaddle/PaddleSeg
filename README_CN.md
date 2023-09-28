@@ -22,7 +22,7 @@
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
 
-* [2023-09-01] :fire::fire: 飞桨AI套件 [PaddleX](https://www.paddlepaddle.org.cn/paddle/paddleX) 发布全新版本，围绕飞桨精选模型提供了一站式、全流程、高效率的开发平台，希望助力AI技术快速落地、使人人成为AI Developer！欢迎大家使用和共建。
+* [2023-09-01] :fire::fire: 飞桨AI套件 [PaddleX](https://aistudio.baidu.com/intro/paddlex) 发布全新版本，围绕飞桨精选模型提供了一站式、全流程、高效率的开发平台，希望助力AI技术快速落地、使人人成为AI Developer！欢迎大家使用和共建。
 * [2023-04-11] PaddleSeg 2.8版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
   * 开源飞桨版本视觉大模型[Segment Anything Model](./contrib/SegmentAnything)，提供演示Demo，支持全图分割的功能、使用提示输入分割的功能。
   * 发布超轻量级语义分割SOTA模型[PP-MobileSeg](./configs/pp_mobileseg)：在ADE20K数据集上，PP-MobileSeg对比此前最优模型，精度提升1.5%、速度提升42.3%、参数量减少34.9%。
@@ -60,7 +60,7 @@
 
 ## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
-飞桨AI套件（PaddleX）—— 精选产业实用模型的一站式开发平台。包含如下特点：
+飞桨AI套件[PaddleX](https://aistudio.baidu.com/intro/paddlex)—— 精选产业实用模型的一站式开发平台。包含如下特点：
 
 - 【丰富的算法库】PaddleX提供36个精选模型，覆盖了10大AI任务场景，并附带模型推理benchmark数据。开发者可以根据业务需求轻松选择合适的模型，并进行开发和部署。
 - 【简便的开发方式】PaddleX支持无代码和低代码开发，只需四个简单步骤，即可完成全流程AI开发，包括数据处理、模型训练、验证和部署。
@@ -70,7 +70,7 @@
 
 作为一款高效的开发神器，PaddleX值得每一位开发者拥有。
 
-PaddleX官网地址：https://www.paddlepaddle.org.cn/paddle/paddleX
+PaddleX官网地址：https://aistudio.baidu.com/intro/paddlex
 
 微信扫描下面二维码添加运营同学，并回复【paddlex】，运营同学会邀请您加入官方交流群，获得更高效的问题答疑。
 
