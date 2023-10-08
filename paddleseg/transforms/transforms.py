@@ -31,7 +31,7 @@ class Compose:
     The shape of input data to all operations is [height, width, channels].
 
     Args:
-        transforms (list): A list contains data pre-processing or augmentation. Empty list means only reading images, no transformation.
+        transforms (list): A list contains data pre-processing or augmentation. An empty list means only reading images, no transformation.
         to_rgb (bool, optional): If converting image to RGB color space. Default: True.
         img_channels (int, optional): The image channels used to check the loaded image. Default: 3.
 
@@ -59,14 +59,18 @@ class Compose:
         """
         if 'img' not in data.keys():
             raise ValueError("`data` must include `img` key.")
-        if isinstance(data['img'], str):
-            data['img'] = cv2.imread(data['img'],
-                                     self.read_flag).astype('float32')
+        # data['img'] is numpy array in eg1800 and supervisely
         if data['img'] is None:
-            raise ValueError('Can\'t read The image file {}!'.format(data[
-                'img']))
+            raise TypeError(
+                "Expect `data[img]` to be str or np.ndarray, but got NoneType.")
+        elif isinstance(data['img'], str):
+            img = cv2.imread(data['img'], self.read_flag)
+            if img is None:
+                raise ValueError('Can\'t read The image file {}!'.format(data['img']))
+            data['img'] = img.astype('float32')
         if not isinstance(data['img'], np.ndarray):
-            raise TypeError("Image type is not numpy.")
+            raise TypeError(
+                "Expect image to be np.ndarray, but got {}".format(type(data['img'])))
 
         img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
         if img_channels != self.img_channels:

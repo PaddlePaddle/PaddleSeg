@@ -177,7 +177,7 @@ def calculate_stability_score(masks: paddle.Tensor,
     the predicted mask logits at high and low values.
     """
     # One mask is always contained inside the other.
-    # Save memory by preventing unnecesary cast to paddle.int64
+    # Save memory by preventing unnecessary cast to paddle.int64
     intersections = ((masks > (mask_threshold + threshold_offset)).cast('int16')
                      .sum(-1).cast('int32').sum(-1))
     unions = ((masks > (mask_threshold - threshold_offset)).cast('int16')
