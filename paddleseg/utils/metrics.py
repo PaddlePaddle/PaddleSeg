@@ -127,7 +127,7 @@ def mean_iou(intersect_area, pred_area, label_area):
     class_iou = []
     for i in range(len(intersect_area)):
         if union[i] == 0:
-            iou = 0
+            iou = 1
         else:
             iou = intersect_area[i] / union[i]
         class_iou.append(float(iou))
