@@ -442,6 +442,7 @@ Note that:
     * [Quantization](./docs/deployment/slim/quant/quant.md)
     * [Distillation](./docs/deployment/slim/distill/distill.md)
     * [Pruning](./docs/deployment/slim/prune/prune.md)
+    * [Auto Compression](./docs/deployment/slim/act/readme.md)
 
 * [FAQ](./docs/faq/faq/faq.md)
 

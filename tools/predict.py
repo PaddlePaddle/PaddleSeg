@@ -17,10 +17,10 @@ import os
 
 import paddle
 
-from paddleseg.cvlibs import manager, Config, SegBuilder
-from paddleseg.utils import get_sys_env, logger, get_image_list, utils
 from paddleseg.core import predict
+from paddleseg.cvlibs import Config, SegBuilder, manager
 from paddleseg.transforms import Compose
+from paddleseg.utils import get_image_list, get_sys_env, logger, utils
 
 
 def parse_args():
@@ -98,6 +98,13 @@ def parse_args():
         help='Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
         type=int)
 
+    # Set multi-label mode
+    parser.add_argument(
+        '--use_multilabel',
+        action='store_true',
+        default=False,
+        help='Whether to enable multilabel mode. Default: False.')
+
     return parser.parse_args()
 
 
@@ -105,6 +112,8 @@ def merge_test_config(cfg, args):
     test_config = cfg.test_config
     if 'aug_eval' in test_config:
         test_config.pop('aug_eval')
+    if 'auc_roc' in test_config:
+        test_config.pop('auc_roc')
     if args.aug_pred:
         test_config['aug_pred'] = args.aug_pred
         test_config['scales'] = args.scales
@@ -116,6 +125,8 @@ def merge_test_config(cfg, args):
         test_config['stride'] = args.stride
     if args.custom_color:
         test_config['custom_color'] = args.custom_color
+    if args.use_multilabel:
+        test_config['use_multilabel'] = args.use_multilabel
     return test_config
 
 

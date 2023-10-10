@@ -1,0 +1,44 @@
+_base_: '../_base_/uwmgi.yml'
+
+batch_size: 8
+iters: 80000
+
+train_dataset:
+  transforms:
+    - type: AddMultiLabelAuxiliaryCategory
+    - type: Resize
+      target_size: [256, 256]
+    - type: RandomHorizontalFlip
+    - type: RandomVerticalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
+  num_classes: 4
+
+val_dataset:
+  transforms:
+    - type: AddMultiLabelAuxiliaryCategory
+    - type: Resize
+      target_size: [256, 256]
+    - type: Normalize
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
+  num_classes: 4
+
+model:
+  type: DeepLabV3
+  num_classes: 4
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    multi_grid: [1, 2, 4]
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  backbone_indices: [3]
+  aspp_ratios: [1, 12, 24, 36]
+  aspp_out_channels: 256
+  align_corners: False
+  pretrained: null

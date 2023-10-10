@@ -155,7 +155,8 @@ class Dataset(paddle.io.Dataset):
         data['gt_fields'] = []
         if self.mode == 'val':
             data = self.transforms(data)
-            data['label'] = data['label'][np.newaxis, :, :]
+            if data['label'].ndim == 2:
+                data['label'] = data['label'][np.newaxis, :, :]
 
         else:
             data['gt_fields'].append('label')

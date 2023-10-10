@@ -19,7 +19,7 @@ import numpy as np
 from PIL import Image as PILImage
 
 
-def visualize(image, result, color_map, save_dir=None, weight=0.6):
+def visualize(image, result, color_map, save_dir=None, weight=0.6, use_multilabel=False):
     """
     Convert predict result to color image, and save added image.
 
@@ -29,6 +29,7 @@ def visualize(image, result, color_map, save_dir=None, weight=0.6):
         color_map (list): The color used to save the prediction results.
         save_dir (str): The directory for saving visual image. Default: None.
         weight (float): The image weight of visual image, and the result weight is (1 - weight). Default: 0.6
+        use_multilabel (bool, optional): Whether to enable multilabel mode. Default: False.
 
     Returns:
         vis_result (np.ndarray): If `save_dir` is None, return the visualized result.
@@ -36,14 +37,29 @@ def visualize(image, result, color_map, save_dir=None, weight=0.6):
 
     color_map = [color_map[i:i + 3] for i in range(0, len(color_map), 3)]
     color_map = np.array(color_map).astype("uint8")
-    # Use OpenCV LUT for color mapping
-    c1 = cv2.LUT(result, color_map[:, 0])
-    c2 = cv2.LUT(result, color_map[:, 1])
-    c3 = cv2.LUT(result, color_map[:, 2])
-    pseudo_img = np.dstack((c3, c2, c1))
 
     im = cv2.imread(image)
-    vis_result = cv2.addWeighted(im, weight, pseudo_img, 1 - weight, 0)
+    if not use_multilabel:
+        # Use OpenCV LUT for color mapping
+        c1 = cv2.LUT(result, color_map[:, 0])
+        c2 = cv2.LUT(result, color_map[:, 1])
+        c3 = cv2.LUT(result, color_map[:, 2])
+        pseudo_img = np.dstack((c3, c2, c1))
+
+        vis_result = cv2.addWeighted(im, weight, pseudo_img, 1 - weight, 0)
+    else:
+        vis_result = im.copy()
+        for i in range(result.shape[0]):
+            mask = result[i]
+            c1 = np.where(mask, color_map[i, 0], vis_result[..., 0])
+            c2 = np.where(mask, color_map[i, 1], vis_result[..., 1])
+            c3 = np.where(mask, color_map[i, 2], vis_result[..., 2])
+            pseudo_img = np.dstack((c3, c2, c1)).astype('uint8')
+
+            contour, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            vis_result = cv2.addWeighted(vis_result, weight, pseudo_img, 1 - weight, 0)
+            contour_color = (int(color_map[i, 0]), int(color_map[i, 1]), int(color_map[i, 2]))
+            vis_result = cv2.drawContours(vis_result, contour, -1, contour_color, 1)
 
     if save_dir is not None:
         if not os.path.exists(save_dir):
@@ -55,7 +71,7 @@ def visualize(image, result, color_map, save_dir=None, weight=0.6):
         return vis_result
 
 
-def get_pseudo_color_map(pred, color_map=None):
+def get_pseudo_color_map(pred, color_map=None, use_multilabel=False):
     """
     Get the pseudo color image.
 
@@ -63,10 +79,16 @@ def get_pseudo_color_map(pred, color_map=None):
         pred (numpy.ndarray): the origin predicted image.
         color_map (list, optional): the palette color map. Default: None,
             use paddleseg's default color map.
+        use_multilabel (bool, optional): Whether to enable multilabel mode. Default: False.
 
     Returns:
         (numpy.ndarray): the pseduo image.
     """
+    if use_multilabel:
+        bg_pred = (pred.sum(axis=0, keepdims=True) == 0).astype('int32')
+        pred = np.concatenate([bg_pred, pred], axis=0)
+        gray_idx = np.arange(pred.shape[0]).astype(np.uint8)
+        pred = (pred * gray_idx[:, None, None]).sum(axis=0)
     pred_mask = PILImage.fromarray(pred.astype(np.uint8), mode='P')
     if color_map is None:
         color_map = get_color_map_list(256)
