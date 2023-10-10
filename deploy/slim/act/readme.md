@@ -331,3 +331,21 @@ Int8推理结果
 ### 7. NotImplementedError：delete weight dequant op pass is not supported for per channel quantization
 
 **A**：参考https://github.com/PaddlePaddle/Paddle/issues/56619，并参考[TensorRT安装说明](../../../docs/deployment/installtrt.md)安装TensorRT。
+
+### 8. CPU推理精度严重下降
+
+**A**：CPU推理精度下降通常是由于推理过程中量化的op设置问题导致的，请确保推理过程中量化的op和训练过程中量化的op一致，才能保证推理精度和训练精度对齐。以本文的`PP-Liteseg`为例进行说明：
+
+量化训练配置文件是`configs/ppliteseg/ppliteseg_qat.yaml`，其中量化的op是`conv2d`和`depthwise_conv2d`，因此在推理过程中也需要量化这两个op，可以通过使用如下函数进行设置：
+```python
+# deploy/slim/act/test_seg.py:64
+pred_cfg.enable_mkldnn_int8({
+                    "conv2d", "depthwise_conv2d"
+                })
+```
+而且最好只量化这两个op，如果增加其他op的量化，可能会导致精度下降。以下是一个简单的实验结果：
+
+|        | 原模型fp32推理 | 原模型fp32+mkldnn加速 | 量化模型int8推理（量化conv2d,depthwise_conv2d） | 量化模型int8推理（量化conv2d,depthwise_conv2d,elementwise_mul） | 量化模型int8推理（量化conv2d,depthwise_conv2d,elementwise_mul,pool2d） |
+|:------:|:---------:|:----------------:|:-------------------------------------:|:-----------------------------------------------------:|:------------------------------------------------------------:|
+|  mIoU  |  0.7704   |      0.7704      |                0.7658                 |                        0.7657                         |                            0.7372                            |
+| 耗时（ms） |  1216.8   |      1191.3      |                 434.5                 |                         439.6                         |                            505.8                             |
