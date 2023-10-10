@@ -61,9 +61,7 @@ def load_predictor(args):
             if args.precision == "int8":
                 # Please ensure that the quantized ops during inference are the same as
                 # the ops set in the qat training configuration file
-                pred_cfg.enable_mkldnn_int8({
-                    "conv2d", "depthwise_conv2d", "pool2d", "elementwise_mul"
-                })
+                pred_cfg.enable_mkldnn_int8({"conv2d", "depthwise_conv2d"})
 
     if args.use_trt:
         # To collect the dynamic shapes of inputs for TensorRT engine
