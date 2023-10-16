@@ -64,7 +64,6 @@ def predict_preprocessed_data_return_seg_and_softmax(
             mixed_precision=mixed_precision)
     return argmax_pred, softmax_pred
 
-
 def predict_next_stage(model,
                        plans,
                        dataset,
@@ -94,20 +93,22 @@ def predict_next_stage(model,
     predictor = DynamicPredictor(model)
 
     for pat in dataset.dataset_val.keys():
-        print(pat, 'predict next stage...')
         data_file = dataset.dataset_val[pat]['data_file']
-        data_preprocessed = np.load(data_file)['data'][:-1]
         data_file_nofolder = data_file.split("/")[-1]
         data_file_nextstage = os.path.join(stage_to_be_predicted_folder,
                                            data_file_nofolder)
-        data_nextstage = np.load(data_file_nextstage)['data']
-        target_shp = data_nextstage.shape[1:]
         output_file = os.path.join(
             output_folder,
             data_file_nextstage.split("/")[-1][:-4] + "_segFromPrevStage.npz")
+
         if os.path.exists(output_file):
             print("{} already exists, skip.".format(output_file))
             continue
+
+        print(pat, 'predict next stage...')
+        data_preprocessed = np.load(data_file)['data'][:-1]
+        data_nextstage = np.load(data_file_nextstage)['data']
+        target_shp = data_nextstage.shape[1:]
 
         _, predicted_probabilities = predict_preprocessed_data_return_seg_and_softmax(
             predictor,
