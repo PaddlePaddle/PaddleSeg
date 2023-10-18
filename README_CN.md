@@ -22,11 +22,12 @@
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
 
-* [2023-04-11] :fire:  PaddleSeg 2.8版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
-  * 开源飞桨版本视觉大模型[Segment Anything Model](./contrib/SegmentAnything)，提供演示Demo，支持全图分割的功能、使用提示输入分割的功能。
-  * 发布超轻量级语义分割SOTA模型[PP-MobileSeg](./configs/pp_mobileseg)：在ADE20K数据集上，PP-MobileSeg对比此前最优模型，精度提升1.5%、速度提升42.3%、参数量减少34.9%。
-  * 发布工业质检全流程解决方案[QualityInspector v0.5](./contrib/QualityInspector)：提供统一可配置的算法Pipeline，集成检测和分割模型库，支持3种无监督异常检测算法，支持工业级指标评测、分析、调优等功能。
-  * 发布通用的全景分割解决方案[PanopticSeg v0.5](./contrib/PanopticSeg)：提供全景分割的全流程开发功能，集成2个前沿高精模型，具备灵活的二次开发能力。
+* [2023-10-29] :fire:  PaddleSeg 2.9版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
+  * 增加对多标签分割[Multi-label segmentation](./configs/multilabelseg)，提供数据转换代码及结果可视化，实现对一系列语义分割模型的多标签分割支持。
+  * 发布轻量视觉大模型[MobileSAM](./configs/SegmentAnything)，实现更快速的SAM推理。
+  * 支持量化蒸馏训练压缩功能[Quant Aware Distillation Training Compression](./deploy/slim/act)，对PP-LiteSeg、PP-MobileSeg、OCRNet、SegFormer-B0增加量化训练压缩功能，提升推理速度。
+
+* [2022-04-11] PaddleSeg 2.8版本发布视觉大模型[Segment Anything Model](./contrib/SegmentAnything)、轻量级语义分割SOTA模型[PP-MobileSeg](./configs/pp_mobileseg)、工业质检全流程解决方案[QualityInspector v0.5](./contrib/QualityInspector)、通用的全景分割解决方案[PanopticSeg v0.5](./contrib/PanopticSeg)。
 * [2022-11-30] PaddleSeg 2.7版本发布实时人像抠图模型[PP-MattingV2](./Matting/)、3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)、轻量级语义分割模型[RTFormer](./configs/rtformer/)。
 * [2022-07-20] PaddleSeg 2.6版本发布实时人像分割SOTA方案[PP-HumanSegV2](./contrib/PP-HumanSeg)、高性能智能标注工具[EISeg v1.0](./EISeg)正式版、ImageNet分割伪标签数据预训练方法PSSL，开源PP-MattingV1代码和预训练模型。
 * [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-MattingV1，3D医疗影像开发套件MedicalSegV1，交互式分割工具EISeg v0.5。
