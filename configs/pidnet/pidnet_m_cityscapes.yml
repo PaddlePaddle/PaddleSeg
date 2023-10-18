@@ -8,11 +8,11 @@ model:
   m: 2
   n: 3
   num_classes: 19
-  planes: 32
+  planes: 64
   ppm_planes: 96
   head_planes: 128
   augment: True
-  pretrained: PIDNet_S_ImageNet.pdparams
+  pretrained: PIDNet_M_ImageNet.pdparams
 
 train_dataset:
   transforms:
@@ -21,20 +21,20 @@ train_dataset:
       min_scale_factor: 0.5
       max_scale_factor: 2.0
       scale_step_size: 0.1
-      resize_by_long: true
+      resize_by_long: True
       base_size: 2048
     - type: RandomPaddingCrop
       im_padding_value: 0.0
       crop_size: [1024, 1024]
       gt_fields_padding_value: 0.0
     - type: RandomHorizontalFlip
-    - type:  Normalize
+    - type: Normalize
       mean: [0.485, 0.456, 0.406]
       std: [0.229, 0.224, 0.225]
 
 val_dataset:
   transforms:
-    - type:  Normalize
+    - type: Normalize
       mean: [0.485, 0.456, 0.406]
       std: [0.229, 0.224, 0.225]
 
@@ -45,7 +45,7 @@ lr_scheduler:
   power: 0.9
 
 optimizer:
-  type: SGD
+  type: Momentum
   momentum: 0.9
   weight_decay: 0.0005
 

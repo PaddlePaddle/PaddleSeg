@@ -206,13 +206,13 @@ class PIDNet(nn.Layer):
             x_extra_p = self.seghead_p(temp_p)
             x_extra_d = self.seghead_d(temp_d)
             return [
-                    F.interpolate(x_extra_p, mode='bilinear', size=[h, w], align_corners=False),
-                    F.interpolate(x_, mode='bilinear', size=[h, w], align_corners=False),
-                    F.interpolate(x_extra_d, mode='bilinear', size=[h, w], align_corners=False),
+                    F.interpolate(x_extra_p, mode='bilinear', size=[h, w], align_corners=True),
+                    F.interpolate(x_, mode='bilinear', size=[h, w], align_corners=True),
+                    F.interpolate(x_extra_d, mode='bilinear', size=[h, w], align_corners=True),
                     ]
         else:
             return [
-                    F.interpolate(x_, mode='bilinear', size=[h, w], align_corners=False)
+                    F.interpolate(x_, mode='bilinear', size=[h, w], align_corners=True)
                     ]
 
     def loss_computation(self, logits_list, losses, data):
@@ -225,9 +225,11 @@ class PIDNet(nn.Layer):
             loss_list.append(coef_i * loss_i(logits, label))
         s_loss = sum(loss_list)
         bd_loss = losses['coef'][2] * losses['types'][2](logits_list[2], data['edge'])
+
         filler = paddle.ones_like(label) * losses['types'][0].ignore_index
         bd_label = paddle.where(F.sigmoid(logits_list[-1][:, 0, :, :]) > 0.8, label, filler)
         sb_loss = losses['coef'][3] * losses['types'][3](logits_list[-2], bd_label)
+
         loss =  s_loss + bd_loss + sb_loss
         return [loss.mean()]
 
@@ -293,7 +295,7 @@ class SegmentHead(nn.Layer):
         self.bn2 = nn.BatchNorm2D(interplanes)
         self.relu = nn.ReLU()
         self.conv2 = nn.Conv2D(
-            interplanes, outplanes, kernel_size=1, padding=0)
+            interplanes, outplanes, kernel_size=1)
         self.scale_factor = scale_factor
 
     def forward(self, x):
