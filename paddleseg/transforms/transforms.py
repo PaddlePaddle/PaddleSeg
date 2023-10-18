@@ -84,8 +84,13 @@ class Compose:
         if self.to_rgb and img_channels == 3:
             data["img"] = cv2.cvtColor(data["img"], cv2.COLOR_BGR2RGB)
 
-        if "label" in data.keys() and isinstance(data["label"], str):
-            data["label"] = np.asarray(Image.open(data["label"]))
+        if 'label' in data.keys() and isinstance(data['label'], str):
+            data['label'] = np.asarray(Image.open(data['label']))
+            img_h, img_w = data['img'].shape[:2]
+            if data['label'].shape[0] != img_h:
+                data['label'] = data['label'].reshape([-1, img_h, img_w]).transpose([1, 2, 0])
+            elif data['label'].shape[1] != img_w:
+                data['label'] = data['label'].reshape([img_h, -1, img_w]).transpose([0, 2, 1])
 
         # the `trans_info` will save the process of image shape, and will be used in evaluation and prediction.
         if "trans_info" not in data.keys():
@@ -94,9 +99,11 @@ class Compose:
         for op in self.transforms:
             data = op(data)
 
-        if data["img"].ndim == 2:
-            data["img"] = data["img"][..., np.newaxis]
-        data["img"] = np.transpose(data["img"], (2, 0, 1))
+        if data['img'].ndim == 2:
+            data['img'] = data['img'][..., np.newaxis]
+        data['img'] = np.transpose(data['img'], (2, 0, 1))
+        if 'label' in data and data['label'].ndim == 3:
+            data['label'] = np.transpose(data['label'], (2, 0, 1))
         return data
 
 
@@ -1326,5 +1333,19 @@ class GenerateInstanceTargets:
                 )
 
             data["instances"] = instances
+
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class AddMultiLabelAuxiliaryCategory:
+    """
+    Add a complementary set of unions labeled with corresponding mask for other categories as an auxiliary category.
+    """
+
+    def __call__(self, data):
+        if 'label' in data:
+            aux_label = (data['label'].sum(axis=-1, keepdims=True) == 0).astype('uint8')
+            data['label'] = np.concatenate([aux_label, data['label']], axis=-1)
 
         return data

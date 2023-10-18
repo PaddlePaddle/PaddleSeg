@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,60 +13,72 @@
 # limitations under the License.
 
 import argparse
-import os
-
-import paddle
 
 from paddleseg.cvlibs import manager, Config, SegBuilder
-from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, utils
+from paddleseg.core import analyse
+from paddleseg.transforms import Compose
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model evaluation')
+    parser = argparse.ArgumentParser(description='Model prediction')
 
     # Common params
     parser.add_argument("--config", help="The path of config file.", type=str)
     parser.add_argument(
         '--model_path',
-        help='The path of trained weights to be loaded for evaluation.',
+        help='The path of trained weights for prediction.',
         type=str)
     parser.add_argument(
-        '--num_workers',
-        help='Number of workers for data loader. Bigger num_workers can speed up data processing.',
-        type=int,
-        default=0)
+        '--image_path',
+        help='The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
+        type=str)
+    parser.add_argument(
+        '--dataset_path',
+        help='The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
+        type=str)
+
+    parser.add_argument(
+        '--save_dir',
+        help='The directory for saving the predicted results.',
+        type=str,
+        default='./output/result')
     parser.add_argument(
         '--device',
-        help='Set the device place for evaluating model.',
+        help='Set the device place for predicting model.',
         default='gpu',
         choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
         type=str)
+    parser.add_argument(
+        '--device_id',
+        help='Set the device id for predicting model.',
+        default=0,
+        type=int)
 
     # Data augment params
     parser.add_argument(
-        '--aug_eval',
-        help='Whether to use mulit-scales and flip augment for evaluation.',
+        '--aug_pred',
+        help='Whether to use mulit-scales and flip augment for prediction',
         action='store_true')
     parser.add_argument(
         '--scales',
         nargs='+',
-        help='Scales for data augment.',
+        help='Scales for augment, e.g., `--scales 0.75 1.0 1.25`.',
         type=float,
         default=1.0)
     parser.add_argument(
         '--flip_horizontal',
-        help='Whether to use flip horizontally augment.',
+        help='Whether to use flip horizontally augment',
         action='store_true')
     parser.add_argument(
         '--flip_vertical',
-        help='Whether to use flip vertically augment.',
+        help='Whether to use flip vertically augment',
         action='store_true')
 
     # Sliding window evaluation params
     parser.add_argument(
         '--is_slide',
-        help='Whether to evaluate images in sliding window method.',
+        help='Whether to predict images in sliding window method',
         action='store_true')
     parser.add_argument(
         '--crop_size',
@@ -81,36 +93,28 @@ def parse_args():
         'For example, `--stride 512 512`',
         type=int)
 
-    # Other params
+    # Custom color map
     parser.add_argument(
-        '--data_format',
-        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
-        type=str,
-        default='NCHW')
-    parser.add_argument(
-        '--auc_roc',
-        help='Whether to use auc_roc metric.',
-        type=bool,
-        default=False)
+        '--custom_color',
+        nargs='+',
+        help='Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
+        type=int)
+
     parser.add_argument(
         '--opts',
         help='Update the key-value pairs of all options.',
         default=None,
         nargs='+')
-    # Set multi-label mode
-    parser.add_argument(
-        '--use_multilabel',
-        action='store_true',
-        default=False,
-        help='Whether to enable multilabel mode. Default: False.')
 
     return parser.parse_args()
 
 
 def merge_test_config(cfg, args):
     test_config = cfg.test_config
-    if args.aug_eval:
-        test_config['aug_eval'] = args.aug_eval
+    if 'aug_eval' in test_config:
+        test_config.pop('aug_eval')
+    if args.aug_pred:
+        test_config['aug_pred'] = args.aug_pred
         test_config['scales'] = args.scales
         test_config['flip_horizontal'] = args.flip_horizontal
         test_config['flip_vertical'] = args.flip_vertical
@@ -118,8 +122,8 @@ def merge_test_config(cfg, args):
         test_config['is_slide'] = args.is_slide
         test_config['crop_size'] = args.crop_size
         test_config['stride'] = args.stride
-    if args.use_multilabel:
-        test_config['use_multilabel'] = args.use_multilabel
+    if args.custom_color:
+        test_config['custom_color'] = args.custom_color
     return test_config
 
 
@@ -134,25 +138,20 @@ def main(args):
     utils.show_cfg_info(cfg)
     utils.set_device(args.device)
 
-    # TODO refactor
-    # Only support for the DeepLabv3+ model
-    if args.data_format == 'NHWC':
-        if cfg.dic['model']['type'] != 'DeepLabV3P':
-            raise ValueError(
-                'The "NHWC" data format only support the DeepLabV3P model!')
-        cfg.dic['model']['data_format'] = args.data_format
-        cfg.dic['model']['backbone']['data_format'] = args.data_format
-        loss_len = len(cfg.dic['loss']['types'])
-        for i in range(loss_len):
-            cfg.dic['loss']['types'][i]['data_format'] = args.data_format
-
     model = builder.model
-    if args.model_path:
-        utils.load_entire_model(model, args.model_path)
-        logger.info('Loaded trained weights successfully.')
+    transforms = Compose(builder.val_transforms)
     val_dataset = builder.val_dataset
 
-    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
+    logger.info('The number of samples to analyse: {}'.format(
+        len(val_dataset.file_list)))
+
+    analyse(
+        model,
+        model_path=args.model_path,
+        transforms=transforms,
+        val_dataset=val_dataset,
+        save_dir=args.save_dir,
+        **test_config)
 
 
 if __name__ == '__main__':
