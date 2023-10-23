@@ -41,6 +41,39 @@ def _transforms(dataset):
     return transforms
 
 
+def find_images_with_bounding_size(eval_dataset: paddle.io.Dataset):
+    max_length_index = -1
+    max_width_index = -1
+    min_length_index = -1
+    min_width_index = -1
+
+    max_length = float('-inf')
+    max_width = float('-inf')
+    min_length = float('inf')
+    min_width = float('inf')
+    for idx, data in enumerate(eval_dataset):
+        image = np.array(data['img'])
+        h, w = image.shape[-2:]
+        if h > max_length:
+            max_length = h
+            max_length_index = idx
+        if w > max_width:
+            max_width = w
+            max_width_index = idx
+        if h < min_length:
+            min_length = h
+            min_length_index = idx
+        if w < min_width:
+            min_width = w
+            min_width_index = idx
+    print(f"Found max image length: {max_length}, index: {max_length_index}")
+    print(f"Found max image width: {max_width}, index: {max_width_index}")
+    print(f"Found min image length: {min_length}, index: {min_length_index}")
+    print(f"Found min image width: {min_width}, index: {min_width_index}")
+    return paddle.io.Subset(eval_dataset, [max_width_index, max_length_index,
+                                           min_width_index, min_length_index])
+
+
 def load_predictor(args):
     """
     load predictor func
@@ -109,7 +142,7 @@ def predict_image(args):
     data = transform({'img': args.image_file})
     data = data['img'][np.newaxis, :]
 
-    # Step2: Prepare prdictor
+    # Step2: Prepare predictor
     predictor, rerun_flag = load_predictor(args)
 
     # Step3: Inference
@@ -167,6 +200,15 @@ def eval(args):
 
     eval_dataset = builder.val_dataset
 
+    predictor, rerun_flag = load_predictor(args)
+
+    if rerun_flag and args.dataset == "ade":
+        print(
+            "***** Try to find the images with the largest and smallest length and width respectively in the ADE20K "
+            "dataset for collecting dynamic shape. *****"
+        )
+        eval_dataset = find_images_with_bounding_size(eval_dataset)
+
     batch_sampler = paddle.io.BatchSampler(
         eval_dataset, batch_size=1, shuffle=False, drop_last=False)
     loader = paddle.io.DataLoader(
@@ -174,8 +216,6 @@ def eval(args):
         batch_sampler=batch_sampler,
         num_workers=0,
         return_list=True)
-
-    predictor, rerun_flag = load_predictor(args)
 
     intersect_area_all = 0
     pred_area_all = 0
@@ -207,11 +247,19 @@ def eval(args):
         time_max = max(time_max, timed)
         predict_time += timed
         if rerun_flag:
-            print(
-                "***** Collect dynamic shape done, Please rerun the program to get correct results. *****"
-            )
-            return
-
+            if args.dataset == "ade":
+                if batch_id == sample_nums - 1:
+                    print(
+                        "***** Collect dynamic shape done, Please rerun the program to get correct results. *****"
+                    )
+                    return
+                else:
+                    continue
+            else:
+                print(
+                    "***** Collect dynamic shape done, Please rerun the program to get correct results. *****"
+                )
+                return
         logit = reverse_transform(
             paddle.to_tensor(results), data['trans_info'], mode="bilinear")
         pred = paddle.to_tensor(logit)
