@@ -261,8 +261,8 @@ def eval(args):
                 )
                 return
         logit = reverse_transform(
-            paddle.to_tensor(results), data['trans_info'], mode="bilinear")
-        pred = paddle.to_tensor(logit)
+            paddle.to_tensor(results).unsqueeze(0), data['trans_info'], mode="bilinear")
+        pred = paddle.to_tensor(logit).squeeze(0)
         if len(
                 pred.shape
         ) == 4:  # for humanseg model whose prediction is distribution but not class id

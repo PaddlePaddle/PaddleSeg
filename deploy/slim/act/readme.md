@@ -17,22 +17,21 @@
 
 ## 2.Benchmark
 
-| 模型 | 策略  | Total IoU (%) | CPU耗时(ms)<br>thread=10<br>mkldnn=on| Nvidia GPU耗时(ms)<br>TRT=on| 配置文件 | Inference模型  |
+| 模型 | 策略  | Total IoU (%) | CPU耗时(ms)<br>thread=12<br>mkldnn=on | Nvidia GPU耗时(ms)<br>TRT=on| 配置文件 | Inference模型  |
 |:-----:|:-----:|:----------:|:---------:| :------:|:------:|:------:|
-| OCRNet_HRNetW48 |Baseline |82.15| **4332.2** | **154.9** | - | [mode](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_export.zip)|
-| OCRNet_HRNetW48 | 量化蒸馏训练 |82.03| **3728.7** | **59.8**|[config](configs/ocrnet/ocrnet_hrnetw48_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
-| SegFormer-B0*  |Baseline | 75.27| 285.4| 34.3 |-| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_b0_export.zip) |
-| SegFormer-B0*  |量化蒸馏训练 | 75.22 | 284.1| 35.7|[config](configs/segformer/segformer_b0_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_qat.zip) |
-| PP-LiteSeg-Tiny  |Baseline | 77.04 | 640.72 | **11.9** | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
-| PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.14 | 450.19 | **7.5** | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
-| PP-MobileSeg-Base  |Baseline |41.55| **311.1** | **17.8** | - | [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade_export.zip) |
-| PP-MobileSeg-Base  |量化蒸馏训练 |39.08| **303.6** | **16.2**| [config](configs/ppmobileseg/ppmobileseg_qat.yml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade.zip)|
+| OCRNet_HRNetW48 |Baseline |82.16| **5788.7** | **153.0** | - | [mode](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_export.zip)|
+| OCRNet_HRNetW48 | 量化蒸馏训练 |82.02| **5291.4** | **60.0** |[config](configs/ocrnet/ocrnet_hrnetw48_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ocrnet/ocrnet_qat.zip) |
+| SegFormer-B0*  |Baseline | 75.27| **3234.6** | **72.6** |-| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_b0_export.zip) |
+| SegFormer-B0*  |量化蒸馏训练 | 75.26 | **2906.2** | **52.4** |[config](configs/segformer/segformer_b0_qat.yaml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/segformer/segformer_qat.zip) |
+| PP-LiteSeg-Tiny  |Baseline | 77.04 | 1038.4 | **11.7** | - |[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/liteseg_tiny_scale1.0.zip)|
+| PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.16 | 1163.8 | **7.2** | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
+| PP-MobileSeg-Base  |Baseline |40.69| **547.7** | **22.3** | - | [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade_export.zip) |
+| PP-MobileSeg-Base  |量化蒸馏训练 |38.18| **439.8** | **21.1** | [config](configs/ppmobileseg/ppmobileseg_qat.yml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade.zip)|
 
-* SegFormer-B0 is tested on CPU under deleted gpu_cpu_map_matmul_v2_to_mul_pass because it will raise an error.
 * PP-MobileSeg-Base is tested on ADE20K dataset, while others are tested on cityscapes.
 
 - CPU测试环境：
-  - Intel(R) Xeon(R) Gold 6271C CPU @ 2.60GHz
+  - Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
   - cpu thread: 10
 
 
@@ -40,7 +39,7 @@
 
   - 硬件：NVIDIA Tesla V100 单卡
   - 软件：CUDA 11.2, cudnn 8.1.0, TensorRT-8.0.3.4
-  - 测试配置：batch_size: 4
+  - 测试配置：batch_size: 1
 
 - 测速要求：
   - 批量测试取平均：单张图片上测速时间会有浮动，因此测速需要跑10遍warmup，再跑100次取平均。现有test_seg的批量测试已经集成该功能。
@@ -53,21 +52,22 @@
 
 #### 3.1 准备环境
 
-- PaddlePaddle == 2.5 （可从[Paddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)下载安装）
-- PaddleSlim == 2.5
+- PaddlePaddle == develop （可从[Paddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)下载安装）
+- PaddleSlim == develop
 - PaddleSeg == develop
 
 安装paddlepaddle：
 ```shell
 # CPU
-python -m pip install paddlepaddle==2.5.1 -i https://pypi.tuna.tsinghua.edu.cn/simple
-# GPU 以Ubuntu、CUDA 10.2为例
-python -m pip install paddlepaddle-gpu==2.5.1.post102 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+python -m pip install paddlepaddle==0.0.0 -f https://www.paddlepaddle.org.cn/whl/linux/cpu-mkl/develop.html
+# GPU 以Ubuntu、CUDA 11.2为例
+python -m pip install paddlepaddle-gpu==0.0.0.post112 -f https://www.paddlepaddle.org.cn/whl/linux/gpu/develop.html
 ```
 
-安装paddleslim 2.5：
+安装paddleslim develop：
 ```shell
-pip install paddleslim@git+https://gitee.com/paddlepaddle/PaddleSlim.git@release/2.5
+git clone https://github.com/PaddlePaddle/PaddleSlim.git & cd PaddleSlim
+python setup.py install
 ```
 
 安装paddleseg develop和对应包：

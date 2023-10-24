@@ -96,9 +96,11 @@ def eval_function(exe, compiled_test_program, test_feed_names, test_fetch_list):
         paddle.disable_static()
         logit = logits[
             0]  # logit shape is 3, except  data['trans_info'] needs to be empty
+        for i in range(len(data['trans_info'][::-1][0][1])):
+            data['trans_info'][::-1][0][1][i] = paddle.to_tensor(data['trans_info'][::-1][0][1][i])
         logit = reverse_transform(
-            paddle.to_tensor(logit), data['trans_info'], mode='bilinear')
-        pred = paddle.to_tensor(logit)
+            paddle.to_tensor(logit).unsqueeze(0), data['trans_info'], mode='bilinear')
+        pred = paddle.to_tensor(logit).squeeze(0)
         if len(
                 pred.shape
         ) == 4:  # for humanseg model whose prediction is distribution but not class id
@@ -158,6 +160,7 @@ def main(args):
         args.config_path), f"config path does't exist: {args.config_path}"
 
     data_cfg = Config(args.config_path)
+    print(data_cfg.val_dataset_cfg.get('type'))
     builder = SegBuilder(data_cfg)
 
     train_dataset = builder.train_dataset
