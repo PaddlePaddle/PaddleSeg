@@ -160,7 +160,6 @@ def main(args):
         args.config_path), f"config path does't exist: {args.config_path}"
 
     data_cfg = Config(args.config_path)
-    print(data_cfg.val_dataset_cfg.get('type'))
     builder = SegBuilder(data_cfg)
 
     train_dataset = builder.train_dataset

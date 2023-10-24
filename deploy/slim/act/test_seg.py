@@ -202,7 +202,7 @@ def eval(args):
 
     predictor, rerun_flag = load_predictor(args)
 
-    if rerun_flag and args.dataset == "ade":
+    if rerun_flag and args.use_multi_img_for_dynamic_shape_collect:
         print(
             "***** Try to find the images with the largest and smallest length and width respectively in the ADE20K "
             "dataset for collecting dynamic shape. *****"
@@ -247,7 +247,7 @@ def eval(args):
         time_max = max(time_max, timed)
         predict_time += timed
         if rerun_flag:
-            if args.dataset == "ade":
+            if args.use_multi_img_for_dynamic_shape_collect:
                 if batch_id == sample_nums - 1:
                     print(
                         "***** Collect dynamic shape done, Please rerun the program to get correct results. *****"
@@ -362,6 +362,12 @@ if __name__ == "__main__":
         help="Whether use mkldnn or not.")
     parser.add_argument(
         "--cpu_threads", type=int, default=1, help="Num of cpu threads.")
+    parser.add_argument(
+        "--use_multi_img_for_dynamic_shape_collect", 
+        type=bool, 
+        default=False, 
+        help="Whether it is necessary to use multiple images to collect shape infomation,\
+        When the image sizes in the data set are different, it needs to be set to True.")
     args = parser.parse_args()
     if args.image_file:
         predict_image(args)

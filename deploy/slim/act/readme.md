@@ -27,6 +27,7 @@
 | PP-LiteSeg-Tiny  |量化蒸馏训练 | 77.16 | 1163.8 | **7.2** | [config](./configs/ppliteseg/ppliteseg_qat.yaml)|[model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppliteseg/save_quant_model_qat.zip)|
 | PP-MobileSeg-Base  |Baseline |40.69| **547.7** | **22.3** | - | [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade_export.zip) |
 | PP-MobileSeg-Base  |量化蒸馏训练 |38.18| **439.8** | **21.1** | [config](configs/ppmobileseg/ppmobileseg_qat.yml)| [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade.zip)|
+| PP-MobileSeg-Base  |量化蒸馏训练（关闭IR优化） |39.92| **1296.3** | **44.3** | - | [model](https://paddleseg.bj.bcebos.com/deploy/slim_act/ppmobileseg/ppmobileseg_base_ade.zip)|
 
 * PP-MobileSeg-Base is tested on ADE20K dataset, while others are tested on cityscapes.
 
