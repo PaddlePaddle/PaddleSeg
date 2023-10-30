@@ -1252,53 +1252,19 @@ class AddEdgeLabel:
     y_k_size = 6
     x_k_size = 6
 
-    def __init__(self, edge_size=4, method='pidnet', ignore_index=255):
+    def __init__(self, edge_size=4, ignore_index=255):
         self.edge_size = edge_size
         self.ignore_index = ignore_index
-        self.func = self.pidnet_method if method == 'pidnet' else self.mmseg_method
 
     def __call__(self, data):
-        data['gt_fields'].append('edge')
-        data['edge'] = self.func(data)
-        return data
-
-    def pidnet_method(self, data):
         edge = cv2.Canny(data['label'], 0.1, 0.2)
         kernel = np.ones((self.edge_size, self.edge_size), np.uint8)
         edge = np.pad(
-            edge[self.y_k_size: -self.y_k_size, self.x_k_size: -self.x_k_size],
+            edge[self.y_k_size:-self.y_k_size, self.x_k_size:-self.x_k_size],
             ((self.y_k_size, self.y_k_size), (self.x_k_size, self.x_k_size)),
             mode='constant')
         edge = (cv2.dilate(edge, kernel, iterations=1) > 50) * 1.0
-        return edge
 
-    def mmseg_method(self, data):
-        seg_map = data['label']
-        h, w = seg_map.shape[-2:]
-        edge = np.zeros((h, w), dtype=np.uint8)
-
-        # down
-        edge_down = edge[1:h, :]
-        edge_down[(seg_map[1:h, :] != seg_map[:h - 1, :])
-                  & (seg_map[1:h, :] != self.ignore_index) &
-                  (seg_map[:h - 1, :] != self.ignore_index)] = 1
-        # left
-        edge_left = edge[:, :w - 1]
-        edge_left[(seg_map[:, :w - 1] != seg_map[:, 1:w])
-                  & (seg_map[:, :w - 1] != self.ignore_index) &
-                  (seg_map[:, 1:w] != self.ignore_index)] = 1
-        # up_left
-        edge_upleft = edge[:h - 1, :w - 1]
-        edge_upleft[(seg_map[:h - 1, :w - 1] != seg_map[1:h, 1:w])
-                    & (seg_map[:h - 1, :w - 1] != self.ignore_index) &
-                    (seg_map[1:h, 1:w] != self.ignore_index)] = 1
-        # up_right
-        edge_upright = edge[:h - 1, 1:w]
-        edge_upright[(seg_map[:h - 1, 1:w] != seg_map[1:h, :w - 1])
-                     & (seg_map[:h - 1, 1:w] != self.ignore_index) &
-                     (seg_map[1:h, :w - 1] != self.ignore_index)] = 1
-
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT,
-                                           (self.edge_size, self.edge_size))
-        edge = cv2.dilate(edge, kernel)
-        return edge
+        data['gt_fields'].append('edge')
+        data['edge'] = edge
+        return data
