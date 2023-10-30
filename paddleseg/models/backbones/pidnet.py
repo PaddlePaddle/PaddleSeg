@@ -25,7 +25,9 @@ from paddleseg.models.layers import ConvBNAct, ConvBNAct
 
 
 __all__ = [
-    "PIDNet_Small"
+    "PIDNet_Small",
+    "PIDNet_Medium",
+    "PIDNet_Large",
 ]
 
 
@@ -188,6 +190,7 @@ class DAPPM(nn.Layer):
                         branch_channels,
                         branch_channels,
                         kernel_size=3,
+                        padding=1,
                         bias_attr=False))
             )
 
@@ -369,7 +372,8 @@ class Bag(nn.Layer):
                 in_channels,
                 out_channels,
                 kernel_size,
-                padding=padding))
+                padding=padding,
+                bias_attr=False))
 
     def forward(self, x_p: Tensor, x_i: Tensor, x_d: Tensor) -> Tensor:
         """Forward function.
@@ -730,6 +734,30 @@ def PIDNet_Small(**kwargs):
         ppm_channels=96,
         num_stem_blocks=2,
         num_branch_blocks=3,
+        align_corners=False,
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def PIDNet_Medium(**kwargs):
+    model = PIDNet(
+        channels=64,
+        ppm_channels=96,
+        num_stem_blocks=2,
+        num_branch_blocks=3,
+        align_corners=False,
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def PIDNet_Large(**kwargs):
+    model = PIDNet(
+        channels=64,
+        ppm_channels=112,
+        num_stem_blocks=3,
+        num_branch_blocks=4,
         align_corners=False,
         **kwargs)
     return model
