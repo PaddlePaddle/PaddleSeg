@@ -57,6 +57,11 @@ class OhemCrossEntropyLoss(nn.Layer):
                 value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
                 (N, D1, D2,..., Dk), k >= 1.
         """
+        if self.weight is not None and logit.shape[1] != len(self.weight):
+            raise ValueError(
+                'The number of weights = {} must be the same as the number of classes = {}.'
+                .format(len(self.weight), logit.shape[1]))
+
         if len(label.shape) != len(logit.shape):
             label = paddle.unsqueeze(label, 1)
 
