@@ -27,11 +27,6 @@ train_dataset:
     - type: RandomPaddingCrop
       crop_size: [1024, 1024]
     - type: RandomHorizontalFlip
-    # - type: RandomDistort
-    #   brightness_range: 0.125
-    #   contrast_range: 0.5
-    #   saturation_range: 0.5
-    #   hue_range: 18
     - type: Normalize
       mean: *mean
       std: *std
