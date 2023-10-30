@@ -34,7 +34,11 @@ class OhemCrossEntropyLoss(nn.Layer):
             Default ``None``.
     """
 
-    def __init__(self, thresh=0.7, min_kept=10000, ignore_index=255, weight=None):
+    def __init__(self,
+                 thresh=0.7,
+                 min_kept=10000,
+                 ignore_index=255,
+                 weight=None):
         super(OhemCrossEntropyLoss, self).__init__()
         self.thresh = thresh
         self.min_kept = min_kept
@@ -105,8 +109,12 @@ class OhemCrossEntropyLoss(nn.Layer):
         label = label.reshape((n, 1, h, w))
         valid_mask = valid_mask.reshape((n, 1, h, w)).astype('float32')
         loss = F.cross_entropy(
-            logit, label, ignore_index=self.ignore_index, axis=1,
-            weight=self.weight, reduction='none')
+            logit,
+            label,
+            weight=self.weight,
+            ignore_index=self.ignore_index,
+            reduction='none',
+            axis=1)
         loss = loss * valid_mask
         avg_loss = paddle.mean(loss) / (paddle.mean(valid_mask) + self.EPS)
 

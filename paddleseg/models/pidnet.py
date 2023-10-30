@@ -140,10 +140,7 @@ class PIDHead(nn.Layer):
         num_classes (int): Number of classes.
     """
 
-    def __init__(self,
-                 in_channels: int,
-                 channels: int,
-                 num_classes: int):
+    def __init__(self, in_channels: int, channels: int, num_classes: int):
         super().__init__()
         self.i_head = BasePIDHead(in_channels, channels)
         self.p_head = BasePIDHead(in_channels // 2, channels)
@@ -155,21 +152,20 @@ class PIDHead(nn.Layer):
     def init_weights(self):
         for layer in self.sublayers():
             if isinstance(layer, nn.Conv2D):
-                fan_out = layer.weight.shape[0] * layer.weight.shape[2] * layer.weight.shape[3]
+                fan_out = layer.weight.shape[0] * \
+                          layer.weight.shape[2] * layer.weight.shape[3]
                 std = math.sqrt(2) / math.sqrt(fan_out)
                 Normal(0, std)(layer.weight)
                 if layer.bias is not None:
-                    fan_in = layer.weight.shape[1] * layer.weight.shape[2] * layer.weight.shape[3]
+                    fan_in = layer.weight.shape[1] * \
+                             layer.weight.shape[2] * layer.weight.shape[3]
                     bound = 1 / math.sqrt(fan_in)
                     Uniform(-bound, bound)(layer.bias)
             elif isinstance(layer, nn.BatchNorm2D):
                 Constant(1)(layer.weight)
                 Constant(0)(layer.bias)
 
-    def forward(
-            self,
-            inputs: Union[Tensor,
-                          Tuple[Tensor]]) -> Union[Tensor, Tuple[Tensor]]:
+    def forward(self, inputs: Union[Tensor, Tuple[Tensor]]) -> Union[Tensor, Tuple[Tensor]]:
         """Forward function.
         Args:
             inputs (Tensor | tuple[Tensor]): Input tensor or tuple of
@@ -191,4 +187,4 @@ class PIDHead(nn.Layer):
             return x_p, x_i, x_d
         else:
             x_i = self.i_head(inputs, self.conv_seg)
-            return x_i, 
+            return x_i,
