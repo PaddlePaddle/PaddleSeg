@@ -21,14 +21,91 @@ from paddle.nn.initializer import Constant, Normal, Uniform
 from paddle import Tensor
 
 from paddleseg.cvlibs import manager
-from paddleseg.models.layers import ConvBNAct
-
-from ..ddrnet import BasicBlock, Bottleneck
+from paddleseg.models.layers import ConvBNAct, ConvBNAct
 
 
 __all__ = [
     "PIDNet_Small"
 ]
+
+
+class BasicBlock(nn.Layer):
+    expansion = 1
+
+    def __init__(self,
+                 inplanes,
+                 planes,
+                 stride=1,
+                 downsample=None,
+                 no_relu=False):
+        super().__init__()
+        self.conv_bn_relu = ConvBNAct(
+            inplanes,
+            planes,
+            kernel_size=3,
+            stride=stride,
+            padding=1,
+            act_type='relu',
+            bias_attr=False)
+        self.relu = nn.ReLU()
+        self.conv_bn = ConvBNAct(
+            planes, planes, kernel_size=3, stride=1, padding=1, bias_attr=False)
+        self.downsample = downsample
+        self.stride = stride
+        self.no_relu = no_relu
+
+    def forward(self, x):
+        residual = x
+        out = self.conv_bn_relu(x)
+        out = self.conv_bn(out)
+        if self.downsample is not None:
+            residual = self.downsample(x)
+        out += residual
+        if self.no_relu:
+            return out
+        else:
+            return self.relu(out)
+
+
+class Bottleneck(nn.Layer):
+    expansion = 2
+
+    def __init__(self,
+                 inplanes,
+                 planes,
+                 stride=1,
+                 downsample=None,
+                 no_relu=True):
+        super().__init__()
+        self.conv_bn_relu1 = ConvBNAct(
+            inplanes, planes, kernel_size=1, act_type='relu', bias_attr=False)
+        self.conv_bn_relu2 = ConvBNAct(
+            planes,
+            planes,
+            kernel_size=3,
+            stride=stride,
+            padding=1,
+            act_type='relu',
+            bias_attr=False)
+        self.conv_bn = ConvBNAct(
+            planes, planes * self.expansion, kernel_size=1, bias_attr=False)
+        self.relu = nn.ReLU()
+        self.downsample = downsample
+        self.stride = stride
+        self.no_relu = no_relu
+
+    def forward(self, x):
+        residual = x
+        out = self.conv_bn_relu1(x)
+        out = self.conv_bn_relu2(out)
+        out = self.conv_bn(out)
+        if self.downsample is not None:
+            residual = self.downsample(x)
+        out += residual
+        if self.no_relu:
+            return out
+        else:
+            return self.relu(out)
 
 
 class DAPPM(nn.Layer):
