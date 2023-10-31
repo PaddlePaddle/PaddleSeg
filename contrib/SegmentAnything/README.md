@@ -13,7 +13,7 @@
 We implemente the segment anything with the PaddlePaddle framework. **Segment Anything Model (SAM)** is a new task, model, and dataset for image segmentation. It built a largest segmentation [dataset](https://segment-anything.com/dataset/index.html) to date (by far), with over 1 billion masks on 11M licensed and privacy respecting images. Further, SAM can produce high quality object masks from different types of prompts including points, boxes, masks and text. SAM has impressive zero-shot performance on a variety of tasks, even often competitive with or even superior to prior fully supervised results. However, the SAM model based on text prompt is not released at the moment. Therefore, we use a combination of **SAM** and **CLIP** to calculate the similarity between the output masks and text prompt. In this way, you can use **text prompt** to segment anything. In addition, we also implement SAM that can generate masks for all objects in whole image.
 
 
-We provide the pretrained model parameters of PaddlePaddle format, including [vit_b](https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_b/model.pdparams), [vit_l](https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_l/model.pdparams) and [vit_h](https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_h/model.pdparams). For text prompt, we also provide the [CLIP_ViT_B](https://bj.bcebos.com/paddleseg/dygraph/clip/vit_b_32_pretrain/clip_vit_b_32.pdparams) model parameters of PaddlePaddle format.
+We provide the pretrained model parameters of PaddlePaddle format, including [vit_b](https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_b/model.pdparams), [vit_l](https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_l/model.pdparams), [vit_h](https://bj.bcebos.com/paddleseg/dygraph/paddlesegAnything/vit_h/model.pdparams) and [vit_t](https://paddleseg.bj.bcebos.com/dygraph/paddlesegAnything/vit_t/model.pdparam) for [MobileSAM](https://github.com/ChaoningZhang/MobileSAM). For text prompt, we also provide the [CLIP_ViT_B](https://bj.bcebos.com/paddleseg/dygraph/clip/vit_b_32_pretrain/clip_vit_b_32.pdparams) model parameters of PaddlePaddle format.
 
 ## <img src="https://user-images.githubusercontent.com/34859558/190044217-8f6befc2-7f20-473d-b356-148e06265205.png" width="25"/> Performance
 
@@ -59,10 +59,10 @@ Based on this service, You can experience the ability to **segment the whole ima
 
 1. Run the following script:
     ```bash
-    python scripts/text_to_sam_clip.py --model-type [vit_l/vit_b/vit_h] # default is vit_h
+    python scripts/text_to_sam_clip.py --model-type [vit_l/vit_b/vit_h/vit_t] # default is vit_h
     ```
     Note:
-    *  There are three SAM model options for you, `vit_b`, `vit_l` and `vit_h`, represent vit_base, vit_large and vit_huge. Large model is more accurate but slower. You can choose the suitable model size based on your device.
+    *  There are three SAM model options for you, `vit_b`, `vit_l`, `vit_h`and `vit_t`, represent vit_base, vit_large, vit_huge and vit_mobilesam. Large model is more accurate but slower. You can choose the suitable model size based on your device.
     * We support `CLIP Vit-B` model for extracting text and image features.
     * `SAM vit_h` needs 16G memory and costs around 10s to infer an image on V100.
 
@@ -76,7 +76,7 @@ Based on this service, You can experience the ability to **segment the whole ima
 
 ### 3. Segment the object with point or box prompts
 
-You can run the following commands to produce masks from different types of prompts including points and boxes, as follow:
+You can run the following commands to produce masks from different types of prompts including points and boxes, as follow. The picture result will be saved to the `output/` directory, with the image name the same as the input.
 
 
 1. Box prompt
@@ -90,6 +90,11 @@ python scripts/promt_predict.py --input_path xxx.png --box_prompt 1050 370 1500 
 python scripts/promt_predict.py --input_path xxx.png --point_prompt 1200 450 --model-type [vit_l/vit_b/vit_h] # default is vit_h
 ```
 
+### 4. Segment the object only with whole image
+
+```bash
+python scripts/amg_paddle.py --model-type [vit_l/vit_b/vit_h/vit_t] --model-type [vit_l/vit_b/vit_h] # default is vit_h
+```
 
 ## Reference
 
