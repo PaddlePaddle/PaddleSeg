@@ -161,7 +161,7 @@ class PIDHead(nn.Layer):
                              layer.weight.shape[2] * layer.weight.shape[3]
                     bound = 1 / math.sqrt(fan_in)
                     Uniform(-bound, bound)(layer.bias)
-            elif isinstance(layer, nn.BatchNorm2D):
+            elif isinstance(layer, (nn.BatchNorm2D, nn.SyncBatchNorm)):
                 Constant(1)(layer.weight)
                 Constant(0)(layer.bias)
 

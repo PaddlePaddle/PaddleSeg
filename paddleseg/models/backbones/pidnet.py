@@ -21,7 +21,7 @@ from paddle.nn.initializer import Constant, Normal, Uniform
 from paddle import Tensor
 
 from paddleseg.cvlibs import manager
-from paddleseg.models.layers import ConvBNAct, ConvBNAct
+from paddleseg.models.layers import ConvBNAct
 
 
 __all__ = [
@@ -548,14 +548,16 @@ class PIDNet(nn.Layer):
         """
         for layer in self.sublayers():
             if isinstance(layer, nn.Conv2D):
-                fan_out = layer.weight.shape[0] * layer.weight.shape[2] * layer.weight.shape[3]
+                fan_out = layer.weight.shape[0] * \
+                          layer.weight.shape[2] * layer.weight.shape[3]
                 std = math.sqrt(2) / math.sqrt(fan_out)
                 Normal(0, std)(layer.weight)
                 if layer.bias is not None:
-                    fan_in = layer.weight.shape[1] * layer.weight.shape[2] * layer.weight.shape[3]
+                    fan_in = layer.weight.shape[1] * \
+                             layer.weight.shape[2] * layer.weight.shape[3]
                     bound = 1 / math.sqrt(fan_in)
                     Uniform(-bound, bound)(layer.bias)
-            elif isinstance(layer, nn.BatchNorm2D):
+            elif isinstance(layer, (nn.BatchNorm2D, nn.SyncBatchNorm)):
                 Constant(1)(layer.weight)
                 Constant(0)(layer.bias)
 
@@ -579,16 +581,14 @@ class PIDNet(nn.Layer):
                 kernel_size=3,
                 stride=2,
                 padding=1,
-                act_type='relu',
-                bias_attr=False),
+                act_type='relu'),
             ConvBNAct(
                 channels,
                 channels,
                 kernel_size=3,
                 stride=2,
                 padding=1,
-                act_type='relu',
-                bias_attr=False),
+                act_type='relu'),
         ]
 
         layers.append(
