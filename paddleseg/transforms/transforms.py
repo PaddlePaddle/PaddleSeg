@@ -664,11 +664,10 @@ class RandomPaddingCrop:
                 cnt = cnt[labels != self.ignore_index]
                 if len(cnt) > 1 and np.max(cnt) / np.sum(
                         cnt) < self.category_max_ratio:
-                    data['img'] = seg_temp
                     break
                 crop_coordinates = self._get_crop_coordinates(img_shape)
-        else:
-            data['img'] = functional.crop(data['img'], crop_coordinates)
+
+        data['img'] = functional.crop(data['img'], crop_coordinates)
         for key in data.get("gt_fields", []):
             data[key] = functional.crop(data[key], crop_coordinates)
 
