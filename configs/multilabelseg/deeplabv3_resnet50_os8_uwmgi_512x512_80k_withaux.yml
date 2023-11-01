@@ -1,0 +1,60 @@
+_base_: '../_base_/uwmgi.yml'
+
+batch_size: 32
+iters: 80000
+
+train_dataset:
+  transforms:
+    - type: AddMultiLabelAuxiliaryCategory
+    - type: Resize
+      target_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomVerticalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
+  num_classes: 4
+
+val_dataset:
+  transforms:
+    - type: AddMultiLabelAuxiliaryCategory
+    - type: Resize
+      target_size: [512, 512]
+    - type: Normalize
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
+  num_classes: 4
+
+optimizer:
+  _inherited_: False
+  type: AdamW
+  weight_decay: 0.01
+  custom_cfg:
+  - name: pos_embed
+    weight_decay_mult: 0.0
+  - name: head
+    lr_multi: 10.0
+  - name: bn
+    weight_decay_mult: 0.0
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.0006
+  end_lr: 0
+  power: 1.0
+  warmup_iters: 1500
+  warmup_start_lr: 1.0e-6
+
+model:
+  type: PPMobileSeg
+  num_classes: 4
+  backbone:
+    type: MobileSeg_Tiny
+    inj_type: AAM
+    out_feat_chs: [32, 64, 128]
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/pp_mobileseg_tiny_pretrain/model.pdparams
+  upsample: intepolate  # During exportation, you need to change it to vim for using VIM
