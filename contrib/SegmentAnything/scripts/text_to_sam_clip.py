@@ -95,6 +95,8 @@ def image_text_match(cropped_objects, text_query):
     print("encode_text done!")
     image_features /= image_features.norm(axis=-1, keepdim=True)
     text_features /= text_features.norm(axis=-1, keepdim=True)
+    if len(text_features.shape) == 3:
+        text_features = text_features.squeeze(0)
     probs = 100. * image_features @text_features.T
     return F.softmax(probs[:, 0], axis=0)
 

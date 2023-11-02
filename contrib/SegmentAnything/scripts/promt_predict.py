@@ -120,6 +120,7 @@ def main(args):
         os.makedirs(output_path)
     path_output = os.path.join(output_path, basename)
     plt.savefig(path_output)
+    print('The output has been saved to {}'.format(path_output))
 
 
 if __name__ == "__main__":
