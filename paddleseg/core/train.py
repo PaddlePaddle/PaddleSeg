@@ -309,7 +309,7 @@ def train(model,
                 update_ema_model(ema_model, model, step=iter)
 
             if (iter % save_interval == 0 or
-                    iter == iters) and (val_dataset is not None) and early_stop:
+                    iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
 
                 if test_config is None:
@@ -334,8 +334,7 @@ def train(model,
 
                 model.train()
 
-            if (iter % save_interval == 0 or
-                    iter == iters) and local_rank == 0 and early_stop:
+            if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
@@ -357,6 +356,7 @@ def train(model,
 
                 if val_dataset is not None:
                     if mean_iou > best_mean_iou:
+                        stop_count = 0
                         best_mean_iou = mean_iou
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
@@ -365,7 +365,7 @@ def train(model,
                             os.path.join(best_model_dir, 'model.pdparams'))
                     elif mean_iou < best_mean_iou:
                         stop_count += 1
-                    if stop_count >= early_stop:
+                    if early_stop > 0 and stop_count >= early_stop:
                         logger.info(
                             'Early stopping at iter {}. The best mean IoU is {:.4f}.'
                             .format(iter, best_mean_iou))
