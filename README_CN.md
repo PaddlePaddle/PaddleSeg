@@ -21,7 +21,7 @@
 </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
-
+* [2023-09-01] :fire::fire: 飞桨AI套件 [PaddleX](https://aistudio.baidu.com/intro/paddlex) 发布全新版本，围绕飞桨精选模型提供了一站式、全流程、高效率的开发平台，希望助力AI技术快速落地、使人人成为AI Developer！欢迎大家使用和共建。
 * [2023-04-11] :fire:  PaddleSeg 2.8版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
   * 开源飞桨版本视觉大模型[Segment Anything Model](./contrib/SegmentAnything)，提供演示Demo，支持全图分割的功能、使用提示输入分割的功能。
   * 发布超轻量级语义分割SOTA模型[PP-MobileSeg](./configs/pp_mobileseg)：在ADE20K数据集上，PP-MobileSeg对比此前最优模型，精度提升1.5%、速度提升42.3%、参数量减少34.9%。
