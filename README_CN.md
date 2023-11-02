@@ -60,7 +60,7 @@
 
 ## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
-飞桨AI套件[PaddleX](https://aistudio.baidu.com/intro/paddlex)—— 精选产业实用模型的一站式开发平台。包含如下特点：
+飞桨AI套件[PaddleX](https://aistudio.baidu.com/intro/paddlex) —— 精选产业实用模型的一站式开发平台，具有如下特色：
 
 - 【丰富的算法库】PaddleX提供36个精选模型，覆盖了10大AI任务场景，并附带模型推理benchmark数据。开发者可以根据业务需求轻松选择合适的模型，并进行开发和部署。
 - 【简便的开发方式】PaddleX支持无代码和低代码开发，只需四个简单步骤，即可完成全流程AI开发，包括数据处理、模型训练、验证和部署。
@@ -68,15 +68,12 @@
 - 【多样的硬件支持】PaddleX不仅能够在AI Studio云端使用，还支持在Windows本地环境使用，并正在积极扩展支持Linux版本、昆仑芯版本、昇腾版本和寒武纪版本。
 - 【共赢的合作机会】除了提供便捷的AI应用开发工具，PaddleX还为企业提供商业收益机会，共同探索更多商业空间，实现共同成长和共赢。
 
-作为一款高效的开发神器，PaddleX值得每一位开发者拥有。
+作为一款高效的开发神器，PaddleX值得每一位开发者拥有（[官网](https://aistudio.baidu.com/intro/paddlex)）。
 
-PaddleX官网地址：https://aistudio.baidu.com/intro/paddlex
-
-微信扫描下面二维码添加运营同学，并回复【paddlex】，运营同学会邀请您加入官方交流群，获得更高效的问题答疑。
+欢迎微信扫描下方二维码或者点击[链接](https://aistudio.baidu.com/community/channel/610)，进入AI Studio【PaddleX社区频道】获得更高效的技术答疑～
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/dygraph/doc/joinus_paddlex.jpg"  width = "150" height = "150",caption='' />
-<p>飞桨AI套件【PaddleX】技术交流群二维码</p>
+<img src="https://user-images.githubusercontent.com/52520497/279848523-ee302fc5-71f8-440f-87f0-ca04e3e9b985.png"  width = "150" height = "150",caption='' />
 </div>
 
 ## <img src="./docs/images/model.png" width="20"/> 产品矩阵
