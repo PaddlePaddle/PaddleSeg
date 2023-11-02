@@ -65,6 +65,7 @@ def train(model,
           save_dir='output',
           iters=10000,
           batch_size=2,
+          early_stop=0,
           resume_model=None,
           save_interval=1000,
           log_iters=10,
@@ -117,6 +118,7 @@ def train(model,
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
     start_iter = 0
+    stop_count = 0
     if resume_model is not None:
         start_iter = resume(model, optimizer, resume_model)
 
@@ -307,7 +309,7 @@ def train(model,
                 update_ema_model(ema_model, model, step=iter)
 
             if (iter % save_interval == 0 or
-                    iter == iters) and (val_dataset is not None):
+                    iter == iters) and (val_dataset is not None) and early_stop:
                 num_workers = 1 if num_workers > 0 else 0
 
                 if test_config is None:
@@ -332,7 +334,8 @@ def train(model,
 
                 model.train()
 
-            if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
+            if (iter % save_interval == 0 or
+                    iter == iters) and local_rank == 0 and early_stop:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
@@ -360,9 +363,16 @@ def train(model,
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
-                    logger.info(
-                        '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
-                        .format(best_mean_iou, best_model_iter))
+                    elif mean_iou < best_mean_iou:
+                        stop_count += 1
+                    if stop_count >= early_stop:
+                        logger.info(
+                            'Early stopping at iter {}. The best mean IoU is {:.4f}.'
+                            .format(iter, best_mean_iou))
+                    else:
+                        logger.info(
+                            '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
+                            .format(best_mean_iou, best_model_iter))
                     if use_ema:
                         if ema_mean_iou > best_ema_mean_iou:
                             best_ema_mean_iou = ema_mean_iou

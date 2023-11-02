@@ -82,6 +82,11 @@ def parse_args():
         help='Maximum number of checkpoints to save.',
         type=int,
         default=5)
+    parser.add_argument(
+        '--early_stop',
+        help='Whether to early stop when loss is not decreasing and max numbers.',
+        type=int,
+        default=0)
 
     # Other params
     parser.add_argument(
@@ -187,6 +192,7 @@ def main(args):
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
+        early_stop=args.early_stop,
         resume_model=args.resume_model,
         save_interval=args.save_interval,
         log_iters=args.log_iters,
