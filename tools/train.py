@@ -83,9 +83,9 @@ def parse_args():
         type=int,
         default=5)
     parser.add_argument(
-        '--early_stop',
-        help='Whether to early stop when loss is not decreasing and max numbers.',
-        type=int,
+        '--early_stop_intervals',
+        help='Early Stop at args number of save intervals.',
+        type=None,
         default=0)
 
     # Other params
@@ -192,7 +192,7 @@ def main(args):
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
-        early_stop=args.early_stop,
+        early_stop=args.args.early_stop_intervals,
         resume_model=args.resume_model,
         save_interval=args.save_interval,
         log_iters=args.log_iters,

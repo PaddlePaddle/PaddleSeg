@@ -65,7 +65,7 @@ def train(model,
           save_dir='output',
           iters=10000,
           batch_size=2,
-          early_stop=0,
+          early_stop_interval=None,
           resume_model=None,
           save_interval=1000,
           log_iters=10,
@@ -119,6 +119,7 @@ def train(model,
 
     start_iter = 0
     stop_count = 0
+    stop_status = False
     if resume_model is not None:
         start_iter = resume(model, optimizer, resume_model)
 
@@ -173,7 +174,7 @@ def train(model,
     save_models = deque()
     batch_start = time.time()
     iter = start_iter
-    while iter < iters:
+    while iter < iters and not stop_status:
         if iter == start_iter and use_ema:
             init_ema_params(ema_model, model)
         for data in loader:
@@ -365,7 +366,9 @@ def train(model,
                             os.path.join(best_model_dir, 'model.pdparams'))
                     elif mean_iou < best_mean_iou:
                         stop_count += 1
-                    if early_stop > 0 and stop_count >= early_stop:
+
+                    if early_stop_interval is not None and stop_count >= early_stop_interval:
+                        stop_status = True
                         logger.info(
                             'Early stopping at iter {}. The best mean IoU is {:.4f}.'
                             .format(iter, best_mean_iou))
@@ -373,6 +376,7 @@ def train(model,
                         logger.info(
                             '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                             .format(best_mean_iou, best_model_iter))
+
                     if use_ema:
                         if ema_mean_iou > best_ema_mean_iou:
                             best_ema_mean_iou = ema_mean_iou
@@ -395,6 +399,10 @@ def train(model,
                                                   ema_mean_iou, iter)
                             log_writer.add_scalar('Evaluate/Ema_Acc', ema_acc,
                                                   iter)
+
+                    if stop_status:
+                        break
+
             batch_start = time.time()
 
     # Calculate flops.
