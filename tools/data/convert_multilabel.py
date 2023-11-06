@@ -48,16 +48,22 @@ def uwmgi_get_image(fp):
 
 
 def uwmgi_get_image_id(image_filepath):
-    image_dirs = image_filepath.replace('/', '\\').split('\\')
-    image_dirs = [image_dirs[2]] + image_dirs[4].split('_')[:2]
+    try:
+        image_dirs = image_filepath.split('/')
+        image_dirs = [image_dirs[1]] + image_dirs[3].split('_')[:2]
+    except:
+        image_dirs = image_filepath.replace('/', '\\').split('\\')
+        image_dirs = [image_dirs[2]] + image_dirs[4].split('_')[:2]
     image_id = '_'.join(image_dirs)
     return image_id
 
 
 def uwmgi_rle_decode(mask_rle, image_shape):
     s = mask_rle.split()
-    starts, lengths = [np.asarray(x, dtype=int)
-                       for x in (s[0:][::2], s[1:][::2])]
+    starts, lengths = [
+        np.asarray(
+            x, dtype=int) for x in (s[0:][::2], s[1:][::2])
+    ]
     starts -= 1
     ends = starts + lengths
     img = np.zeros(image_shape[0] * image_shape[1], dtype='uint8')
@@ -67,7 +73,7 @@ def uwmgi_rle_decode(mask_rle, image_shape):
 
 
 def uwmgi_to_multilabel_format(args):
-    with zipfile.ZipFile(args.input, 'r') as zip_fp:
+    with zipfile.ZipFile(args.zip_input, 'r') as zip_fp:
         total_df = pd.read_csv(zip_fp.open('train.csv', 'r'))
 
         total_image_namelist = []
@@ -75,14 +81,14 @@ def uwmgi_to_multilabel_format(args):
             if os.path.splitext(name)[1] == '.png':
                 total_image_namelist.append(name)
         train_image_namelist = random.sample(
-            total_image_namelist, int(
-                len(total_image_namelist) * args.train_proportion))
-        val_image_namelist = np.setdiff1d(
-            total_image_namelist, train_image_namelist)
+            total_image_namelist,
+            int(len(total_image_namelist) * args.train_proportion))
+        val_image_namelist = np.setdiff1d(total_image_namelist,
+                                          train_image_namelist)
 
         pbar = tqdm(total=len(total_image_namelist))
         for image_namelist, split in zip(
-                [train_image_namelist, val_image_namelist], ['train', 'val']):
+            [train_image_namelist, val_image_namelist], ['train', 'val']):
             txt_lines = []
             for image_name in image_namelist:
                 with zip_fp.open(image_name, 'r') as fp:
@@ -102,13 +108,15 @@ def uwmgi_to_multilabel_format(args):
                             else:  # ann['class'] == 'stomach'
                                 mask[:, width * 2:] = uwmgi_rle_decode(
                                     ann['segmentation'], (height, width))
-                    cv2.imwrite(os.path.join(
-                        args.output, 'images', split, image_id + '.jpg'), image)
-                    cv2.imwrite(os.path.join(
-                        args.output, 'annotations', split, image_id + '.png'), mask)
+                    cv2.imwrite(
+                        os.path.join(args.output, 'images', split,
+                                     image_id + '.jpg'), image)
+                    cv2.imwrite(
+                        os.path.join(args.output, 'annotations', split,
+                                     image_id + '.png'), mask)
                     txt_lines.append(
-                        os.path.join('images', split, image_id + '.jpg')
-                        + ' ' + os.path.join('annotations', split, image_id + '.png'))
+                        os.path.join('images', split, image_id + '.jpg') + ' ' +
+                        os.path.join('annotations', split, image_id + '.png'))
                     pbar.update()
 
             with open(os.path.join(args.output, split + '.txt'), 'w') as fp:
@@ -132,8 +140,8 @@ def coco_to_multilabel_format(args):
     val_img_id_list = np.setdiff1d(total_img_id_list, train_img_id_list)
 
     pbar = tqdm(total=len(total_img_id_list))
-    for img_id_list, split in zip(
-            [train_img_id_list, val_img_id_list], ['train', 'val']):
+    for img_id_list, split in zip([train_img_id_list, val_img_id_list],
+                                  ['train', 'val']):
         txt_lines = []
         for img_id in img_id_list:
             img_info = coco.loadImgs([img_id])[0]
@@ -149,7 +157,8 @@ def coco_to_multilabel_format(args):
 
             if img_w < 0 or img_h < 0:
                 print('Illegal width: {} or height: {} in annotation, '
-                      'and im_id: {} will be ignored'.format(img_w, img_h, img_id))
+                      'and im_id: {} will be ignored'.format(img_w, img_h,
+                                                             img_id))
                 continue
 
             ann_ids = coco.getAnnIds(imgIds=[img_id])
@@ -159,21 +168,22 @@ def coco_to_multilabel_format(args):
             for ann in anns:
                 cat_id = cat_id_map[ann['category_id']]
                 one_cls_mask = coco.annToMask(ann)
-                mask[:, cat_id * img_w: (cat_id + 1) * img_w] = np.where(
+                mask[:, cat_id * img_w:(cat_id + 1) * img_w] = np.where(
                     one_cls_mask, one_cls_mask,
-                    mask[:, cat_id * img_w: (cat_id + 1) * img_w])
+                    mask[:, cat_id * img_w:(cat_id + 1) * img_w])
 
             image = cv2.imread(img_filepath, cv2.IMREAD_COLOR)
-            cv2.imwrite(os.path.join(
-                args.output, 'images', split,
-                os.path.splitext(img_filename)[0] + '.jpg'), image)
-            cv2.imwrite(os.path.join(
-                args.output, 'annotations', split,
-                os.path.splitext(img_filename)[0] + '.png'), mask)
-            txt_lines.append(os.path.join(
-                'images', split, os.path.splitext(img_filename)[0] + '.jpg')
-                             + ' ' + os.path.join(
-                'annotations', split, os.path.splitext(img_filename)[0] + '.png'))
+            cv2.imwrite(
+                os.path.join(args.output, 'images', split,
+                             os.path.splitext(img_filename)[0] + '.jpg'), image)
+            cv2.imwrite(
+                os.path.join(args.output, 'annotations', split,
+                             os.path.splitext(img_filename)[0] + '.png'), mask)
+            txt_lines.append(
+                os.path.join('images', split,
+                             os.path.splitext(img_filename)[0] + '.jpg') + ' ' +
+                os.path.join('annotations', split,
+                             os.path.splitext(img_filename)[0] + '.png'))
             pbar.update()
 
         with open(os.path.join(args.output, split + '.txt'), 'w') as fp:
@@ -199,9 +209,7 @@ def main():
         help="the directory of original dataset annotation file",
         type=str)
     parser.add_argument(
-        "--output",
-        help="the directory to save converted dataset",
-        type=str)
+        "--output", help="the directory to save converted dataset", type=str)
     parser.add_argument(
         '--train_proportion',
         help='the proportion of train dataset',
@@ -233,7 +241,7 @@ def main():
         assert os.path.exists(args.zip_input), \
             f"The directory({args.zip_input}) of " \
             f"original UWMGI dataset does not exist!"
-        assert zipfile.is_zipfile(args.input)
+        assert zipfile.is_zipfile(args.zip_input)
 
         uwmgi_to_multilabel_format(args)
 
