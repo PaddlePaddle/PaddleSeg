@@ -93,7 +93,7 @@ python scripts/promt_predict.py --input_path xxx.png --point_prompt 1200 450 --m
 ### 4. Segment the object only with whole image
 
 ```bash
-python scripts/amg_paddle.py --model-type [vit_l/vit_b/vit_h/vit_t] --model-type [vit_l/vit_b/vit_h] # default is vit_h
+python scripts/amg_paddle.py --model-type [vit_l/vit_b/vit_h/vit_t] # default is vit_h
 ```
 
 ## Reference
