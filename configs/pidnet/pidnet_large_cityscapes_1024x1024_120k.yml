@@ -4,4 +4,4 @@ model:
   head_channels: 256
   backbone:
     type: PIDNet_Large
-  pretrained: pidnet_large_imagenet1k.pdparams  # TODO
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/pidnet/pidnet_large_imagenet1k.pdparams

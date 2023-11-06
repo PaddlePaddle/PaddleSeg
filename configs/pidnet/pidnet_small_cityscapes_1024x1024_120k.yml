@@ -18,7 +18,7 @@ model:
   head_channels: 128
   backbone:
     type: PIDNet_Small
-  pretrained: pidnet_small_imagenet1k.pdparams  # TODO
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/pidnet/pidnet_small_imagenet1k.pdparams
 
 train_dataset:
   transforms:
