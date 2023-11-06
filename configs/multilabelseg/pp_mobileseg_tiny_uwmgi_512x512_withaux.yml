@@ -7,7 +7,7 @@ train_dataset:
   transforms:
     - type: AddMultiLabelAuxiliaryCategory
     - type: Resize
-      target_size: [256, 256]
+      target_size: [512, 512]
     - type: RandomHorizontalFlip
     - type: RandomVerticalFlip
     - type: RandomDistort
@@ -23,7 +23,7 @@ val_dataset:
   transforms:
     - type: AddMultiLabelAuxiliaryCategory
     - type: Resize
-      target_size: [256, 256]
+      target_size: [512, 512]
     - type: Normalize
       mean: [0.0, 0.0, 0.0]
       std: [1.0, 1.0, 1.0]
@@ -51,7 +51,7 @@ lr_scheduler:
 
 model:
   type: PPMobileSeg
-  num_classes: 3
+  num_classes: 4
   backbone:
     type: MobileSeg_Tiny
     inj_type: AAM
