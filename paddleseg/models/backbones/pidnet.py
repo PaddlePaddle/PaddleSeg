@@ -581,14 +581,16 @@ class PIDNet(nn.Layer):
                 kernel_size=3,
                 stride=2,
                 padding=1,
-                act_type='relu'),
+                act_type='relu',
+                bias_attr=False),
             ConvBNAct(
                 channels,
                 channels,
                 kernel_size=3,
                 stride=2,
                 padding=1,
-                act_type='relu'),
+                act_type='relu',
+                bias_attr=False),
         ]
 
         layers.append(
