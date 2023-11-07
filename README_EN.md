@@ -26,7 +26,7 @@ English | [简体中文](README_CN.md)
   <li>[2023-10-29] :fire: PaddleSeg v2.9 is released! Check more details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
     <ul>
         <li>Support <a href="./configs/multilabelseg">Multi-label segmentation</a>, it procides multi-label segmentation support on a serie of semantic segmetation models.</li>
-        <li>Release <a href="./configs/SegmentAnything">Mobile SAM</a>, faster version of Segment Anything Model. </li>
+        <li>Release <a href="./contrib/SegmentAnything">Mobile SAM</a>, faster version of Segment Anything Model. </li>
         <li>Support <a href="./deploy/slim/act">Quant Aware Distillation Training Compression</a>  for PP-LiteSeg, PP-MobileSeg, OCRNet, and SegFormer-B0 to improve model inference speed. </li>
     </ul>
   <li>[2022-04-11] PaddleSeg v2.8 released <a href="./contrib/SegmentAnything">Segment Anything Model</a>, an original light-weight semantic segmentation model on mobile devices <a href="./configs/pp_mobileseg">PP-MobileSeg</a>,  <a href="./contrib/QualityInspector">QualityInspector v0.5</a>, a full-process solution for industrial quality inspection, and <a href="./contrib/PanopticSeg">PanopticSeg v0.5</a>, a universal panoptic segmentation solution.

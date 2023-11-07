@@ -24,7 +24,7 @@
 
 * [2023-10-29] :fire:  PaddleSeg 2.9版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
   * 增加对多标签分割[Multi-label segmentation](./configs/multilabelseg)，提供数据转换代码及结果可视化，实现对一系列语义分割模型的多标签分割支持。
-  * 发布轻量视觉大模型[MobileSAM](./configs/SegmentAnything)，实现更快速的SAM推理。
+  * 发布轻量视觉大模型[MobileSAM](./contrib/SegmentAnything)，实现更快速的SAM推理。
   * 支持量化蒸馏训练压缩功能[Quant Aware Distillation Training Compression](./deploy/slim/act)，对PP-LiteSeg、PP-MobileSeg、OCRNet、SegFormer-B0增加量化训练压缩功能，提升推理速度。
 
 * [2023-09-01] :fire::fire: 飞桨AI套件 [PaddleX](https://aistudio.baidu.com/intro/paddlex) 发布全新版本，围绕飞桨精选模型提供了一站式、全流程、高效率的开发平台，希望助力AI技术快速落地、使人人成为AI Developer！欢迎大家使用和共建。
