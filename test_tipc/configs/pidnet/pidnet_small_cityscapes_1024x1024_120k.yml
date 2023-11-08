@@ -1,0 +1,62 @@
+_base_: '../_base_/cityscapes_1024x1024.yml'
+
+batch_size: 6  # total batch size is 12
+iters: 120000  # 484 epochs
+
+mean: &mean [0.485, 0.456, 0.406]
+std: &std [0.229, 0.224, 0.225]
+
+# follow the OCNet, compute the weights by 1/log(pixel_count)
+# see https://github.com/openseg-group/OCNet.pytorch/issues/14
+weight: &weight [0.8373, 0.9180, 0.8660, 1.0345, 1.0166, 0.9969, 0.9754,
+                 1.0489, 0.8786, 1.0023, 0.9539, 0.9843, 1.1116, 0.9037,
+                 1.0865, 1.0955, 1.0865, 1.1529, 1.0507]
+
+model:
+  type: PIDNet
+  num_classes: 19
+  head_channels: 128
+  backbone:
+    type: PIDNet_Small
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/pidnet/pidnet_small_imagenet1k.pdparams
+
+train_dataset:
+  transforms:
+    - type: AddEdgeLabel
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.1
+      scale_step_size: 0.1
+    - type: RandomPaddingCrop
+      crop_size: [1024, 1024]
+    - type: RandomHorizontalFlip
+    - type: Normalize
+      mean: *mean
+      std: *std
+
+val_dataset:
+  transforms:
+    - type: Normalize
+      mean: *mean
+      std: *std
+
+optimizer:
+  weight_decay: 0.0005
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+      weight: *weight
+      avg_non_ignore: False
+    - type: OhemCrossEntropyLoss
+      weight: *weight
+      min_kept: 131072
+      thresh: 0.9
+    - type: BCELoss
+      weight: dynamic
+      edge_label: True
+    - type: OhemCrossEntropyLoss
+      weight: *weight
+      min_kept: 131072
+      thresh: 0.9
+  coef: [0.4, 1.0, 10.0, 1.0]

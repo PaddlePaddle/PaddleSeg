@@ -664,11 +664,10 @@ class RandomPaddingCrop:
                 cnt = cnt[labels != self.ignore_index]
                 if len(cnt) > 1 and np.max(cnt) / np.sum(
                         cnt) < self.category_max_ratio:
-                    data['img'] = seg_temp
                     break
                 crop_coordinates = self._get_crop_coordinates(img_shape)
-        else:
-            data['img'] = functional.crop(data['img'], crop_coordinates)
+
+        data['img'] = functional.crop(data['img'], crop_coordinates)
         for key in data.get("gt_fields", []):
             data[key] = functional.crop(data[key], crop_coordinates)
 
@@ -1244,4 +1243,27 @@ class AddMultiLabelAuxiliaryCategory:
             aux_label = (data['label'].sum(axis=-1, keepdims=True) == 0).astype('uint8')
             data['label'] = np.concatenate([aux_label, data['label']], axis=-1)
 
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class AddEdgeLabel:
+    y_k_size = 6
+    x_k_size = 6
+
+    def __init__(self, edge_size=4, ignore_index=255):
+        self.edge_size = edge_size
+        self.ignore_index = ignore_index
+
+    def __call__(self, data):
+        edge = cv2.Canny(data['label'], 0.1, 0.2)
+        kernel = np.ones((self.edge_size, self.edge_size), np.uint8)
+        edge = np.pad(
+            edge[self.y_k_size:-self.y_k_size, self.x_k_size:-self.x_k_size],
+            ((self.y_k_size, self.y_k_size), (self.x_k_size, self.x_k_size)),
+            mode='constant')
+        edge = (cv2.dilate(edge, kernel, iterations=1) > 50) * 1.0
+
+        data['gt_fields'].append('edge')
+        data['edge'] = edge
         return data

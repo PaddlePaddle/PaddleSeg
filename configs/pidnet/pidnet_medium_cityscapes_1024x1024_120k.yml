@@ -1,0 +1,6 @@
+_base_: 'pidnet_small_cityscapes_1024x1024_120k.yml'
+
+model:
+  backbone:
+    type: PIDNet_Medium
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/pidnet/pidnet_medium_imagenet1k.pdparams

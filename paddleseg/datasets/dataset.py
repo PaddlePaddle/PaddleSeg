@@ -165,6 +165,11 @@ class Dataset(paddle.io.Dataset):
                 edge_mask = F.mask_to_binary_edge(
                     data['label'], radius=2, num_classes=self.num_classes)
                 data['edge'] = edge_mask
+            elif 'edge' in data:  # for AddEdgeLabel
+                # F.mask_to_binary_edge is so slow
+                # AddEdgeLabel will faster
+                # But offline generation of edges might be better
+                data['edge'][data['edge'] == self.ignore_index] = 0
         return data
 
     def __len__(self):

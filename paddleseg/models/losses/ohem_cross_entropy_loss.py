@@ -29,14 +29,25 @@ class OhemCrossEntropyLoss(nn.Layer):
         min_kept (int, optional): The min number to keep in loss computation. Default: 10000.
         ignore_index (int64, optional): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default ``255``.
+        weight (tuple|list|ndarray|Tensor, optional): A manual rescaling weight
+            given to each class. Its length must be equal to the number of classes.
+            Default ``None``.
     """
 
-    def __init__(self, thresh=0.7, min_kept=10000, ignore_index=255):
+    def __init__(self,
+                 thresh=0.7,
+                 min_kept=10000,
+                 ignore_index=255,
+                 weight=None):
         super(OhemCrossEntropyLoss, self).__init__()
         self.thresh = thresh
         self.min_kept = min_kept
         self.ignore_index = ignore_index
         self.EPS = 1e-5
+        if weight is not None:
+            self.weight = paddle.to_tensor(weight, dtype='float32')
+        else:
+            self.weight = None
 
     def forward(self, logit, label):
         """
@@ -50,6 +61,11 @@ class OhemCrossEntropyLoss(nn.Layer):
                 value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
                 (N, D1, D2,..., Dk), k >= 1.
         """
+        if self.weight is not None and logit.shape[1] != len(self.weight):
+            raise ValueError(
+                'The number of weights = {} must be the same as the number of classes = {}.'
+                .format(len(self.weight), logit.shape[1]))
+
         if len(label.shape) != len(logit.shape):
             label = paddle.unsqueeze(label, 1)
 
@@ -92,8 +108,13 @@ class OhemCrossEntropyLoss(nn.Layer):
 
         label = label.reshape((n, 1, h, w))
         valid_mask = valid_mask.reshape((n, 1, h, w)).astype('float32')
-        loss = F.softmax_with_cross_entropy(
-            logit, label, ignore_index=self.ignore_index, axis=1)
+        loss = F.cross_entropy(
+            logit,
+            label,
+            weight=self.weight,
+            ignore_index=self.ignore_index,
+            reduction='none',
+            axis=1)
         loss = loss * valid_mask
         avg_loss = paddle.mean(loss) / (paddle.mean(valid_mask) + self.EPS)
 

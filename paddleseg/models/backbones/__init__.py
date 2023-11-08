@@ -33,3 +33,4 @@ from .strideformer import *
 from .vit_adapter import *
 from .mscan import *
 from .seaformer import *
+from .pidnet import *
