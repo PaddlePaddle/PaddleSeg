@@ -65,7 +65,7 @@ def train(model,
           save_dir='output',
           iters=10000,
           batch_size=2,
-          early_stop_interval=None,
+          early_stop_intervals=None,
           resume_model=None,
           save_interval=1000,
           log_iters=10,
@@ -367,7 +367,7 @@ def train(model,
                     elif mean_iou < best_mean_iou:
                         stop_count += 1
 
-                    if early_stop_interval is not None and stop_count >= early_stop_interval:
+                    if early_stop_intervals is not None and stop_count >= early_stop_intervals:
                         stop_status = True
                         logger.info(
                             'Early stopping at iter {}. The best mean IoU is {:.4f}.'
