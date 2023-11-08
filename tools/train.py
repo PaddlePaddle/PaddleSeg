@@ -192,7 +192,7 @@ def main(args):
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
-        early_stop=args.early_stop_intervals,
+        early_stop_intervals=args.early_stop_intervals,
         resume_model=args.resume_model,
         save_interval=args.save_interval,
         log_iters=args.log_iters,
