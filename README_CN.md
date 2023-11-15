@@ -58,16 +58,22 @@
 
 ## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
-* 如果大家有PaddleSeg的使用问题和功能建议, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issue。
-* **欢迎加入PaddleSeg的微信用户群👫**（扫码填写简单问卷即可入群），大家可以**领取30G重磅学习大礼包🎁**，也可以和值班同学、各界大佬直接进行交流。
-  * 🔥 获取深度学习视频教程、图像分割论文合集
-  * 🔥 获取PaddleSeg的历次直播视频，最新发版信息和直播动态
-  * 🔥 获取PaddleSeg自建的人像分割数据集，整理的开源数据集
-  * 🔥 获取PaddleSeg在垂类场景的预训练模型和应用合集，涵盖人像分割、交互式分割等等
-  * 🔥 获取PaddleSeg的全流程产业实操范例，包括质检缺陷分割、抠图Matting、道路分割等等
+飞桨AI套件[PaddleX](https://aistudio.baidu.com/intro/paddlex) —— 精选产业实用模型的一站式开发平台，具有如下特色：
+
+- 【丰富的算法库】PaddleX提供36个精选模型，覆盖了10大AI任务场景，并附带模型推理benchmark数据。开发者可以根据业务需求轻松选择合适的模型，并进行开发和部署。
+- 【简便的开发方式】PaddleX支持无代码和低代码开发，只需四个简单步骤，即可完成全流程AI开发，包括数据处理、模型训练、验证和部署。
+- 【高效的模型部署】PaddleX平台提供强大的部署能力，支持快速实现产业级部署，实现跨平台、跨硬件的部署。
+- 【多样的硬件支持】PaddleX不仅能够在AI Studio云端使用，还支持在Windows本地环境使用，并正在积极扩展支持Linux版本、昆仑芯版本、昇腾版本和寒武纪版本。
+- 【共赢的合作机会】除了提供便捷的AI应用开发工具，PaddleX还为企业提供商业收益机会，共同探索更多商业空间，实现共同成长和共赢。
+
+作为一款高效的开发神器，PaddleX值得每一位开发者拥有（[官网](https://aistudio.baidu.com/intro/paddlex)）。
+
+欢迎微信扫描下方二维码或者点击[链接](https://aistudio.baidu.com/community/channel/610)，进入AI Studio【PaddleX社区频道】获得更高效的技术答疑～
+
 <div align="center">
-<img src="https://paddleseg.bj.bcebos.com/images/seg_qr_code.png"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/52520497/279848523-ee302fc5-71f8-440f-87f0-ca04e3e9b985.png"  width = "150" height = "150",caption='' />
 </div>
+
 
 ## <img src="./docs/images/model.png" width="20"/> 产品矩阵
 
