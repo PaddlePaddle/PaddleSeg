@@ -85,8 +85,8 @@ def parse_args():
     parser.add_argument(
         '--early_stop_intervals',
         help='Early Stop at args number of save intervals.',
-        type=None,
-        default=0)
+        type=int,
+        default=None)
 
     # Other params
     parser.add_argument(
