@@ -1,0 +1,7 @@
+_base_: 'pidnet_small_cityscapes_1024x1024_120k.yml'
+
+model:
+  head_channels: 256
+  backbone:
+    type: PIDNet_Large
+  pretrained: https://paddleseg.bj.bcebos.com/dygraph/pidnet/pidnet_large_imagenet1k.pdparams

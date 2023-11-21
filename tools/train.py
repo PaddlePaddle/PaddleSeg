@@ -82,6 +82,11 @@ def parse_args():
         help='Maximum number of checkpoints to save.',
         type=int,
         default=5)
+    parser.add_argument(
+        '--early_stop_intervals',
+        help='Early Stop at args number of save intervals.',
+        type=int,
+        default=None)
 
     # Other params
     parser.add_argument(
@@ -124,6 +129,12 @@ def parse_args():
     )
     parser.add_argument(
         '--opts', help='Update the key-value pairs of all options.', nargs='+')
+    # Set multi-label mode
+    parser.add_argument(
+        '--use_multilabel',
+        action='store_true',
+        default=False,
+        help='Whether to enable multilabel mode. Default: False.')
 
     return parser.parse_args()
 
@@ -144,6 +155,12 @@ def main(args):
     utils.set_seed(args.seed)
     utils.set_device(args.device)
     utils.set_cv2_num_threads(args.num_workers)
+
+    if args.use_multilabel:
+        if 'test_config' not in cfg.dic:
+            cfg.dic['test_config'] = {'use_multilabel': True}
+        else:
+            cfg.dic['test_config']['use_multilabel'] = True
 
     # TODO refactor
     # Only support for the DeepLabv3+ model
@@ -175,6 +192,7 @@ def main(args):
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
+        early_stop_intervals=args.early_stop_intervals,
         resume_model=args.resume_model,
         save_interval=args.save_interval,
         log_iters=args.log_iters,

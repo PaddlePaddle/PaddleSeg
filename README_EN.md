@@ -23,13 +23,13 @@ English | [简体中文](README_CN.md)
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> News
 <ul class="nobull">
-  <li>[2023-04-11] :fire: PaddleSeg v2.8 is released! Check more details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
+  <li>[2023-10-29] :fire: PaddleSeg v2.9 is released! Check more details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
     <ul>
-        <li>Release <a href="./contrib/SegmentAnything">Segment Anything Model</a> based on PaddlePaddle. Demos are provided to demonstrate the function of automatic full-image segmentation and specified object segmentation with prompt input.</li>
-        <li>Release <a href="./configs/pp_mobileseg">PP-MobileSeg</a>, a lightweight semantic segmentation model for mobile devices. Comparing PP-MobileSeg with other models on the ADE20K dataset, the segmentation accuracy is improved by 1.5%, the inference speed is accelerated by 42.3%, and the number of parameters is decreased by 34.9%. </li>
-        <li>Release <a href="./contrib/QualityInspector">QualityInspector v0.5</a>, a full-process solution for industrial quality inspection. It provides a unified and configurable pipeline for single-task and multi-task models, integrates detection and segmentation model libraries, and supports three unsupervised quality inspection methods. </li>
-        <li>Release <a href="./contrib/PanopticSeg">PanopticSeg v0.5</a>, a universal panoptic segmentation solution. It provides the full-process capabilities of panoptic segmentation, integrates two models, and has flexible secondary development capabilities. </li>
+        <li>Support <a href="./configs/multilabelseg">Multi-label segmentation</a>, it procides multi-label segmentation support on a serie of semantic segmetation models.</li>
+        <li>Release <a href="./contrib/SegmentAnything">Mobile SAM</a>, faster version of Segment Anything Model. </li>
+        <li>Support <a href="./deploy/slim/act">Quant Aware Distillation Training Compression</a>  for PP-LiteSeg, PP-MobileSeg, OCRNet, and SegFormer-B0 to improve model inference speed. </li>
     </ul>
+  <li>[2022-04-11] PaddleSeg v2.8 released <a href="./contrib/SegmentAnything">Segment Anything Model</a>, an original light-weight semantic segmentation model on mobile devices <a href="./configs/pp_mobileseg">PP-MobileSeg</a>,  <a href="./contrib/QualityInspector">QualityInspector v0.5</a>, a full-process solution for industrial quality inspection, and <a href="./contrib/PanopticSeg">PanopticSeg v0.5</a>, a universal panoptic segmentation solution.
   <li>[2022-11-30] PaddleSeg v2.7 released a real-time human matting model <a href="./Matting/">PP-MattingV2</a>, a 3D medical image segmentation solution <a href="./contrib/MedicalSeg/">MedicalSegV2</a>, and a real-time semantic segmentation model <a href="./configs/rtformer/">RTFormer</a>.
   <li>[2022-07-20] PaddleSeg v2.6 released a real-time human segmentation SOTA solution <a href="./contrib/PP-HumanSeg">PP-HumanSegV2</a>, a stable-version semi-automatic segmentation annotation tool <a href="./EISeg">EISeg v1.0</a>, a pseudo label pre-training method PSSL, and the source code of PP-MattingV1. </li>
   <li>[2022-04-20] PaddleSeg v2.5 released a real-time semantic segmentation model <a href="./configs/pp_liteseg">PP-LiteSeg</a>, a trimap-free image matting model PP-MattingV1, and an easy-to-use solution for 3D medical image segmentation MedicalSegV1.</li>
@@ -66,7 +66,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 * If you have any questions, suggestions or feature requests, please do not hesitate to create an issue in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Please scan the following QR code to join PaddleSeg WeChat group to communicate with us:
 <div align="center">
-<img src="https://user-images.githubusercontent.com/30883834/213601179-0813a896-11e1-4514-b612-d145e068ba86.jpeg"  width = "200" />  
+<img src="https://paddleseg.bj.bcebos.com/images/seg_qr_code.png"  width = "200" />  
 </div>
 
 
@@ -442,6 +442,7 @@ Note that:
     * [Quantization](./docs/deployment/slim/quant/quant.md)
     * [Distillation](./docs/deployment/slim/distill/distill.md)
     * [Pruning](./docs/deployment/slim/prune/prune.md)
+    * [Auto Compression](./docs/deployment/slim/act/readme.md)
 
 * [FAQ](./docs/faq/faq/faq.md)
 

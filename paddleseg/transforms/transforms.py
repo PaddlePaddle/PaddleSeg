@@ -31,7 +31,7 @@ class Compose:
     The shape of input data to all operations is [height, width, channels].
 
     Args:
-        transforms (list): A list contains data pre-processing or augmentation. Empty list means only reading images, no transformation.
+        transforms (list): A list contains data pre-processing or augmentation. An empty list means only reading images, no transformation.
         to_rgb (bool, optional): If converting image to RGB color space. Default: True.
         img_channels (int, optional): The image channels used to check the loaded image. Default: 3.
 
@@ -59,14 +59,18 @@ class Compose:
         """
         if 'img' not in data.keys():
             raise ValueError("`data` must include `img` key.")
-        if isinstance(data['img'], str):
-            data['img'] = cv2.imread(data['img'],
-                                     self.read_flag).astype('float32')
+        # data['img'] is numpy array in eg1800 and supervisely
         if data['img'] is None:
-            raise ValueError('Can\'t read The image file {}!'.format(data[
-                'img']))
+            raise TypeError(
+                "Expect `data[img]` to be str or np.ndarray, but got NoneType.")
+        elif isinstance(data['img'], str):
+            img = cv2.imread(data['img'], self.read_flag)
+            if img is None:
+                raise ValueError('Can\'t read The image file {}!'.format(data['img']))
+            data['img'] = img.astype('float32')
         if not isinstance(data['img'], np.ndarray):
-            raise TypeError("Image type is not numpy.")
+            raise TypeError(
+                "Expect image to be np.ndarray, but got {}".format(type(data['img'])))
 
         img_channels = 1 if data['img'].ndim == 2 else data['img'].shape[2]
         if img_channels != self.img_channels:
@@ -78,6 +82,11 @@ class Compose:
 
         if 'label' in data.keys() and isinstance(data['label'], str):
             data['label'] = np.asarray(Image.open(data['label']))
+            img_h, img_w = data['img'].shape[:2]
+            if data['label'].shape[0] != img_h:
+                data['label'] = data['label'].reshape([-1, img_h, img_w]).transpose([1, 2, 0])
+            elif data['label'].shape[1] != img_w:
+                data['label'] = data['label'].reshape([img_h, -1, img_w]).transpose([0, 2, 1])
 
         # the `trans_info` will save the process of image shape, and will be used in evaluation and prediction.
         if 'trans_info' not in data.keys():
@@ -89,6 +98,8 @@ class Compose:
         if data['img'].ndim == 2:
             data['img'] = data['img'][..., np.newaxis]
         data['img'] = np.transpose(data['img'], (2, 0, 1))
+        if 'label' in data and data['label'].ndim == 3:
+            data['label'] = np.transpose(data['label'], (2, 0, 1))
         return data
 
 
@@ -653,11 +664,10 @@ class RandomPaddingCrop:
                 cnt = cnt[labels != self.ignore_index]
                 if len(cnt) > 1 and np.max(cnt) / np.sum(
                         cnt) < self.category_max_ratio:
-                    data['img'] = seg_temp
                     break
                 crop_coordinates = self._get_crop_coordinates(img_shape)
-        else:
-            data['img'] = functional.crop(data['img'], crop_coordinates)
+
+        data['img'] = functional.crop(data['img'], crop_coordinates)
         for key in data.get("gt_fields", []):
             data[key] = functional.crop(data[key], crop_coordinates)
 
@@ -1219,4 +1229,41 @@ class GenerateInstanceTargets:
 
             data['instances'] = instances
 
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class AddMultiLabelAuxiliaryCategory:
+    """
+    Add a complementary set of unions labeled with corresponding mask for other categories as an auxiliary category.
+    """
+
+    def __call__(self, data):
+        if 'label' in data:
+            aux_label = (data['label'].sum(axis=-1, keepdims=True) == 0).astype('uint8')
+            data['label'] = np.concatenate([aux_label, data['label']], axis=-1)
+
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class AddEdgeLabel:
+    y_k_size = 6
+    x_k_size = 6
+
+    def __init__(self, edge_size=4, ignore_index=255):
+        self.edge_size = edge_size
+        self.ignore_index = ignore_index
+
+    def __call__(self, data):
+        edge = cv2.Canny(data['label'], 0.1, 0.2)
+        kernel = np.ones((self.edge_size, self.edge_size), np.uint8)
+        edge = np.pad(
+            edge[self.y_k_size:-self.y_k_size, self.x_k_size:-self.x_k_size],
+            ((self.y_k_size, self.y_k_size), (self.x_k_size, self.x_k_size)),
+            mode='constant')
+        edge = (cv2.dilate(edge, kernel, iterations=1) > 50) * 1.0
+
+        data['gt_fields'].append('edge')
+        data['edge'] = edge
         return data

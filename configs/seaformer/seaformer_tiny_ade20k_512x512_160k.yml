@@ -1,0 +1,14 @@
+_base_: 'seaformer_base_ade20k_512x512_160k.yml'
+
+model:
+  type: SeaFormerSeg
+  backbone: 
+    type: SeaFormer_tiny
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/backbone/seaformer_tiny_imagenet_pretrained.pdparams
+  num_classes: 150
+  head_channels: 96
+  embed_dims: [64, 96]
+  is_dw: True
+  dropout_ratio: 0.1
+  align_corners: False
+  input_transform: 'multiple_select'

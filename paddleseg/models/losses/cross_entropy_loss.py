@@ -123,7 +123,7 @@ class CrossEntropyLoss(nn.Layer):
         if semantic_weights is not None:
             loss = loss * semantic_weights
 
-        if self.weight is not None:
+        if self.avg_non_ignore and self.weight is not None:
             _one_hot = F.one_hot(label * mask, logit.shape[-1])
             coef = paddle.sum(_one_hot * self.weight, axis=-1)
         else:

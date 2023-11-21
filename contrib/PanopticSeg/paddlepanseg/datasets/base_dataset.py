@@ -18,10 +18,18 @@ import os
 
 import numpy as np
 import paddle
-from paddle.fluid.dataloader.collate import default_collate_fn
+
 from paddleseg.transforms import Compose
 
 from paddlepanseg.cvlibs import build_info_dict
+
+paddle_version = paddle.__version__[:3]
+# paddle version < 2.5.0 and not develop
+if paddle_version not in ["2.5", "0.0"]:
+    from paddle.fluid.dataloader.collate import default_collate_fn
+# paddle version >= 2.5.0 or develop
+else:
+    from paddle.io.dataloader.collate import default_collate_fn
 
 
 class PanopticDataset(paddle.io.Dataset):

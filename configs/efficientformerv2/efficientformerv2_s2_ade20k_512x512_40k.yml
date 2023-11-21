@@ -10,7 +10,7 @@ model:
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/ade20k/efficientformerv2_s2/pretrain/eformer_s2_pretrained.pdparams
   num_classes: 150
   backbone_indices: [0, 1, 2, 3]
-  channels: 128
+  head_channels: 128
 
 val_dataset:
   transforms:

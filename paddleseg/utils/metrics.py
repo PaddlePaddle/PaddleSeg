@@ -18,7 +18,7 @@ import paddle.nn.functional as F
 import sklearn.metrics as skmetrics
 
 
-def calculate_area(pred, label, num_classes, ignore_index=255):
+def calculate_area(pred, label, num_classes, ignore_index=255, use_multilabel=False):
     """
     Calculate intersect, prediction and label area
 
@@ -27,36 +27,42 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
         label (Tensor): The ground truth of image.
         num_classes (int): The unique number of target classes.
         ignore_index (int): Specifies a target value that is ignored. Default: 255.
+        use_multilabel (bool, optional): Whether to enable multilabel mode. Default: False.
 
     Returns:
         Tensor: The intersection area of prediction and the ground on all class.
         Tensor: The prediction area on all class.
         Tensor: The ground truth area on all class
     """
-    if len(pred.shape) == 4:
-        pred = paddle.squeeze(pred, axis=1)
-    if len(label.shape) == 4:
-        label = paddle.squeeze(label, axis=1)
-    if not pred.shape == label.shape:
-        raise ValueError('Shape of `pred` and `label should be equal, '
-                         'but there are {} and {}.'.format(pred.shape,
-                                                           label.shape))
-    pred_area = []
-    label_area = []
-    intersect_area = []
-    mask = label != ignore_index
+    if not use_multilabel:
+        if len(pred.shape) == 4:
+            pred = paddle.squeeze(pred, axis=1)
+        if len(label.shape) == 4:
+            label = paddle.squeeze(label, axis=1)
+        if not pred.shape == label.shape:
+            raise ValueError('Shape of `pred` and `label should be equal, '
+                             'but there are {} and {}.'.format(pred.shape,
+                                                               label.shape))
+        pred_area = []
+        label_area = []
+        intersect_area = []
+        mask = label != ignore_index
 
-    for i in range(num_classes):
-        pred_i = paddle.logical_and(pred == i, mask)
-        label_i = label == i
-        intersect_i = paddle.logical_and(pred_i, label_i)
-        pred_area.append(paddle.sum(paddle.cast(pred_i, "int64")))
-        label_area.append(paddle.sum(paddle.cast(label_i, "int64")))
-        intersect_area.append(paddle.sum(paddle.cast(intersect_i, "int64")))
+        for i in range(num_classes):
+            pred_i = paddle.logical_and(pred == i, mask)
+            label_i = label == i
+            intersect_i = paddle.logical_and(pred_i, label_i)
+            pred_area.append(paddle.sum(paddle.cast(pred_i, "int64")))
+            label_area.append(paddle.sum(paddle.cast(label_i, "int64")))
+            intersect_area.append(paddle.sum(paddle.cast(intersect_i, "int64")))
 
-    pred_area = paddle.stack(pred_area)
-    label_area = paddle.stack(label_area)
-    intersect_area = paddle.stack(intersect_area)
+        pred_area = paddle.stack(pred_area)
+        label_area = paddle.stack(label_area)
+        intersect_area = paddle.stack(intersect_area)
+    else:
+        pred_area = pred.sum([0, 2, 3]).astype('int64')
+        label_area = label.sum([0, 2, 3]).astype('int64')
+        intersect_area = (pred * label).sum([0, 2, 3]).astype('int64')
 
     return intersect_area, pred_area, label_area
 
@@ -127,10 +133,10 @@ def mean_iou(intersect_area, pred_area, label_area):
     class_iou = []
     for i in range(len(intersect_area)):
         if union[i] == 0:
-            iou = 0
+            iou = 1
         else:
             iou = intersect_area[i] / union[i]
-        class_iou.append(iou)
+        class_iou.append(float(iou))
     miou = np.mean(class_iou)
     return np.array(class_iou), miou
 
@@ -158,7 +164,7 @@ def dice(intersect_area, pred_area, label_area):
             dice = 0
         else:
             dice = (2 * intersect_area[i]) / union[i]
-        class_dice.append(dice)
+        class_dice.append(float(dice))
     mdice = np.mean(class_dice)
     return np.array(class_dice), mdice
 
@@ -184,7 +190,7 @@ def accuracy(intersect_area, pred_area):
             acc = 0
         else:
             acc = intersect_area[i] / pred_area[i]
-        class_acc.append(acc)
+        class_acc.append(float(acc))
     macc = np.sum(intersect_area) / np.sum(pred_area)
     return np.array(class_acc), macc
 
@@ -215,8 +221,8 @@ def class_measurement(intersect_area, pred_area, label_area):
             else intersect_area[i] / pred_area[i]
         recall = 0 if label_area[i] == 0 \
             else intersect_area[i] / label_area[i]
-        class_precision.append(precision)
-        class_recall.append(recall)
+        class_precision.append(float(precision))
+        class_recall.append(float(recall))
 
     return mean_acc, np.array(class_precision), np.array(class_recall)
 

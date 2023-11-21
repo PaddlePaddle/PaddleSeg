@@ -97,6 +97,12 @@ def parse_args():
         help='Update the key-value pairs of all options.',
         default=None,
         nargs='+')
+    # Set multi-label mode
+    parser.add_argument(
+        '--use_multilabel',
+        action='store_true',
+        default=False,
+        help='Whether to enable multilabel mode. Default: False.')
 
     return parser.parse_args()
 
@@ -112,6 +118,8 @@ def merge_test_config(cfg, args):
         test_config['is_slide'] = args.is_slide
         test_config['crop_size'] = args.crop_size
         test_config['stride'] = args.stride
+    if args.use_multilabel:
+        test_config['use_multilabel'] = args.use_multilabel
     return test_config
 
 
