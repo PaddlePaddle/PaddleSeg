@@ -52,7 +52,7 @@
 |     segmenter     |     ✅     |
 |      segnet       |      ✅     |
 |      segnext      |       ✅     |
-|       setr        |    静态图发生错误    | 
+|       setr        |    静态图发生错误    |
 |       sfnet       |   ✅     |
 |       smrt        |   ✅     |
 |      stdcseg      |  ✅     |
@@ -63,6 +63,7 @@
 |    unet_3plus     |     ✅     |
 |   unet_plusplus   |    ✅     |
 |      upernet      |       ✅     |
+
 
 ## 运行命令
 ```shell
