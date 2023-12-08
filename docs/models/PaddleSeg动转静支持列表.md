@@ -1,5 +1,7 @@
 ## PaddleSeg动转静模型支持列表
 
+> 开启静态图训练需要在相应的配置文件`xxx.yaml`中加入`to_static_training: True`配置，没有此配置项则默认使用`动态图`进行训练。
+
 |     模型名称      | 是否支持 |  执行命令 |
 | :---------------: | :------: | :------: |
 |        ann        |    ✅     |  python tools/train.py --config configs/ann/ann_resnet101_os8_cityscapes_1024x512_80k.yml  --save_interval 500 --do_eval  --use_vdl --save_dir output --seed 1220 |
