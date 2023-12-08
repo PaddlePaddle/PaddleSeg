@@ -1,71 +1,62 @@
 ## PaddleSeg动转静模型支持列表
 
-|     模型名称      | 是否支持 |
-| :---------------: | :------: |
-|        ann        |    ✅     |
-|  attention_unet   |      ✅     |
-|      bisenet      |   ✅     |
-|     bisenetv1     |     ✅     |
-|        cae        |    静态图出现错误       |
-|       ccnet       |     ✅     |
-|       danet       |     ✅     |
-|      ddrnet       |      ✅     |
-| decoupled_segnet  |      ✅     |
-|     deeplabv3     |    ✅     |
-|    deeplabv3p     |     ✅     |
-|       dmnet       |   ✅     |
-|      dnlnet       |  ✅     |
-| efficientformerv2 |   ✅     |
-|      emanet       |   静态图出现错误      |
-|      encnet       |    ✅     |
-|       enet        |     ✅     |
-|      emanet       |      ✅     |
-|      encnet       |  ✅     |
-|       enet        |  ✅     |
-|      espnet       |  ✅     |
-|      fastfcn      |    ✅     |
-|     fastscnn      |    ✅     |
-|        fcn        |  ✅     |
-|       gcnet       |     ✅     |
-|       ginet       |    ✅     |
-|       glore       |    ✅     |
-|       gscnn       |  静态图出现错误        |
-|      hardnet      |    ✅     |
-|     hrformer      |     ✅     |
-|       hrnet       |    ✅     |
-|      isanet       |     ✅     |
-|       knet        |     ✅     |
-|      lraspp       |     ✅     |
-|     mobileseg     |       ✅     |
-|   multilabelseg   |       ✅     |
-|      ocrnet       |      ✅     |
-|       pfpn        |      ✅     |
-|     pointrend     |    ✅     |
-|    portraitnet    |      ✅     |
-|    pp_humanseg    |     ✅     |
-|    pp_liteseg     |       ✅     |
-|   pp_mobileseg    |      ✅     |
-|      pspnet       |      ✅     |
-|     rtformer      |      ✅     |
-|     seaformer     |    ✅     |
-|     segformer     |      ✅     |
-|     segmenter     |     ✅     |
-|      segnet       |      ✅     |
-|      segnext      |       ✅     |
-|       setr        |    静态图发生错误    |
-|       sfnet       |   ✅     |
-|       smrt        |   ✅     |
-|      stdcseg      |  ✅     |
-|     topformer     |      ✅     |
-|       u2net       |     ✅     |
-|      uhrnet       |     ✅     |
-|       unet        |     ✅     |
-|    unet_3plus     |     ✅     |
-|   unet_plusplus   |    ✅     |
-|      upernet      |       ✅     |
-
-
-## 运行命令
-```shell
-python tools/train.py --config configs/attention_unet/attention_unet_cityscapes_1024x512_80k.yml  --save_interval 500 --do_eval  --use_vdl --save_dir output --seed 1220
-```
+|     模型名称      | 是否支持 |  执行命令 |
+| :---------------: | :------: | :------: |
+|        ann        |    ✅     |  python tools/train.py --config configs/ann/ann_resnet101_os8_cityscapes_1024x512_80k.yml  --save_interval 500 --do_eval  --use_vdl --save_dir output --seed 1220 |
+|  attention_unet   |      ✅     |  python tools/train.py --config configs/attention_unet/attention_unet_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output  |
+|      bisenet      |   ✅     |  python tools/train.py --config configs/bisenet/bisenet_cityscapes_1024x1024_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     bisenetv1     |     ✅     | python tools/train.py --config configs/bisenetv1/bisenetv1_resnet18_os8_cityscapes_1024x512_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output  |
+|        cae        |    -  | python tools/train.py --config configs/cae/upernet_cae_base_ade20k_512x512_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       ccnet       |     ✅     | python tools/train.py --config configs/ccnet/ccnet_resnet101_os8_cityscapes_769x769_60k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       danet       |     ✅     |  python tools/train.py --config configs/danet/danet_resnet101_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      ddrnet       |      ✅     | python tools/train.py --config configs/ddrnet/ddrnet23_cityscapes_1024x1024_120k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output  |
+| decoupled_segnet  |      ✅     |  python tools/train.py --config configs/decoupled_segnet/decoupledsegnet_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     deeplabv3     |    ✅     | python tools/train.py --config configs/deeplabv3/deeplabv3_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|    deeplabv3p     |     ✅     |  python tools/train.py --config configs/deeplabv3p/deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       dmnet       |   ✅     |   python tools/train.py --config configs/dmnet/dmnet_resnet101_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      dnlnet       |  ✅     |  python tools/train.py --config configs/dnlnet/dnlnet_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+| efficientformerv2 |   ✅     |  python tools/train.py --config configs/efficientformerv2/efficientformerv2_s2_ade20k_512x512_40k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      emanet       |   -      |  python tools/train.py --config configs/emanet/emanet_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output  |
+|      encnet       |    ✅     |  python tools/train.py --config configs/encnet/encnet_resnet101_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       enet        |     ✅     |   python tools/train.py --config configs/enet/enet_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      espnet       |  ✅     |   python tools/train.py --config configs/espnet/espnet_cityscapes_1024x512_120k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      fastfcn      |    ✅     |  python tools/train.py --config configs/fastfcn/fastfcn_resnet50_os8_ade20k_480x480_120k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     fastscnn      |    ✅     |  python tools/train.py --config configs/fastscnn/fastscnn_cityscapes_1024x1024_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|        fcn        |  ✅     | python tools/train.py --config configs/fcn/fcn_hrnetw18_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       gcnet       |     ✅     | python tools/train.py --config configs/gcnet/gcnet_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       ginet       |    ✅     |  python tools/train.py --config configs/ginet/ginet_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       glore       |    ✅     |  python tools/train.py --config configs/glore/glore_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       gscnn       |  -       |  python tools/train.py --config configs/gscnn/gscnn_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      hardnet      |    ✅     |  python tools/train.py --config configs/hardnet/hardnet_cityscapes_1024x1024_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     hrformer      |     ✅     | python tools/train.py --config configs/hrformer/ocrnet_hrformer_small_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       hrnet       |    ✅     |  python tools/train.py --config configs/hrnet_w48_contrast/HRNet_W48_contrast_cityscapes_1024x512_60k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      isanet       |     ✅     |  python tools/train.py --config configs/isanet/isanet_resnet50_os8_cityscapes_769x769_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       knet        |     ✅     |  python tools/train.py --config configs/knet/knet_s3_upernet_resnet50_ade20k_512x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      lraspp       |     ✅     |  python tools/train.py --config configs/lraspp/lraspp_mobilenetv3_cityscapes_1024x512_80k_os32.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     mobileseg     |       ✅     |  python tools/train.py --config configs/mobileseg/mobileseg_ghostnet_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|   multilabelseg   |       ✅     |  python tools/train.py --config configs/multilabelseg/pp_mobileseg_tiny_uwmgi_256x256_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      ocrnet       |      ✅     | python tools/train.py --config configs/ocrnet/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       pfpn        |      ✅     |  python tools/train.py --config configs/pfpn/pfpn_resnet101_os8_cityscapes_512x1024_40k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     pointrend     |    ✅     |  python tools/train.py --config configs/pointrend/pointrend_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|    portraitnet    |      ✅     |  python tools/train.py --config configs/portraitnet/portraitnet_supervisely_224x224_60k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|    pp_humanseg    |     ✅     |  python tools/train.py --config configs/pp_humanseg_lite/pp_humanseg_lite_mini_supervisely.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|    pp_liteseg     |       ✅     | python tools/train.py --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|   pp_mobileseg    |      ✅     |  python tools/train.py --config configs/pp_mobileseg/pp_mobileseg_base_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      pspnet       |      ✅     |  python tools/train.py --config configs/pspnet/pspnet_resnet50_os8_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     rtformer      |      ✅     | python tools/train.py --config configs/rtformer/rtformer_base_cityscapes_1024x512_120k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     seaformer     |    ✅     | python tools/train.py --config configs/seaformer/seaformer_base_ade20k_512x512_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     segformer     |      ✅     | python tools/train.py --config configs/segformer/segformer_b0_cityscapes_1024x1024_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     segmenter     |     ✅     | python tools/train.py --config configs/segmenter/segmenter_vit_base_linear_ade20k_512x512_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      segnet       |      ✅     | python tools/train.py --config configs/segnet/segnet_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      segnext      |       ✅     | python tools/train.py --config configs/segnext/segnext_mscan_b_cityscapes_1024x1024_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       setr        |    -    | python tools/train.py --config configs/setr/setr_mla_large_cityscapes_769x769_40k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       sfnet       |   ✅     | python tools/train.py --config configs/sfnet/sfnet_resnet18_os8_cityscapes_1024x1024_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       smrt        |   ✅     | python tools/train.py --config configs/smrt/sfnet_resnet18_os8.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      stdcseg      |  ✅     | python tools/train.py --config configs/stdcseg/stdc1_seg_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|     topformer     |      ✅     | python tools/train.py --config configs/topformer/topformer_base_ade20k_512x512_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       u2net       |     ✅     | python tools/train.py --config configs/u2net/u2net_cityscapes_1024x512_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      uhrnet       |     ✅     | python tools/train.py --config configs/uhrnet/fcn_uhrnetw18_small_cityscapes_1024x512_80k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|       unet        |     ✅     | python tools/train.py --config configs/unet/unet_cityscapes_1024x512_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|    unet_3plus     |     ✅     | python tools/train.py --config configs/unet_3plus/unet_3plus_cityscapes_1024x512_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|   unet_plusplus   |    ✅     | python tools/train.py --config configs/unet_plusplus/unet_plusplus_cityscapes_1024x512_160k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
+|      upernet      |       ✅     | python tools/train.py --config configs/upernet/upernet_resnet101_os8_cityscapes_512x1024_40k.yml --save_interval 500 --do_eval  --use_vdl --save_dir output |
