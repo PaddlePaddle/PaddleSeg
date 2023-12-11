@@ -130,6 +130,11 @@ def parse_args():
         action='store_true',
         default=False,
         help='Whether to enable multilabel mode. Default: False.')
+    parser.add_argument(
+        '--to_static_training',
+        action='store_true',
+        default=None,
+        help='Whether to enable to_static in training')
 
     return parser.parse_args()
 
@@ -142,6 +147,7 @@ def main(args):
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size,
+        to_static_training=args.to_static_training,
         opts=args.opts)
     builder = SegBuilder(cfg)
 

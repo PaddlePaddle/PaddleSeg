@@ -62,6 +62,7 @@ class Config(object):
                  learning_rate: Optional[float]=None,
                  batch_size: Optional[int]=None,
                  iters: Optional[int]=None,
+                 to_static_training: Optional[bool]=None,
                  opts: Optional[list]=None,
                  checker: Optional[checker.ConfigChecker]=None):
         assert os.path.exists(path), \
@@ -75,6 +76,7 @@ class Config(object):
             learning_rate=learning_rate,
             batch_size=batch_size,
             iters=iters,
+            to_static_training=to_static_training,
             opts=opts)
 
         if checker is None:
@@ -193,6 +195,7 @@ def update_config_dict(dic: dict,
                        learning_rate: Optional[float]=None,
                        batch_size: Optional[int]=None,
                        iters: Optional[int]=None,
+                       to_static_training: Optional[bool]=None,
                        opts: Optional[list]=None):
     """Update config"""
     # TODO: If the items to update are marked as anchors in the yaml file,
@@ -205,6 +208,8 @@ def update_config_dict(dic: dict,
         dic['batch_size'] = batch_size
     if iters:
         dic['iters'] = iters
+    if to_static_training:
+        dic['to_static_training'] = to_static_training
 
     if opts is not None:
         for item in opts:
