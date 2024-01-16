@@ -200,7 +200,7 @@ def evaluate(
 
     if print_detail:
         infor = "[EVAL] #Images: {}, Dice: {:.4f}, Loss: {:6f}".format(
-            len(eval_dataset), mdice, loss_all[0])
+            len(eval_dataset), mdice, loss_all)
         infor = infor + auc_infor if auc_roc else infor
         logger.info(infor)
         logger.info("[EVAL] Class dice: \n" + str(
