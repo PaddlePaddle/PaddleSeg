@@ -27,7 +27,7 @@ python3 tools/convert_tools/convert_mask_to_coco.py --image_path dataset/MT_data
 同时需要切割RoI区域用于分割训练，具体可见[详细教程——数据准备1.3](./tools_data/prepare_data.md#13-将全图分割数据转为roi分割文件).
 
 ```shell
-python3 tools/convert_tools/convert_mask_to_roi.py --image_path dataset/MT_dataset/images/train --anno_path dataset/MT_dataset/annos/train --class_num 5 --output_path dataset/MT_dataset/RoI/train/ --suffix .png --to_binary
+python3 tools/convert_tools/convert_mask_to_RoI.py --image_path dataset/MT_dataset/images/train --anno_path dataset/MT_dataset/annos/train --class_num 5 --output_path dataset/MT_dataset/RoI/train/ --suffix .png --to_binary
 ```
 执行后数据保存在`dataset/MT_dataset/RoI/train/`，同样`train`改为`val`得到验证集RoI分割数据.
 
