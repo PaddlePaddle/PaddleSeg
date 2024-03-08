@@ -124,13 +124,13 @@ class CrossEntropyLoss(nn.Layer):
             loss = loss * semantic_weights
 
         if self.weight is not None:
-            _one_hot = F.one_hot(label * mask, logit.shape[-1])
+            _one_hot = F.one_hot(label * mask.astype(label.dtype), logit.shape[-1])
             coef = paddle.sum(_one_hot * self.weight, axis=-1)
         else:
             coef = paddle.ones_like(label)
 
         if self.top_k_percent_pixels == 1.0:
-            avg_loss = paddle.mean(loss) / (paddle.mean(mask * coef) + self.EPS)
+            avg_loss = paddle.mean(loss) / (paddle.mean(mask * coef.astype(mask.dtype)) + self.EPS)
         else:
             loss = loss.reshape((-1, ))
             top_k_pixels = int(self.top_k_percent_pixels * loss.numel())

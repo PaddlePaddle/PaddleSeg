@@ -219,7 +219,7 @@ class AlignedModule(nn.Layer):
         w_grid = w_grid.tile([size[0]]).transpose([1, 0])
         grid = paddle.concat([w_grid.unsqueeze(2), h_grid.unsqueeze(2)], axis=2)
         grid.unsqueeze(0).tile([input_shape[0], 1, 1, 1])
-        grid = grid + paddle.transpose(flow, (0, 2, 3, 1)) / norm
+        grid = grid + paddle.transpose(flow, (0, 2, 3, 1)) / norm.astype(flow.dtype)
 
         output = F.grid_sample(input, grid)
         return output

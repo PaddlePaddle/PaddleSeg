@@ -65,7 +65,7 @@ class OhemCrossEntropyLoss(nn.Layer):
 
         if self.min_kept < num_valid and num_valid > 0:
             # let the value which ignored greater than 1
-            prob = prob + (1 - valid_mask)
+            prob = prob + (1 - valid_mask).astype(prob.dtype)
 
             # get the prob of relevant label
             label_onehot = F.one_hot(label, c)
