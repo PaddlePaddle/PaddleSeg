@@ -81,12 +81,11 @@ class CrossEntropyLoss(nn.Layer):
             logit = paddle.transpose(logit, [0, 2, 3, 1])
         label = label.astype('int64')
 
-        loss = F.cross_entropy(
-            logit,
-            label,
-            ignore_index=self.ignore_index,
-            reduction='none',
-            weight=self.weight)
+        loss = F.cross_entropy(logit,
+                               label,
+                               ignore_index=self.ignore_index,
+                               reduction='none',
+                               weight=self.weight)
 
         return self._post_process_loss(logit, label, semantic_weights, loss)
 
@@ -124,13 +123,15 @@ class CrossEntropyLoss(nn.Layer):
             loss = loss * semantic_weights
 
         if self.avg_non_ignore and self.weight is not None:
-            _one_hot = F.one_hot(label * mask, logit.shape[-1])
+            _one_hot = F.one_hot(label * mask.astype(label.dtype),
+                                 logit.shape[-1])
             coef = paddle.sum(_one_hot * self.weight, axis=-1)
         else:
             coef = paddle.ones_like(label)
 
         if self.top_k_percent_pixels == 1.0:
-            avg_loss = paddle.mean(loss) / (paddle.mean(mask * coef) + self.EPS)
+            avg_loss = paddle.mean(loss) / (
+                paddle.mean(mask * coef.astype(mask.dtype)) + self.EPS)
         else:
             loss = loss.reshape((-1, ))
             top_k_pixels = int(self.top_k_percent_pixels * loss.numel())
@@ -210,12 +211,11 @@ class DistillCrossEntropyLoss(CrossEntropyLoss):
 
         teacher_logit = F.softmax(teacher_logit)
 
-        loss = F.cross_entropy(
-            student_logit,
-            teacher_logit,
-            weight=self.weight,
-            reduction='none',
-            soft_label=True)
+        loss = F.cross_entropy(student_logit,
+                               teacher_logit,
+                               weight=self.weight,
+                               reduction='none',
+                               soft_label=True)
 
         return self._post_process_loss(student_logit, label, semantic_weights,
                                        loss)

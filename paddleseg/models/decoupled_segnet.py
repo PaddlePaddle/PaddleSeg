@@ -72,11 +72,11 @@ class DecoupledSegNet(nn.Layer):
         logit_list = self.head(feat_list)
 
         seg_logit, body_logit, edge_logit = [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          paddle.shape(x)[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
         if self.training:
@@ -116,43 +116,38 @@ class DecoupledSegNetHead(nn.Layer):
             align_corners=align_corners,
             image_pooling=True)
 
-        self.bot_fine = nn.Conv2D(
-            backbone_channels[backbone_indices[0]], 48, 1, bias_attr=False)
+        self.bot_fine = nn.Conv2D(backbone_channels[backbone_indices[0]],
+                                  48,
+                                  1,
+                                  bias_attr=False)
         # decoupled
         self.squeeze_body_edge = SqueezeBodyEdge(
             256, align_corners=self.align_corners)
         self.edge_fusion = nn.Conv2D(256 + 48, 256, 1, bias_attr=False)
         self.sigmoid_edge = nn.Sigmoid()
         self.edge_out = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels=256,
-                out_channels=48,
-                kernel_size=3,
-                bias_attr=False),
-            nn.Conv2D(
-                48, 1, 1, bias_attr=False))
+            layers.ConvBNReLU(in_channels=256,
+                              out_channels=48,
+                              kernel_size=3,
+                              bias_attr=False),
+            nn.Conv2D(48, 1, 1, bias_attr=False))
         self.dsn_seg_body = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels=256,
-                out_channels=256,
-                kernel_size=3,
-                bias_attr=False),
-            nn.Conv2D(
-                256, num_classes, 1, bias_attr=False))
+            layers.ConvBNReLU(in_channels=256,
+                              out_channels=256,
+                              kernel_size=3,
+                              bias_attr=False),
+            nn.Conv2D(256, num_classes, 1, bias_attr=False))
 
         self.final_seg = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels=512,
-                out_channels=256,
-                kernel_size=3,
-                bias_attr=False),
-            layers.ConvBNReLU(
-                in_channels=256,
-                out_channels=256,
-                kernel_size=3,
-                bias_attr=False),
-            nn.Conv2D(
-                256, num_classes, kernel_size=1, bias_attr=False))
+            layers.ConvBNReLU(in_channels=512,
+                              out_channels=256,
+                              kernel_size=3,
+                              bias_attr=False),
+            layers.ConvBNReLU(in_channels=256,
+                              out_channels=256,
+                              kernel_size=3,
+                              bias_attr=False),
+            nn.Conv2D(256, num_classes, kernel_size=1, bias_attr=False))
 
     def forward(self, feat_list):
         fine_fea = feat_list[self.backbone_indices[0]]
@@ -164,27 +159,24 @@ class DecoupledSegNetHead(nn.Layer):
         seg_body, seg_edge = self.squeeze_body_edge(aspp)
         # Edge presevation and edge out
         fine_fea = self.bot_fine(fine_fea)
-        seg_edge = F.interpolate(
-            seg_edge,
-            fine_size[2:],
-            mode='bilinear',
-            align_corners=self.align_corners)
+        seg_edge = F.interpolate(seg_edge,
+                                 fine_size[2:],
+                                 mode='bilinear',
+                                 align_corners=self.align_corners)
         seg_edge = self.edge_fusion(paddle.concat([seg_edge, fine_fea], axis=1))
         seg_edge_out = self.edge_out(seg_edge)
         seg_edge_out = self.sigmoid_edge(seg_edge_out)  # seg_edge output
         seg_body_out = self.dsn_seg_body(seg_body)  # body out
 
         # seg_final out
-        seg_out = seg_edge + F.interpolate(
-            seg_body,
-            fine_size[2:],
-            mode='bilinear',
-            align_corners=self.align_corners)
-        aspp = F.interpolate(
-            aspp,
-            fine_size[2:],
-            mode='bilinear',
-            align_corners=self.align_corners)
+        seg_out = seg_edge + F.interpolate(seg_body,
+                                           fine_size[2:],
+                                           mode='bilinear',
+                                           align_corners=self.align_corners)
+        aspp = F.interpolate(aspp,
+                             fine_size[2:],
+                             mode='bilinear',
+                             align_corners=self.align_corners)
         seg_out = paddle.concat([aspp, seg_out], axis=1)
         seg_final_out = self.final_seg(seg_out)
 
@@ -192,25 +184,34 @@ class DecoupledSegNetHead(nn.Layer):
 
 
 class SqueezeBodyEdge(nn.Layer):
+
     def __init__(self, inplane, align_corners=False):
         super().__init__()
         self.align_corners = align_corners
         self.down = nn.Sequential(
-            layers.ConvBNReLU(
-                inplane, inplane, kernel_size=3, groups=inplane, stride=2),
-            layers.ConvBNReLU(
-                inplane, inplane, kernel_size=3, groups=inplane, stride=2))
-        self.flow_make = nn.Conv2D(
-            inplane * 2, 2, kernel_size=3, padding='same', bias_attr=False)
+            layers.ConvBNReLU(inplane,
+                              inplane,
+                              kernel_size=3,
+                              groups=inplane,
+                              stride=2),
+            layers.ConvBNReLU(inplane,
+                              inplane,
+                              kernel_size=3,
+                              groups=inplane,
+                              stride=2))
+        self.flow_make = nn.Conv2D(inplane * 2,
+                                   2,
+                                   kernel_size=3,
+                                   padding='same',
+                                   bias_attr=False)
 
     def forward(self, x):
         size = paddle.shape(x)[2:]
         seg_down = self.down(x)
-        seg_down = F.interpolate(
-            seg_down,
-            size=size,
-            mode='bilinear',
-            align_corners=self.align_corners)
+        seg_down = F.interpolate(seg_down,
+                                 size=size,
+                                 mode='bilinear',
+                                 align_corners=self.align_corners)
         flow = self.flow_make(paddle.concat([x, seg_down], axis=1))
         seg_flow_warp = self.flow_warp(x, flow, size)
         seg_edge = x - seg_flow_warp
@@ -226,7 +227,8 @@ class SqueezeBodyEdge(nn.Layer):
         w_grid = w_grid.tile([size[0]]).transpose([1, 0])
         grid = paddle.concat([w_grid.unsqueeze(2), h_grid.unsqueeze(2)], axis=2)
         grid.unsqueeze(0).tile([input_shape[0], 1, 1, 1])
-        grid = grid + paddle.transpose(flow, (0, 2, 3, 1)) / norm
+        grid = grid + paddle.transpose(flow,
+                                       (0, 2, 3, 1)) / norm.astype(flow.dtype)
 
         output = F.grid_sample(input, grid)
         return output
