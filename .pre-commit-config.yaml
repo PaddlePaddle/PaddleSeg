@@ -1,6 +1,6 @@
 repos:
--   repo: https://github.com/PaddlePaddle/mirrors-yapf.git
-    rev: 0d79c0c469bab64f7229c9aca2b1186ef47f0e37
+-   repo: https://github.com/google/yapf.git
+    rev: c0908d043b45f082e6339cd767c28e6d697cb22e
     hooks:
     -   id: yapf
         files: \.py$
