@@ -107,9 +107,9 @@ class DualTaskLoss(nn.Layer):
             labels = labels.unsqueeze(1)
         mask = (labels != self.ignore_index)
         mask.stop_gradient = True
-        logit = logit * mask
+        logit = logit * mask.astype(logit.dtype)
 
-        labels = labels * mask
+        labels = labels * mask.astype(labels.dtype)
         if len(labels.shape) == 4:
             labels = labels.squeeze(1)
         labels.stop_gradient = True
@@ -120,7 +120,7 @@ class DualTaskLoss(nn.Layer):
         g = self.compute_grad_mag(g)
         g_hat = self.compute_grad_mag(labels)
         loss = F.l1_loss(g, g_hat, reduction='none')
-        loss = loss * mask
+        loss = loss * mask.astype(loss.dtype)
 
         g_mask = (g > th).astype('float32')
         g_mask.stop_gradient = True
