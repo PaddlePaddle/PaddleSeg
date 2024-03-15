@@ -102,8 +102,8 @@ class RMILoss(nn.Layer):
         valid_onehot_labels_4D = valid_onehot_labels_4D * paddle.unsqueeze(
             label_mask_3D, axis=3).astype(valid_onehot_labels_4D.dtype)
         valid_onehot_labels_4D.stop_gradient = True
-        probs_4D = F.sigmoid(logits_4D) * paddle.unsqueeze(label_mask_3D,
-                                                           axis=1) + _CLIP_MIN
+        probs_4D = F.sigmoid(logits_4D) * paddle.unsqueeze(
+            label_mask_3D, axis=1).astype(logits_4D.dtype) + _CLIP_MIN
 
         valid_onehot_labels_4D = paddle.transpose(valid_onehot_labels_4D,
                                                   [0, 3, 1, 2])
