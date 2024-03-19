@@ -81,7 +81,7 @@ class RelaxBoundaryLoss(nn.Layer):
                    ignore_mask=None):
         soft = F.softmax(logit, axis=1)
         # calculate the valid soft where label is 1.
-        soft_label = ((soft * label[:, :-1, :, :]).sum(
+        soft_label = ((soft * label[:, :-1, :, :].astype('float32')).sum(
             1, keepdim=True)) * (label[:, :-1, :, :].astype('float32'))
         soft = soft * (1 - label[:, :-1, :, :]) + soft_label
         logsoft = paddle.log(soft)
@@ -120,10 +120,9 @@ class RelaxBoundaryLoss(nn.Layer):
         for i in range(n):
             if self.calculate_weights:
                 class_weights = self.calculate_weights(label[i])
-            loss = loss + self.custom_nll(
-                logit[i].unsqueeze(0),
-                label[i].unsqueeze(0),
-                class_weights=class_weights,
-                border_weights=border_weights,
-                ignore_mask=ignore_mask[i])
+            loss = loss + self.custom_nll(logit[i].unsqueeze(0),
+                                          label[i].unsqueeze(0),
+                                          class_weights=class_weights,
+                                          border_weights=border_weights,
+                                          ignore_mask=ignore_mask[i])
         return loss
