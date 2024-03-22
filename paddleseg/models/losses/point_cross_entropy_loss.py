@@ -112,7 +112,7 @@ class PointCrossEntropyLoss(nn.Layer):
         mask.stop_gradient = True
         if self.top_k_percent_pixels == 1.0:
             avg_loss = paddle.mean(loss) / (
-                paddle.mean(mask * coef).astype(loss.dtype) + self.EPS)
+                paddle.mean(mask * coef.astype(mask.dtype)) + self.EPS)
             return avg_loss
 
         loss = loss.reshape((-1, ))
