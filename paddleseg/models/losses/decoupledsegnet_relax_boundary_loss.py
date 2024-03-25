@@ -83,11 +83,11 @@ class RelaxBoundaryLoss(nn.Layer):
         # calculate the valid soft where label is 1.
         soft_label = ((soft * label[:, :-1, :, :].astype('float32')).sum(
             1, keepdim=True)) * (label[:, :-1, :, :].astype('float32'))
-        soft = soft * (1 - label[:, :-1, :, :]) + soft_label
+        soft = soft * (1 - label[:, :-1, :, :]).astype('float32') + soft_label
         logsoft = paddle.log(soft)
         if class_weights is not None:
             logsoft = class_weights.unsqueeze((0, 2, 3))
-        logsoft = label[:, :-1, :, :] * logsoft
+        logsoft = label[:, :-1, :, :].astype('float32') * logsoft
         logsoft = logsoft.sum(1)
         # border loss is divided equally
         logsoft = -1 / border_weights * logsoft * (1. - ignore_mask)
