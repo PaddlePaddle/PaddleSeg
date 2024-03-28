@@ -105,8 +105,8 @@ class PointRend(nn.Layer):
             self.backbone.feat_channels[i] for i in backbone_indices
         ]
 
-        self.neck = FPNNeck(
-            fpn_inplanes=fpn_inplanes, fpn_outplanes=fpn_outplanes)
+        self.neck = FPNNeck(fpn_inplanes=fpn_inplanes,
+                            fpn_outplanes=fpn_outplanes)
         self.pointhead = PointHead(
             in_channels=point_in_channels,
             out_channels=point_out_channels,
@@ -124,16 +124,15 @@ class PointRend(nn.Layer):
             coarse_pred_each_layer=point_coarse_pred_each_layer,
             input_transform=point_input_transform,  # resize_concat
             conv_cfg=point_conv_cfg)
-        self.fpnhead = FPNHead(
-            feature_strides=PFN_feature_strides,
-            in_channels=PFN_in_channels,
-            channels=PFN_channels,
-            num_class=num_classes,
-            in_index=PFN_in_index,
-            dropout_ratio=PFN_dropout_ratio,
-            conv_cfg=PFN_conv_cfg,
-            input_transform=PFN_input_transform,
-            align_corners=align_corners)
+        self.fpnhead = FPNHead(feature_strides=PFN_feature_strides,
+                               in_channels=PFN_in_channels,
+                               channels=PFN_channels,
+                               num_class=num_classes,
+                               in_index=PFN_in_index,
+                               dropout_ratio=PFN_dropout_ratio,
+                               conv_cfg=PFN_conv_cfg,
+                               input_transform=PFN_input_transform,
+                               align_corners=align_corners)
 
         self.align_corners = align_corners
         self.pretrained = pretrained
@@ -144,26 +143,27 @@ class PointRend(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         fpn_feats = self.neck(feats)  # [n,256,64,128]*3 & [n,256,128,256]
         pfn_logits = self.fpnhead(
-            fpn_feats)  # segmainoutput decode_head[0] 512*1024->[n, 19, 64, 128]
+            fpn_feats
+        )  # segmainoutput decode_head[0] 512*1024->[n, 19, 64, 128]
         point_logits = self.pointhead(
             fpn_feats, pfn_logits)  # segpointoutput decode_head[1]
 
         if self.training:
             logit_list = [
-                F.interpolate(
-                    logit,
-                    paddle.shape(x)[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners) for logit in pfn_logits
+                F.interpolate(logit,
+                              paddle.shape(x)[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners)
+                for logit in pfn_logits
             ]
             logit_list.append(point_logits)
         else:
             logit_list = [
-                F.interpolate(
-                    logit,
-                    paddle.shape(x)[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners) for logit in point_logits
+                F.interpolate(logit,
+                              paddle.shape(x)[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners)
+                for logit in point_logits
             ]
         return logit_list
 
@@ -237,8 +237,8 @@ class PointHead(nn.Layer):
         self.importance_sample_ratio = importance_sample_ratio
         self.scale_factor = scale_factor
         self.subdivision_steps = subdivision_steps
-        self.subdivision_num_points = paddle.to_tensor(
-            [subdivision_num_points], dtype="int32")
+        self.subdivision_num_points = paddle.to_tensor([subdivision_num_points],
+                                                       dtype="int32")
         self.dropout_ratio = dropout_ratio
         self.coarse_pred_each_layer = coarse_pred_each_layer
         self.align_corners = align_corners
@@ -254,16 +254,16 @@ class PointHead(nn.Layer):
                 kernel_size=1,
                 stride=1,
                 padding=0,
-                conv_cfg=conv_cfg, )
+                conv_cfg=conv_cfg,
+            )
             self.fcs.append(fc)
             fc_in_channels = fc_channels
             fc_in_channels += self.num_classes if self.coarse_pred_each_layer else 0
-        self.fc_seg = nn.Conv1D(
-            fc_in_channels,
-            self.num_classes,
-            kernel_size=1,
-            stride=1,
-            padding=0)
+        self.fc_seg = nn.Conv1D(fc_in_channels,
+                                self.num_classes,
+                                kernel_size=1,
+                                stride=1,
+                                padding=0)
 
         if self.dropout_ratio > 0:
             self.dropout = nn.Dropout(self.dropout_ratio)
@@ -291,8 +291,7 @@ class PointHead(nn.Layer):
         """
 
         fine_grained_feats_list = [
-            point_sample(
-                _, points, align_corners=self.align_corners) for _ in x
+            point_sample(_, points, align_corners=self.align_corners) for _ in x
         ]
         if len(fine_grained_feats_list) > 1:
             fine_grained_feats = paddle.concat(fine_grained_feats_list, axis=1)
@@ -313,8 +312,9 @@ class PointHead(nn.Layer):
                 num_classes, num_points).
         """
 
-        coarse_feats = point_sample(
-            prev_output, points, align_corners=self.align_corners)
+        coarse_feats = point_sample(prev_output,
+                                    points,
+                                    align_corners=self.align_corners)
         return coarse_feats
 
     def _transform_inputs(self, inputs):
@@ -330,11 +330,10 @@ class PointHead(nn.Layer):
         if self.input_transform == 'resize_concat':
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
-                F.interpolate(
-                    x,
-                    size=paddle.shape(inputs[0])[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners) for x in inputs
+                F.interpolate(x,
+                              size=paddle.shape(inputs[0])[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners) for x in inputs
             ]
             inputs = paddle.concat(upsampled_inputs, axis=1)
         elif self.input_transform == 'multiple_select':
@@ -383,19 +382,21 @@ class PointHead(nn.Layer):
         point_uncertainties = uncertainty_func(point_logits)
         num_uncertain_points = int(importance_sample_ratio * num_points)
         num_random_points = num_points - num_uncertain_points
-        idx = paddle.topk(
-            point_uncertainties[:, 0, :], k=num_uncertain_points, axis=1)[1]
+        idx = paddle.topk(point_uncertainties[:, 0, :],
+                          k=num_uncertain_points,
+                          axis=1)[1]
         shift = num_sampled * paddle.arange(batch_size, dtype='int64')
         idx += shift.unsqueeze([-1])
         idx = idx.reshape([-1])
-        point_coords = paddle.index_select(
-            point_coords.reshape([-1, 2]), idx, axis=0)
+        point_coords = paddle.index_select(point_coords.reshape([-1, 2]),
+                                           idx,
+                                           axis=0)
         point_coords = point_coords.reshape(
             [batch_size, num_uncertain_points, 2])
         if num_random_points > 0:
             rand_point_coords = paddle.rand([batch_size, num_random_points, 2])
-            point_coords = paddle.concat(
-                (point_coords, rand_point_coords), axis=1)
+            point_coords = paddle.concat((point_coords, rand_point_coords),
+                                         axis=1)
         return point_coords
 
     def get_points_test(self, seg_logits, uncertainty_func):  # finish
@@ -428,12 +429,12 @@ class PointHead(nn.Layer):
         uncertainty_map = uncertainty_map.reshape([batch_size, height * width])
         num_points = paddle.min(paddle.concat([height * width, num_points]))
         point_indices = paddle.topk(uncertainty_map, num_points, axis=1)[1]
-        point_coords = paddle.zeros(
-            [batch_size, num_points, 2], dtype='float32')
-        point_coords[:, :, 0] = w_step / 2.0 + (point_indices % width
-                                                ).astype('float32') * w_step
-        point_coords[:, :, 1] = h_step / 2.0 + (point_indices // width
-                                                ).astype('float32') * h_step
+        point_coords = paddle.zeros([batch_size, num_points, 2],
+                                    dtype='float32')
+        point_coords[:, :, 0] = w_step / 2.0 + point_indices.astype(
+            'float32') % width.astype('float32') * w_step
+        point_coords[:, :, 1] = h_step / 2.0 + point_indices.astype(
+            'float32') // width.astype('float32') * h_step
         return point_indices, point_coords
 
     def scatter_paddle(self, refined_seg_logits, point_indices, point_logits):
@@ -451,17 +452,16 @@ class PointHead(nn.Layer):
         original_shape = paddle.shape(
             refined_seg_logits)  # [batch_size, channels, height * width]
         new_refined_seg_logits = refined_seg_logits.flatten(0, 1)  # [N*C,H*W]
-        offsets = (
-            paddle.arange(paddle.shape(new_refined_seg_logits)[0]) *
-            paddle.shape(new_refined_seg_logits)[1]).unsqueeze(-1)  # [N*C,1]
+        offsets = (paddle.arange(paddle.shape(new_refined_seg_logits)[0]) *
+                   paddle.shape(new_refined_seg_logits)[1]).unsqueeze(
+                       -1)  # [N*C,1]
         point_indices = point_indices.flatten(0, 1)  # [N*C,H*W]
         new_point_indices = (point_indices + offsets).flatten()
         point_logits = point_logits.flatten()  # [N*C*H*W]
-        refined_seg_logits = paddle.scatter(
-            refined_seg_logits.flatten(),
-            new_point_indices,
-            point_logits,
-            overwrite=True)
+        refined_seg_logits = paddle.scatter(refined_seg_logits.flatten(),
+                                            new_point_indices,
+                                            point_logits,
+                                            overwrite=True)
         return refined_seg_logits.reshape(shape=original_shape)
 
     def forward_train(self, x, prev_output):
@@ -513,8 +513,8 @@ class PointHead(nn.Layer):
                     refined_seg_logits, calculate_uncertainty)
                 fine_grained_point_feats = self._get_fine_grained_point_feats(
                     x, points)
-                coarse_point_feats = self._get_coarse_point_feats(prev_output,
-                                                                  points)
+                coarse_point_feats = self._get_coarse_point_feats(
+                    prev_output, points)
                 # forward for inference
                 fusion_point_feats = paddle.concat(
                     [fine_grained_point_feats, coarse_point_feats], axis=1)
@@ -559,16 +559,17 @@ class FPNHead(nn.Layer):
     """
 
     def __init__(
-            self,
-            num_class=19,
-            feature_strides=[4, 8, 16, 32],
-            in_channels=[256, 256, 256, 256],
-            channels=128,
-            in_index=[0, 1, 2, 3],
-            dropout_ratio=0.1,
-            conv_cfg='Conv2D',
-            input_transform='multiple_select',
-            align_corners=False, ):
+        self,
+        num_class=19,
+        feature_strides=[4, 8, 16, 32],
+        in_channels=[256, 256, 256, 256],
+        channels=128,
+        in_index=[0, 1, 2, 3],
+        dropout_ratio=0.1,
+        conv_cfg='Conv2D',
+        input_transform='multiple_select',
+        align_corners=False,
+    ):
         super(FPNHead, self).__init__()
         assert len(feature_strides) == len(in_channels)
         assert min(feature_strides) == feature_strides[0]
@@ -590,18 +591,16 @@ class FPNHead(nn.Layer):
             scale_head = []
             for k in range(head_length):
                 scale_head.append(
-                    ConvModule(
-                        self.in_channels[i] if k == 0 else self.channels,
-                        self.channels,
-                        3,
-                        padding=1,
-                        conv_cfg=self.conv_cfg))
+                    ConvModule(self.in_channels[i] if k == 0 else self.channels,
+                               self.channels,
+                               3,
+                               padding=1,
+                               conv_cfg=self.conv_cfg))
                 if feature_strides[i] != feature_strides[0]:
                     scale_head.append(
-                        Upsample(
-                            scale_factor=2,
-                            mode='bilinear',
-                            align_corners=self.align_corners))
+                        Upsample(scale_factor=2,
+                                 mode='bilinear',
+                                 align_corners=self.align_corners))
             self.scale_heads.append(nn.Sequential(*scale_head))
 
         self.conv_seg = nn.Conv2D(self.channels, self.num_class, kernel_size=1)
@@ -630,11 +629,10 @@ class FPNHead(nn.Layer):
         if self.input_transform == 'resize_concat':
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
-                F.interpolate(
-                    x,
-                    size=paddle.shape(inputs[0])[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners) for x in inputs
+                F.interpolate(x,
+                              size=paddle.shape(inputs[0])[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners) for x in inputs
             ]
             inputs = paddle.concat(upsampled_inputs, axis=1)
         elif self.input_transform == 'multiple_select':
@@ -648,11 +646,10 @@ class FPNHead(nn.Layer):
         x = self._transform_inputs(inputs)
         output = self.scale_heads[0](x[0])
         for i in range(1, len(self.feature_strides)):
-            output = output + F.interpolate(
-                self.scale_heads[i](x[i]),
-                size=paddle.shape(output)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
+            output = output + F.interpolate(self.scale_heads[i](x[i]),
+                                            size=paddle.shape(output)[2:],
+                                            mode='bilinear',
+                                            align_corners=self.align_corners)
         output = self.cls_seg(output)
         return [output]
 
@@ -667,9 +664,10 @@ class FPNNeck(nn.Layer):
     """
 
     def __init__(
-            self,
-            fpn_inplanes=[256, 512, 1024, 2048],
-            fpn_outplanes=256, ):
+        self,
+        fpn_inplanes=[256, 512, 1024, 2048],
+        fpn_outplanes=256,
+    ):
         super(FPNNeck, self).__init__()
         self.lateral_convs = []
         self.fpn_out = []
@@ -677,13 +675,14 @@ class FPNNeck(nn.Layer):
         # FPN head
         for fpn_inplane in fpn_inplanes:
             self.lateral_convs.append(
-                nn.Sequential(
-                    nn.Conv2D(fpn_inplane, fpn_outplanes, 1),
-                    layers.SyncBatchNorm(fpn_outplanes), nn.ReLU()))
+                nn.Sequential(nn.Conv2D(fpn_inplane, fpn_outplanes, 1),
+                              layers.SyncBatchNorm(fpn_outplanes), nn.ReLU()))
             self.fpn_out.append(
                 nn.Sequential(
-                    layers.ConvBNReLU(
-                        fpn_outplanes, fpn_outplanes, 3, bias_attr=False)))
+                    layers.ConvBNReLU(fpn_outplanes,
+                                      fpn_outplanes,
+                                      3,
+                                      bias_attr=False)))
 
         self.lateral_convs = nn.LayerList(self.lateral_convs)
         self.fpn_out = nn.LayerList(self.fpn_out)
@@ -718,28 +717,26 @@ class ConvModule(nn.Layer):
                  **kwargs):
         super().__init__()
         if (conv_cfg == 'Conv1D'):
-            self._conv = nn.Conv1D(
-                in_channels,
-                out_channels,
-                kernel_size,
-                stride=stride,
-                padding=padding,
-                **kwargs)
+            self._conv = nn.Conv1D(in_channels,
+                                   out_channels,
+                                   kernel_size,
+                                   stride=stride,
+                                   padding=padding,
+                                   **kwargs)
         if (conv_cfg == 'Conv2D'):
-            self._conv = nn.Conv2D(
-                in_channels,
-                out_channels,
-                kernel_size,
-                stride=stride,
-                padding=padding,
-                **kwargs)
+            self._conv = nn.Conv2D(in_channels,
+                                   out_channels,
+                                   kernel_size,
+                                   stride=stride,
+                                   padding=padding,
+                                   **kwargs)
         if 'data_format' in kwargs:
             data_format = kwargs['data_format']
         else:
             data_format = 'NCHW'
         if (norm_cfg != 'None'):
-            self._batch_norm = layers.SyncBatchNorm(
-                out_channels, data_format=data_format)
+            self._batch_norm = layers.SyncBatchNorm(out_channels,
+                                                    data_format=data_format)
         else:
             self._batch_norm = None
 
@@ -808,8 +805,10 @@ def point_sample(input, points, align_corners=False, **kwargs):
     if points.dim() == 3:
         add_dim = True
         points = paddle.unsqueeze(points, axis=2)
-    output = F.grid_sample(
-        input, denormalize(points), align_corners=align_corners, **kwargs)
+    output = F.grid_sample(input,
+                           denormalize(points),
+                           align_corners=align_corners,
+                           **kwargs)
     if add_dim:
         output = paddle.squeeze(output, axis=3)
     return output
