@@ -81,7 +81,7 @@ class OhemEdgeAttentionLoss(nn.Layer):
 
         if self.min_kept < num_valid and num_valid > 0:
             # let the value which ignored greater than 1
-            prob = prob + (1 - valid_mask)
+            prob = prob + (1 - valid_mask).astype(prob.dtype)
 
             # get the prob of relevant label
             label_onehot = F.one_hot(label, c)
@@ -104,8 +104,10 @@ class OhemEdgeAttentionLoss(nn.Layer):
         label = label.reshape((n, 1, h, w))
         valid_mask = valid_mask.reshape((n, 1, h, w)).astype('float32')
 
-        loss = F.softmax_with_cross_entropy(
-            seg_logit, label, ignore_index=self.ignore_index, axis=1)
+        loss = F.softmax_with_cross_entropy(seg_logit,
+                                            label,
+                                            ignore_index=self.ignore_index,
+                                            axis=1)
         loss = loss * valid_mask
         avg_loss = paddle.mean(loss) / (paddle.mean(valid_mask) + self.EPS)
 
