@@ -18,6 +18,12 @@ from paddle import nn
 
 from paddleseg.models import layers
 
+class CustomAvgPool2D(nn.Layer):
+    def __init__(self):
+        super().__init__()
+    
+    def forward(self, x):
+        return paddle.mean(x, axis=[2, 3], keepdim=True)
 
 class ASPPModule(nn.Layer):
     """
@@ -66,8 +72,9 @@ class ASPPModule(nn.Layer):
 
         if image_pooling:
             self.global_avg_pool = nn.Sequential(
-                nn.AdaptiveAvgPool2D(
-                    output_size=(1, 1), data_format=data_format),
+                # nn.AdaptiveAvgPool2D(
+                #     output_size=(1, 1), data_format=data_format),
+                CustomAvgPool2D(),
                 layers.ConvBNReLU(
                     in_channels,
                     out_channels,
