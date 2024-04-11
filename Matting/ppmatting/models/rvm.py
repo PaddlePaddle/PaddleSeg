@@ -1,4 +1,4 @@
-# This program is about RVM implementation based on PaddlePaddle according to 
+# This program is about RVM implementation based on PaddlePaddle according to
 # https://github.com/PeterL1n/RobustVideoMatting.
 # Copyright (C) 2022 PaddlePaddle Authors.
 
@@ -96,14 +96,13 @@ class RVM(nn.Layer):
             downsample_ratio = self.downsample_ratio
         if r1 is not None and r2 is not None and r3 is not None and r4 is not None:
             self.r1, self.r2, self.r3, self.r4 = r1, r2, r3, r4
-        result = self.forward_(
-            src,
-            r1=self.r1,
-            r2=self.r2,
-            r3=self.r3,
-            r4=self.r4,
-            downsample_ratio=downsample_ratio,
-            segmentation_pass=segmentation_pass)
+        result = self.forward_(src,
+                               r1=self.r1,
+                               r2=self.r2,
+                               r3=self.r3,
+                               r4=self.r4,
+                               downsample_ratio=downsample_ratio,
+                               segmentation_pass=segmentation_pass)
         if self.training:
             raise RuntimeError('Sorry! RVM now do not support training')
         else:
@@ -168,30 +167,28 @@ class RVM(nn.Layer):
 
     def backbone_forward(self, x):
         if x.ndim == 5:
-            B, T = paddle.shape(x)[:2]
+            B, T = x.shape[:2]
             features = self.backbone(x.flatten(0, 1))
             for i, f in enumerate(features):
-                features[i] = f.reshape((B, T, *(paddle.shape(f)[1:])))
+                features[i] = f.reshape((B, T, *(f.shape[1:])))
         else:
             features = self.backbone(x)
         return features
 
     def _interpolate(self, x: Tensor, scale_factor: float):
         if x.ndim == 5:
-            B, T = paddle.shape(x)[:2]
-            x = F.interpolate(
-                x.flatten(0, 1),
-                scale_factor=scale_factor,
-                mode='bilinear',
-                align_corners=False)
-            *_, C, H, W = paddle.shape(x)[-3:]
+            B, T = x.shape[:2]
+            x = F.interpolate(x.flatten(0, 1),
+                              scale_factor=scale_factor,
+                              mode='bilinear',
+                              align_corners=False)
+            *_, C, H, W = x.shape[-3:]
             x = x.reshape((B, T, C, H, W))
         else:
-            x = F.interpolate(
-                x,
-                scale_factor=scale_factor,
-                mode='bilinear',
-                align_corners=False)
+            x = F.interpolate(x,
+                              scale_factor=scale_factor,
+                              mode='bilinear',
+                              align_corners=False)
         return x
 
     def init_weight(self):
@@ -200,17 +197,15 @@ class RVM(nn.Layer):
 
 
 class LRASPP(nn.Layer):
+
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.aspp1 = nn.Sequential(
-            nn.Conv2D(
-                in_channels, out_channels, 1, bias_attr=False),
-            nn.BatchNorm2D(out_channels),
-            nn.ReLU())
+            nn.Conv2D(in_channels, out_channels, 1, bias_attr=False),
+            nn.BatchNorm2D(out_channels), nn.ReLU())
         self.aspp2 = nn.Sequential(
             nn.AdaptiveAvgPool2D(1),
-            nn.Conv2D(
-                in_channels, out_channels, 1, bias_attr=False),
+            nn.Conv2D(in_channels, out_channels, 1, bias_attr=False),
             nn.Sigmoid())
 
     def forward_single_frame(self, x):
@@ -219,7 +214,7 @@ class LRASPP(nn.Layer):
     def forward_time_series(self, x):
         B, T = x.shape[:2]
         x = self.forward_single_frame(x.flatten(0, 1))
-        x = x.reshape((B, T, *(paddle.shape(x)[1:])))
+        x = x.reshape((B, T, *(x.shape[1:])))
         return x
 
     def forward(self, x):
@@ -230,6 +225,7 @@ class LRASPP(nn.Layer):
 
 
 class RecurrentDecoder(nn.Layer):
+
     def __init__(self, feature_channels, decoder_channels):
         super().__init__()
         self.avgpool = AvgPool()
@@ -242,16 +238,9 @@ class RecurrentDecoder(nn.Layer):
                                        3, decoder_channels[2])
         self.decode0 = OutputBlock(decoder_channels[2], 3, decoder_channels[3])
 
-    def forward(self,
-                s0: Tensor,
-                f1: Tensor,
-                f2: Tensor,
-                f3: Tensor,
-                f4: Tensor,
-                r1: Optional[Tensor],
-                r2: Optional[Tensor],
-                r3: Optional[Tensor],
-                r4: Optional[Tensor]):
+    def forward(self, s0: Tensor, f1: Tensor, f2: Tensor, f3: Tensor,
+                f4: Tensor, r1: Optional[Tensor], r2: Optional[Tensor],
+                r3: Optional[Tensor], r4: Optional[Tensor]):
         s1, s2, s3 = self.avgpool(s0)
         x4, r4 = self.decode4(f4, r4)
         x3, r3 = self.decode3(x4, f3, s3, r3)
@@ -262,6 +251,7 @@ class RecurrentDecoder(nn.Layer):
 
 
 class AvgPool(nn.Layer):
+
     def __init__(self):
         super().__init__()
         self.avgpool = nn.AvgPool2D(2, 2, ceil_mode=True)
@@ -273,12 +263,12 @@ class AvgPool(nn.Layer):
         return s1, s2, s3
 
     def forward_time_series(self, s0):
-        B, T = paddle.shape(s0)[:2]
+        B, T = s0.shape[:2]
         s0 = s0.flatten(0, 1)
         s1, s2, s3 = self.forward_single_frame(s0)
-        s1 = s1.reshape((B, T, *(paddle.shape(s1)[1:])))
-        s2 = s2.reshape((B, T, *(paddle.shape(s2)[1:])))
-        s3 = s3.reshape((B, T, *(paddle.shape(s3)[1:])))
+        s1 = s1.reshape((B, T, *(s1.shape[1:])))
+        s2 = s2.reshape((B, T, *(s2.shape[1:])))
+        s3 = s3.reshape((B, T, *(s3.shape[1:])))
         return s1, s2, s3
 
     def forward(self, s0):
@@ -289,6 +279,7 @@ class AvgPool(nn.Layer):
 
 
 class BottleneckBlock(nn.Layer):
+
     def __init__(self, channels):
         super().__init__()
         self.channels = channels
@@ -302,26 +293,28 @@ class BottleneckBlock(nn.Layer):
 
 
 class UpsamplingBlock(nn.Layer):
+
     def __init__(self, in_channels, skip_channels, src_channels, out_channels):
         super().__init__()
         self.out_channels = out_channels
-        self.upsample = nn.Upsample(
-            scale_factor=2, mode='bilinear', align_corners=False)
+        self.upsample = nn.Upsample(scale_factor=2,
+                                    mode='bilinear',
+                                    align_corners=False)
         self.conv = nn.Sequential(
-            nn.Conv2D(
-                in_channels + skip_channels + src_channels,
-                out_channels,
-                3,
-                1,
-                1,
-                bias_attr=False),
+            nn.Conv2D(in_channels + skip_channels + src_channels,
+                      out_channels,
+                      3,
+                      1,
+                      1,
+                      bias_attr=False),
             nn.BatchNorm2D(out_channels),
-            nn.ReLU(), )
+            nn.ReLU(),
+        )
         self.gru = ConvGRU(out_channels // 2)
 
     def forward_single_frame(self, x, f, s, r: Optional[Tensor]):
         x = self.upsample(x)
-        x = x[:, :, :paddle.shape(s)[2], :paddle.shape(s)[3]]
+        x = x[:, :, :s.shape[2], :s.shape[3]]
         x = paddle.concat([x, f, s], axis=1)
         x = self.conv(x)
         a, b = x.split(2, axis=1)
@@ -338,7 +331,7 @@ class UpsamplingBlock(nn.Layer):
         x = x[:, :, :H, :W]
         x = paddle.concat([x, f, s], axis=1)
         x = self.conv(x)
-        _, c, h, w = paddle.shape(x)
+        _, c, h, w = x.shape
         x = x.reshape((B, T, c, h, w))
         a, b = x.split(2, axis=2)
         b, r = self.gru(b, r)
@@ -353,27 +346,28 @@ class UpsamplingBlock(nn.Layer):
 
 
 class OutputBlock(nn.Layer):
+
     def __init__(self, in_channels, src_channels, out_channels):
         super().__init__()
-        self.upsample = nn.Upsample(
-            scale_factor=2, mode='bilinear', align_corners=False)
+        self.upsample = nn.Upsample(scale_factor=2,
+                                    mode='bilinear',
+                                    align_corners=False)
         self.conv = nn.Sequential(
-            nn.Conv2D(
-                in_channels + src_channels,
-                out_channels,
-                3,
-                1,
-                1,
-                bias_attr=False),
+            nn.Conv2D(in_channels + src_channels,
+                      out_channels,
+                      3,
+                      1,
+                      1,
+                      bias_attr=False),
             nn.BatchNorm2D(out_channels),
             nn.ReLU(),
-            nn.Conv2D(
-                out_channels, out_channels, 3, 1, 1, bias_attr=False),
+            nn.Conv2D(out_channels, out_channels, 3, 1, 1, bias_attr=False),
             nn.BatchNorm2D(out_channels),
-            nn.ReLU(), )
+            nn.ReLU(),
+        )
 
     def forward_single_frame(self, x, s):
-        _, _, H, W = paddle.shape(s)
+        _, _, H, W = s.shape
         x = self.upsample(x)
         x = x[:, :, :H, :W]
         x = paddle.concat([x, s], axis=1)
@@ -381,14 +375,14 @@ class OutputBlock(nn.Layer):
         return x
 
     def forward_time_series(self, x, s):
-        B, T, C, H, W = paddle.shape(s)
+        B, T, C, H, W = s.shape
         x = x.flatten(0, 1)
         s = s.flatten(0, 1)
         x = self.upsample(x)
         x = x[:, :, :H, :W]
         x = paddle.concat([x, s], axis=1)
         x = self.conv(x)
-        x = paddle.reshape(x, (B, T, paddle.shape(x)[1], H, W))
+        x = paddle.reshape(x, (B, T, x.shape[1], H, W))
         return x
 
     def forward(self, x, s):
@@ -399,16 +393,15 @@ class OutputBlock(nn.Layer):
 
 
 class ConvGRU(nn.Layer):
+
     def __init__(self, channels, kernel_size=3, padding=1):
         super().__init__()
         self.channels = channels
         self.ih = nn.Sequential(
-            nn.Conv2D(
-                channels * 2, channels * 2, kernel_size, padding=padding),
+            nn.Conv2D(channels * 2, channels * 2, kernel_size, padding=padding),
             nn.Sigmoid())
         self.hh = nn.Sequential(
-            nn.Conv2D(
-                channels * 2, channels, kernel_size, padding=padding),
+            nn.Conv2D(channels * 2, channels, kernel_size, padding=padding),
             nn.Tanh())
 
     def forward_single_frame(self, x, h):
@@ -428,8 +421,7 @@ class ConvGRU(nn.Layer):
     def forward(self, x, h=None):
         if h is None:
             h = paddle.zeros(
-                (paddle.shape(x)[0], paddle.shape(x)[-3], paddle.shape(x)[-2],
-                 paddle.shape(x)[-1]),
+                (x.shape[0], x.shape[-3], x.shape[-2], x.shape[-1]),
                 dtype=x.dtype)
 
         if x.ndim == 5:
@@ -439,6 +431,7 @@ class ConvGRU(nn.Layer):
 
 
 class Projection(nn.Layer):
+
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.conv = nn.Conv2D(in_channels, out_channels, 1)
@@ -447,9 +440,9 @@ class Projection(nn.Layer):
         return self.conv(x)
 
     def forward_time_series(self, x):
-        B, T = paddle.shape(x)[:2]
+        B, T = x.shape[:2]
         x = self.conv(x.flatten(0, 1))
-        _, C, H, W = paddle.shape(x)
+        _, C, H, W = x.shape
         x = x.reshape((B, T, C, H, W))
         return x
 
@@ -461,6 +454,7 @@ class Projection(nn.Layer):
 
 
 class FastGuidedFilterRefiner(nn.Layer):
+
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.guilded_filter = FastGuidedFilter(1)
@@ -470,23 +464,20 @@ class FastGuidedFilterRefiner(nn.Layer):
         base_src_gray = base_src.mean(1, keepdim=True)
 
         fgr, pha = self.guilded_filter(
-            paddle.concat(
-                [base_src, base_src_gray], axis=1),
-            paddle.concat(
-                [base_fgr, base_pha], axis=1),
-            paddle.concat(
-                [fine_src, fine_src_gray], axis=1)).split(
-                    [3, 1], axis=1)
+            paddle.concat([base_src, base_src_gray], axis=1),
+            paddle.concat([base_fgr, base_pha], axis=1),
+            paddle.concat([fine_src, fine_src_gray], axis=1)).split([3, 1],
+                                                                    axis=1)
 
         return fgr, pha
 
     def forward_time_series(self, fine_src, base_src, base_fgr, base_pha):
         B, T = fine_src.shape[:2]
-        fgr, pha = self.forward_single_frame(
-            fine_src.flatten(0, 1),
-            base_src.flatten(0, 1),
-            base_fgr.flatten(0, 1), base_pha.flatten(0, 1))
-        *_, C, H, W = paddle.shape(fgr)
+        fgr, pha = self.forward_single_frame(fine_src.flatten(0, 1),
+                                             base_src.flatten(0, 1),
+                                             base_fgr.flatten(0, 1),
+                                             base_pha.flatten(0, 1))
+        *_, C, H, W = fgr.shape
         fgr = fgr.reshape((B, T, C, H, W))
         pha = pha.reshape((B, T, 1, H, W))
         return fgr, pha
@@ -501,35 +492,34 @@ class FastGuidedFilterRefiner(nn.Layer):
 
 
 class DeepGuidedFilterRefiner(nn.Layer):
+
     def __init__(self, hid_channels=16):
         super().__init__()
-        self.box_filter = nn.Conv2D(
-            4, 4, kernel_size=3, padding=1, bias_attr=False, groups=4)
+        self.box_filter = nn.Conv2D(4,
+                                    4,
+                                    kernel_size=3,
+                                    padding=1,
+                                    bias_attr=False,
+                                    groups=4)
         self.box_filter.weight.set_value(
             paddle.zeros_like(self.box_filter.weight) + 1 / 9)
         self.conv = nn.Sequential(
-            nn.Conv2D(
-                4 * 2 + hid_channels,
-                hid_channels,
-                kernel_size=1,
-                bias_attr=False),
-            nn.BatchNorm2D(hid_channels),
-            nn.ReLU(),
-            nn.Conv2D(
-                hid_channels, hid_channels, kernel_size=1, bias_attr=False),
-            nn.BatchNorm2D(hid_channels),
-            nn.ReLU(),
-            nn.Conv2D(
-                hid_channels, 4, kernel_size=1, bias_attr=True))
+            nn.Conv2D(4 * 2 + hid_channels,
+                      hid_channels,
+                      kernel_size=1,
+                      bias_attr=False), nn.BatchNorm2D(hid_channels), nn.ReLU(),
+            nn.Conv2D(hid_channels,
+                      hid_channels,
+                      kernel_size=1,
+                      bias_attr=False), nn.BatchNorm2D(hid_channels), nn.ReLU(),
+            nn.Conv2D(hid_channels, 4, kernel_size=1, bias_attr=True))
 
     def forward_single_frame(self, fine_src, base_src, base_fgr, base_pha,
                              base_hid):
         fine_x = paddle.concat(
-            [fine_src, fine_src.mean(
-                1, keepdim=True)], axis=1)
+            [fine_src, fine_src.mean(1, keepdim=True)], axis=1)
         base_x = paddle.concat(
-            [base_src, base_src.mean(
-                1, keepdim=True)], axis=1)
+            [base_src, base_src.mean(1, keepdim=True)], axis=1)
         base_y = paddle.concat([base_fgr, base_pha], axis=1)
 
         mean_x = self.box_filter(base_x)
@@ -540,7 +530,7 @@ class DeepGuidedFilterRefiner(nn.Layer):
         A = self.conv(paddle.concat([cov_xy, var_x, base_hid], axis=1))
         b = mean_y - A * mean_x
 
-        H, W = paddle.shape(fine_src)[2:]
+        H, W = fine_src.shape[2:]
         A = F.interpolate(A, (H, W), mode='bilinear', align_corners=False)
         b = F.interpolate(b, (H, W), mode='bilinear', align_corners=False)
 
@@ -551,12 +541,12 @@ class DeepGuidedFilterRefiner(nn.Layer):
     def forward_time_series(self, fine_src, base_src, base_fgr, base_pha,
                             base_hid):
         B, T = fine_src.shape[:2]
-        fgr, pha = self.forward_single_frame(
-            fine_src.flatten(0, 1),
-            base_src.flatten(0, 1),
-            base_fgr.flatten(0, 1),
-            base_pha.flatten(0, 1), base_hid.flatten(0, 1))
-        *_, C, H, W = paddle.shape(fgr)
+        fgr, pha = self.forward_single_frame(fine_src.flatten(0, 1),
+                                             base_src.flatten(0, 1),
+                                             base_fgr.flatten(0, 1),
+                                             base_pha.flatten(0, 1),
+                                             base_hid.flatten(0, 1))
+        *_, C, H, W = fgr.shape
         fgr = fgr.reshape((B, T, C, H, W))
         pha = pha.reshape((B, T, 1, H, W))
         return fgr, pha

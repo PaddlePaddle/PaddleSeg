@@ -54,11 +54,10 @@ class AttentionBlock(nn.Layer):
         self.out_channels = out_channels
         self.channels = channels
         self.share_key_query = share_key_query
-        self.key_project = self.build_project(
-            key_in_channels,
-            channels,
-            num_convs=key_query_num_convs,
-            use_conv_module=key_query_norm)
+        self.key_project = self.build_project(key_in_channels,
+                                              channels,
+                                              num_convs=key_query_num_convs,
+                                              use_conv_module=key_query_norm)
         if share_key_query:
             self.query_project = self.key_project
         else:
@@ -90,19 +89,17 @@ class AttentionBlock(nn.Layer):
     def build_project(self, in_channels, channels, num_convs, use_conv_module):
         if use_conv_module:
             convs = [
-                layers.ConvBNReLU(
-                    in_channels=in_channels,
-                    out_channels=channels,
-                    kernel_size=1,
-                    bias_attr=False)
+                layers.ConvBNReLU(in_channels=in_channels,
+                                  out_channels=channels,
+                                  kernel_size=1,
+                                  bias_attr=False)
             ]
             for _ in range(num_convs - 1):
                 convs.append(
-                    layers.ConvBNReLU(
-                        in_channels=channels,
-                        out_channels=channels,
-                        kernel_size=1,
-                        bias_attr=False))
+                    layers.ConvBNReLU(in_channels=channels,
+                                      out_channels=channels,
+                                      kernel_size=1,
+                                      bias_attr=False))
         else:
             convs = [nn.Conv2D(in_channels, channels, 1)]
             for _ in range(num_convs - 1):
@@ -115,7 +112,7 @@ class AttentionBlock(nn.Layer):
         return convs
 
     def forward(self, query_feats, key_feats):
-        query_shape = paddle.shape(query_feats)
+        query_shape = query_feats.shape
         query = self.query_project(query_feats)
         if self.query_downsample is not None:
             query = self.query_downsample(query)
@@ -204,7 +201,7 @@ class PAM(nn.Layer):
             default_initializer=nn.initializer.Constant(0))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
 
         # query: n, h * w, c1
         query = self.query_conv(x)
@@ -249,7 +246,7 @@ class CAM(nn.Layer):
             default_initializer=nn.initializer.Constant(0))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         # query: n, c, h * w
         query = paddle.reshape(x, (0, self.channels, -1))
         # key: n, h * w, c
@@ -259,8 +256,8 @@ class CAM(nn.Layer):
         # sim: n, c, c
         sim = paddle.bmm(query, key)
         # The danet author claims that this can avoid gradient divergence
-        sim = paddle.max(sim, axis=-1, keepdim=True).tile(
-            [1, 1, self.channels]) - sim
+        sim = paddle.max(sim, axis=-1, keepdim=True).tile([1, 1, self.channels
+                                                           ]) - sim
         sim = F.softmax(sim, axis=-1)
 
         # feat: from (n, c, h * w) to (n, c, h, w)

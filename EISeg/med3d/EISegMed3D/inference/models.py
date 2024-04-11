@@ -12,23 +12,29 @@ from inference.ops import DistMaps3D, ScaleLayer, BatchImageNormalize3D
 
 
 class ISModel3D(nn.Layer):
+
     def __init__(
-            self,
-            use_rgb_conv=True,
-            with_aux_output=False,
-            norm_radius=2,
-            use_disks=False,
-            cpu_dist_maps=False,
-            clicks_groups=None,
-            with_prev_mask=False,  # True
-            use_leaky_relu=False,
-            binary_prev_mask=False,
-            conv_extend=False,
-            norm_layer=nn.BatchNorm3D,
-            norm_mean_std=(
-                [0.00040428873, ],
-                [0.00059983705, ],
-            ), ):  #  image.std(): [0.00053328] image.mean() [0.00023692])
+        self,
+        use_rgb_conv=True,
+        with_aux_output=False,
+        norm_radius=2,
+        use_disks=False,
+        cpu_dist_maps=False,
+        clicks_groups=None,
+        with_prev_mask=False,  # True
+        use_leaky_relu=False,
+        binary_prev_mask=False,
+        conv_extend=False,
+        norm_layer=nn.BatchNorm3D,
+        norm_mean_std=(
+            [
+                0.00040428873,
+            ],
+            [
+                0.00059983705,
+            ],
+        ),
+    ):  #  image.std(): [0.00053328] image.mean() [0.00023692])
         super().__init__()
 
         self.with_aux_output = with_aux_output
@@ -47,67 +53,59 @@ class ISModel3D(nn.Layer):
 
         if use_rgb_conv:
             rgb_conv_layers = [
-                nn.Conv3D(
-                    in_channels=1 + self.coord_feature_ch,
-                    out_channels=6 + self.coord_feature_ch,
-                    kernel_size=1),
+                nn.Conv3D(in_channels=1 + self.coord_feature_ch,
+                          out_channels=6 + self.coord_feature_ch,
+                          kernel_size=1),
                 norm_layer(6 + self.coord_feature_ch),
-                nn.LeakyReLU(negative_slope=0.2)
-                if use_leaky_relu else nn.ReLU(),
-                nn.Conv3D(
-                    in_channels=6 + self.coord_feature_ch,
-                    out_channels=1,
-                    kernel_size=1),
+                nn.LeakyReLU(
+                    negative_slope=0.2) if use_leaky_relu else nn.ReLU(),
+                nn.Conv3D(in_channels=6 + self.coord_feature_ch,
+                          out_channels=1,
+                          kernel_size=1),
             ]
             self.rgb_conv = nn.Sequential(*rgb_conv_layers)
 
         elif conv_extend:
             self.rgb_conv = None
-            self.maps_transform = nn.Conv3D(
-                in_channels=self.coord_feature_ch,
-                out_channels=64,
-                kernel_size=3,
-                stride=2,
-                padding=1)
+            self.maps_transform = nn.Conv3D(in_channels=self.coord_feature_ch,
+                                            out_channels=64,
+                                            kernel_size=3,
+                                            stride=2,
+                                            padding=1)
         else:
             self.rgb_conv = None
             mt_layers = [
-                nn.Conv3D(
-                    in_channels=self.coord_feature_ch,
-                    out_channels=16,
-                    kernel_size=1),
-                nn.LeakyReLU(negative_slope=0.2)
-                if use_leaky_relu else nn.ReLU(),
-                nn.Conv3D(
-                    in_channels=16,
-                    out_channels=16,
-                    kernel_size=3,
-                    stride=1,
-                    padding=1),
-                ScaleLayer(
-                    init_value=0.05, lr_mult=1),
+                nn.Conv3D(in_channels=self.coord_feature_ch,
+                          out_channels=16,
+                          kernel_size=1),
+                nn.LeakyReLU(
+                    negative_slope=0.2) if use_leaky_relu else nn.ReLU(),
+                nn.Conv3D(in_channels=16,
+                          out_channels=16,
+                          kernel_size=3,
+                          stride=1,
+                          padding=1),
+                ScaleLayer(init_value=0.05, lr_mult=1),
             ]
             self.maps_transform = nn.Sequential(*mt_layers)
         if self.clicks_groups is not None:
             self.dist_maps = nn.LayerList()
             for click_radius in self.clicks_groups:
                 self.dist_maps.append(
-                    DistMaps3D(
-                        norm_radius=click_radius,
-                        spatial_scale=1.0,
-                        cpu_mode=cpu_dist_maps,
-                        use_disks=use_disks))
+                    DistMaps3D(norm_radius=click_radius,
+                               spatial_scale=1.0,
+                               cpu_mode=cpu_dist_maps,
+                               use_disks=use_disks))
         else:
-            self.dist_maps = DistMaps3D(
-                norm_radius=norm_radius,
-                spatial_scale=1.0,
-                cpu_mode=cpu_dist_maps,
-                use_disks=use_disks)
+            self.dist_maps = DistMaps3D(norm_radius=norm_radius,
+                                        spatial_scale=1.0,
+                                        cpu_mode=cpu_dist_maps,
+                                        use_disks=use_disks)
 
     def forward(self, image, coord_features):
         if self.rgb_conv is not None:
-            x = self.rgb_conv(paddle.concat(
-                (image, coord_features), axis=1))  # [B, 4, H, W, D] #
+            x = self.rgb_conv(paddle.concat((image, coord_features),
+                                            axis=1))  # [B, 4, H, W, D] #
             outputs = self.backbone_forward(x)
         else:
             coord_features = self.maps_transform(
@@ -116,17 +114,19 @@ class ISModel3D(nn.Layer):
 
         outputs["instances"] = nn.functional.interpolate(
             outputs["instances"],
-            size=paddle.shape(image)[2:],  # [4, 20, 512, 512, 12]
+            size=image.shape[2:],  # [4, 20, 512, 512, 12]
             mode="trilinear",
             align_corners=True,
-            data_format="NCDHW", )  # image [4  , 1  , 512, 512, 12 ]
+            data_format="NCDHW",
+        )  # image [4  , 1  , 512, 512, 12 ]
         if self.with_aux_output:
             outputs["instances_aux"] = nn.functional.interpolate(
                 outputs["instances_aux"],
-                size=paddle.shape(image)[2:],
+                size=image.shape[2:],
                 mode="biltrilinearinear",
                 align_corners=True,
-                data_format="NCDHW", )
+                data_format="NCDHW",
+            )
         return outputs
 
     def prepare_input(self, image):
@@ -134,14 +134,28 @@ class ISModel3D(nn.Layer):
         if self.with_prev_mask:
             prev_mask = paddle.slice(
                 image,
-                axes=[1, ],
-                starts=[1, ],
-                ends=[1000, ], )
+                axes=[
+                    1,
+                ],
+                starts=[
+                    1,
+                ],
+                ends=[
+                    1000,
+                ],
+            )
             image = paddle.slice(
                 image,
-                axes=[1, ],
-                starts=[0, ],
-                ends=[1, ], )
+                axes=[
+                    1,
+                ],
+                starts=[
+                    0,
+                ],
+                ends=[
+                    1,
+                ],
+            )
             # prev_mask = image[:, 1:, :, :, :]
             # image = image[:, :1, :, :, :]
             if self.binary_prev_mask:
@@ -160,8 +174,8 @@ class ISModel3D(nn.Layer):
             points)  #  [16, 1, 512, 512, 12], [16, 48, 4]. # [B, 2, H, W, D]
 
         if prev_mask is not None:
-            coord_features = paddle.concat(
-                (prev_mask, coord_features), axis=1)  # [B, 3, H, W, D]
+            coord_features = paddle.concat((prev_mask, coord_features),
+                                           axis=1)  # [B, 3, H, W, D]
 
         return coord_features
 
@@ -175,8 +189,7 @@ def split_points_by_order(tpoints,
 
     groups = [x if x > 0 else num_points for x in groups]
     group_points = [
-        np.full(
-            (bs, 2 * x, 3), -1, dtype=np.float32) for x in groups
+        np.full((bs, 2 * x, 3), -1, dtype=np.float32) for x in groups
     ]
 
     last_point_indx_group = np.zeros((bs, num_groups, 2), dtype=np.int)
@@ -191,9 +204,8 @@ def split_points_by_order(tpoints,
                 continue
 
             is_negative = int(pindx >= num_points)
-            if group_id >= num_groups or (
-                    group_id == 0 and
-                    is_negative):  # disable negative first click
+            if group_id >= num_groups or (group_id == 0 and is_negative
+                                          ):  # disable negative first click
                 group_id = num_groups - 1
 
             new_point_indx = last_point_indx_group[bindx, group_id, is_negative]
@@ -202,8 +214,7 @@ def split_points_by_order(tpoints,
             group_points[group_id][bindx, new_point_indx, :] = point
 
     group_points = [
-        paddle.to_tensor(
-            x, dtype=tpoints.dtype) for x in group_points
+        paddle.to_tensor(x, dtype=tpoints.dtype) for x in group_points
     ]
 
     return group_points
@@ -213,6 +224,7 @@ from paddleseg.utils import utils
 
 
 class LUConv(nn.Layer):
+
     def __init__(self, nchan, elu):
         super(LUConv, self).__init__()
         self.relu1 = nn.ELU() if elu else nn.PReLU(nchan)
@@ -247,8 +259,10 @@ class InputTransition(nn.Layer):
         self.num_features = 16
         self.in_channels = in_channels
 
-        self.conv1 = nn.Conv3D(
-            self.in_channels, self.num_features, kernel_size=5, padding=2)
+        self.conv1 = nn.Conv3D(self.in_channels,
+                               self.num_features,
+                               kernel_size=5,
+                               padding=2)
 
         self.bn1 = nn.BatchNorm3D(self.num_features)
 
@@ -263,6 +277,7 @@ class InputTransition(nn.Layer):
 
 
 class DownTransition(nn.Layer):
+
     def __init__(self,
                  inChans,
                  nConvs,
@@ -278,8 +293,10 @@ class DownTransition(nn.Layer):
         super(DownTransition, self).__init__()
         outChans = 2 * inChans
         self.if_dropout = dropout
-        self.down_conv = nn.Conv3D(
-            inChans, outChans, kernel_size=kernel, stride=downsample_stride)
+        self.down_conv = nn.Conv3D(inChans,
+                                   outChans,
+                                   kernel_size=kernel,
+                                   stride=downsample_stride)
         self.bn1 = nn.BatchNorm3D(outChans)
         self.relu1 = nn.ELU() if elu else nn.PReLU(outChans)
         self.relu2 = nn.ELU() if elu else nn.PReLU(outChans)
@@ -297,6 +314,7 @@ class DownTransition(nn.Layer):
 
 
 class UpTransition(nn.Layer):
+
     def __init__(
             self,
             inChans,
@@ -306,7 +324,8 @@ class UpTransition(nn.Layer):
             dropout=False,
             dropout2=False,
             upsample_stride_size=(2, 2, 2),
-            kernel=(2, 2, 2), ):
+            kernel=(2, 2, 2),
+    ):
         super(UpTransition, self).__init__()
         """
         1. Add dropout to input and skip input optionally (generalization)
@@ -314,11 +333,10 @@ class UpTransition(nn.Layer):
         3. concate the upsampled and skipx (multi-leval feature fusion)
         4. Add nConvs convs and residually add with result of step(residual + nonlinearity)
         """
-        self.up_conv = nn.Conv3DTranspose(
-            inChans,
-            outChans // 2,
-            kernel_size=kernel,
-            stride=upsample_stride_size)
+        self.up_conv = nn.Conv3DTranspose(inChans,
+                                          outChans // 2,
+                                          kernel_size=kernel,
+                                          stride=upsample_stride_size)
 
         self.bn1 = nn.BatchNorm3D(outChans // 2)
         self.relu1 = nn.ELU() if elu else nn.PReLU(outChans // 2)
@@ -341,13 +359,16 @@ class UpTransition(nn.Layer):
 
 
 class OutputTransition(nn.Layer):
+
     def __init__(self, in_channels, num_classes, elu):
         """
         conv the output down to channels as the desired classesv
         """
         super(OutputTransition, self).__init__()
-        self.conv1 = nn.Conv3D(
-            in_channels, num_classes, kernel_size=5, padding=2)
+        self.conv1 = nn.Conv3D(in_channels,
+                               num_classes,
+                               kernel_size=5,
+                               padding=2)
         self.bn1 = nn.BatchNorm3D(num_classes)
         self.relu1 = nn.ELU() if elu else nn.PReLU(num_classes)
 
@@ -371,63 +392,64 @@ class VNet(nn.Layer):
             num_classes=2,
             pretrained=None,
             kernel_size=((2, 2, 2), (2, 2, 2), (2, 2, 2), (2, 2, 2)),
-            stride_size=((2, 2, 2), (2, 2, 2), (2, 2, 2), (2, 2, 2)), ):
+            stride_size=((2, 2, 2), (2, 2, 2), (2, 2, 2), (2, 2, 2)),
+    ):
         super().__init__()
         self.best_loss = 1000000
         self.num_classes = num_classes
         self.in_channels = in_channels
 
         self.in_tr = InputTransition(in_channels, elu=elu)
-        self.down_tr32 = DownTransition(
-            16, 1, elu, downsample_stride=stride_size[0], kernel=kernel_size[0])
-        self.down_tr64 = DownTransition(
-            32, 2, elu, downsample_stride=stride_size[1], kernel=kernel_size[1])
-        self.down_tr128 = DownTransition(
-            64,
-            3,
-            elu,
-            dropout=True,
-            downsample_stride=stride_size[2],
-            kernel=kernel_size[2])
-        self.down_tr256 = DownTransition(
-            128,
-            2,
-            elu,
-            dropout=True,
-            downsample_stride=stride_size[3],
-            kernel=kernel_size[3])
-        self.up_tr256 = UpTransition(
-            256,
-            256,
-            2,
-            elu,
-            dropout=True,
-            dropout2=True,
-            upsample_stride_size=stride_size[3],
-            kernel=kernel_size[3])
-        self.up_tr128 = UpTransition(
-            256,
-            128,
-            2,
-            elu,
-            dropout=True,
-            dropout2=True,
-            upsample_stride_size=stride_size[2],
-            kernel=kernel_size[2])
-        self.up_tr64 = UpTransition(
-            128,
-            64,
-            1,
-            elu,
-            upsample_stride_size=stride_size[1],
-            kernel=kernel_size[1])
-        self.up_tr32 = UpTransition(
-            64,
-            32,
-            1,
-            elu,
-            upsample_stride_size=stride_size[0],
-            kernel=kernel_size[0])
+        self.down_tr32 = DownTransition(16,
+                                        1,
+                                        elu,
+                                        downsample_stride=stride_size[0],
+                                        kernel=kernel_size[0])
+        self.down_tr64 = DownTransition(32,
+                                        2,
+                                        elu,
+                                        downsample_stride=stride_size[1],
+                                        kernel=kernel_size[1])
+        self.down_tr128 = DownTransition(64,
+                                         3,
+                                         elu,
+                                         dropout=True,
+                                         downsample_stride=stride_size[2],
+                                         kernel=kernel_size[2])
+        self.down_tr256 = DownTransition(128,
+                                         2,
+                                         elu,
+                                         dropout=True,
+                                         downsample_stride=stride_size[3],
+                                         kernel=kernel_size[3])
+        self.up_tr256 = UpTransition(256,
+                                     256,
+                                     2,
+                                     elu,
+                                     dropout=True,
+                                     dropout2=True,
+                                     upsample_stride_size=stride_size[3],
+                                     kernel=kernel_size[3])
+        self.up_tr128 = UpTransition(256,
+                                     128,
+                                     2,
+                                     elu,
+                                     dropout=True,
+                                     dropout2=True,
+                                     upsample_stride_size=stride_size[2],
+                                     kernel=kernel_size[2])
+        self.up_tr64 = UpTransition(128,
+                                    64,
+                                    1,
+                                    elu,
+                                    upsample_stride_size=stride_size[1],
+                                    kernel=kernel_size[1])
+        self.up_tr32 = UpTransition(64,
+                                    32,
+                                    1,
+                                    elu,
+                                    upsample_stride_size=stride_size[0],
+                                    kernel=kernel_size[0])
         self.out_tr = OutputTransition(32, num_classes, elu)
 
         self.pretrained = pretrained
@@ -474,7 +496,8 @@ class VNetModel(ISModel3D):
             num_classes=num_classes,
             pretrained=pretrained,
             kernel_size=kernel_size,
-            stride_size=stride_size, )  # diff: 去除了backbone mult，因为没有backbone
+            stride_size=stride_size,
+        )  # diff: 去除了backbone mult，因为没有backbone
 
     def backbone_forward(self, image, coord_features=None):
         backbone_features = self.feature_extractor(

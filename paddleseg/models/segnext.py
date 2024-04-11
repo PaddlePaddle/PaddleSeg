@@ -50,8 +50,9 @@ class SegNeXt(nn.Layer):
         self.backbone = backbone
 
         in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]
-        self.decode_head = LightHamHead(
-            in_channels=in_channels, num_classes=num_classes, **decoder_cfg)
+        self.decode_head = LightHamHead(in_channels=in_channels,
+                                        num_classes=num_classes,
+                                        **decoder_cfg)
 
         self.align_corners = self.decode_head.align_corners
         self.pretrained = pretrained
@@ -62,31 +63,30 @@ class SegNeXt(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        input_size = paddle.shape(x)[2:]
+        input_size = x.shape[2:]
         feats = self.backbone(x)
         out = self.decode_head(feats)
         return [
-            F.interpolate(
-                out,
-                input_size,
-                mode="bilinear",
-                align_corners=self.align_corners)
+            F.interpolate(out,
+                          input_size,
+                          mode="bilinear",
+                          align_corners=self.align_corners)
         ]
 
 
 class Hamburger(nn.Layer):
+
     def __init__(self, ham_channels=512, num_groups=32, ham_kwargs=None):
         super().__init__()
         self.ham_in = nn.Conv2D(ham_channels, ham_channels, kernel_size=1)
 
         self.ham = NMF2D(ham_kwargs)
 
-        self.ham_out = ConvGNAct(
-            ham_channels,
-            ham_channels,
-            kernel_size=1,
-            num_groups=num_groups,
-            bias_attr=False)
+        self.ham_out = ConvGNAct(ham_channels,
+                                 ham_channels,
+                                 kernel_size=1,
+                                 num_groups=num_groups,
+                                 bias_attr=False)
 
     def forward(self, x):
         enjoy = self.ham_in(x)
@@ -132,23 +132,21 @@ class LightHamHead(nn.Layer):
 
         self.align_corners = align_corners
 
-        self.squeeze = ConvGNAct(
-            sum(in_channels),
-            ham_channels,
-            kernel_size=1,
-            num_groups=num_groups,
-            act_type="relu",
-            bias_attr=False)
+        self.squeeze = ConvGNAct(sum(in_channels),
+                                 ham_channels,
+                                 kernel_size=1,
+                                 num_groups=num_groups,
+                                 act_type="relu",
+                                 bias_attr=False)
 
         self.hamburger = Hamburger(ham_channels, num_groups, ham_kwargs)
 
-        self.align = ConvGNAct(
-            ham_channels,
-            channels,
-            kernel_size=1,
-            num_groups=num_groups,
-            act_type="relu",
-            bias_attr=False)
+        self.align = ConvGNAct(ham_channels,
+                               channels,
+                               kernel_size=1,
+                               num_groups=num_groups,
+                               act_type="relu",
+                               bias_attr=False)
 
         self.dropout = (nn.Dropout2D(dropout_rate)
                         if dropout_rate > 0.0 else nn.Identity())
@@ -156,13 +154,12 @@ class LightHamHead(nn.Layer):
 
     def forward(self, inputs):
         inputs = inputs[1:]
-        target_shape = paddle.shape(inputs[0])[2:]
+        target_shape = inputs[0].shape[2:]
         inputs = [
-            F.interpolate(
-                level,
-                size=target_shape,
-                mode="bilinear",
-                align_corners=self.align_corners) for level in inputs
+            F.interpolate(level,
+                          size=target_shape,
+                          mode="bilinear",
+                          align_corners=self.align_corners) for level in inputs
         ]
 
         inputs = paddle.concat(inputs, axis=1)

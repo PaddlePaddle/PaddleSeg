@@ -71,11 +71,11 @@ class GloRe(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
     def init_weight(self):
@@ -84,6 +84,7 @@ class GloRe(nn.Layer):
 
 
 class GloReHead(nn.Layer):
+
     def __init__(self,
                  num_classes,
                  backbone_indices,
@@ -95,19 +96,20 @@ class GloReHead(nn.Layer):
         super().__init__()
 
         in_channels = backbone_channels[1]
-        self.conv_bn_relu = layers.ConvBNReLU(
-            in_channels, gru_channels, 1, bias_attr=False)
-        self.gru_module = GruModule(
-            num_input=gru_channels,
-            num_state=gru_num_state,
-            num_node=gru_num_node)
+        self.conv_bn_relu = layers.ConvBNReLU(in_channels,
+                                              gru_channels,
+                                              1,
+                                              bias_attr=False)
+        self.gru_module = GruModule(num_input=gru_channels,
+                                    num_state=gru_num_state,
+                                    num_node=gru_num_node)
 
         self.dropout = nn.Dropout(0.1)
         self.classifier = nn.Conv2D(512, num_classes, kernel_size=1)
-        self.auxlayer = layers.AuxLayer(
-            in_channels=backbone_channels[0],
-            inter_channels=backbone_channels[0] // 4,
-            out_channels=num_classes)
+        self.auxlayer = layers.AuxLayer(in_channels=backbone_channels[0],
+                                        inter_channels=backbone_channels[0] //
+                                        4,
+                                        out_channels=num_classes)
 
         self.backbone_indices = backbone_indices
         self.enable_auxiliary_loss = enable_auxiliary_loss
@@ -132,12 +134,15 @@ class GloReHead(nn.Layer):
 
 
 class GCN(nn.Layer):
+
     def __init__(self, num_state, num_node, bias=False):
         super(GCN, self).__init__()
         self.conv1 = nn.Conv1D(num_node, num_node, kernel_size=1)
         self.relu = nn.ReLU()
-        self.conv2 = nn.Conv1D(
-            num_state, num_state, kernel_size=1, bias_attr=bias)
+        self.conv2 = nn.Conv1D(num_state,
+                               num_state,
+                               kernel_size=1,
+                               bias_attr=bias)
 
     def forward(self, x):
         h = self.conv1(paddle.transpose(x, perm=(0, 2, 1)))
@@ -148,6 +153,7 @@ class GCN(nn.Layer):
 
 
 class GruModule(nn.Layer):
+
     def __init__(self,
                  num_input=512,
                  num_state=128,
@@ -160,8 +166,10 @@ class GruModule(nn.Layer):
         self.reduction_dim = nn.Conv2D(num_input, num_state, kernel_size=1)
         self.projection_mat = nn.Conv2D(num_input, num_node, kernel_size=1)
         self.gcn = GCN(num_state=self.num_state, num_node=self.num_node)
-        self.extend_dim = nn.Conv2D(
-            self.num_state, num_input, kernel_size=1, bias_attr=False)
+        self.extend_dim = nn.Conv2D(self.num_state,
+                                    num_input,
+                                    kernel_size=1,
+                                    bias_attr=False)
         self.extend_bn = layers.SyncBatchNorm(num_input, epsilon=1e-4)
 
     def forward(self, input):
@@ -171,16 +179,15 @@ class GruModule(nn.Layer):
         # B, N, H, W
         mat_B = self.projection_mat(input)
         # B, C, H*W
-        reshaped_reduction = paddle.reshape(
-            reduction_dim, shape=[n, self.num_state, h * w])
+        reshaped_reduction = paddle.reshape(reduction_dim,
+                                            shape=[n, self.num_state, h * w])
         # B, N, H*W
         reshaped_B = paddle.reshape(mat_B, shape=[n, self.num_node, h * w])
         # B, N, H*W
         reproject = reshaped_B
         # B, C, N
         node_state_V = paddle.matmul(
-            reshaped_reduction, paddle.transpose(
-                reshaped_B, perm=[0, 2, 1]))
+            reshaped_reduction, paddle.transpose(reshaped_B, perm=[0, 2, 1]))
 
         if self.normalize:
             node_state_V = node_state_V * (1. / reshaped_reduction.shape[2])

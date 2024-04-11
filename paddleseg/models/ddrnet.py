@@ -53,48 +53,65 @@ class DualResNet(nn.Layer):
         highres_planes = planes * 2
         self.enable_auxiliary_loss = enable_auxiliary_loss
         self.conv1 = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels, planes, kernel_size=3, stride=2, padding=1),
-            layers.ConvBNReLU(
-                planes, planes, kernel_size=3, stride=2, padding=1), )
+            layers.ConvBNReLU(in_channels,
+                              planes,
+                              kernel_size=3,
+                              stride=2,
+                              padding=1),
+            layers.ConvBNReLU(planes,
+                              planes,
+                              kernel_size=3,
+                              stride=2,
+                              padding=1),
+        )
         self.relu = nn.ReLU()
         self.layer1 = self._make_layers(BasicBlock, planes, planes,
                                         block_layers[0])
-        self.layer2 = self._make_layers(
-            BasicBlock, planes, planes * 2, block_layers[1], stride=2)
-        self.layer3 = self._make_layers(
-            BasicBlock, planes * 2, planes * 4, block_layers[2], stride=2)
-        self.layer4 = self._make_layers(
-            BasicBlock, planes * 4, planes * 8, block_layers[3], stride=2)
+        self.layer2 = self._make_layers(BasicBlock,
+                                        planes,
+                                        planes * 2,
+                                        block_layers[1],
+                                        stride=2)
+        self.layer3 = self._make_layers(BasicBlock,
+                                        planes * 2,
+                                        planes * 4,
+                                        block_layers[2],
+                                        stride=2)
+        self.layer4 = self._make_layers(BasicBlock,
+                                        planes * 4,
+                                        planes * 8,
+                                        block_layers[3],
+                                        stride=2)
 
-        self.compression3 = layers.ConvBN(
-            planes * 4, highres_planes, kernel_size=1, bias_attr=False)
+        self.compression3 = layers.ConvBN(planes * 4,
+                                          highres_planes,
+                                          kernel_size=1,
+                                          bias_attr=False)
 
-        self.compression4 = layers.ConvBN(
-            planes * 8, highres_planes, kernel_size=1, bias_attr=False)
+        self.compression4 = layers.ConvBN(planes * 8,
+                                          highres_planes,
+                                          kernel_size=1,
+                                          bias_attr=False)
 
-        self.down3 = layers.ConvBN(
-            highres_planes,
-            planes * 4,
-            kernel_size=3,
-            stride=2,
-            bias_attr=False)
+        self.down3 = layers.ConvBN(highres_planes,
+                                   planes * 4,
+                                   kernel_size=3,
+                                   stride=2,
+                                   bias_attr=False)
 
         self.down4 = nn.Sequential(
-            layers.ConvBNReLU(
-                highres_planes,
-                planes * 4,
-                kernel_size=3,
-                stride=2,
-                padding=1,
-                bias_attr=False),
-            layers.ConvBN(
-                planes * 4,
-                planes * 8,
-                kernel_size=3,
-                stride=2,
-                padding=1,
-                bias_attr=False))
+            layers.ConvBNReLU(highres_planes,
+                              planes * 4,
+                              kernel_size=3,
+                              stride=2,
+                              padding=1,
+                              bias_attr=False),
+            layers.ConvBN(planes * 4,
+                          planes * 8,
+                          kernel_size=3,
+                          stride=2,
+                          padding=1,
+                          bias_attr=False))
 
         self.layer3_ = self._make_layers(BasicBlock, planes * 2, highres_planes,
                                          2)
@@ -102,8 +119,11 @@ class DualResNet(nn.Layer):
                                          highres_planes, 2)
         self.layer5_ = self._make_layers(Bottleneck, highres_planes,
                                          highres_planes, 1)
-        self.layer5 = self._make_layers(
-            Bottleneck, planes * 8, planes * 8, 1, stride=2)
+        self.layer5 = self._make_layers(Bottleneck,
+                                        planes * 8,
+                                        planes * 8,
+                                        1,
+                                        stride=2)
 
         self.spp = DAPPM(planes * 16, spp_planes, planes * 4)
         if self.enable_auxiliary_loss:
@@ -128,13 +148,13 @@ class DualResNet(nn.Layer):
         downsample = None
         if stride != 1 or inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2D(
-                    inplanes,
-                    planes * block.expansion,
-                    kernel_size=1,
-                    stride=stride,
-                    bias_attr=False),
-                nn.BatchNorm2D(planes * block.expansion), )
+                nn.Conv2D(inplanes,
+                          planes * block.expansion,
+                          kernel_size=1,
+                          stride=stride,
+                          bias_attr=False),
+                nn.BatchNorm2D(planes * block.expansion),
+            )
         layers = []
         layers.append(block(inplanes, planes, stride, downsample))
         inplanes = planes * block.expansion
@@ -146,7 +166,7 @@ class DualResNet(nn.Layer):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        n, c, h, w = paddle.shape(x)
+        n, c, h, w = x.shape
         width_output = w // 8
         height_output = h // 8
 
@@ -171,10 +191,9 @@ class DualResNet(nn.Layer):
             mode='bilinear')
 
         stage5_out_dual = self.layer5_(self.relu(stage4_merge))
-        x = F.interpolate(
-            self.spp(self.layer5(self.relu(x))),
-            size=[height_output, width_output],
-            mode='bilinear')
+        x = F.interpolate(self.spp(self.layer5(self.relu(x))),
+                          size=[height_output, width_output],
+                          mode='bilinear')
 
         output = self.head(x + stage5_out_dual)
         logit_list = []
@@ -184,8 +203,8 @@ class DualResNet(nn.Layer):
             aux_out = self.aux_head(stage3_merge)
             logit_list.append(aux_out)
         return [
-            F.interpolate(
-                logit, [h, w], mode='bilinear') for logit in logit_list
+            F.interpolate(logit, [h, w], mode='bilinear')
+            for logit in logit_list
         ]
 
 
@@ -199,16 +218,19 @@ class BasicBlock(nn.Layer):
                  downsample=None,
                  no_relu=False):
         super().__init__()
-        self.conv_bn_relu = layers.ConvBNReLU(
-            inplanes,
-            planes,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            bias_attr=False)
+        self.conv_bn_relu = layers.ConvBNReLU(inplanes,
+                                              planes,
+                                              kernel_size=3,
+                                              stride=stride,
+                                              padding=1,
+                                              bias_attr=False)
         self.relu = nn.ReLU()
-        self.conv_bn = layers.ConvBN(
-            planes, planes, kernel_size=3, stride=1, padding=1, bias_attr=False)
+        self.conv_bn = layers.ConvBN(planes,
+                                     planes,
+                                     kernel_size=3,
+                                     stride=1,
+                                     padding=1,
+                                     bias_attr=False)
         self.downsample = downsample
         self.stride = stride
         self.no_relu = no_relu
@@ -236,17 +258,20 @@ class Bottleneck(nn.Layer):
                  downsample=None,
                  no_relu=True):
         super().__init__()
-        self.conv_bn_relu1 = layers.ConvBNReLU(
-            inplanes, planes, kernel_size=1, bias_attr=False)
-        self.conv_bn_relu2 = layers.ConvBNReLU(
-            planes,
-            planes,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            bias_attr=False)
-        self.conv_bn = layers.ConvBN(
-            planes, planes * self.expansion, kernel_size=1, bias_attr=False)
+        self.conv_bn_relu1 = layers.ConvBNReLU(inplanes,
+                                               planes,
+                                               kernel_size=1,
+                                               bias_attr=False)
+        self.conv_bn_relu2 = layers.ConvBNReLU(planes,
+                                               planes,
+                                               kernel_size=3,
+                                               stride=stride,
+                                               padding=1,
+                                               bias_attr=False)
+        self.conv_bn = layers.ConvBN(planes,
+                                     planes * self.expansion,
+                                     kernel_size=1,
+                                     bias_attr=False)
         self.relu = nn.ReLU()
         self.downsample = downsample
         self.stride = stride
@@ -267,102 +292,95 @@ class Bottleneck(nn.Layer):
 
 
 class DAPPM(nn.Layer):
+
     def __init__(self, inplanes, branch_planes, outplanes):
         super().__init__()
         self.scale1 = nn.Sequential(
-            nn.AvgPool2D(
-                kernel_size=5, stride=2, padding=2),
+            nn.AvgPool2D(kernel_size=5, stride=2, padding=2),
             layers.SyncBatchNorm(inplanes),
             nn.ReLU(),
-            nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+            nn.Conv2D(inplanes, branch_planes, kernel_size=1, bias_attr=False),
+        )
         self.scale2 = nn.Sequential(
-            nn.AvgPool2D(
-                kernel_size=9, stride=4, padding=4),
+            nn.AvgPool2D(kernel_size=9, stride=4, padding=4),
             layers.SyncBatchNorm(inplanes),
             nn.ReLU(),
-            nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+            nn.Conv2D(inplanes, branch_planes, kernel_size=1, bias_attr=False),
+        )
         self.scale3 = nn.Sequential(
-            nn.AvgPool2D(
-                kernel_size=17, stride=8, padding=8),
+            nn.AvgPool2D(kernel_size=17, stride=8, padding=8),
             layers.SyncBatchNorm(inplanes),
             nn.ReLU(),
-            nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+            nn.Conv2D(inplanes, branch_planes, kernel_size=1, bias_attr=False),
+        )
         self.scale4 = nn.Sequential(
             nn.AdaptiveAvgPool2D((1, 1)),
             layers.SyncBatchNorm(inplanes),
             nn.ReLU(),
-            nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+            nn.Conv2D(inplanes, branch_planes, kernel_size=1, bias_attr=False),
+        )
         self.scale0 = nn.Sequential(
             layers.SyncBatchNorm(inplanes),
             nn.ReLU(),
-            nn.Conv2D(
-                inplanes, branch_planes, kernel_size=1, bias_attr=False), )
+            nn.Conv2D(inplanes, branch_planes, kernel_size=1, bias_attr=False),
+        )
         self.process1 = nn.Sequential(
             layers.SyncBatchNorm(branch_planes),
             nn.ReLU(),
-            nn.Conv2D(
-                branch_planes,
-                branch_planes,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False), )
+            nn.Conv2D(branch_planes,
+                      branch_planes,
+                      kernel_size=3,
+                      padding=1,
+                      bias_attr=False),
+        )
         self.process2 = nn.Sequential(
             layers.SyncBatchNorm(branch_planes),
             nn.ReLU(),
-            nn.Conv2D(
-                branch_planes,
-                branch_planes,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False), )
+            nn.Conv2D(branch_planes,
+                      branch_planes,
+                      kernel_size=3,
+                      padding=1,
+                      bias_attr=False),
+        )
         self.process3 = nn.Sequential(
             layers.SyncBatchNorm(branch_planes),
             nn.ReLU(),
-            nn.Conv2D(
-                branch_planes,
-                branch_planes,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False), )
+            nn.Conv2D(branch_planes,
+                      branch_planes,
+                      kernel_size=3,
+                      padding=1,
+                      bias_attr=False),
+        )
         self.process4 = nn.Sequential(
             layers.SyncBatchNorm(branch_planes),
             nn.ReLU(),
-            nn.Conv2D(
-                branch_planes,
-                branch_planes,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False), )
+            nn.Conv2D(branch_planes,
+                      branch_planes,
+                      kernel_size=3,
+                      padding=1,
+                      bias_attr=False),
+        )
         self.compression = nn.Sequential(
-            layers.SyncBatchNorm(branch_planes * 5),
-            nn.ReLU(),
-            nn.Conv2D(
-                branch_planes * 5, outplanes, kernel_size=1, bias_attr=False))
+            layers.SyncBatchNorm(branch_planes * 5), nn.ReLU(),
+            nn.Conv2D(branch_planes * 5,
+                      outplanes,
+                      kernel_size=1,
+                      bias_attr=False))
         self.shortcut = nn.Sequential(
-            layers.SyncBatchNorm(inplanes),
-            nn.ReLU(),
-            nn.Conv2D(
-                inplanes, outplanes, kernel_size=1, bias_attr=False))
+            layers.SyncBatchNorm(inplanes), nn.ReLU(),
+            nn.Conv2D(inplanes, outplanes, kernel_size=1, bias_attr=False))
 
     def forward(self, x):
-        n, c, h, w = paddle.shape(x)
+        n, c, h, w = x.shape
         x0 = self.scale0(x)
         x1 = self.process1(
-            F.interpolate(
-                self.scale1(x), size=[h, w], mode='bilinear') + x0)
+            F.interpolate(self.scale1(x), size=[h, w], mode='bilinear') + x0)
         x2 = self.process2(
-            F.interpolate(
-                self.scale2(x), size=[h, w], mode='bilinear') + x1)
+            F.interpolate(self.scale2(x), size=[h, w], mode='bilinear') + x1)
         x3 = self.process3(
-            F.interpolate(
-                self.scale3(x), size=[h, w], mode='bilinear') + x2)
+            F.interpolate(self.scale3(x), size=[h, w], mode='bilinear') + x2)
         x4 = self.process4(
-            F.interpolate(
-                self.scale4(x), size=[h, w], mode='bilinear') + x3)
+            F.interpolate(self.scale4(x), size=[h, w], mode='bilinear') + x3)
 
         out = self.compression(paddle.concat([x0, x1, x2, x3, x4],
                                              1)) + self.shortcut(x)
@@ -370,14 +388,21 @@ class DAPPM(nn.Layer):
 
 
 class DDRNetHead(nn.Layer):
+
     def __init__(self, inplanes, interplanes, outplanes, scale_factor=None):
         super().__init__()
         self.bn1 = nn.BatchNorm2D(inplanes)
         self.relu = nn.ReLU()
-        self.conv_bn_relu = layers.ConvBNReLU(
-            inplanes, interplanes, kernel_size=3, padding=1, bias_attr=False)
-        self.conv = nn.Conv2D(
-            interplanes, outplanes, kernel_size=1, padding=0, bias_attr=True)
+        self.conv_bn_relu = layers.ConvBNReLU(inplanes,
+                                              interplanes,
+                                              kernel_size=3,
+                                              padding=1,
+                                              bias_attr=False)
+        self.conv = nn.Conv2D(interplanes,
+                              outplanes,
+                              kernel_size=1,
+                              padding=0,
+                              bias_attr=True)
 
         self.scale_factor = scale_factor
 
@@ -388,16 +413,16 @@ class DDRNetHead(nn.Layer):
         out = self.conv(x)
 
         if self.scale_factor is not None:
-            out = F.interpolate(
-                out, scale_factor=self.scale_factor, mode='bilinear')
+            out = F.interpolate(out,
+                                scale_factor=self.scale_factor,
+                                mode='bilinear')
         return out
 
 
 @manager.MODELS.add_component
 def DDRNet_23(**kwargs):
-    return DualResNet(
-        block_layers=[2, 2, 2, 2],
-        planes=64,
-        spp_planes=128,
-        head_planes=128,
-        **kwargs)
+    return DualResNet(block_layers=[2, 2, 2, 2],
+                      planes=64,
+                      spp_planes=128,
+                      head_planes=128,
+                      **kwargs)

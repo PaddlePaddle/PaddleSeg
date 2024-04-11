@@ -25,12 +25,11 @@ class PadHelper:
             paddle.ceil(w / self.lgs[1]) * self.lgs[1] - w, paddle.int32)
         if pad_h > 0 or pad_w > 0:  # center-pad the feature on H and W axes
             return F.pad(x,
-                         paddle.to_tensor(
-                             [
-                                 pad_w // 2, pad_w - pad_w // 2, pad_h // 2,
-                                 pad_h - pad_h // 2
-                             ],
-                             dtype='int32').reshape([-1]),
+                         paddle.to_tensor([
+                             pad_w // 2, pad_w - pad_w // 2, pad_h // 2,
+                             pad_h - pad_h // 2
+                         ],
+                                          dtype='int32').reshape([-1]),
                          data_format='NHWC')
         return x
 
@@ -96,8 +95,10 @@ class Attention(nn.MultiHeadAttention):
         if rpe:
             self.window_size = [window_size] * 2
             # define a parameter table of relative position bias
-            parameter_value = paddle.zeros([(2 * self.window_size[0] - 1) * (
-                2 * self.window_size[1] - 1), self.num_heads])
+            parameter_value = paddle.zeros([
+                (2 * self.window_size[0] - 1) * (2 * self.window_size[1] - 1),
+                self.num_heads
+            ])
             self.relative_position_bias_table = self.create_parameter(
                 shape=parameter_value.shape,
                 dtype=str(parameter_value.numpy().dtype),
@@ -106,14 +107,13 @@ class Attention(nn.MultiHeadAttention):
             # get pair-wise relative position index for each token inside the window
             coords_h = paddle.arange(self.window_size[0])
             coords_w = paddle.arange(self.window_size[1])
-            coords = paddle.stack(paddle.meshgrid(
-                [coords_h, coords_w]))  # 2, Wh, Ww
+            coords = paddle.stack(paddle.meshgrid([coords_h,
+                                                   coords_w]))  # 2, Wh, Ww
             coords_flatten = paddle.flatten(coords, 1)  # 2, Wh*Ww
-            relative_coords = (
-                coords_flatten[:, :, None] - coords_flatten[:, None, :]
-            )  # 2, Wh*Ww, Wh*Ww
-            relative_coords = relative_coords.transpose(
-                [1, 2, 0])  # Wh*Ww, Wh*Ww, 2
+            relative_coords = (coords_flatten[:, :, None] -
+                               coords_flatten[:, None, :])  # 2, Wh*Ww, Wh*Ww
+            relative_coords = relative_coords.transpose([1, 2,
+                                                         0])  # Wh*Ww, Wh*Ww, 2
             relative_coords[:, :, 0] += self.window_size[
                 0] - 1  # shift to start from 0
             relative_coords[:, :, 1] += self.window_size[1] - 1
@@ -124,16 +124,17 @@ class Attention(nn.MultiHeadAttention):
             trunc_normal_(self.relative_position_bias_table)
 
     def forward(
-            self,
-            query,
-            key,
-            value,
-            key_padding_mask=None,
-            need_weights=False,
-            attn_mask=None,
-            do_qkv_proj=True,
-            do_out_proj=True,
-            rpe=True, ):
+        self,
+        query,
+        key,
+        value,
+        key_padding_mask=None,
+        need_weights=False,
+        attn_mask=None,
+        do_qkv_proj=True,
+        do_out_proj=True,
+        rpe=True,
+    ):
 
         tgt_len, bsz, embed_dim = query.shape
         head_dim = embed_dim // self.num_heads
@@ -199,16 +200,12 @@ class Attention(nn.MultiHeadAttention):
         if self.add_zero_attn:
             src_len += 1
             k = paddle.concat(
-                [
-                    k, paddle.zeros(
-                        (k.shape[0], 1) + k.shape[2:], dtype=k.dtype)
-                ],
+                [k,
+                 paddle.zeros((k.shape[0], 1) + k.shape[2:], dtype=k.dtype)],
                 axis=1)
             v = paddle.concat(
-                [
-                    v, paddle.zeros(
-                        (v.shape[0], 1) + v.shape[2:], dtype=v.dtype)
-                ],
+                [v,
+                 paddle.zeros((v.shape[0], 1) + v.shape[2:], dtype=v.dtype)],
                 axis=1)
 
             if attn_mask is not None:
@@ -217,14 +214,15 @@ class Attention(nn.MultiHeadAttention):
                 key_padding_mask = F.pad(key_padding_mask, (0, 1))
 
         attn_output_weights = paddle.bmm(q, k.transpose([0, 2, 1]))
-        assert list(attn_output_weights.
-                    shape) == [bsz * self.num_heads, tgt_len, src_len]
+        assert list(attn_output_weights.shape) == [
+            bsz * self.num_heads, tgt_len, src_len
+        ]
         """ Add relative position embedding."""
         if self.rpe and rpe:
             # NOTE: for simplicity, we assume src_len == tgt_len == window_size**2 here
             assert (
-                src_len == self.window_size[0] * self.window_size[1] and
-                tgt_len == self.window_size[0] * self.window_size[1]
+                src_len == self.window_size[0] * self.window_size[1]
+                and tgt_len == self.window_size[0] * self.window_size[1]
             ), f"src{src_len}, tgt{tgt_len}, window{self.window_size[0]}"
             relative_position_bias = self.relative_position_bias_table[
                 self.relative_position_index.reshape([-1])].reshape([
@@ -250,19 +248,21 @@ class Attention(nn.MultiHeadAttention):
                 [bsz, self.num_heads, tgt_len, src_len])
             attn_output_weights = attn_output_weights.masked_fill(
                 key_padding_mask.unsqueeze(1).unsqueeze(2),
-                float("-inf"), )
+                float("-inf"),
+            )
             attn_output_weights = attn_output_weights.reshape(
                 [bsz * self.num_heads, tgt_len, src_len])
 
         attn_output_weights = F.softmax(attn_output_weights, axis=-1)
-        attn_output_weights = F.dropout(
-            attn_output_weights, p=self.dropout, training=self.training)
+        attn_output_weights = F.dropout(attn_output_weights,
+                                        p=self.dropout,
+                                        training=self.training)
 
         attn_output = paddle.bmm(attn_output_weights, v)
         assert list(
             attn_output.shape) == [bsz * self.num_heads, tgt_len, v_head_dim]
-        attn_output = (
-            attn_output.transpose([1, 0, 2]).reshape([tgt_len, bsz, self.vdim]))
+        attn_output = (attn_output.transpose([1, 0, 2]).reshape(
+            [tgt_len, bsz, self.vdim]))
         if do_out_proj:
             attn_output = F.linear(attn_output, self.out_proj.weight,
                                    self.out_proj.bias)
@@ -293,8 +293,11 @@ class InterlacedPoolAttention(nn.Layer):
         self.num_heads = num_heads
         self.window_size = window_size
         self.with_rpe = rpe
-        self.attn = Attention(
-            embed_dim, num_heads, rpe=rpe, window_size=window_size, **kwargs)
+        self.attn = Attention(embed_dim,
+                              num_heads,
+                              rpe=rpe,
+                              window_size=window_size,
+                              **kwargs)
         self.pad_helper = PadHelper(window_size)
         self.permute_helper = LocalPermuteHelper(window_size)
 
@@ -302,19 +305,23 @@ class InterlacedPoolAttention(nn.Layer):
         B, N, C = x.shape
         x = x.reshape([B, H, W, C])
         # pad
-        x_pad = self.pad_helper.pad_if_needed(x, paddle.shape(x))
+        x_pad = self.pad_helper.pad_if_needed(x, x.shape)
         # permute
         x_permute = self.permute_helper.permute(x_pad, x_pad.shape)
         # attention
-        out, _, _ = self.attn(
-            x_permute, x_permute, x_permute, rpe=self.with_rpe, **kwargs)
+        out, _, _ = self.attn(x_permute,
+                              x_permute,
+                              x_permute,
+                              rpe=self.with_rpe,
+                              **kwargs)
         # reverse permutation
         out = self.permute_helper.rev_permute(out, x_pad.shape)
-        out = self.pad_helper.depad_if_needed(out, paddle.shape(x))
+        out = self.pad_helper.depad_if_needed(out, x.shape)
         return out.reshape([B, N, C])
 
 
 class MlpDWBN(nn.Layer):
+
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -328,13 +335,12 @@ class MlpDWBN(nn.Layer):
         self.act1 = act_layer()
         self.fc1 = layers.ConvBN(in_features, hidden_features, kernel_size=1)
         self.act2 = dw_act_layer()
-        self.dw3x3 = layers.ConvBN(
-            hidden_features,
-            hidden_features,
-            kernel_size=3,
-            stride=1,
-            groups=hidden_features,
-            padding=1)
+        self.dw3x3 = layers.ConvBN(hidden_features,
+                                   hidden_features,
+                                   kernel_size=3,
+                                   stride=1,
+                                   groups=hidden_features,
+                                   padding=1)
 
         self.fc2 = layers.ConvBN(hidden_features, out_features, kernel_size=1)
         self.act3 = act_layer()
@@ -379,17 +385,20 @@ class Bottleneck(nn.Layer):
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(Bottleneck, self).__init__()
-        self.conv1 = layers.ConvBNReLU(
-            inplanes, planes, kernel_size=1, bias_attr=False)
-        self.conv2 = layers.ConvBNReLU(
-            planes,
-            planes,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            bias_attr=False)
-        self.conv3 = layers.ConvBN(
-            planes, planes * self.expansion, kernel_size=1, bias_attr=False)
+        self.conv1 = layers.ConvBNReLU(inplanes,
+                                       planes,
+                                       kernel_size=1,
+                                       bias_attr=False)
+        self.conv2 = layers.ConvBNReLU(planes,
+                                       planes,
+                                       kernel_size=3,
+                                       stride=stride,
+                                       padding=1,
+                                       bias_attr=False)
+        self.conv3 = layers.ConvBN(planes,
+                                   planes * self.expansion,
+                                   kernel_size=1,
+                                   bias_attr=False)
         self.relu = nn.ReLU()
         self.downsample = downsample
         self.stride = stride
@@ -434,7 +443,8 @@ class GeneralTransformerBlock(nn.Layer):
             num_heads=num_heads,
             window_size=window_size,
             rpe=True,
-            dropout=attn_drop, )
+            dropout=attn_drop,
+        )
 
         self.norm1 = norm_layer(self.dim, epsilon=1e-6)
         self.norm2 = norm_layer(self.dim, epsilon=1e-6)
@@ -442,12 +452,11 @@ class GeneralTransformerBlock(nn.Layer):
             drop_path) if drop_path > 0.0 else nn.Identity()
         mlp_hidden_dim = int(self.dim * mlp_ratio)
 
-        self.mlp = MlpDWBN(
-            in_features=self.dim,
-            hidden_features=mlp_hidden_dim,
-            out_features=self.out_dim,
-            act_layer=act_layer,
-            dw_act_layer=act_layer)
+        self.mlp = MlpDWBN(in_features=self.dim,
+                           hidden_features=mlp_hidden_dim,
+                           out_features=self.out_dim,
+                           act_layer=act_layer,
+                           dw_act_layer=act_layer)
 
     def forward(self, x):
         B, C, H, W = x.shape
@@ -463,18 +472,20 @@ class GeneralTransformerBlock(nn.Layer):
 
 
 class HighResolutionTransformerModule(nn.Layer):
+
     def __init__(
-            self,
-            num_branches,
-            blocks,
-            num_blocks,
-            num_inchannels,
-            num_channels,
-            num_heads,
-            num_window_sizes,
-            num_mlp_ratios,
-            multi_scale_output=True,
-            drop_path=0.0, ):
+        self,
+        num_branches,
+        blocks,
+        num_blocks,
+        num_inchannels,
+        num_channels,
+        num_heads,
+        num_window_sizes,
+        num_mlp_ratios,
+        multi_scale_output=True,
+        drop_path=0.0,
+    ):
         super(HighResolutionTransformerModule, self).__init__()
 
         self._check_branches(num_branches, num_blocks, num_inchannels,
@@ -492,7 +503,8 @@ class HighResolutionTransformerModule(nn.Layer):
             num_heads,
             num_window_sizes,
             num_mlp_ratios,
-            drop_path, )
+            drop_path,
+        )
         self.fuse_layers = self._make_fuse_layers()
         self.relu = nn.ReLU()
 
@@ -533,10 +545,11 @@ class HighResolutionTransformerModule(nn.Layer):
                 num_heads=num_heads[branch_index],
                 window_size=num_window_sizes[branch_index],
                 mlp_ratio=num_mlp_ratios[branch_index],
-                drop_path=drop_paths[0], ))
+                drop_path=drop_paths[0],
+            ))
 
-        self.num_inchannels[branch_index] = num_channels[
-            branch_index] * block.expansion
+        self.num_inchannels[
+            branch_index] = num_channels[branch_index] * block.expansion
         for i in range(1, num_blocks[branch_index]):
             layers.append(
                 block(
@@ -545,19 +558,21 @@ class HighResolutionTransformerModule(nn.Layer):
                     num_heads=num_heads[branch_index],
                     window_size=num_window_sizes[branch_index],
                     mlp_ratio=num_mlp_ratios[branch_index],
-                    drop_path=drop_paths[i], ))
+                    drop_path=drop_paths[i],
+                ))
         return nn.Sequential(*layers)
 
     def _make_branches(
-            self,
-            num_branches,
-            block,
-            num_blocks,
-            num_channels,
-            num_heads,
-            num_window_sizes,
-            num_mlp_ratios,
-            drop_paths, ):
+        self,
+        num_branches,
+        block,
+        num_blocks,
+        num_channels,
+        num_heads,
+        num_window_sizes,
+        num_mlp_ratios,
+        drop_paths,
+    ):
         branches = []
 
         for i in range(num_branches):
@@ -591,9 +606,10 @@ class HighResolutionTransformerModule(nn.Layer):
                                 num_inchannels[i],
                                 kernel_size=1,
                                 stride=1,
-                                bias_attr=False, ),
-                            nn.Upsample(
-                                scale_factor=2**(j - i), mode="nearest")))
+                                bias_attr=False,
+                            ),
+                            nn.Upsample(scale_factor=2**(j - i),
+                                        mode="nearest")))
                 elif j == i:
                     fuse_layer.append(None)
                 else:
@@ -603,38 +619,34 @@ class HighResolutionTransformerModule(nn.Layer):
                             num_outchannels_conv3x3 = num_inchannels[i]
                             conv3x3s.append(
                                 nn.Sequential(
-                                    layers.ConvBN(
-                                        num_inchannels[j],
-                                        num_inchannels[j],
-                                        kernel_size=3,
-                                        stride=2,
-                                        padding=1,
-                                        groups=num_inchannels[j],
-                                        bias_attr=False),
-                                    layers.ConvBN(
-                                        num_inchannels[j],
-                                        num_outchannels_conv3x3,
-                                        kernel_size=1,
-                                        stride=1,
-                                        bias_attr=False)))
+                                    layers.ConvBN(num_inchannels[j],
+                                                  num_inchannels[j],
+                                                  kernel_size=3,
+                                                  stride=2,
+                                                  padding=1,
+                                                  groups=num_inchannels[j],
+                                                  bias_attr=False),
+                                    layers.ConvBN(num_inchannels[j],
+                                                  num_outchannels_conv3x3,
+                                                  kernel_size=1,
+                                                  stride=1,
+                                                  bias_attr=False)))
                         else:
                             num_outchannels_conv3x3 = num_inchannels[j]
                             conv3x3s.append(
                                 nn.Sequential(
-                                    layers.ConvBN(
-                                        num_inchannels[j],
-                                        num_inchannels[j],
-                                        kernel_size=3,
-                                        stride=2,
-                                        padding=1,
-                                        groups=num_inchannels[j],
-                                        bias_attr=False),
-                                    layers.ConvBNReLU(
-                                        num_inchannels[j],
-                                        num_outchannels_conv3x3,
-                                        kernel_size=1,
-                                        stride=1,
-                                        bias_attr=False)))
+                                    layers.ConvBN(num_inchannels[j],
+                                                  num_inchannels[j],
+                                                  kernel_size=3,
+                                                  stride=2,
+                                                  padding=1,
+                                                  groups=num_inchannels[j],
+                                                  bias_attr=False),
+                                    layers.ConvBNReLU(num_inchannels[j],
+                                                      num_outchannels_conv3x3,
+                                                      kernel_size=1,
+                                                      stride=1,
+                                                      bias_attr=False)))
                     fuse_layer.append(nn.Sequential(*conv3x3s))
             fuse_layers.append(nn.LayerList(fuse_layer))
 
@@ -660,7 +672,8 @@ class HighResolutionTransformerModule(nn.Layer):
                         self.fuse_layers[i][j](x[j]),
                         size=[height_output, width_output],
                         mode="bilinear",
-                        align_corners=True, )
+                        align_corners=True,
+                    )
                 else:
                     y = y + self.fuse_layers[i][j](x[j])
             x_fuse.append(self.relu(y))
@@ -760,16 +773,19 @@ class HighResolutionTransformer(nn.Layer):
         self.stage4_num_mlp_ratios = stage4_num_mlp_ratios
         self.stage4_num_window_sizes = stage4_num_window_sizes
 
-        self.conv1 = layers.ConvBNReLU(
-            in_channels,
-            64,
-            kernel_size=3,
-            stride=2,
-            padding=1,
-            bias_attr=False)
+        self.conv1 = layers.ConvBNReLU(in_channels,
+                                       64,
+                                       kernel_size=3,
+                                       stride=2,
+                                       padding=1,
+                                       bias_attr=False)
 
-        self.conv2 = layers.ConvBNReLU(
-            64, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
+        self.conv2 = layers.ConvBNReLU(64,
+                                       64,
+                                       kernel_size=3,
+                                       stride=2,
+                                       padding=1,
+                                       bias_attr=False)
 
         self.feat_channels = [sum(self.stage4_num_channels)]
 
@@ -792,8 +808,7 @@ class HighResolutionTransformer(nn.Layer):
         num_channels = self.stage2_num_channels
         block = GeneralTransformerBlock
         num_channels = [
-            num_channels[i] * block.expansion
-            for i in range(len(num_channels))
+            num_channels[i] * block.expansion for i in range(len(num_channels))
         ]
         self.transition1 = self._make_transition_layer([stage1_out_channel],
                                                        num_channels)
@@ -812,8 +827,7 @@ class HighResolutionTransformer(nn.Layer):
         num_channels = self.stage3_num_channels
         block = GeneralTransformerBlock
         num_channels = [
-            num_channels[i] * block.expansion
-            for i in range(len(num_channels))
+            num_channels[i] * block.expansion for i in range(len(num_channels))
         ]
         self.transition2 = self._make_transition_layer(pre_stage_channels,
                                                        num_channels)
@@ -832,8 +846,7 @@ class HighResolutionTransformer(nn.Layer):
         num_channels = self.stage4_num_channels
         block = GeneralTransformerBlock
         num_channels = [
-            num_channels[i] * block.expansion
-            for i in range(len(num_channels))
+            num_channels[i] * block.expansion for i in range(len(num_channels))
         ]
         self.transition3 = self._make_transition_layer(pre_stage_channels,
                                                        num_channels)
@@ -863,30 +876,28 @@ class HighResolutionTransformer(nn.Layer):
                 if num_channels_cur_layer[i] != num_channels_pre_layer[i]:
                     transition_layers.append(
                         nn.Sequential(
-                            layers.ConvBNReLU(
-                                num_channels_pre_layer[i],
-                                num_channels_cur_layer[i],
-                                kernel_size=3,
-                                stride=1,
-                                padding=1,
-                                bias_attr=False)))
+                            layers.ConvBNReLU(num_channels_pre_layer[i],
+                                              num_channels_cur_layer[i],
+                                              kernel_size=3,
+                                              stride=1,
+                                              padding=1,
+                                              bias_attr=False)))
                 else:
                     transition_layers.append(None)
             else:
                 conv3x3s = []
                 for j in range(i + 1 - num_branches_pre):
                     inchannels = num_channels_pre_layer[-1]
-                    outchannels = (num_channels_cur_layer[i]
-                                   if j == i - num_branches_pre else inchannels)
+                    outchannels = (num_channels_cur_layer[i] if j == i -
+                                   num_branches_pre else inchannels)
                     conv3x3s.append(
                         nn.Sequential(
-                            layers.ConvBNReLU(
-                                inchannels,
-                                outchannels,
-                                kernel_size=3,
-                                stride=2,
-                                padding=1,
-                                bias_attr=False)))
+                            layers.ConvBNReLU(inchannels,
+                                              outchannels,
+                                              kernel_size=3,
+                                              stride=2,
+                                              padding=1,
+                                              bias_attr=False)))
                 transition_layers.append(nn.Sequential(*conv3x3s))
 
         return nn.LayerList(transition_layers)
@@ -903,12 +914,11 @@ class HighResolutionTransformer(nn.Layer):
         downsample = None
         if stride != 1 or inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                layers.ConvBN(
-                    inplanes,
-                    planes * block.expansion,
-                    kernel_size=1,
-                    stride=stride,
-                    bias_attr=False))
+                layers.ConvBN(inplanes,
+                              planes * block.expansion,
+                              kernel_size=1,
+                              stride=stride,
+                              bias_attr=False))
         modules = []
 
         if isinstance(block, GeneralTransformerBlock):
@@ -918,7 +928,8 @@ class HighResolutionTransformer(nn.Layer):
                     planes,
                     num_heads,
                     window_size,
-                    mlp_ratio, ))
+                    mlp_ratio,
+                ))
         else:
             modules.append(block(inplanes, planes, stride, downsample))
 
@@ -959,8 +970,9 @@ class HighResolutionTransformer(nn.Layer):
                     num_window_sizes,
                     num_mlp_ratios,
                     reset_multi_scale_output,
-                    drop_path=drop_path[num_blocks[0] * i:num_blocks[0] * (
-                        i + 1)], ))
+                    drop_path=drop_path[num_blocks[0] * i:num_blocks[0] *
+                                        (i + 1)],
+                ))
             num_inchannels = modules[-1].num_inchannels
 
         return nn.Sequential(*modules), num_inchannels
@@ -1013,12 +1025,18 @@ class HighResolutionTransformer(nn.Layer):
         y_list = self.stage4(x_list)
         _, _, h, w = y_list[0].shape
         feat1 = y_list[0]
-        feat2 = F.interpolate(
-            y_list[1], size=(h, w), mode="bilinear", align_corners=True)
-        feat3 = F.interpolate(
-            y_list[2], size=(h, w), mode="bilinear", align_corners=True)
-        feat4 = F.interpolate(
-            y_list[3], size=(h, w), mode="bilinear", align_corners=True)
+        feat2 = F.interpolate(y_list[1],
+                              size=(h, w),
+                              mode="bilinear",
+                              align_corners=True)
+        feat3 = F.interpolate(y_list[2],
+                              size=(h, w),
+                              mode="bilinear",
+                              align_corners=True)
+        feat4 = F.interpolate(y_list[3],
+                              size=(h, w),
+                              mode="bilinear",
+                              align_corners=True)
 
         feats = paddle.concat([feat1, feat2, feat3, feat4], axis=1)
 

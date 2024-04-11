@@ -13,8 +13,9 @@ from paddleseg.cvlibs import manager
 from paddleseg.utils import utils, logger
 from paddleseg.cvlibs.param_init import normal_init, trunc_normal_init, constant_init
 from paddleseg.models.backbones.transformer_utils import to_2tuple, DropPath
-from paddleseg.models.layers.vit_adapter_layers import (
-    SpatialPriorModule, InteractionBlock, deform_inputs)
+from paddleseg.models.layers.vit_adapter_layers import (SpatialPriorModule,
+                                                        InteractionBlock,
+                                                        deform_inputs)
 from paddleseg.models.layers.ms_deformable_attention import MSDeformAttn
 
 __all__ = ['ViTAdapter', 'ViTAdapter_Tiny']
@@ -40,8 +41,10 @@ class PatchEmbed(nn.Layer):
         self.num_patches = self.grid_size[0] * self.grid_size[1]
         self.flatten = flatten
 
-        self.proj = nn.Conv2D(
-            in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
+        self.proj = nn.Conv2D(in_chans,
+                              embed_dim,
+                              kernel_size=patch_size,
+                              stride=patch_size)
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
 
     def forward(self, x):
@@ -54,6 +57,7 @@ class PatchEmbed(nn.Layer):
 
 
 class Mlp(nn.Layer):
+
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -78,6 +82,7 @@ class Mlp(nn.Layer):
 
 
 class Attention(nn.Layer):
+
     def __init__(self,
                  dim,
                  num_heads=8,
@@ -95,10 +100,11 @@ class Attention(nn.Layer):
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x, H, W):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         N, C = x_shape[1], x_shape[2]
-        qkv = self.qkv(x).reshape((-1, N, 3, self.num_heads, C //
-                                   self.num_heads)).transpose((2, 0, 3, 1, 4))
+        qkv = self.qkv(x).reshape(
+            (-1, N, 3, self.num_heads, C // self.num_heads)).transpose(
+                (2, 0, 3, 1, 4))
         q, k, v = qkv[0], qkv[1], qkv[2]
 
         attn = (q.matmul(k.transpose((0, 1, 3, 2)))) * self.scale
@@ -112,6 +118,7 @@ class Attention(nn.Layer):
 
 
 class Block(nn.Layer):
+
     def __init__(self,
                  dim,
                  num_heads,
@@ -125,15 +132,14 @@ class Block(nn.Layer):
                  layer_scale=False):
         super().__init__()
         self.norm1 = norm_layer(dim)
-        self.attn = Attention(
-            dim,
-            num_heads=num_heads,
-            qkv_bias=qkv_bias,
-            attn_drop=attn_drop,
-            proj_drop=drop)
+        self.attn = Attention(dim,
+                              num_heads=num_heads,
+                              qkv_bias=qkv_bias,
+                              attn_drop=attn_drop,
+                              proj_drop=drop)
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity(
-        )
+        self.drop_path = DropPath(
+            drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = Mlp(in_features=dim,
@@ -184,8 +190,7 @@ class VisionTransformer(nn.Layer):
                  drop_path_rate=0.,
                  layer_scale=True,
                  embed_layer=PatchEmbed,
-                 norm_layer=partial(
-                     nn.LayerNorm, epsilon=1e-6),
+                 norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
                  act_layer=nn.GELU,
                  pretrained=None):
         """
@@ -218,11 +223,10 @@ class VisionTransformer(nn.Layer):
         self.drop_path_rate = drop_path_rate
         self.drop_rate = drop_rate
 
-        self.patch_embed = embed_layer(
-            img_size=img_size,
-            patch_size=patch_size,
-            in_chans=in_channels,
-            embed_dim=embed_dim)
+        self.patch_embed = embed_layer(img_size=img_size,
+                                       patch_size=patch_size,
+                                       in_chans=in_channels,
+                                       embed_dim=embed_dim)
         num_patches = self.patch_embed.num_patches
 
         self.pos_embed = self.create_parameter(
@@ -233,17 +237,16 @@ class VisionTransformer(nn.Layer):
         dpr = np.linspace(0, drop_path_rate,
                           depth)  # stochastic depth decay rule
         self.blocks = nn.Sequential(*[
-            Block(
-                dim=embed_dim,
-                num_heads=num_heads,
-                mlp_ratio=mlp_ratio,
-                qkv_bias=qkv_bias,
-                drop=drop_rate,
-                attn_drop=attn_drop_rate,
-                drop_path=dpr[i],
-                norm_layer=norm_layer,
-                act_layer=act_layer,
-                layer_scale=layer_scale) for i in range(depth)
+            Block(dim=embed_dim,
+                  num_heads=num_heads,
+                  mlp_ratio=mlp_ratio,
+                  qkv_bias=qkv_bias,
+                  drop=drop_rate,
+                  attn_drop=attn_drop_rate,
+                  drop_path=dpr[i],
+                  norm_layer=norm_layer,
+                  act_layer=act_layer,
+                  layer_scale=layer_scale) for i in range(depth)
         ])
 
         self.pretrained = pretrained
@@ -275,8 +278,10 @@ class ViTAdapter(VisionTransformer):
                  *args,
                  **kwargs):
 
-        super().__init__(
-            num_heads=num_heads, pretrained=pretrained, *args, **kwargs)
+        super().__init__(num_heads=num_heads,
+                         pretrained=pretrained,
+                         *args,
+                         **kwargs)
 
         self.cls_token = None
         self.num_block = len(self.blocks)
@@ -289,21 +294,21 @@ class ViTAdapter(VisionTransformer):
         self.level_embed = self.create_parameter(
             shape=(3, embed_dim),
             default_initializer=paddle.nn.initializer.Constant(value=0.))
-        self.spm = SpatialPriorModule(
-            inplanes=conv_inplane, embed_dim=embed_dim)
+        self.spm = SpatialPriorModule(inplanes=conv_inplane,
+                                      embed_dim=embed_dim)
         self.interactions = nn.Sequential(*[
-            InteractionBlock(
-                dim=embed_dim,
-                num_heads=deform_num_heads,
-                n_points=n_points,
-                init_values=init_values,
-                drop_path=self.drop_path_rate,
-                norm_layer=self.norm_layer,
-                with_cffn=with_cffn,
-                cffn_ratio=cffn_ratio,
-                deform_ratio=deform_ratio,
-                extra_extractor=((True if i == len(interaction_indexes) - 1 else
-                                  False) and use_extra_extractor))
+            InteractionBlock(dim=embed_dim,
+                             num_heads=deform_num_heads,
+                             n_points=n_points,
+                             init_values=init_values,
+                             drop_path=self.drop_path_rate,
+                             norm_layer=self.norm_layer,
+                             with_cffn=with_cffn,
+                             cffn_ratio=cffn_ratio,
+                             deform_ratio=deform_ratio,
+                             extra_extractor=(
+                                 (True if i == len(interaction_indexes) -
+                                  1 else False) and use_extra_extractor))
             for i in range(len(interaction_indexes))
         ])
         self.up = nn.Conv2DTranspose(embed_dim, embed_dim, 2, 2)
@@ -323,8 +328,8 @@ class ViTAdapter(VisionTransformer):
             trunc_normal_init(m.weight, std=.02)
             if isinstance(m, nn.Linear) and m.bias is not None:
                 constant_init(m.bias, value=0)
-        elif isinstance(m, nn.LayerNorm) or isinstance(m, (nn.BatchNorm2D,
-                                                           nn.SyncBatchNorm)):
+        elif isinstance(m, nn.LayerNorm) or isinstance(
+                m, (nn.BatchNorm2D, nn.SyncBatchNorm)):
             constant_init(m.bias, value=0)
             constant_init(m.weight, value=1.0)
         elif isinstance(m, nn.Conv2D) or isinstance(m, nn.Conv2DTranspose):
@@ -386,12 +391,18 @@ class ViTAdapter(VisionTransformer):
 
         if self.add_vit_feature:
             x1, x2, x3, x4 = outs
-            x1 = F.interpolate(
-                x1, scale_factor=4, mode='bilinear', align_corners=False)
-            x2 = F.interpolate(
-                x2, scale_factor=2, mode='bilinear', align_corners=False)
-            x4 = F.interpolate(
-                x4, scale_factor=0.5, mode='bilinear', align_corners=False)
+            x1 = F.interpolate(x1,
+                               scale_factor=4,
+                               mode='bilinear',
+                               align_corners=False)
+            x2 = F.interpolate(x2,
+                               scale_factor=2,
+                               mode='bilinear',
+                               align_corners=False)
+            x4 = F.interpolate(x4,
+                               scale_factor=0.5,
+                               mode='bilinear',
+                               align_corners=False)
             c1, c2, c3, c4 = c1 + x1, c2 + x2, c3 + x3, c4 + x4
 
         # Final Norm
@@ -404,17 +415,16 @@ class ViTAdapter(VisionTransformer):
 
 @manager.BACKBONES.add_component
 def ViTAdapter_Tiny(**kwargs):
-    return ViTAdapter(
-        num_heads=3,
-        patch_size=16,
-        embed_dim=192,
-        depth=12,
-        mlp_ratio=4,
-        drop_path_rate=0.1,
-        conv_inplane=64,
-        n_points=4,
-        deform_num_heads=6,
-        cffn_ratio=0.25,
-        deform_ratio=1.0,
-        interaction_indexes=[[0, 2], [3, 5], [6, 8], [9, 11]],
-        **kwargs)
+    return ViTAdapter(num_heads=3,
+                      patch_size=16,
+                      embed_dim=192,
+                      depth=12,
+                      mlp_ratio=4,
+                      drop_path_rate=0.1,
+                      conv_inplane=64,
+                      n_points=4,
+                      deform_num_heads=6,
+                      cffn_ratio=0.25,
+                      deform_ratio=1.0,
+                      interaction_indexes=[[0, 2], [3, 5], [6, 8], [9, 11]],
+                      **kwargs)

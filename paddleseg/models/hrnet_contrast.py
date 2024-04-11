@@ -57,17 +57,20 @@ class HRNetW48Contrast(nn.Layer):
         self.align_corners = align_corners
 
         self.cls_head = nn.Sequential(
-            layers.ConvBNReLU(
-                bb_channels, bb_channels, kernel_size=3, stride=1, padding=1),
+            layers.ConvBNReLU(bb_channels,
+                              bb_channels,
+                              kernel_size=3,
+                              stride=1,
+                              padding=1),
             nn.Dropout2D(drop_prob),
-            nn.Conv2D(
-                bb_channels,
-                num_classes,
-                kernel_size=1,
-                stride=1,
-                bias_attr=False), )
-        self.proj_head = ProjectionHead(
-            dim_in=bb_channels, proj_dim=self.proj_dim)
+            nn.Conv2D(bb_channels,
+                      num_classes,
+                      kernel_size=1,
+                      stride=1,
+                      bias_attr=False),
+        )
+        self.proj_head = ProjectionHead(dim_in=bb_channels,
+                                        proj_dim=self.proj_dim)
 
         self.pretrained = pretrained
         self.init_weight()
@@ -83,19 +86,17 @@ class HRNetW48Contrast(nn.Layer):
         if self.training:
             emb = self.proj_head(feats)
             logit_list.append(
-                F.interpolate(
-                    out,
-                    paddle.shape(x)[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners))
+                F.interpolate(out,
+                              x.shape[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners))
             logit_list.append({'seg': out, 'embed': emb})
         else:
             logit_list.append(
-                F.interpolate(
-                    out,
-                    paddle.shape(x)[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners))
+                F.interpolate(out,
+                              x.shape[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners))
         return logit_list
 
 
@@ -114,10 +115,9 @@ class ProjectionHead(nn.Layer):
             self.proj = nn.Conv2D(dim_in, proj_dim, kernel_size=1)
         elif proj == 'convmlp':
             self.proj = nn.Sequential(
-                layers.ConvBNReLU(
-                    dim_in, dim_in, kernel_size=1),
-                nn.Conv2D(
-                    dim_in, proj_dim, kernel_size=1), )
+                layers.ConvBNReLU(dim_in, dim_in, kernel_size=1),
+                nn.Conv2D(dim_in, proj_dim, kernel_size=1),
+            )
         else:
             raise ValueError(
                 "The type of project head only support 'linear' and 'convmlp', but got {}."

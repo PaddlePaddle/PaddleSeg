@@ -28,6 +28,7 @@ zeros_ = Constant(value=0.)
 
 
 class Mlp(nn.Layer):
+
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -52,6 +53,7 @@ class Mlp(nn.Layer):
 
 
 class Attention(nn.Layer):
+
     def __init__(self,
                  dim,
                  num_heads=8,
@@ -68,26 +70,26 @@ class Attention(nn.Layer):
         self.qkv = nn.Linear(dim, dim * 3, bias_attr=False)
 
         if qkv_bias:
-            self.q_bias = self.create_parameter(
-                shape=([dim]), default_initializer=zeros_)
-            self.v_bias = self.create_parameter(
-                shape=([dim]), default_initializer=zeros_)
+            self.q_bias = self.create_parameter(shape=([dim]),
+                                                default_initializer=zeros_)
+            self.v_bias = self.create_parameter(shape=([dim]),
+                                                default_initializer=zeros_)
         else:
             self.q_bias = None
             self.v_bias = None
         if window_size:
             self.window_size = window_size
-            self.num_relative_distance = (2 * window_size[0] - 1) * (
-                2 * window_size[1] - 1) + 3
+            self.num_relative_distance = (2 * window_size[0] -
+                                          1) * (2 * window_size[1] - 1) + 3
             self.relative_position_bias_table = self.create_parameter(
                 shape=(self.num_relative_distance, num_heads),
                 default_initializer=zeros_)  # 2*Wh-1 * 2*Ww-1, nH
 
             coords_h = paddle.arange(window_size[0])
             coords_w = paddle.arange(window_size[1])
-            coords = paddle.stack(paddle.meshgrid(
-                [coords_h, coords_w]))  # 2, Wh, Ww
-            coords_flatten = paddle.flatten(coords, 1)  # 2, Wh*Ww 
+            coords = paddle.stack(paddle.meshgrid([coords_h,
+                                                   coords_w]))  # 2, Wh, Ww
+            coords_flatten = paddle.flatten(coords, 1)  # 2, Wh*Ww
             coords_flatten_1 = paddle.unsqueeze(coords_flatten, 2)
             coords_flatten_2 = paddle.unsqueeze(coords_flatten, 1)
             relative_coords = coords_flatten_1.clone() - coords_flatten_2.clone(
@@ -95,8 +97,8 @@ class Attention(nn.Layer):
 
             relative_coords = relative_coords.transpose(
                 (1, 2, 0))  # Wh*Ww, Wh*Ww, 2
-            relative_coords[:, :, 0] += window_size[
-                0] - 1  # shift to start from 0
+            relative_coords[:, :,
+                            0] += window_size[0] - 1  # shift to start from 0
             relative_coords[:, :, 1] += window_size[1] - 1
             relative_coords[:, :, 0] *= 2 * window_size[1] - 1
             relative_position_index = \
@@ -119,7 +121,7 @@ class Attention(nn.Layer):
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x, rel_pos_bias=None):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         N, C = x_shape[1], x_shape[2]
 
         qkv_bias = None
@@ -128,8 +130,9 @@ class Attention(nn.Layer):
                 (self.q_bias, paddle.zeros_like(self.v_bias), self.v_bias))
         qkv = F.linear(x, weight=self.qkv.weight, bias=qkv_bias)
 
-        qkv = qkv.reshape((-1, N, 3, self.num_heads,
-                           C // self.num_heads)).transpose((2, 0, 3, 1, 4))
+        qkv = qkv.reshape(
+            (-1, N, 3, self.num_heads, C // self.num_heads)).transpose(
+                (2, 0, 3, 1, 4))
         q, k, v = qkv[0], qkv[1], qkv[2]
         attn = (q.matmul(k.transpose((0, 1, 3, 2)))) * self.scale
 
@@ -155,6 +158,7 @@ class Attention(nn.Layer):
 
 
 class Block(nn.Layer):
+
     def __init__(self,
                  dim,
                  num_heads,
@@ -171,14 +175,13 @@ class Block(nn.Layer):
                  epsilon=1e-5):
         super().__init__()
         self.norm1 = nn.LayerNorm(dim, epsilon=1e-6)
-        self.attn = Attention(
-            dim,
-            num_heads=num_heads,
-            qkv_bias=qkv_bias,
-            qk_scale=qk_scale,
-            attn_drop=attn_drop,
-            proj_drop=drop,
-            window_size=window_size)
+        self.attn = Attention(dim,
+                              num_heads=num_heads,
+                              qkv_bias=qkv_bias,
+                              qk_scale=qk_scale,
+                              attn_drop=attn_drop,
+                              proj_drop=drop,
+                              window_size=window_size)
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
         self.norm2 = eval(norm_layer)(dim, epsilon=epsilon)
@@ -199,8 +202,7 @@ class Block(nn.Layer):
     def forward(self, x, rel_pos_bias=None):
         if self.gamma_1 is None:
             x = x + self.drop_path(
-                self.attn(
-                    self.norm1(x), rel_pos_bias=rel_pos_bias))
+                self.attn(self.norm1(x), rel_pos_bias=rel_pos_bias))
             x = x + self.drop_path(self.mlp(self.norm2(x)))
         else:
             x = x + self.drop_path(self.gamma_1 * self.attn(
@@ -217,8 +219,10 @@ class PatchEmbed(nn.Layer):
         super().__init__()
         self.img_size = to_2tuple(img_size)
         self.patch_size = to_2tuple(patch_size)
-        self.proj = nn.Conv2D(
-            in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
+        self.proj = nn.Conv2D(in_chans,
+                              embed_dim,
+                              kernel_size=patch_size,
+                              stride=patch_size)
 
     @property
     def num_patches_in_h(self):
@@ -239,11 +243,12 @@ class PatchEmbed(nn.Layer):
 
 
 class RelativePositionBias(nn.Layer):
+
     def __init__(self, window_size, num_heads):
         super().__init__()
         self.window_size = window_size
-        self.num_relative_distance = (2 * window_size[0] - 1) * (
-            2 * window_size[1] - 1) + 3
+        self.num_relative_distance = (2 * window_size[0] -
+                                      1) * (2 * window_size[1] - 1) + 3
         self.relative_position_bias_table = self.create_parameter(
             shape=(self.num_relative_distance, num_heads),
             default_initialize=zeros_)
@@ -251,22 +256,21 @@ class RelativePositionBias(nn.Layer):
         # get pair-wise relative position index for each token inside the window
         coords_h = paddle.arange(window_size[0])
         coords_w = paddle.arange(window_size[1])
-        coords = paddle.stack(paddle.meshgrid(
-            [coords_h, coords_w]))  # 2, Wh, Ww
+        coords = paddle.stack(paddle.meshgrid([coords_h,
+                                               coords_w]))  # 2, Wh, Ww
         coords_flatten = coords.flatten(1)  # 2, Wh*Ww
 
         relative_coords = coords_flatten[:, :,
                                          None] - coords_flatten[:,
                                                                 None, :]  # 2, Wh*Ww, Wh*Ww
-        relative_coords = relative_coords.transpos(
-            (1, 2, 0))  # Wh*Ww, Wh*Ww, 2 
+        relative_coords = relative_coords.transpos((1, 2, 0))  # Wh*Ww, Wh*Ww, 2
         relative_coords[:, :, 0] += window_size[0] - 1  # shift to start from 0
         relative_coords[:, :, 1] += window_size[1] - 1
         relative_coords[:, :, 0] *= 2 * window_size[1] - 1
         relative_position_index = \
             paddle.zeros(size=(window_size[0] * window_size[1] + 1,) * 2, dtype=relative_coords.dtype)
-        relative_position_index[1:, 1:] = relative_coords.sum(
-            -1)  # Wh*Ww, Wh*Ww
+        relative_position_index[1:,
+                                1:] = relative_coords.sum(-1)  # Wh*Ww, Wh*Ww
         relative_position_index[0, 0:] = self.num_relative_distance - 3
         relative_position_index[0:, 0] = self.num_relative_distance - 2
         relative_position_index[0, 0] = self.num_relative_distance - 1
@@ -276,7 +280,7 @@ class RelativePositionBias(nn.Layer):
         relative_position_bias = \
             self.relative_position_bias_table[self.relative_position_index.view(-1)].view(
                  self.window_size[0] * self.window_size[1] + 1,
-                 self.window_size[0] * self.window_size[1] + 1, -1)  # Wh*Ww,Wh*Ww,nH 
+                 self.window_size[0] * self.window_size[1] + 1, -1)  # Wh*Ww,Wh*Ww,nH
         return relative_position_bias.transpose((2, 0, 1))  # nH, Wh*Ww, Wh*Ww
 
 
@@ -353,11 +357,10 @@ class CAE(nn.Layer):
         self.img_size = img_size
         self.embed_dim = embed_dim
 
-        self.patch_embed = PatchEmbed(
-            img_size=img_size,
-            patch_size=patch_size,
-            in_chans=in_chans,
-            embed_dim=embed_dim)
+        self.patch_embed = PatchEmbed(img_size=img_size,
+                                      patch_size=patch_size,
+                                      in_chans=in_chans,
+                                      embed_dim=embed_dim)
         self.pos_w = self.patch_embed.num_patches_in_w
         self.pos_h = self.patch_embed.num_patches_in_h
 
@@ -379,20 +382,19 @@ class CAE(nn.Layer):
         dpr = np.linspace(0, drop_path_rate, depth)
 
         self.blocks = nn.LayerList([
-            Block(
-                dim=embed_dim,
-                num_heads=num_heads,
-                mlp_ratio=mlp_ratio,
-                qkv_bias=qkv_bias,
-                qk_scale=qk_scale,
-                drop=drop_rate,
-                attn_drop=attn_drop_rate,
-                drop_path=dpr[i],
-                norm_layer=norm_layer,
-                init_values=init_values,
-                window_size=self.patch_embed.patch_shape
-                if use_rel_pos_bias else None,
-                epsilon=epsilon) for i in range(depth)
+            Block(dim=embed_dim,
+                  num_heads=num_heads,
+                  mlp_ratio=mlp_ratio,
+                  qkv_bias=qkv_bias,
+                  qk_scale=qk_scale,
+                  drop=drop_rate,
+                  attn_drop=attn_drop_rate,
+                  drop_path=dpr[i],
+                  norm_layer=norm_layer,
+                  init_values=init_values,
+                  window_size=self.patch_embed.patch_shape
+                  if use_rel_pos_bias else None,
+                  epsilon=epsilon) for i in range(depth)
         ])
 
         self.pretrained = pretrained
@@ -410,16 +412,17 @@ class CAE(nn.Layer):
         model_state_dict = self.state_dict()
         pos_embed_name = "pos_embed"
         if pos_embed_name in load_state_dict.keys():
-            load_pos_embed = paddle.to_tensor(
-                load_state_dict[pos_embed_name], dtype="float32")
+            load_pos_embed = paddle.to_tensor(load_state_dict[pos_embed_name],
+                                              dtype="float32")
             if self.pos_embed.shape != load_pos_embed.shape:
                 pos_size = int(math.sqrt(load_pos_embed.shape[1] - 1))
                 model_state_dict[pos_embed_name] = self.resize_pos_embed(
                     load_pos_embed, (pos_size, pos_size),
                     (self.pos_h, self.pos_w))
                 self.set_dict(model_state_dict)
-                logger.info("Load pos_embed and resize it from {} to {} .".
-                            format(load_pos_embed.shape, self.pos_embed.shape))
+                logger.info(
+                    "Load pos_embed and resize it from {} to {} .".format(
+                        load_pos_embed.shape, self.pos_embed.shape))
 
     def resize_pos_embed(self, pos_embed, old_hw, new_hw):
         """
@@ -436,8 +439,10 @@ class CAE(nn.Layer):
 
         pos_embed = pos_embed.transpose([0, 2, 1])
         pos_embed = pos_embed.reshape([1, -1, old_hw[0], old_hw[1]])
-        pos_embed = F.interpolate(
-            pos_embed, new_hw, mode='bicubic', align_corners=False)
+        pos_embed = F.interpolate(pos_embed,
+                                  new_hw,
+                                  mode='bicubic',
+                                  align_corners=False)
         pos_embed = pos_embed.flatten(2).transpose([0, 2, 1])
         pos_embed = paddle.concat([cls_pos_embed, pos_embed], axis=1)
 
@@ -445,12 +450,12 @@ class CAE(nn.Layer):
 
     def forward(self, x):
         x = self.patch_embed(x)
-        x_shape = paddle.shape(x)  # b * c * h * w
+        x_shape = x.shape  # b * c * h * w
 
         cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
         x = x.flatten(2).transpose([0, 2, 1])  # b * hw * c
         x = paddle.concat([cls_tokens, x], axis=1)
-        if paddle.shape(x)[1] == self.pos_embed.shape[1]:
+        if x.shape[1] == self.pos_embed.shape[1]:
             x = x + self.pos_embed
         else:
             x = x + self.resize_pos_embed(self.pos_embed,
@@ -475,125 +480,116 @@ class CAE(nn.Layer):
 
 @manager.BACKBONES.add_component
 def CAE_small_patch16_224(**kwargs):
-    model = VisionTransformer(
-        patch_size=16,
-        embed_dim=768,
-        depth=8,
-        num_heads=8,
-        mlp_ratio=3,
-        qk_scale=768**-0.5,
-        **kwargs)
+    model = VisionTransformer(patch_size=16,
+                              embed_dim=768,
+                              depth=8,
+                              num_heads=8,
+                              mlp_ratio=3,
+                              qk_scale=768**-0.5,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def CAE_base_patch16_224(**kwargs):
-    model = VisionTransformer(
-        patch_size=16,
-        embed_dim=768,
-        depth=12,
-        num_heads=12,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(patch_size=16,
+                              embed_dim=768,
+                              depth=12,
+                              num_heads=12,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def CAE_base_patch16_384(**kwargs):
-    model = VisionTransformer(
-        img_size=384,
-        patch_size=16,
-        embed_dim=768,
-        depth=12,
-        num_heads=12,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(img_size=384,
+                              patch_size=16,
+                              embed_dim=768,
+                              depth=12,
+                              num_heads=12,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def CAE_base_patch32_384(**kwargs):
-    model = VisionTransformer(
-        img_size=384,
-        patch_size=32,
-        embed_dim=768,
-        depth=12,
-        num_heads=12,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(img_size=384,
+                              patch_size=32,
+                              embed_dim=768,
+                              depth=12,
+                              num_heads=12,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def CAE_large_patch16_224(**kwargs):
-    model = VisionTransformer(
-        patch_size=16,
-        embed_dim=1024,
-        depth=24,
-        num_heads=16,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(patch_size=16,
+                              embed_dim=1024,
+                              depth=24,
+                              num_heads=16,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def CAE_large_patch16_384(**kwargs):
-    model = VisionTransformer(
-        img_size=384,
-        patch_size=16,
-        embed_dim=1024,
-        depth=24,
-        num_heads=16,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(img_size=384,
+                              patch_size=16,
+                              embed_dim=1024,
+                              depth=24,
+                              num_heads=16,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def CAE_large_patch32_384(**kwargs):
-    model = VisionTransformer(
-        img_size=384,
-        patch_size=32,
-        embed_dim=1024,
-        depth=24,
-        num_heads=16,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(img_size=384,
+                              patch_size=32,
+                              embed_dim=1024,
+                              depth=24,
+                              num_heads=16,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def CAE_huge_patch16_224(**kwargs):
-    model = VisionTransformer(
-        patch_size=16,
-        embed_dim=1280,
-        depth=32,
-        num_heads=16,
-        mlp_ratio=4,
-        **kwargs)
+    model = VisionTransformer(patch_size=16,
+                              embed_dim=1280,
+                              depth=32,
+                              num_heads=16,
+                              mlp_ratio=4,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def CAE_huge_patch32_384(**kwargs):
-    model = VisionTransformer(
-        img_size=384,
-        patch_size=32,
-        embed_dim=1280,
-        depth=32,
-        num_heads=16,
-        mlp_ratio=4,
-        **kwargs)
+    model = VisionTransformer(img_size=384,
+                              patch_size=32,
+                              embed_dim=1280,
+                              depth=32,
+                              num_heads=16,
+                              mlp_ratio=4,
+                              **kwargs)
     return model

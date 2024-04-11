@@ -50,12 +50,11 @@ class UNet(nn.Layer):
 
         self.encode = Encoder(in_channels)
         self.decode = Decoder(align_corners, use_deconv=use_deconv)
-        self.cls = self.conv = nn.Conv2D(
-            in_channels=64,
-            out_channels=num_classes,
-            kernel_size=3,
-            stride=1,
-            padding=1)
+        self.cls = self.conv = nn.Conv2D(in_channels=64,
+                                         out_channels=num_classes,
+                                         kernel_size=3,
+                                         stride=1,
+                                         padding=1)
 
         self.pretrained = pretrained
         self.init_weight()
@@ -74,11 +73,12 @@ class UNet(nn.Layer):
 
 
 class Encoder(nn.Layer):
+
     def __init__(self, in_channels=3):
         super().__init__()
 
-        self.double_conv = nn.Sequential(
-            layers.ConvBNReLU(in_channels, 64, 3), layers.ConvBNReLU(64, 64, 3))
+        self.double_conv = nn.Sequential(layers.ConvBNReLU(in_channels, 64, 3),
+                                         layers.ConvBNReLU(64, 64, 3))
         down_channels = [[64, 128], [128, 256], [256, 512], [512, 512]]
         self.down_sample_list = nn.LayerList([
             self.down_sampling(channel[0], channel[1])
@@ -102,6 +102,7 @@ class Encoder(nn.Layer):
 
 
 class Decoder(nn.Layer):
+
     def __init__(self, align_corners, use_deconv=False):
         super().__init__()
 
@@ -118,6 +119,7 @@ class Decoder(nn.Layer):
 
 
 class UpSampling(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -129,12 +131,11 @@ class UpSampling(nn.Layer):
 
         self.use_deconv = use_deconv
         if self.use_deconv:
-            self.deconv = nn.Conv2DTranspose(
-                in_channels,
-                out_channels // 2,
-                kernel_size=2,
-                stride=2,
-                padding=0)
+            self.deconv = nn.Conv2DTranspose(in_channels,
+                                             out_channels // 2,
+                                             kernel_size=2,
+                                             stride=2,
+                                             padding=0)
             in_channels = in_channels + out_channels // 2
         else:
             in_channels *= 2
@@ -147,11 +148,10 @@ class UpSampling(nn.Layer):
         if self.use_deconv:
             x = self.deconv(x)
         else:
-            x = F.interpolate(
-                x,
-                paddle.shape(short_cut)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
+            x = F.interpolate(x,
+                              short_cut.shape[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners)
         x = paddle.concat([x, short_cut], axis=1)
         x = self.double_conv(x)
         return x

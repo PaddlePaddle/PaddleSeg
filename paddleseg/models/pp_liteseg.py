@@ -102,7 +102,7 @@ class PPLiteSeg(nn.Layer):
         self.init_weight()
 
     def forward(self, x):
-        x_hw = paddle.shape(x)[2:]
+        x_hw = x.shape[2:]
 
         feats_backbone = self.backbone(x)  # [x2, x4, x8, x16, x32]
         assert len(feats_backbone) >= len(self.backbone_indices), \
@@ -121,8 +121,7 @@ class PPLiteSeg(nn.Layer):
                 logit_list.append(x)
 
             logit_list = [
-                F.interpolate(
-                    x, x_hw, mode='bilinear', align_corners=False)
+                F.interpolate(x, x_hw, mode='bilinear', align_corners=False)
                 for x in logit_list
             ]
         else:
@@ -167,8 +166,11 @@ class PPLiteSegHead(nn.Layer):
             high_ch = cm_out_ch if i == len(
                 backbone_out_chs) - 1 else arm_out_chs[i + 1]
             out_ch = arm_out_chs[i]
-            arm = arm_class(
-                low_chs, high_ch, out_ch, ksize=3, resize_mode=resize_mode)
+            arm = arm_class(low_chs,
+                            high_ch,
+                            out_ch,
+                            ksize=3,
+                            resize_mode=resize_mode)
             self.arm_list.append(arm)
 
     def forward(self, in_feat_list):
@@ -220,31 +222,30 @@ class PPContextModule(nn.Layer):
             for size in bin_sizes
         ])
 
-        self.conv_out = layers.ConvBNReLU(
-            in_channels=inter_channels,
-            out_channels=out_channels,
-            kernel_size=3,
-            padding=1)
+        self.conv_out = layers.ConvBNReLU(in_channels=inter_channels,
+                                          out_channels=out_channels,
+                                          kernel_size=3,
+                                          padding=1)
 
         self.align_corners = align_corners
 
     def _make_stage(self, in_channels, out_channels, size):
         prior = nn.AdaptiveAvgPool2D(output_size=size)
-        conv = layers.ConvBNReLU(
-            in_channels=in_channels, out_channels=out_channels, kernel_size=1)
+        conv = layers.ConvBNReLU(in_channels=in_channels,
+                                 out_channels=out_channels,
+                                 kernel_size=1)
         return nn.Sequential(prior, conv)
 
     def forward(self, input):
         out = None
-        input_shape = paddle.shape(input)[2:]
+        input_shape = input.shape[2:]
 
         for stage in self.stages:
             x = stage(input)
-            x = F.interpolate(
-                x,
-                input_shape,
-                mode='bilinear',
-                align_corners=self.align_corners)
+            x = F.interpolate(x,
+                              input_shape,
+                              mode='bilinear',
+                              align_corners=self.align_corners)
             if out is None:
                 out = x
             else:
@@ -255,17 +256,19 @@ class PPContextModule(nn.Layer):
 
 
 class SegHead(nn.Layer):
+
     def __init__(self, in_chan, mid_chan, n_classes):
         super().__init__()
-        self.conv = layers.ConvBNReLU(
-            in_chan,
-            mid_chan,
-            kernel_size=3,
-            stride=1,
-            padding=1,
-            bias_attr=False)
-        self.conv_out = nn.Conv2D(
-            mid_chan, n_classes, kernel_size=1, bias_attr=False)
+        self.conv = layers.ConvBNReLU(in_chan,
+                                      mid_chan,
+                                      kernel_size=3,
+                                      stride=1,
+                                      padding=1,
+                                      bias_attr=False)
+        self.conv_out = nn.Conv2D(mid_chan,
+                                  n_classes,
+                                  kernel_size=1,
+                                  bias_attr=False)
 
     def forward(self, x):
         x = self.conv(x)

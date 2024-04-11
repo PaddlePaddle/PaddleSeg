@@ -97,8 +97,9 @@ class SwinUNet(nn.Layer):
         for i_layer in range(self.num_layers):
             concat_linear = nn.Linear(
                 2 * int(embed_dim * 2**(self.num_layers - 1 - i_layer)),
-                int(embed_dim * 2**(self.num_layers - 1 - i_layer
-                                    ))) if i_layer > 0 else nn.Identity()
+                int(embed_dim *
+                    2**(self.num_layers - 1 -
+                        i_layer))) if i_layer > 0 else nn.Identity()
             if i_layer == 0:
                 layer_up = PatchExpand(
                     input_resolution=(patches_resolution[0] //
@@ -123,12 +124,13 @@ class SwinUNet(nn.Layer):
                     qk_scale=qk_scale,
                     drop=drop_rate,
                     attn_drop=attn_drop_rate,
-                    drop_path=dpr[sum(depths[:(self.num_layers - 1 - i_layer)]):
-                                  sum(depths[:(self.num_layers - 1 - i_layer) +
-                                             1])],
+                    drop_path=dpr[sum(depths[:(
+                        self.num_layers - 1 -
+                        i_layer)]):sum(depths[:(self.num_layers - 1 - i_layer) +
+                                              1])],
                     norm_layer=norm_layer,
-                    upsample=PatchExpand
-                    if (i_layer < self.num_layers - 1) else None)
+                    upsample=PatchExpand if
+                    (i_layer < self.num_layers - 1) else None)
             self.layers_up.append(layer_up)
             self.concat_back_dim.append(concat_linear)
 
@@ -141,11 +143,10 @@ class SwinUNet(nn.Layer):
                                   img_size // patch_size),
                 dim_scale=4,
                 dim=embed_dim)
-            self.output = nn.Conv2D(
-                in_channels=embed_dim,
-                out_channels=self.num_classes,
-                kernel_size=1,
-                bias_attr=False)
+            self.output = nn.Conv2D(in_channels=embed_dim,
+                                    out_channels=self.num_classes,
+                                    kernel_size=1,
+                                    bias_attr=False)
 
         self.init_weight()
 
@@ -179,7 +180,7 @@ class SwinUNet(nn.Layer):
 
     def up_x4(self, x):
         H, W = self.patches_resolution
-        B, L, C = paddle.shape(x)[0:3]
+        B, L, C = x.shape[0:3]
         assert L == H * W, "input features has wrong size"
 
         if self.final_upsample:
@@ -211,6 +212,7 @@ class SwinUNet(nn.Layer):
 
 
 class PatchExpand(nn.Layer):
+
     def __init__(self,
                  input_resolution,
                  dim,
@@ -243,6 +245,7 @@ class PatchExpand(nn.Layer):
 
 
 class FinalPatchExpandX4(nn.Layer):
+
     def __init__(self,
                  input_resolution,
                  dim,
@@ -262,12 +265,12 @@ class FinalPatchExpandX4(nn.Layer):
         """
         H, W = self.input_resolution
         x = self.expand(x)
-        B, L, C = paddle.shape(x)[0:3]
+        B, L, C = x.shape[0:3]
         assert L == H * W, "input features has wrong size"
 
         x = x.reshape((B, H, W, C))
-        x = x.reshape((B, H, W, self.dim_scale, self.dim_scale,
-                       C // (self.dim_scale**2)))
+        x = x.reshape(
+            (B, H, W, self.dim_scale, self.dim_scale, C // (self.dim_scale**2)))
         x = x.transpose((0, 1, 3, 2, 4, 5))
         x = x.reshape((B, H * self.dim_scale, W * self.dim_scale,
                        C // (self.dim_scale**2)))
@@ -320,26 +323,28 @@ class BasicUpLayer(nn.Layer):
 
         # build blocks
         self.blocks = nn.LayerList([
-            SwinTransformerBlock(
-                dim=dim,
-                input_resolution=self.input_resolution,
-                num_heads=num_heads,
-                window_size=window_size,
-                shift_size=0 if (i % 2 == 0) else window_size // 2,
-                mlp_ratio=mlp_ratio,
-                qkv_bias=qkv_bias,
-                qk_scale=qk_scale,
-                drop=drop,
-                attn_drop=attn_drop,
-                drop_path=drop_path[i]
-                if isinstance(drop_path, list) else drop_path,
-                norm_layer=norm_layer) for i in range(depth)
+            SwinTransformerBlock(dim=dim,
+                                 input_resolution=self.input_resolution,
+                                 num_heads=num_heads,
+                                 window_size=window_size,
+                                 shift_size=0 if
+                                 (i % 2 == 0) else window_size // 2,
+                                 mlp_ratio=mlp_ratio,
+                                 qkv_bias=qkv_bias,
+                                 qk_scale=qk_scale,
+                                 drop=drop,
+                                 attn_drop=attn_drop,
+                                 drop_path=drop_path[i] if isinstance(
+                                     drop_path, list) else drop_path,
+                                 norm_layer=norm_layer) for i in range(depth)
         ])
 
         # patch merging layer
         if upsample is not None:
-            self.upsample = PatchExpand(
-                input_resolution, dim=dim, dim_scale=2, norm_layer=norm_layer)
+            self.upsample = PatchExpand(input_resolution,
+                                        dim=dim,
+                                        dim_scale=2,
+                                        norm_layer=norm_layer)
         else:
             self.upsample = None
 
@@ -350,11 +355,11 @@ class BasicUpLayer(nn.Layer):
         Wp = int(np.ceil(W / self.window_size)) * self.window_size
         img_mask = paddle.zeros((1, Hp, Wp, 1))  # 1 Hp Wp 1
         h_slices = (slice(0, -self.window_size),
-                    slice(-self.window_size, -self.shift_size),
-                    slice(-self.shift_size, None))
+                    slice(-self.window_size,
+                          -self.shift_size), slice(-self.shift_size, None))
         w_slices = (slice(0, -self.window_size),
-                    slice(-self.window_size, -self.shift_size),
-                    slice(-self.shift_size, None))
+                    slice(-self.window_size,
+                          -self.shift_size), slice(-self.shift_size, None))
         cnt = 0
         for h in h_slices:
             for w in w_slices:

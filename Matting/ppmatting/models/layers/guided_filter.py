@@ -18,6 +18,7 @@ import paddle.nn.functional as F
 
 
 class BoxFilter(nn.Layer):
+
     def __init__(self, r):
         super().__init__()
         self.r = r
@@ -37,6 +38,7 @@ class BoxFilter(nn.Layer):
 
 
 class FastGuidedFilter(nn.Layer):
+
     def __init__(self, r, eps=1e-5):
         super().__init__()
         self.r = r
@@ -54,9 +56,13 @@ class FastGuidedFilter(nn.Layer):
         var_x = self.boxfileter(lr_x * lr_x) - mean_x * mean_x
         A = cov_xy / (var_x + self.eps)
         b = mean_y - A * mean_x
-        A = F.interpolate(
-            A, paddle.shape(hr_x)[2:], mode='bilinear', align_corners=False)
-        b = F.interpolate(
-            b, paddle.shape(hr_x)[2:], mode='bilinear', align_corners=False)
+        A = F.interpolate(A,
+                          hr_x.shape[2:],
+                          mode='bilinear',
+                          align_corners=False)
+        b = F.interpolate(b,
+                          hr_x.shape[2:],
+                          mode='bilinear',
+                          align_corners=False)
 
         return A * hr_x + b

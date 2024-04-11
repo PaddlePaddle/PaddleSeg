@@ -26,6 +26,7 @@ from paddleseg.models.backbones.transformer_utils import to_2tuple, DropPath, Id
 
 
 class Mlp(nn.Layer):
+
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -50,6 +51,7 @@ class Mlp(nn.Layer):
 
 
 class Attention(nn.Layer):
+
     def __init__(self,
                  dim,
                  num_heads=8,
@@ -68,10 +70,11 @@ class Attention(nn.Layer):
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         N, C = x_shape[1], x_shape[2]
-        qkv = self.qkv(x).reshape((-1, N, 3, self.num_heads, C //
-                                   self.num_heads)).transpose((2, 0, 3, 1, 4))
+        qkv = self.qkv(x).reshape(
+            (-1, N, 3, self.num_heads, C // self.num_heads)).transpose(
+                (2, 0, 3, 1, 4))
         q, k, v = qkv[0], qkv[1], qkv[2]
 
         attn = (q.matmul(k.transpose((0, 1, 3, 2)))) * self.scale
@@ -85,6 +88,7 @@ class Attention(nn.Layer):
 
 
 class Block(nn.Layer):
+
     def __init__(self,
                  dim,
                  num_heads,
@@ -99,13 +103,12 @@ class Block(nn.Layer):
                  epsilon=1e-5):
         super().__init__()
         self.norm1 = eval(norm_layer)(dim, epsilon=epsilon)
-        self.attn = Attention(
-            dim,
-            num_heads=num_heads,
-            qkv_bias=qkv_bias,
-            qk_scale=qk_scale,
-            attn_drop=attn_drop,
-            proj_drop=drop)
+        self.attn = Attention(dim,
+                              num_heads=num_heads,
+                              qkv_bias=qkv_bias,
+                              qk_scale=qk_scale,
+                              attn_drop=attn_drop,
+                              proj_drop=drop)
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
         self.norm2 = eval(norm_layer)(dim, epsilon=epsilon)
@@ -130,8 +133,10 @@ class PatchEmbed(nn.Layer):
         self.img_size = to_2tuple(img_size)
         self.patch_size = to_2tuple(patch_size)
 
-        self.proj = nn.Conv2D(
-            in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
+        self.proj = nn.Conv2D(in_chans,
+                              embed_dim,
+                              kernel_size=patch_size,
+                              stride=patch_size)
 
     @property
     def num_patches_in_h(self):
@@ -173,11 +178,10 @@ class VisionTransformer(nn.Layer):
         self.img_size = img_size
         self.embed_dim = embed_dim
 
-        self.patch_embed = PatchEmbed(
-            img_size=img_size,
-            patch_size=patch_size,
-            in_chans=in_channels,
-            embed_dim=embed_dim)
+        self.patch_embed = PatchEmbed(img_size=img_size,
+                                      patch_size=patch_size,
+                                      in_chans=in_channels,
+                                      embed_dim=embed_dim)
         self.pos_w = self.patch_embed.num_patches_in_w
         self.pos_h = self.patch_embed.num_patches_in_h
 
@@ -192,17 +196,16 @@ class VisionTransformer(nn.Layer):
         dpr = np.linspace(0, drop_path_rate, depth)
 
         self.blocks = nn.LayerList([
-            Block(
-                dim=embed_dim,
-                num_heads=num_heads,
-                mlp_ratio=mlp_ratio,
-                qkv_bias=qkv_bias,
-                qk_scale=qk_scale,
-                drop=drop_rate,
-                attn_drop=attn_drop_rate,
-                drop_path=dpr[i],
-                norm_layer=norm_layer,
-                epsilon=epsilon) for i in range(depth)
+            Block(dim=embed_dim,
+                  num_heads=num_heads,
+                  mlp_ratio=mlp_ratio,
+                  qkv_bias=qkv_bias,
+                  qk_scale=qk_scale,
+                  drop=drop_rate,
+                  attn_drop=attn_drop_rate,
+                  drop_path=dpr[i],
+                  norm_layer=norm_layer,
+                  epsilon=epsilon) for i in range(depth)
         ])
 
         self.final_norm = final_norm
@@ -223,16 +226,17 @@ class VisionTransformer(nn.Layer):
         model_state_dict = self.state_dict()
         pos_embed_name = "pos_embed"
         if pos_embed_name in load_state_dict.keys():
-            load_pos_embed = paddle.to_tensor(
-                load_state_dict[pos_embed_name], dtype="float32")
+            load_pos_embed = paddle.to_tensor(load_state_dict[pos_embed_name],
+                                              dtype="float32")
             if self.pos_embed.shape != load_pos_embed.shape:
                 pos_size = int(math.sqrt(load_pos_embed.shape[1] - 1))
                 model_state_dict[pos_embed_name] = self.resize_pos_embed(
                     load_pos_embed, (pos_size, pos_size),
                     (self.pos_h, self.pos_w))
                 self.set_dict(model_state_dict)
-                logger.info("Load pos_embed and resize it from {} to {} .".
-                            format(load_pos_embed.shape, self.pos_embed.shape))
+                logger.info(
+                    "Load pos_embed and resize it from {} to {} .".format(
+                        load_pos_embed.shape, self.pos_embed.shape))
 
     def resize_pos_embed(self, pos_embed, old_hw, new_hw):
         """
@@ -249,8 +253,10 @@ class VisionTransformer(nn.Layer):
 
         pos_embed = pos_embed.transpose([0, 2, 1])
         pos_embed = pos_embed.reshape([1, -1, old_hw[0], old_hw[1]])
-        pos_embed = F.interpolate(
-            pos_embed, new_hw, mode='bicubic', align_corners=False)
+        pos_embed = F.interpolate(pos_embed,
+                                  new_hw,
+                                  mode='bicubic',
+                                  align_corners=False)
         pos_embed = pos_embed.flatten(2).transpose([0, 2, 1])
         pos_embed = paddle.concat([cls_pos_embed, pos_embed], axis=1)
 
@@ -258,13 +264,13 @@ class VisionTransformer(nn.Layer):
 
     def forward(self, x):
         x = self.patch_embed(x)
-        x_shape = paddle.shape(x)  # b * c * h * w
+        x_shape = x.shape  # b * c * h * w
 
         cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
         x = x.flatten(2).transpose([0, 2, 1])  # b * hw * c
         x = paddle.concat([cls_tokens, x], axis=1)
 
-        if paddle.shape(x)[1] == self.pos_embed.shape[1]:
+        if x.shape[1] == self.pos_embed.shape[1]:
             x = x + self.pos_embed
         else:
             x = x + self.resize_pos_embed(self.pos_embed,
@@ -283,125 +289,116 @@ class VisionTransformer(nn.Layer):
 
 @manager.BACKBONES.add_component
 def ViT_small_patch16_224(**kwargs):
-    model = VisionTransformer(
-        patch_size=16,
-        embed_dim=768,
-        depth=8,
-        num_heads=8,
-        mlp_ratio=3,
-        qk_scale=768**-0.5,
-        **kwargs)
+    model = VisionTransformer(patch_size=16,
+                              embed_dim=768,
+                              depth=8,
+                              num_heads=8,
+                              mlp_ratio=3,
+                              qk_scale=768**-0.5,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def ViT_base_patch16_224(**kwargs):
-    model = VisionTransformer(
-        patch_size=16,
-        embed_dim=768,
-        depth=12,
-        num_heads=12,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(patch_size=16,
+                              embed_dim=768,
+                              depth=12,
+                              num_heads=12,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def ViT_base_patch16_384(**kwargs):
-    model = VisionTransformer(
-        img_size=384,
-        patch_size=16,
-        embed_dim=768,
-        depth=12,
-        num_heads=12,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(img_size=384,
+                              patch_size=16,
+                              embed_dim=768,
+                              depth=12,
+                              num_heads=12,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def ViT_base_patch32_384(**kwargs):
-    model = VisionTransformer(
-        img_size=384,
-        patch_size=32,
-        embed_dim=768,
-        depth=12,
-        num_heads=12,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(img_size=384,
+                              patch_size=32,
+                              embed_dim=768,
+                              depth=12,
+                              num_heads=12,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def ViT_large_patch16_224(**kwargs):
-    model = VisionTransformer(
-        patch_size=16,
-        embed_dim=1024,
-        depth=24,
-        num_heads=16,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(patch_size=16,
+                              embed_dim=1024,
+                              depth=24,
+                              num_heads=16,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def ViT_large_patch16_384(**kwargs):
-    model = VisionTransformer(
-        img_size=384,
-        patch_size=16,
-        embed_dim=1024,
-        depth=24,
-        num_heads=16,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(img_size=384,
+                              patch_size=16,
+                              embed_dim=1024,
+                              depth=24,
+                              num_heads=16,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def ViT_large_patch32_384(**kwargs):
-    model = VisionTransformer(
-        img_size=384,
-        patch_size=32,
-        embed_dim=1024,
-        depth=24,
-        num_heads=16,
-        mlp_ratio=4,
-        qkv_bias=True,
-        epsilon=1e-6,
-        **kwargs)
+    model = VisionTransformer(img_size=384,
+                              patch_size=32,
+                              embed_dim=1024,
+                              depth=24,
+                              num_heads=16,
+                              mlp_ratio=4,
+                              qkv_bias=True,
+                              epsilon=1e-6,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def ViT_huge_patch16_224(**kwargs):
-    model = VisionTransformer(
-        patch_size=16,
-        embed_dim=1280,
-        depth=32,
-        num_heads=16,
-        mlp_ratio=4,
-        **kwargs)
+    model = VisionTransformer(patch_size=16,
+                              embed_dim=1280,
+                              depth=32,
+                              num_heads=16,
+                              mlp_ratio=4,
+                              **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def ViT_huge_patch32_384(**kwargs):
-    model = VisionTransformer(
-        img_size=384,
-        patch_size=32,
-        embed_dim=1280,
-        depth=32,
-        num_heads=16,
-        mlp_ratio=4,
-        **kwargs)
+    model = VisionTransformer(img_size=384,
+                              patch_size=32,
+                              embed_dim=1280,
+                              depth=32,
+                              num_heads=16,
+                              mlp_ratio=4,
+                              **kwargs)
     return model

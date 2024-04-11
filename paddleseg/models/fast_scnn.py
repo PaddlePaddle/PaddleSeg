@@ -51,8 +51,8 @@ class FastSCNN(nn.Layer):
 
         super().__init__()
 
-        self.learning_to_downsample = LearningToDownsample(in_channels, 32, 48,
-                                                           64)
+        self.learning_to_downsample = LearningToDownsample(
+            in_channels, 32, 48, 64)
         self.global_feature_extractor = GlobalFeatureExtractor(
             in_channels=64,
             block_channels=[64, 96, 128],
@@ -73,25 +73,23 @@ class FastSCNN(nn.Layer):
 
     def forward(self, x):
         logit_list = []
-        input_size = paddle.shape(x)[2:]
+        input_size = x.shape[2:]
         higher_res_features = self.learning_to_downsample(x)
         x = self.global_feature_extractor(higher_res_features)
         x = self.feature_fusion(higher_res_features, x)
         logit = self.classifier(x)
-        logit = F.interpolate(
-            logit,
-            input_size,
-            mode='bilinear',
-            align_corners=self.align_corners)
+        logit = F.interpolate(logit,
+                              input_size,
+                              mode='bilinear',
+                              align_corners=self.align_corners)
         logit_list.append(logit)
 
         if self.enable_auxiliary_loss:
             auxiliary_logit = self.auxlayer(higher_res_features)
-            auxiliary_logit = F.interpolate(
-                auxiliary_logit,
-                input_size,
-                mode='bilinear',
-                align_corners=self.align_corners)
+            auxiliary_logit = F.interpolate(auxiliary_logit,
+                                            input_size,
+                                            mode='bilinear',
+                                            align_corners=self.align_corners)
             logit_list.append(auxiliary_logit)
 
         return logit_list
@@ -118,11 +116,10 @@ class LearningToDownsample(nn.Layer):
                  out_channels=64):
         super(LearningToDownsample, self).__init__()
 
-        self.conv_bn_relu = layers.ConvBNReLU(
-            in_channels=in_channels,
-            out_channels=dw_channels1,
-            kernel_size=3,
-            stride=2)
+        self.conv_bn_relu = layers.ConvBNReLU(in_channels=in_channels,
+                                              out_channels=dw_channels1,
+                                              kernel_size=3,
+                                              stride=2)
         self.dsconv_bn_relu1 = layers.SeparableConvBNReLU(
             in_channels=dw_channels1,
             out_channels=dw_channels2,
@@ -165,19 +162,20 @@ class GlobalFeatureExtractor(nn.Layer):
         self.bottleneck1 = self._make_layer(InvertedBottleneck, in_channels,
                                             block_channels[0], num_blocks[0],
                                             expansion, 2)
-        self.bottleneck2 = self._make_layer(
-            InvertedBottleneck, block_channels[0], block_channels[1],
-            num_blocks[1], expansion, 2)
-        self.bottleneck3 = self._make_layer(
-            InvertedBottleneck, block_channels[1], block_channels[2],
-            num_blocks[2], expansion, 1)
+        self.bottleneck2 = self._make_layer(InvertedBottleneck,
+                                            block_channels[0],
+                                            block_channels[1], num_blocks[1],
+                                            expansion, 2)
+        self.bottleneck3 = self._make_layer(InvertedBottleneck,
+                                            block_channels[1],
+                                            block_channels[2], num_blocks[2],
+                                            expansion, 1)
 
-        self.ppm = layers.PPModule(
-            block_channels[2],
-            out_channels,
-            bin_sizes=(1, 2, 3, 6),
-            dim_reduction=True,
-            align_corners=align_corners)
+        self.ppm = layers.PPModule(block_channels[2],
+                                   out_channels,
+                                   bin_sizes=(1, 2, 3, 6),
+                                   dim_reduction=True,
+                                   align_corners=align_corners)
 
     def _make_layer(self,
                     block,
@@ -218,26 +216,23 @@ class InvertedBottleneck(nn.Layer):
         expand_channels = in_channels * expansion
         self.block = nn.Sequential(
             # pw
-            layers.ConvBNReLU(
-                in_channels=in_channels,
-                out_channels=expand_channels,
-                kernel_size=1,
-                bias_attr=False),
+            layers.ConvBNReLU(in_channels=in_channels,
+                              out_channels=expand_channels,
+                              kernel_size=1,
+                              bias_attr=False),
             # dw
-            layers.ConvBNReLU(
-                in_channels=expand_channels,
-                out_channels=expand_channels,
-                kernel_size=3,
-                stride=stride,
-                padding=1,
-                groups=expand_channels,
-                bias_attr=False),
+            layers.ConvBNReLU(in_channels=expand_channels,
+                              out_channels=expand_channels,
+                              kernel_size=3,
+                              stride=stride,
+                              padding=1,
+                              groups=expand_channels,
+                              bias_attr=False),
             # pw-linear
-            layers.ConvBN(
-                in_channels=expand_channels,
-                out_channels=out_channels,
-                kernel_size=1,
-                bias_attr=False))
+            layers.ConvBN(in_channels=expand_channels,
+                          out_channels=out_channels,
+                          kernel_size=1,
+                          bias_attr=False))
 
     def forward(self, x):
         out = self.block(x)
@@ -263,24 +258,22 @@ class FeatureFusionModule(nn.Layer):
         super().__init__()
 
         # Only depth-wise conv
-        self.dwconv = layers.ConvBNReLU(
-            in_channels=low_in_channels,
-            out_channels=out_channels,
-            kernel_size=3,
-            padding=1,
-            groups=128,
-            bias_attr=False)
+        self.dwconv = layers.ConvBNReLU(in_channels=low_in_channels,
+                                        out_channels=out_channels,
+                                        kernel_size=3,
+                                        padding=1,
+                                        groups=128,
+                                        bias_attr=False)
 
         self.conv_low_res = layers.ConvBN(out_channels, out_channels, 1)
         self.conv_high_res = layers.ConvBN(high_in_channels, out_channels, 1)
         self.align_corners = align_corners
 
     def forward(self, high_res_input, low_res_input):
-        low_res_input = F.interpolate(
-            low_res_input,
-            paddle.shape(high_res_input)[2:],
-            mode='bilinear',
-            align_corners=self.align_corners)
+        low_res_input = F.interpolate(low_res_input,
+                                      high_res_input.shape[2:],
+                                      mode='bilinear',
+                                      align_corners=self.align_corners)
         low_res_input = self.dwconv(low_res_input)
         low_res_input = self.conv_low_res(low_res_input)
         high_res_input = self.conv_high_res(high_res_input)
@@ -301,20 +294,19 @@ class Classifier(nn.Layer):
     def __init__(self, input_channels, num_classes):
         super().__init__()
 
-        self.dsconv1 = layers.SeparableConvBNReLU(
-            in_channels=input_channels,
-            out_channels=input_channels,
-            kernel_size=3,
-            padding=1)
+        self.dsconv1 = layers.SeparableConvBNReLU(in_channels=input_channels,
+                                                  out_channels=input_channels,
+                                                  kernel_size=3,
+                                                  padding=1)
 
-        self.dsconv2 = layers.SeparableConvBNReLU(
-            in_channels=input_channels,
-            out_channels=input_channels,
-            kernel_size=3,
-            padding=1)
+        self.dsconv2 = layers.SeparableConvBNReLU(in_channels=input_channels,
+                                                  out_channels=input_channels,
+                                                  kernel_size=3,
+                                                  padding=1)
 
-        self.conv = nn.Conv2D(
-            in_channels=input_channels, out_channels=num_classes, kernel_size=1)
+        self.conv = nn.Conv2D(in_channels=input_channels,
+                              out_channels=num_classes,
+                              kernel_size=1)
 
         self.dropout = nn.Dropout(p=0.1)  # dropout_prob
 

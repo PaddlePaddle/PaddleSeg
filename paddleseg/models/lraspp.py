@@ -91,7 +91,7 @@ class LRASPP(nn.Layer):
         self.init_weight()
 
     def forward(self, x):
-        x_hw = paddle.shape(x)[2:]
+        x_hw = x.shape[2:]
 
         feats_backbone = self.backbone(x)
         assert len(feats_backbone) >= len(self.backbone_indices), \
@@ -110,6 +110,7 @@ class LRASPP(nn.Layer):
 
 
 class LRASPPHead(nn.Layer):
+
     def __init__(self,
                  indices,
                  in_chs,
@@ -128,33 +129,32 @@ class LRASPPHead(nn.Layer):
         self.conv_ups = nn.LayerList()
         for in_ch, mid_ch in zip(self.in_chs[1:], self.mid_chs):
             self.convs.append(
-                nn.Conv2D(
-                    in_ch, mid_ch, kernel_size=1, bias_attr=False))
+                nn.Conv2D(in_ch, mid_ch, kernel_size=1, bias_attr=False))
             self.conv_ups.append(layers.ConvBNReLU(out_ch + mid_ch, out_ch, 1))
         self.conv_w = nn.Sequential(
-            nn.AvgPool2D(
-                kernel_size=(49, 49), stride=(16, 20))
+            nn.AvgPool2D(kernel_size=(49, 49), stride=(16, 20))
             if not use_gap else nn.AdaptiveAvgPool2D(1),
-            nn.Conv2D(
-                self.in_chs[0], out_ch, 1, bias_attr=False),
-            nn.Sigmoid())
+            nn.Conv2D(self.in_chs[0], out_ch, 1, bias_attr=False), nn.Sigmoid())
         self.conv_v = layers.ConvBNReLU(self.in_chs[0], out_ch, 1)
         self.conv_t = nn.Conv2D(out_ch, out_ch, kernel_size=1, bias_attr=False)
-        self.conv_out = nn.Conv2D(
-            out_ch, n_classes, kernel_size=1, bias_attr=False)
+        self.conv_out = nn.Conv2D(out_ch,
+                                  n_classes,
+                                  kernel_size=1,
+                                  bias_attr=False)
 
-        self.interp = partial(
-            F.interpolate, mode=resize_mode, align_corners=align_corners)
+        self.interp = partial(F.interpolate,
+                              mode=resize_mode,
+                              align_corners=align_corners)
 
     def forward(self, in_feat_list):
         x = in_feat_list[-1]
 
-        x = self.conv_v(x) * self.interp(self.conv_w(x), paddle.shape(x)[2:])
+        x = self.conv_v(x) * self.interp(self.conv_w(x), x.shape[2:])
         y = self.conv_t(x)
 
         for idx, conv, conv_up in zip(self.indices, self.convs, self.conv_ups):
             feat = in_feat_list[idx]
-            y = self.interp(y, paddle.shape(feat)[2:])
+            y = self.interp(y, feat.shape[2:])
             y = paddle.concat([y, conv(feat)], axis=1)
             y = conv_up(y)
 

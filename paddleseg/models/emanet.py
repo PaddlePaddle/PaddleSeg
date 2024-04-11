@@ -76,11 +76,11 @@ class EMANet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
         return logit_list
@@ -123,25 +123,26 @@ class EMAHead(nn.Layer):
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
         self.emau = EMAU(ema_channels, num_bases, stage_num, momentum=momentum)
-        self.ema_in_conv = layers.ConvBNReLU(
-            in_channels=self.in_channels,
-            out_channels=ema_channels,
-            kernel_size=3)
+        self.ema_in_conv = layers.ConvBNReLU(in_channels=self.in_channels,
+                                             out_channels=ema_channels,
+                                             kernel_size=3)
         self.ema_mid_conv = nn.Conv2D(ema_channels, ema_channels, kernel_size=1)
-        self.ema_out_conv = layers.ConvBNReLU(
-            in_channels=ema_channels, out_channels=ema_channels, kernel_size=1)
-        self.bottleneck = layers.ConvBNReLU(
-            in_channels=ema_channels, out_channels=gc_channels, kernel_size=3)
-        self.cls = nn.Sequential(
-            nn.Dropout2D(p=0.1), nn.Conv2D(gc_channels, num_classes, 1))
+        self.ema_out_conv = layers.ConvBNReLU(in_channels=ema_channels,
+                                              out_channels=ema_channels,
+                                              kernel_size=1)
+        self.bottleneck = layers.ConvBNReLU(in_channels=ema_channels,
+                                            out_channels=gc_channels,
+                                            kernel_size=3)
+        self.cls = nn.Sequential(nn.Dropout2D(p=0.1),
+                                 nn.Conv2D(gc_channels, num_classes, 1))
         self.aux = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels=1024, out_channels=256, kernel_size=3),
-            nn.Dropout2D(p=0.1),
+            layers.ConvBNReLU(in_channels=1024, out_channels=256,
+                              kernel_size=3), nn.Dropout2D(p=0.1),
             nn.Conv2D(256, num_classes, 1))
         if self.concat_input:
-            self.conv_cat = layers.ConvBNReLU(
-                self.in_channels + gc_channels, gc_channels, kernel_size=3)
+            self.conv_cat = layers.ConvBNReLU(self.in_channels + gc_channels,
+                                              gc_channels,
+                                              kernel_size=3)
 
     def forward(self, feat_list):
         C3, C4 = feat_list
@@ -187,7 +188,7 @@ class EMAU(nn.Layer):
         self.register_buffer('mu', mu)
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         x = x.flatten(2)
         mu = paddle.tile(self.mu, [x_shape[0], 1, 1])
 

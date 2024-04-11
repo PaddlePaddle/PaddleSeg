@@ -48,21 +48,20 @@ def Conv2d(in_channels,
         bias_attr = paddle.framework.ParamAttr(initializer=bias_init)
     else:
         bias_attr = False
-    conv = nn.Conv2D(
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dilation,
-        groups,
-        weight_attr=weight_attr,
-        bias_attr=bias_attr)
+    conv = nn.Conv2D(in_channels,
+                     out_channels,
+                     kernel_size,
+                     stride,
+                     padding,
+                     dilation,
+                     groups,
+                     weight_attr=weight_attr,
+                     bias_attr=bias_attr)
     return conv
 
 
 def channel_shuffle(x, groups):
-    x_shape = paddle.shape(x)
+    x_shape = x.shape
     batch_size, height, width = x_shape[0], x_shape[2], x_shape[3]
     num_channels = x.shape[1]
     channels_per_group = num_channels // groups
@@ -76,6 +75,7 @@ def channel_shuffle(x, groups):
 
 
 class ConvNormLayer(nn.Layer):
+
     def __init__(self,
                  ch_in,
                  ch_out,
@@ -96,22 +96,23 @@ class ConvNormLayer(nn.Layer):
             param_attr = ParamAttr(
                 initializer=Constant(1.0),
                 learning_rate=norm_lr,
-                regularizer=L2Decay(norm_decay), )
-            bias_attr = ParamAttr(
-                learning_rate=norm_lr, regularizer=L2Decay(norm_decay))
+                regularizer=L2Decay(norm_decay),
+            )
+            bias_attr = ParamAttr(learning_rate=norm_lr,
+                                  regularizer=L2Decay(norm_decay))
             global_stats = True if freeze_norm else None
             if norm_type in ['bn', 'sync_bn']:
                 self.norm = nn.BatchNorm2D(
                     ch_out,
                     weight_attr=param_attr,
                     bias_attr=bias_attr,
-                    use_global_stats=global_stats, )
+                    use_global_stats=global_stats,
+                )
             elif norm_type == 'gn':
-                self.norm = nn.GroupNorm(
-                    num_groups=norm_groups,
-                    num_channels=ch_out,
-                    weight_attr=param_attr,
-                    bias_attr=bias_attr)
+                self.norm = nn.GroupNorm(num_groups=norm_groups,
+                                         num_channels=ch_out,
+                                         weight_attr=param_attr,
+                                         bias_attr=bias_attr)
             norm_params = self.norm.parameters()
             if freeze_norm:
                 for param in norm_params:
@@ -128,8 +129,7 @@ class ConvNormLayer(nn.Layer):
             stride=stride,
             padding=(filter_size - 1) // 2,
             groups=groups,
-            weight_attr=ParamAttr(initializer=Normal(
-                mean=0., std=0.001)),
+            weight_attr=ParamAttr(initializer=Normal(mean=0., std=0.001)),
             bias_attr=conv_bias_attr)
 
     def forward(self, inputs):
@@ -145,6 +145,7 @@ class ConvNormLayer(nn.Layer):
 
 
 class DepthWiseSeparableConvNormLayer(nn.Layer):
+
     def __init__(self,
                  ch_in,
                  ch_out,
@@ -166,7 +167,8 @@ class DepthWiseSeparableConvNormLayer(nn.Layer):
             norm_type=dw_norm_type,
             act=dw_act,
             norm_decay=norm_decay,
-            freeze_norm=freeze_norm, )
+            freeze_norm=freeze_norm,
+        )
         self.pointwise_conv = ConvNormLayer(
             ch_in=ch_in,
             ch_out=ch_out,
@@ -175,7 +177,8 @@ class DepthWiseSeparableConvNormLayer(nn.Layer):
             norm_type=pw_norm_type,
             act=pw_act,
             norm_decay=norm_decay,
-            freeze_norm=freeze_norm, )
+            freeze_norm=freeze_norm,
+        )
 
     def forward(self, x):
         x = self.depthwise_conv(x)
@@ -184,6 +187,7 @@ class DepthWiseSeparableConvNormLayer(nn.Layer):
 
 
 class CrossResolutionWeightingModule(nn.Layer):
+
     def __init__(self,
                  channels,
                  ratio=16,
@@ -193,24 +197,22 @@ class CrossResolutionWeightingModule(nn.Layer):
         super(CrossResolutionWeightingModule, self).__init__()
         self.channels = channels
         total_channel = sum(channels)
-        self.conv1 = ConvNormLayer(
-            ch_in=total_channel,
-            ch_out=total_channel // ratio,
-            filter_size=1,
-            stride=1,
-            norm_type=norm_type,
-            act='relu',
-            freeze_norm=freeze_norm,
-            norm_decay=norm_decay)
-        self.conv2 = ConvNormLayer(
-            ch_in=total_channel // ratio,
-            ch_out=total_channel,
-            filter_size=1,
-            stride=1,
-            norm_type=norm_type,
-            act='sigmoid',
-            freeze_norm=freeze_norm,
-            norm_decay=norm_decay)
+        self.conv1 = ConvNormLayer(ch_in=total_channel,
+                                   ch_out=total_channel // ratio,
+                                   filter_size=1,
+                                   stride=1,
+                                   norm_type=norm_type,
+                                   act='relu',
+                                   freeze_norm=freeze_norm,
+                                   norm_decay=norm_decay)
+        self.conv2 = ConvNormLayer(ch_in=total_channel // ratio,
+                                   ch_out=total_channel,
+                                   filter_size=1,
+                                   stride=1,
+                                   norm_type=norm_type,
+                                   act='sigmoid',
+                                   freeze_norm=freeze_norm,
+                                   norm_decay=norm_decay)
 
     def forward(self, x):
         out = []
@@ -225,32 +227,31 @@ class CrossResolutionWeightingModule(nn.Layer):
         out = self.conv2(out)
         out = paddle.split(out, self.channels, 1)
         out = [
-            s * F.interpolate(
-                a, paddle.shape(s)[-2:], mode='nearest') for s, a in zip(x, out)
+            s * F.interpolate(a, s.shape[-2:], mode='nearest')
+            for s, a in zip(x, out)
         ]
         return out
 
 
 class SpatialWeightingModule(nn.Layer):
+
     def __init__(self, in_channel, ratio=16, freeze_norm=False, norm_decay=0.):
         super(SpatialWeightingModule, self).__init__()
         self.global_avgpooling = nn.AdaptiveAvgPool2D(1)
-        self.conv1 = ConvNormLayer(
-            ch_in=in_channel,
-            ch_out=in_channel // ratio,
-            filter_size=1,
-            stride=1,
-            act='relu',
-            freeze_norm=freeze_norm,
-            norm_decay=norm_decay)
-        self.conv2 = ConvNormLayer(
-            ch_in=in_channel // ratio,
-            ch_out=in_channel,
-            filter_size=1,
-            stride=1,
-            act='sigmoid',
-            freeze_norm=freeze_norm,
-            norm_decay=norm_decay)
+        self.conv1 = ConvNormLayer(ch_in=in_channel,
+                                   ch_out=in_channel // ratio,
+                                   filter_size=1,
+                                   stride=1,
+                                   act='relu',
+                                   freeze_norm=freeze_norm,
+                                   norm_decay=norm_decay)
+        self.conv2 = ConvNormLayer(ch_in=in_channel // ratio,
+                                   ch_out=in_channel,
+                                   filter_size=1,
+                                   stride=1,
+                                   act='sigmoid',
+                                   freeze_norm=freeze_norm,
+                                   norm_decay=norm_decay)
 
     def forward(self, x):
         out = self.global_avgpooling(x)
@@ -260,6 +261,7 @@ class SpatialWeightingModule(nn.Layer):
 
 
 class ConditionalChannelWeightingBlock(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  stride,
@@ -278,23 +280,22 @@ class ConditionalChannelWeightingBlock(nn.Layer):
             freeze_norm=freeze_norm,
             norm_decay=norm_decay)
         self.depthwise_convs = nn.LayerList([
-            ConvNormLayer(
-                channel,
-                channel,
-                filter_size=3,
-                stride=stride,
-                groups=channel,
-                norm_type=norm_type,
-                freeze_norm=freeze_norm,
-                norm_decay=norm_decay) for channel in branch_channels
+            ConvNormLayer(channel,
+                          channel,
+                          filter_size=3,
+                          stride=stride,
+                          groups=channel,
+                          norm_type=norm_type,
+                          freeze_norm=freeze_norm,
+                          norm_decay=norm_decay) for channel in branch_channels
         ])
 
         self.spatial_weighting = nn.LayerList([
-            SpatialWeightingModule(
-                channel,
-                ratio=4,
-                freeze_norm=freeze_norm,
-                norm_decay=norm_decay) for channel in branch_channels
+            SpatialWeightingModule(channel,
+                                   ratio=4,
+                                   freeze_norm=freeze_norm,
+                                   norm_decay=norm_decay)
+            for channel in branch_channels
         ])
 
     def forward(self, x):
@@ -312,6 +313,7 @@ class ConditionalChannelWeightingBlock(nn.Layer):
 
 
 class ShuffleUnit(nn.Layer):
+
     def __init__(self,
                  in_channel,
                  out_channel,
@@ -327,52 +329,49 @@ class ShuffleUnit(nn.Layer):
                 "when stride=1, in_channel {} should equal to branch_channel*2 {}".format(in_channel, branch_channel * 2)
         if stride > 1:
             self.branch1 = nn.Sequential(
-                ConvNormLayer(
-                    ch_in=in_channel,
-                    ch_out=in_channel,
-                    filter_size=3,
-                    stride=self.stride,
-                    groups=in_channel,
-                    norm_type=norm_type,
-                    freeze_norm=freeze_norm,
-                    norm_decay=norm_decay),
-                ConvNormLayer(
-                    ch_in=in_channel,
-                    ch_out=branch_channel,
-                    filter_size=1,
-                    stride=1,
-                    norm_type=norm_type,
-                    act='relu',
-                    freeze_norm=freeze_norm,
-                    norm_decay=norm_decay), )
+                ConvNormLayer(ch_in=in_channel,
+                              ch_out=in_channel,
+                              filter_size=3,
+                              stride=self.stride,
+                              groups=in_channel,
+                              norm_type=norm_type,
+                              freeze_norm=freeze_norm,
+                              norm_decay=norm_decay),
+                ConvNormLayer(ch_in=in_channel,
+                              ch_out=branch_channel,
+                              filter_size=1,
+                              stride=1,
+                              norm_type=norm_type,
+                              act='relu',
+                              freeze_norm=freeze_norm,
+                              norm_decay=norm_decay),
+            )
         self.branch2 = nn.Sequential(
-            ConvNormLayer(
-                ch_in=branch_channel if stride == 1 else in_channel,
-                ch_out=branch_channel,
-                filter_size=1,
-                stride=1,
-                norm_type=norm_type,
-                act='relu',
-                freeze_norm=freeze_norm,
-                norm_decay=norm_decay),
-            ConvNormLayer(
-                ch_in=branch_channel,
-                ch_out=branch_channel,
-                filter_size=3,
-                stride=self.stride,
-                groups=branch_channel,
-                norm_type=norm_type,
-                freeze_norm=freeze_norm,
-                norm_decay=norm_decay),
-            ConvNormLayer(
-                ch_in=branch_channel,
-                ch_out=branch_channel,
-                filter_size=1,
-                stride=1,
-                norm_type=norm_type,
-                act='relu',
-                freeze_norm=freeze_norm,
-                norm_decay=norm_decay), )
+            ConvNormLayer(ch_in=branch_channel if stride == 1 else in_channel,
+                          ch_out=branch_channel,
+                          filter_size=1,
+                          stride=1,
+                          norm_type=norm_type,
+                          act='relu',
+                          freeze_norm=freeze_norm,
+                          norm_decay=norm_decay),
+            ConvNormLayer(ch_in=branch_channel,
+                          ch_out=branch_channel,
+                          filter_size=3,
+                          stride=self.stride,
+                          groups=branch_channel,
+                          norm_type=norm_type,
+                          freeze_norm=freeze_norm,
+                          norm_decay=norm_decay),
+            ConvNormLayer(ch_in=branch_channel,
+                          ch_out=branch_channel,
+                          filter_size=1,
+                          stride=1,
+                          norm_type=norm_type,
+                          act='relu',
+                          freeze_norm=freeze_norm,
+                          norm_decay=norm_decay),
+        )
 
     def forward(self, x):
         if self.stride > 1:
@@ -387,6 +386,7 @@ class ShuffleUnit(nn.Layer):
 
 
 class IterativeHead(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  norm_type='bn',
@@ -400,30 +400,29 @@ class IterativeHead(nn.Layer):
         for i in range(num_branches):
             if i != num_branches - 1:
                 projects.append(
-                    DepthWiseSeparableConvNormLayer(
-                        ch_in=self.in_channels[i],
-                        ch_out=self.in_channels[i + 1],
-                        filter_size=3,
-                        stride=1,
-                        dw_act=None,
-                        pw_act='relu',
-                        dw_norm_type=norm_type,
-                        pw_norm_type=norm_type,
-                        freeze_norm=freeze_norm,
-                        norm_decay=norm_decay))
+                    DepthWiseSeparableConvNormLayer(ch_in=self.in_channels[i],
+                                                    ch_out=self.in_channels[i +
+                                                                            1],
+                                                    filter_size=3,
+                                                    stride=1,
+                                                    dw_act=None,
+                                                    pw_act='relu',
+                                                    dw_norm_type=norm_type,
+                                                    pw_norm_type=norm_type,
+                                                    freeze_norm=freeze_norm,
+                                                    norm_decay=norm_decay))
             else:
                 projects.append(
-                    DepthWiseSeparableConvNormLayer(
-                        ch_in=self.in_channels[i],
-                        ch_out=self.in_channels[i],
-                        filter_size=3,
-                        stride=1,
-                        dw_act=None,
-                        pw_act='relu',
-                        dw_norm_type=norm_type,
-                        pw_norm_type=norm_type,
-                        freeze_norm=freeze_norm,
-                        norm_decay=norm_decay))
+                    DepthWiseSeparableConvNormLayer(ch_in=self.in_channels[i],
+                                                    ch_out=self.in_channels[i],
+                                                    filter_size=3,
+                                                    stride=1,
+                                                    dw_act=None,
+                                                    pw_act='relu',
+                                                    dw_norm_type=norm_type,
+                                                    pw_norm_type=norm_type,
+                                                    freeze_norm=freeze_norm,
+                                                    norm_decay=norm_decay))
         self.projects = nn.LayerList(projects)
 
     def forward(self, x):
@@ -432,11 +431,10 @@ class IterativeHead(nn.Layer):
         last_x = None
         for i, s in enumerate(x):
             if last_x is not None:
-                last_x = F.interpolate(
-                    last_x,
-                    size=paddle.shape(s)[-2:],
-                    mode='bilinear',
-                    align_corners=True)
+                last_x = F.interpolate(last_x,
+                                       size=s.shape[-2:],
+                                       mode='bilinear',
+                                       align_corners=True)
                 s = s + last_x
             s = self.projects[i](s)
             y.append(s)
@@ -446,6 +444,7 @@ class IterativeHead(nn.Layer):
 
 
 class Stem(nn.Layer):
+
     def __init__(self,
                  in_channel,
                  stem_channel,
@@ -455,15 +454,14 @@ class Stem(nn.Layer):
                  freeze_norm=False,
                  norm_decay=0.):
         super(Stem, self).__init__()
-        self.conv1 = ConvNormLayer(
-            in_channel,
-            stem_channel,
-            filter_size=3,
-            stride=2,
-            norm_type=norm_type,
-            act='relu',
-            freeze_norm=freeze_norm,
-            norm_decay=norm_decay)
+        self.conv1 = ConvNormLayer(in_channel,
+                                   stem_channel,
+                                   filter_size=3,
+                                   stride=2,
+                                   norm_type=norm_type,
+                                   act='relu',
+                                   freeze_norm=freeze_norm,
+                                   norm_decay=norm_decay)
         mid_channel = int(round(stem_channel * expand_ratio))
         branch_channel = stem_channel // 2
         if stem_channel == out_channel:
@@ -471,52 +469,48 @@ class Stem(nn.Layer):
         else:
             inc_channel = out_channel - stem_channel
         self.branch1 = nn.Sequential(
-            ConvNormLayer(
-                ch_in=branch_channel,
-                ch_out=branch_channel,
-                filter_size=3,
-                stride=2,
-                groups=branch_channel,
-                norm_type=norm_type,
-                freeze_norm=freeze_norm,
-                norm_decay=norm_decay),
-            ConvNormLayer(
-                ch_in=branch_channel,
-                ch_out=inc_channel,
-                filter_size=1,
-                stride=1,
-                norm_type=norm_type,
-                act='relu',
-                freeze_norm=freeze_norm,
-                norm_decay=norm_decay), )
-        self.expand_conv = ConvNormLayer(
-            ch_in=branch_channel,
-            ch_out=mid_channel,
-            filter_size=1,
-            stride=1,
-            norm_type=norm_type,
-            act='relu',
-            freeze_norm=freeze_norm,
-            norm_decay=norm_decay)
-        self.depthwise_conv = ConvNormLayer(
-            ch_in=mid_channel,
-            ch_out=mid_channel,
-            filter_size=3,
-            stride=2,
-            groups=mid_channel,
-            norm_type=norm_type,
-            freeze_norm=freeze_norm,
-            norm_decay=norm_decay)
-        self.linear_conv = ConvNormLayer(
-            ch_in=mid_channel,
-            ch_out=branch_channel
-            if stem_channel == out_channel else stem_channel,
-            filter_size=1,
-            stride=1,
-            norm_type=norm_type,
-            act='relu',
-            freeze_norm=freeze_norm,
-            norm_decay=norm_decay)
+            ConvNormLayer(ch_in=branch_channel,
+                          ch_out=branch_channel,
+                          filter_size=3,
+                          stride=2,
+                          groups=branch_channel,
+                          norm_type=norm_type,
+                          freeze_norm=freeze_norm,
+                          norm_decay=norm_decay),
+            ConvNormLayer(ch_in=branch_channel,
+                          ch_out=inc_channel,
+                          filter_size=1,
+                          stride=1,
+                          norm_type=norm_type,
+                          act='relu',
+                          freeze_norm=freeze_norm,
+                          norm_decay=norm_decay),
+        )
+        self.expand_conv = ConvNormLayer(ch_in=branch_channel,
+                                         ch_out=mid_channel,
+                                         filter_size=1,
+                                         stride=1,
+                                         norm_type=norm_type,
+                                         act='relu',
+                                         freeze_norm=freeze_norm,
+                                         norm_decay=norm_decay)
+        self.depthwise_conv = ConvNormLayer(ch_in=mid_channel,
+                                            ch_out=mid_channel,
+                                            filter_size=3,
+                                            stride=2,
+                                            groups=mid_channel,
+                                            norm_type=norm_type,
+                                            freeze_norm=freeze_norm,
+                                            norm_decay=norm_decay)
+        self.linear_conv = ConvNormLayer(ch_in=mid_channel,
+                                         ch_out=branch_channel if stem_channel
+                                         == out_channel else stem_channel,
+                                         filter_size=1,
+                                         stride=1,
+                                         norm_type=norm_type,
+                                         act='relu',
+                                         freeze_norm=freeze_norm,
+                                         norm_decay=norm_decay)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -532,6 +526,7 @@ class Stem(nn.Layer):
 
 
 class LiteHRNetModule(nn.Layer):
+
     def __init__(self,
                  num_branches,
                  num_blocks,
@@ -557,21 +552,19 @@ class LiteHRNetModule(nn.Layer):
         self.module_type = module_type
 
         if self.module_type == 'LITE':
-            self.layers = self._make_weighting_blocks(
-                num_blocks,
-                reduce_ratio,
-                freeze_norm=freeze_norm,
-                norm_decay=norm_decay)
+            self.layers = self._make_weighting_blocks(num_blocks,
+                                                      reduce_ratio,
+                                                      freeze_norm=freeze_norm,
+                                                      norm_decay=norm_decay)
         elif self.module_type == 'NAIVE':
-            self.layers = self._make_naive_branches(
-                num_branches,
-                num_blocks,
-                freeze_norm=freeze_norm,
-                norm_decay=norm_decay)
+            self.layers = self._make_naive_branches(num_branches,
+                                                    num_blocks,
+                                                    freeze_norm=freeze_norm,
+                                                    norm_decay=norm_decay)
 
         if self.with_fuse:
-            self.fuse_layers = self._make_fuse_layers(
-                freeze_norm=freeze_norm, norm_decay=norm_decay)
+            self.fuse_layers = self._make_fuse_layers(freeze_norm=freeze_norm,
+                                                      norm_decay=norm_decay)
             self.relu = nn.ReLU()
 
     def _make_weighting_blocks(self,
@@ -583,13 +576,12 @@ class LiteHRNetModule(nn.Layer):
         layers = []
         for i in range(num_blocks):
             layers.append(
-                ConditionalChannelWeightingBlock(
-                    self.in_channels,
-                    stride=stride,
-                    reduce_ratio=reduce_ratio,
-                    norm_type=self.norm_type,
-                    freeze_norm=freeze_norm,
-                    norm_decay=norm_decay))
+                ConditionalChannelWeightingBlock(self.in_channels,
+                                                 stride=stride,
+                                                 reduce_ratio=reduce_ratio,
+                                                 norm_type=self.norm_type,
+                                                 freeze_norm=freeze_norm,
+                                                 norm_decay=norm_decay))
         return nn.Sequential(*layers)
 
     def _make_naive_branches(self,
@@ -602,13 +594,12 @@ class LiteHRNetModule(nn.Layer):
             layers = []
             for i in range(num_blocks):
                 layers.append(
-                    ShuffleUnit(
-                        self.in_channels[branch_idx],
-                        self.in_channels[branch_idx],
-                        stride=1,
-                        norm_type=self.norm_type,
-                        freeze_norm=freeze_norm,
-                        norm_decay=norm_decay))
+                    ShuffleUnit(self.in_channels[branch_idx],
+                                self.in_channels[branch_idx],
+                                stride=1,
+                                norm_type=self.norm_type,
+                                freeze_norm=freeze_norm,
+                                norm_decay=norm_decay))
             branches.append(nn.Sequential(*layers))
         return nn.LayerList(branches)
 
@@ -629,10 +620,10 @@ class LiteHRNetModule(nn.Layer):
                                 kernel_size=1,
                                 stride=1,
                                 padding=0,
-                                bias=False, ),
-                            nn.BatchNorm2D(self.in_channels[i]),
-                            nn.Upsample(
-                                scale_factor=2**(j - i), mode='nearest')))
+                                bias=False,
+                            ), nn.BatchNorm2D(self.in_channels[i]),
+                            nn.Upsample(scale_factor=2**(j - i),
+                                        mode='nearest')))
                 elif j == i:
                     fuse_layer.append(None)
                 else:
@@ -648,16 +639,16 @@ class LiteHRNetModule(nn.Layer):
                                         stride=2,
                                         padding=1,
                                         groups=self.in_channels[j],
-                                        bias=False, ),
-                                    nn.BatchNorm2D(self.in_channels[j]),
+                                        bias=False,
+                                    ), nn.BatchNorm2D(self.in_channels[j]),
                                     Conv2d(
                                         self.in_channels[j],
                                         self.in_channels[i],
                                         kernel_size=1,
                                         stride=1,
                                         padding=0,
-                                        bias=False, ),
-                                    nn.BatchNorm2D(self.in_channels[i])))
+                                        bias=False,
+                                    ), nn.BatchNorm2D(self.in_channels[i])))
                         else:
                             conv_downsamples.append(
                                 nn.Sequential(
@@ -668,16 +659,16 @@ class LiteHRNetModule(nn.Layer):
                                         stride=2,
                                         padding=1,
                                         groups=self.in_channels[j],
-                                        bias=False, ),
-                                    nn.BatchNorm2D(self.in_channels[j]),
+                                        bias=False,
+                                    ), nn.BatchNorm2D(self.in_channels[j]),
                                     Conv2d(
                                         self.in_channels[j],
                                         self.in_channels[j],
                                         kernel_size=1,
                                         stride=1,
                                         padding=0,
-                                        bias=False, ),
-                                    nn.BatchNorm2D(self.in_channels[j]),
+                                        bias=False,
+                                    ), nn.BatchNorm2D(self.in_channels[j]),
                                     nn.ReLU()))
 
                     fuse_layer.append(nn.Sequential(*conv_downsamples))
@@ -799,10 +790,11 @@ class LiteHRNet(nn.Layer):
         num_channels_pre_layer = [32]
         for stage_idx in range(3):
             num_channels = self.stages_config["num_channels"][stage_idx]
-            setattr(self, 'transition{}'.format(stage_idx),
-                    self._make_transition_layer(num_channels_pre_layer,
-                                                num_channels, self.freeze_norm,
-                                                self.norm_decay))
+            setattr(
+                self, 'transition{}'.format(stage_idx),
+                self._make_transition_layer(num_channels_pre_layer,
+                                            num_channels, self.freeze_norm,
+                                            self.norm_decay))
             stage, num_channels_pre_layer = self._make_stage(
                 self.stages_config, stage_idx, num_channels, True,
                 self.freeze_norm, self.norm_decay)
@@ -838,14 +830,13 @@ class LiteHRNet(nn.Layer):
                 if num_channels_cur_layer[i] != num_channels_pre_layer[i]:
                     transition_layers.append(
                         nn.Sequential(
-                            Conv2d(
-                                num_channels_pre_layer[i],
-                                num_channels_pre_layer[i],
-                                kernel_size=3,
-                                stride=1,
-                                padding=1,
-                                groups=num_channels_pre_layer[i],
-                                bias=False),
+                            Conv2d(num_channels_pre_layer[i],
+                                   num_channels_pre_layer[i],
+                                   kernel_size=3,
+                                   stride=1,
+                                   padding=1,
+                                   groups=num_channels_pre_layer[i],
+                                   bias=False),
                             nn.BatchNorm2D(num_channels_pre_layer[i]),
                             Conv2d(
                                 num_channels_pre_layer[i],
@@ -853,8 +844,8 @@ class LiteHRNet(nn.Layer):
                                 kernel_size=1,
                                 stride=1,
                                 padding=0,
-                                bias=False, ),
-                            nn.BatchNorm2D(num_channels_cur_layer[i]),
+                                bias=False,
+                            ), nn.BatchNorm2D(num_channels_cur_layer[i]),
                             nn.ReLU()))
                 else:
                     transition_layers.append(None)
@@ -870,20 +861,21 @@ class LiteHRNet(nn.Layer):
                                 kernel_size=3,
                                 stride=2,
                                 padding=1,
-                                bias=False, ),
-                            nn.BatchNorm2D(num_channels_pre_layer[-1]),
+                                bias=False,
+                            ), nn.BatchNorm2D(num_channels_pre_layer[-1]),
                             Conv2d(
                                 num_channels_pre_layer[-1],
-                                num_channels_cur_layer[i]
-                                if j == i - num_branches_pre else
+                                num_channels_cur_layer[i] if j == i -
+                                num_branches_pre else
                                 num_channels_pre_layer[-1],
                                 kernel_size=1,
                                 stride=1,
                                 padding=0,
-                                bias=False, ),
-                            nn.BatchNorm2D(num_channels_cur_layer[i]
-                                           if j == i - num_branches_pre else
-                                           num_channels_pre_layer[-1]),
+                                bias=False,
+                            ),
+                            nn.BatchNorm2D(num_channels_cur_layer[i] if j == i -
+                                           num_branches_pre
+                                           else num_channels_pre_layer[-1]),
                             nn.ReLU()))
                 transition_layers.append(nn.Sequential(*conv_downsamples))
         return nn.LayerList(transition_layers)
@@ -908,16 +900,15 @@ class LiteHRNet(nn.Layer):
             else:
                 reset_multiscale_output = True
             modules.append(
-                LiteHRNetModule(
-                    num_branches,
-                    num_blocks,
-                    in_channels,
-                    reduce_ratio,
-                    module_type,
-                    multiscale_output=reset_multiscale_output,
-                    with_fuse=True,
-                    freeze_norm=freeze_norm,
-                    norm_decay=norm_decay))
+                LiteHRNetModule(num_branches,
+                                num_blocks,
+                                in_channels,
+                                reduce_ratio,
+                                module_type,
+                                multiscale_output=reset_multiscale_output,
+                                with_fuse=True,
+                                freeze_norm=freeze_norm,
+                                norm_decay=norm_decay))
             in_channels = modules[-1].in_channels
         return nn.Sequential(*modules), in_channels
 

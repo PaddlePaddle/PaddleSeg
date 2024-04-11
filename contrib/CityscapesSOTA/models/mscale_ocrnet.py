@@ -10,6 +10,7 @@ from .ocrnet_nv import OCRNetNV
 
 @manager.MODELS.add_component
 class MscaleOCRNet(nn.Layer):
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -20,14 +21,13 @@ class MscaleOCRNet(nn.Layer):
                  align_corners=False,
                  pretrained=None):
         super().__init__()
-        self.ocrnet = OCRNetNV(
-            num_classes,
-            backbone,
-            backbone_indices,
-            ocr_mid_channels=ocr_mid_channels,
-            ocr_key_channels=ocr_key_channels,
-            align_corners=align_corners,
-            ms_attention=True)
+        self.ocrnet = OCRNetNV(num_classes,
+                               backbone,
+                               backbone_indices,
+                               ocr_mid_channels=ocr_mid_channels,
+                               ocr_key_channels=ocr_key_channels,
+                               align_corners=align_corners,
+                               ms_attention=True)
         self.scale_attn = AttenHead(in_ch=ocr_mid_channels, out_ch=1)
 
         self.n_scales = n_scales
@@ -52,11 +52,10 @@ class MscaleOCRNet(nn.Layer):
         If we use attention to combine the aux outputs, then
         we can use normal weighting for aux vs. cls outputs
         """
-        x_lo = nn.functional.interpolate(
-            x_1x,
-            scale_factor=0.5,
-            align_corners=self.align_corners,
-            mode='bilinear')
+        x_lo = nn.functional.interpolate(x_1x,
+                                         scale_factor=0.5,
+                                         align_corners=self.align_corners,
+                                         mode='bilinear')
         lo_outs = self.single_scale_forward(x_lo)
 
         pred_05x = lo_outs['cls_out']
@@ -123,11 +122,10 @@ class MscaleOCRNet(nn.Layer):
         pred = None
 
         for s in scales:
-            x = nn.functional.interpolate(
-                x_1x,
-                scale_factor=s,
-                align_corners=self.align_corners,
-                mode='bilinear')
+            x = nn.functional.interpolate(x_1x,
+                                          scale_factor=s,
+                                          align_corners=self.align_corners,
+                                          mode='bilinear')
             outs = self.single_scale_forward(x)
 
             cls_out = outs['cls_out']
@@ -151,42 +149,37 @@ class MscaleOCRNet(nn.Layer):
         return [pred]
 
     def single_scale_forward(self, x):
-        x_size = paddle.shape(x)[2:]
+        x_size = x.shape[2:]
         cls_out, aux_out, ocr_mid_feats = self.ocrnet(x)
         attn = self.scale_attn(ocr_mid_feats)
 
-        cls_out = nn.functional.interpolate(
-            cls_out,
-            size=x_size,
-            mode='bilinear',
-            align_corners=self.align_corners)
-        aux_out = nn.functional.interpolate(
-            aux_out,
-            size=x_size,
-            mode='bilinear',
-            align_corners=self.align_corners)
-        attn = nn.functional.interpolate(
-            attn,
-            size=x_size,
-            mode='bilinear',
-            align_corners=self.align_corners)
+        cls_out = nn.functional.interpolate(cls_out,
+                                            size=x_size,
+                                            mode='bilinear',
+                                            align_corners=self.align_corners)
+        aux_out = nn.functional.interpolate(aux_out,
+                                            size=x_size,
+                                            mode='bilinear',
+                                            align_corners=self.align_corners)
+        attn = nn.functional.interpolate(attn,
+                                         size=x_size,
+                                         mode='bilinear',
+                                         align_corners=self.align_corners)
 
         return {'cls_out': cls_out, 'aux_out': aux_out, 'logit_attn': attn}
 
 
 class AttenHead(nn.Layer):
+
     def __init__(self, in_ch, out_ch):
         super(AttenHead, self).__init__()
         # bottleneck channels for seg and attn heads
         bot_ch = 256
 
         self.atten_head = nn.Sequential(
-            layers.ConvBNReLU(
-                in_ch, bot_ch, 3, padding=1, bias_attr=False),
-            layers.ConvBNReLU(
-                bot_ch, bot_ch, 3, padding=1, bias_attr=False),
-            nn.Conv2D(
-                bot_ch, out_ch, kernel_size=(1, 1), bias_attr=False),
+            layers.ConvBNReLU(in_ch, bot_ch, 3, padding=1, bias_attr=False),
+            layers.ConvBNReLU(bot_ch, bot_ch, 3, padding=1, bias_attr=False),
+            nn.Conv2D(bot_ch, out_ch, kernel_size=(1, 1), bias_attr=False),
             nn.Sigmoid())
 
     def forward(self, x):
@@ -197,7 +190,9 @@ def scale_as(x, y, align_corners=False):
     '''
     scale x to the same size as y
     '''
-    y_shape = paddle.shape(y)
-    x_scaled = nn.functional.interpolate(
-        x, size=y_shape[2:], mode='bilinear', align_corners=align_corners)
+    y_shape = y.shape
+    x_scaled = nn.functional.interpolate(x,
+                                         size=y_shape[2:],
+                                         mode='bilinear',
+                                         align_corners=align_corners)
     return x_scaled

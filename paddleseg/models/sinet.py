@@ -69,8 +69,7 @@ class SINet(nn.Layer):
 
         self.classifier = nn.Sequential(
             nn.UpsamplingBilinear2D(scale_factor=2),
-            nn.Conv2D(
-                num_classes, num_classes, 3, 1, 1, bias_attr=False))
+            nn.Conv2D(num_classes, num_classes, 3, 1, 1, bias_attr=False))
 
         self.pretrained = pretrained
         self.init_weight()
@@ -104,8 +103,8 @@ class SINet(nn.Layer):
         stage1_gate = (1 - stage1_confidence).unsqueeze(1)
 
         dec_stage2_0 = self.level2_C(output2)  # x4
-        dec_stage2 = self.bn_2(
-            self.up(dec_stage2_0 * stage1_gate + dec_stage1))  # x2
+        dec_stage2 = self.bn_2(self.up(dec_stage2_0 * stage1_gate +
+                                       dec_stage1))  # x2
 
         out = self.classifier(dec_stage2)  # x
 
@@ -113,7 +112,7 @@ class SINet(nn.Layer):
 
 
 def channel_shuffle(x, groups):
-    x_shape = paddle.shape(x)
+    x_shape = x.shape
     batch_size, height, width = x_shape[0], x_shape[2], x_shape[3]
     num_channels = x.shape[1]
     channels_per_group = num_channels // groups
@@ -140,12 +139,11 @@ class CBR(nn.Layer):
         super().__init__()
         padding = int((kSize - 1) / 2)
 
-        self.conv = nn.Conv2D(
-            nIn,
-            nOut, (kSize, kSize),
-            stride=stride,
-            padding=(padding, padding),
-            bias_attr=False)
+        self.conv = nn.Conv2D(nIn,
+                              nOut, (kSize, kSize),
+                              stride=stride,
+                              padding=(padding, padding),
+                              bias_attr=False)
         self.bn = nn.BatchNorm(nOut)
         self.act = nn.PReLU(nOut)
 
@@ -166,15 +164,14 @@ class SeparableCBR(nn.Layer):
         padding = int((kSize - 1) / 2)
 
         self.conv = nn.Sequential(
-            nn.Conv2D(
-                nIn,
-                nIn, (kSize, kSize),
-                stride=stride,
-                padding=(padding, padding),
-                groups=nIn,
-                bias_attr=False),
-            nn.Conv2D(
-                nIn, nOut, kernel_size=1, stride=1, bias_attr=False), )
+            nn.Conv2D(nIn,
+                      nIn, (kSize, kSize),
+                      stride=stride,
+                      padding=(padding, padding),
+                      groups=nIn,
+                      bias_attr=False),
+            nn.Conv2D(nIn, nOut, kernel_size=1, stride=1, bias_attr=False),
+        )
         self.bn = nn.BatchNorm(nOut)
         self.act = nn.PReLU(nOut)
 
@@ -186,6 +183,7 @@ class SeparableCBR(nn.Layer):
 
 
 class SqueezeBlock(nn.Layer):
+
     def __init__(self, exp_size, divide=4.0):
         super(SqueezeBlock, self).__init__()
 
@@ -194,10 +192,11 @@ class SqueezeBlock(nn.Layer):
                 nn.Linear(exp_size, int(exp_size / divide)),
                 nn.PReLU(int(exp_size / divide)),
                 nn.Linear(int(exp_size / divide), exp_size),
-                nn.PReLU(exp_size), )
+                nn.PReLU(exp_size),
+            )
         else:
-            self.dense = nn.Sequential(
-                nn.Linear(exp_size, exp_size), nn.PReLU(exp_size))
+            self.dense = nn.Sequential(nn.Linear(exp_size, exp_size),
+                                       nn.PReLU(exp_size))
 
     def forward(self, x):
         alpha = F.adaptive_avg_pool2d(x, [1, 1])
@@ -218,17 +217,15 @@ class SESeparableCBR(nn.Layer):
         padding = int((kSize - 1) / 2)
 
         self.conv = nn.Sequential(
-            nn.Conv2D(
-                nIn,
-                nIn, (kSize, kSize),
-                stride=stride,
-                padding=(padding, padding),
-                groups=nIn,
-                bias_attr=False),
-            SqueezeBlock(
-                nIn, divide=divide),
-            nn.Conv2D(
-                nIn, nOut, kernel_size=1, stride=1, bias_attr=False), )
+            nn.Conv2D(nIn,
+                      nIn, (kSize, kSize),
+                      stride=stride,
+                      padding=(padding, padding),
+                      groups=nIn,
+                      bias_attr=False),
+            SqueezeBlock(nIn, divide=divide),
+            nn.Conv2D(nIn, nOut, kernel_size=1, stride=1, bias_attr=False),
+        )
 
         self.bn = nn.BatchNorm(nOut)
         self.act = nn.PReLU(nOut)
@@ -264,12 +261,11 @@ class CB(nn.Layer):
     def __init__(self, nIn, nOut, kSize, stride=1):
         super().__init__()
         padding = int((kSize - 1) / 2)
-        self.conv = nn.Conv2D(
-            nIn,
-            nOut, (kSize, kSize),
-            stride=stride,
-            padding=(padding, padding),
-            bias_attr=False)
+        self.conv = nn.Conv2D(nIn,
+                              nOut, (kSize, kSize),
+                              stride=stride,
+                              padding=(padding, padding),
+                              bias_attr=False)
         self.bn = nn.BatchNorm(nOut)
 
     def forward(self, input):
@@ -286,13 +282,12 @@ class C(nn.Layer):
     def __init__(self, nIn, nOut, kSize, stride=1, group=1):
         super().__init__()
         padding = int((kSize - 1) / 2)
-        self.conv = nn.Conv2D(
-            nIn,
-            nOut, (kSize, kSize),
-            stride=stride,
-            padding=(padding, padding),
-            bias_attr=False,
-            groups=group)
+        self.conv = nn.Conv2D(nIn,
+                              nOut, (kSize, kSize),
+                              stride=stride,
+                              padding=(padding, padding),
+                              bias_attr=False,
+                              groups=group)
 
     def forward(self, input):
         output = self.conv(input)
@@ -316,20 +311,18 @@ class S2block(nn.Layer):
 
         padding = int((kSize - 1) / 2)
         self.conv = nn.Sequential(
-            nn.Conv2D(
-                nIn,
-                nIn,
-                kernel_size=(kSize, kSize),
-                stride=1,
-                padding=(padding, padding),
-                groups=nIn,
-                bias_attr=False),
-            nn.BatchNorm(nIn))
+            nn.Conv2D(nIn,
+                      nIn,
+                      kernel_size=(kSize, kSize),
+                      stride=1,
+                      padding=(padding, padding),
+                      groups=nIn,
+                      bias_attr=False), nn.BatchNorm(nIn))
 
         self.act_conv1x1 = nn.Sequential(
             nn.PReLU(nIn),
-            nn.Conv2D(
-                nIn, nOut, kernel_size=1, stride=1, bias_attr=False), )
+            nn.Conv2D(nIn, nOut, kernel_size=1, stride=1, bias_attr=False),
+        )
 
         self.bn = nn.BatchNorm(nOut)
 
@@ -363,11 +356,15 @@ class S2module(nn.Layer):
 
         for i in range(group_n):
             if i == 0:
-                self.layer_0 = S2block(
-                    n, n + n1, kSize=config[i][0], avgsize=config[i][1])
+                self.layer_0 = S2block(n,
+                                       n + n1,
+                                       kSize=config[i][0],
+                                       avgsize=config[i][1])
             else:
-                self.layer_1 = S2block(
-                    n, n, kSize=config[i][0], avgsize=config[i][1])
+                self.layer_1 = S2block(n,
+                                       n,
+                                       kSize=config[i][0],
+                                       avgsize=config[i][1])
 
         self.BR = BR(nOut)
         self.add = add
@@ -387,6 +384,7 @@ class S2module(nn.Layer):
 
 
 class SINetEncoder(nn.Layer):
+
     def __init__(self,
                  config,
                  in_channels=3,
@@ -407,8 +405,7 @@ class SINetEncoder(nn.Layer):
         for i in range(0, stage2_blocks):
             if i == 0:
                 self.level2.append(
-                    S2module(
-                        dim1, dim2, config=config[i], add=False))
+                    S2module(dim1, dim2, config=config[i], add=False))
             else:
                 self.level2.append(S2module(dim2, dim2, config=config[i]))
         self.BR2 = BR(dim2 + dim1)
@@ -418,8 +415,7 @@ class SINetEncoder(nn.Layer):
         for i in range(0, stage3_blocks):
             if i == 0:
                 self.level3.append(
-                    S2module(
-                        dim2, dim3, config=config[2 + i], add=False))
+                    S2module(dim2, dim3, config=config[2 + i], add=False))
             else:
                 self.level3.append(S2module(dim3, dim3, config=config[2 + i]))
         self.BR3 = BR(dim3 + dim2)

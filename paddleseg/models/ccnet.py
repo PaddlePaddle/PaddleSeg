@@ -63,17 +63,15 @@ class CCNet(nn.Layer):
         ]
 
         if enable_auxiliary_loss:
-            self.aux_head = layers.AuxLayer(
-                backbone_channels[0],
-                512,
-                num_classes,
-                dropout_prob=dropout_prob)
-        self.head = RCCAModule(
-            backbone_channels[1],
-            512,
-            num_classes,
-            dropout_prob=dropout_prob,
-            recurrence=recurrence)
+            self.aux_head = layers.AuxLayer(backbone_channels[0],
+                                            512,
+                                            num_classes,
+                                            dropout_prob=dropout_prob)
+        self.head = RCCAModule(backbone_channels[1],
+                               512,
+                               num_classes,
+                               dropout_prob=dropout_prob,
+                               recurrence=recurrence)
         self.pretrained = pretrained
 
     def init_weight(self):
@@ -89,15 +87,16 @@ class CCNet(nn.Layer):
             aux_out = self.aux_head(feat_list[self.backbone_indices[-2]])
             logit_list.append(aux_out)
         return [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
 
 class RCCAModule(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -107,16 +106,21 @@ class RCCAModule(nn.Layer):
         super().__init__()
         inter_channels = in_channels // 4
         self.recurrence = recurrence
-        self.conva = layers.ConvBNLeakyReLU(
-            in_channels, inter_channels, 3, padding=1, bias_attr=False)
+        self.conva = layers.ConvBNLeakyReLU(in_channels,
+                                            inter_channels,
+                                            3,
+                                            padding=1,
+                                            bias_attr=False)
         self.cca = CrissCrossAttention(inter_channels)
-        self.convb = layers.ConvBNLeakyReLU(
-            inter_channels, inter_channels, 3, padding=1, bias_attr=False)
-        self.out = layers.AuxLayer(
-            in_channels + inter_channels,
-            out_channels,
-            num_classes,
-            dropout_prob=dropout_prob)
+        self.convb = layers.ConvBNLeakyReLU(inter_channels,
+                                            inter_channels,
+                                            3,
+                                            padding=1,
+                                            bias_attr=False)
+        self.out = layers.AuxLayer(in_channels + inter_channels,
+                                   out_channels,
+                                   num_classes,
+                                   dropout_prob=dropout_prob)
 
     def forward(self, x):
         feat = self.conva(x)
@@ -128,6 +132,7 @@ class RCCAModule(nn.Layer):
 
 
 class CrissCrossAttention(nn.Layer):
+
     def __init__(self, in_channels):
         super().__init__()
         self.q_conv = nn.Conv2D(in_channels, in_channels // 8, kernel_size=1)
@@ -139,12 +144,14 @@ class CrissCrossAttention(nn.Layer):
         self.inf_tensor = paddle.full(shape=(1, ), fill_value=float('inf'))
 
     def forward(self, x):
-        b, c, h, w = paddle.shape(x)
+        b, c, h, w = x.shape
         proj_q = self.q_conv(x)
-        proj_q_h = proj_q.transpose([0, 3, 1, 2]).reshape(
-            [b * w, -1, h]).transpose([0, 2, 1])
-        proj_q_w = proj_q.transpose([0, 2, 1, 3]).reshape(
-            [b * h, -1, w]).transpose([0, 2, 1])
+        proj_q_h = proj_q.transpose([0, 3, 1,
+                                     2]).reshape([b * w, -1,
+                                                  h]).transpose([0, 2, 1])
+        proj_q_w = proj_q.transpose([0, 2, 1,
+                                     3]).reshape([b * h, -1,
+                                                  w]).transpose([0, 2, 1])
 
         proj_k = self.k_conv(x)
         proj_k_h = proj_k.transpose([0, 3, 1, 2]).reshape([b * w, -1, h])
@@ -159,8 +166,8 @@ class CrissCrossAttention(nn.Layer):
         energy_w = paddle.bmm(proj_q_w, proj_k_w).reshape([b, h, w, w])
         concate = self.softmax(paddle.concat([energy_h, energy_w], axis=3))
 
-        attn_h = concate[:, :, :, 0:h].transpose([0, 2, 1, 3]).reshape(
-            [b * w, h, h])
+        attn_h = concate[:, :, :, 0:h].transpose([0, 2, 1,
+                                                  3]).reshape([b * w, h, h])
         attn_w = concate[:, :, :, h:h + w].reshape([b * h, w, w])
         out_h = paddle.bmm(proj_v_h, attn_h.transpose([0, 2, 1])).reshape(
             [b, w, -1, h]).transpose([0, 2, 3, 1])
