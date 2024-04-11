@@ -91,7 +91,7 @@ class LRASPP(nn.Layer):
         self.init_weight()
 
     def forward(self, x):
-        x_hw = paddle.shape(x)[2:]
+        x_hw = x.shape[2:]
 
         feats_backbone = self.backbone(x)
         assert len(feats_backbone) >= len(self.backbone_indices), \
@@ -149,12 +149,12 @@ class LRASPPHead(nn.Layer):
     def forward(self, in_feat_list):
         x = in_feat_list[-1]
 
-        x = self.conv_v(x) * self.interp(self.conv_w(x), paddle.shape(x)[2:])
+        x = self.conv_v(x) * self.interp(self.conv_w(x), x.shape[2:])
         y = self.conv_t(x)
 
         for idx, conv, conv_up in zip(self.indices, self.convs, self.conv_ups):
             feat = in_feat_list[idx]
-            y = self.interp(y, paddle.shape(feat)[2:])
+            y = self.interp(y, feat.shape[2:])
             y = paddle.concat([y, conv(feat)], axis=1)
             y = conv_up(y)
 

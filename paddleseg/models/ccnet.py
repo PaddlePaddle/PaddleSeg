@@ -91,7 +91,7 @@ class CCNet(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -139,7 +139,7 @@ class CrissCrossAttention(nn.Layer):
         self.inf_tensor = paddle.full(shape=(1, ), fill_value=float('inf'))
 
     def forward(self, x):
-        b, c, h, w = paddle.shape(x)
+        b, c, h, w = x.shape
         proj_q = self.q_conv(x)
         proj_q_h = proj_q.transpose([0, 3, 1, 2]).reshape(
             [b * w, -1, h]).transpose([0, 2, 1])

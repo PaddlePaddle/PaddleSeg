@@ -234,7 +234,7 @@ class MLATransformer(nn.Layer):
 
         logit_list = [
             F.interpolate(
-                logit, paddle.shape(x)[2:], mode='bilinear', align_corners=True)
+                logit, x.shape[2:], mode='bilinear', align_corners=True)
             for logit in logit_list
         ]
         return logit_list

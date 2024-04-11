@@ -89,7 +89,7 @@ class BiseNetV1(nn.Layer):
         global_context = self.global_context(context_blocks[0])
         global_context = F.interpolate(
             global_context,
-            size=paddle.shape(context_blocks[0])[2:],
+            size=context_blocks[0].shape[2:],
             mode='bilinear',
             align_corners=True)
         last_fm = global_context
@@ -102,7 +102,7 @@ class BiseNetV1(nn.Layer):
             fm += last_fm
             last_fm = F.interpolate(
                 fm,
-                size=paddle.shape(context_blocks[i + 1])[2:],
+                size=context_blocks[i + 1].shape[2:],
                 mode='bilinear',
                 align_corners=True)
             last_fm = refine(last_fm)

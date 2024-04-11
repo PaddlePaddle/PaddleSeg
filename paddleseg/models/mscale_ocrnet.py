@@ -57,7 +57,7 @@ class MscaleOCRNet(nn.Layer):
         self.init_weight()
 
     def _fwd(self, x):
-        x_size = paddle.shape(x)[2:]
+        x_size = x.shape[2:]
         high_level_features = self.backbone(x)
         pred_out, aux_out, ocr_mid_feats = self.ocr(high_level_features)
         attn = self.scale_attn(ocr_mid_feats)
@@ -93,20 +93,20 @@ class MscaleOCRNet(nn.Layer):
                 aux = aux_out
             elif s[0] >= 1.0:
                 pred = F.interpolate(
-                    pred, size=paddle.shape(pred_out)[2:4], mode='bilinear')
+                    pred, size=pred_out.shape[2:4], mode='bilinear')
                 pred = attn_out * pred_out + (1 - attn_out) * pred
                 aux = F.interpolate(
-                    aux, size=paddle.shape(pred_out)[2:4], mode='bilinear')
+                    aux, size=pred_out.shape[2:4], mode='bilinear')
                 aux = attn_out * aux_out + (1 - attn_out) * aux
             else:
                 pred_out = attn_out * pred_out
                 aux_out = attn_out * aux_out
                 pred_out = F.interpolate(
-                    pred_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                    pred_out, size=pred.shape[2:4], mode='bilinear')
                 aux_out = F.interpolate(
-                    aux_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                    aux_out, size=pred.shape[2:4], mode='bilinear')
                 attn_out = F.interpolate(
-                    attn_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                    attn_out, size=pred.shape[2:4], mode='bilinear')
                 pred = pred_out + (1 - attn_out) * pred
                 aux = aux_out + (1 - attn_out) * aux
         logit_list = [aux, pred] if self.training else [pred]
@@ -128,19 +128,19 @@ class MscaleOCRNet(nn.Layer):
         pred_lower = logit_attn * pred_lower
         aux_lower = logit_attn * aux_lower
         pred_lower = F.interpolate(
-            pred_lower, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
+            pred_lower, size=pred_higher.shape[2:4], mode='bilinear')
 
         aux_lower = F.interpolate(
-            aux_lower, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
+            aux_lower, size=pred_higher.shape[2:4], mode='bilinear')
 
         logit_attn = F.interpolate(
-            logit_attn, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
+            logit_attn, size=pred_higher.shape[2:4], mode='bilinear')
 
         joint_pred = pred_lower + (1 - logit_attn) * pred_higher
         joint_aux = aux_lower + (1 - logit_attn) * aux_higher
         if self.training:
             scaled_pred_05x = F.interpolate(
-                pred_05x, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
+                pred_05x, size=pred_higher.shape[2:4], mode='bilinear')
             logit_list = [joint_aux, joint_pred, scaled_pred_05x, pred_10x]
         else:
             logit_list = [joint_pred]
@@ -279,7 +279,7 @@ class SpatialOCRModule(nn.Layer):
             nn.Dropout2D(dropout))
 
     def forward(self, feats, proxy):
-        batch_size, _, h, w = paddle.shape(feats)
+        batch_size, _, h, w = feats.shape
         if self.scale > 1:
             feats = self.pool(feats)
 
@@ -294,7 +294,7 @@ class SpatialOCRModule(nn.Layer):
         context = paddle.matmul(sim_map, value)
         context = context.transpose((0, 2, 1))
         context = context.reshape((batch_size, self.key_channels,
-                                   *paddle.shape(feats)[2:]))
+                                   *feats.shape[2:]))
         context = self.f_up(context)
         if self.scale > 1:
             context = F.interpolate(context, size=(h, w), mode='bilinear')

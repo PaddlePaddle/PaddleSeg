@@ -55,8 +55,8 @@ class FastGuidedFilter(nn.Layer):
         A = cov_xy / (var_x + self.eps)
         b = mean_y - A * mean_x
         A = F.interpolate(
-            A, paddle.shape(hr_x)[2:], mode='bilinear', align_corners=False)
+            A, hr_x.shape[2:], mode='bilinear', align_corners=False)
         b = F.interpolate(
-            b, paddle.shape(hr_x)[2:], mode='bilinear', align_corners=False)
+            b, hr_x.shape[2:], mode='bilinear', align_corners=False)
 
         return A * hr_x + b

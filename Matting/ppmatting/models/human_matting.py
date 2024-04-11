@@ -206,7 +206,7 @@ class HumanMatting(nn.Layer):
 
     def forward(self, data):
         src = data['img']
-        src_h, src_w = paddle.shape(src)[2:]
+        src_h, src_w = src.shape[2:]
         if self.if_refine:
             # It is not need when exporting.
             if isinstance(src_h, paddle.Tensor):
@@ -416,7 +416,7 @@ class Refiner(nn.Layer):
             hid: (B, 32, Hc, Hc) coarse hidden encoding.
             tri: (B, 1, Hc, Hc) trimap prediction.
         '''
-        h_full, w_full = paddle.shape(src)[2:]
+        h_full, w_full = src.shape[2:]
         h_half, w_half = h_full // 2, w_full // 2
         h_quat, w_quat = h_full // 4, w_full // 4
 

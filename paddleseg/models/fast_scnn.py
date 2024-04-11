@@ -73,7 +73,7 @@ class FastSCNN(nn.Layer):
 
     def forward(self, x):
         logit_list = []
-        input_size = paddle.shape(x)[2:]
+        input_size = x.shape[2:]
         higher_res_features = self.learning_to_downsample(x)
         x = self.global_feature_extractor(higher_res_features)
         x = self.feature_fusion(higher_res_features, x)
@@ -278,7 +278,7 @@ class FeatureFusionModule(nn.Layer):
     def forward(self, high_res_input, low_res_input):
         low_res_input = F.interpolate(
             low_res_input,
-            paddle.shape(high_res_input)[2:],
+            high_res_input.shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
         low_res_input = self.dwconv(low_res_input)

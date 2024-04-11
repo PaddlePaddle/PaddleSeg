@@ -68,7 +68,7 @@ class DANet(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners,
                 align_mode=1) for logit in logit_list
@@ -154,7 +154,7 @@ class PAM(nn.Layer):
             default_initializer=nn.initializer.Constant(0))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
 
         # query: n, h * w, c1
         query = self.query_conv(x)
@@ -195,7 +195,7 @@ class CAM(nn.Layer):
             default_initializer=nn.initializer.Constant(0))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         # query: n, c, h * w
         query = paddle.reshape(x, (0, self.channels, -1))
         # key: n, h * w, c

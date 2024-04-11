@@ -79,7 +79,7 @@ class UPerNet(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -142,7 +142,7 @@ class UPerNetHead(nn.Layer):
         laterals.append(self.ppm(inputs[-1]))
         fpn_levels = len(laterals)
         for i in range(fpn_levels - 1, 0, -1):
-            prev_shape = paddle.shape(laterals[i - 1])
+            prev_shape = laterals[i - 1].shape
             laterals[i - 1] = laterals[i - 1] + F.interpolate(
                 laterals[i],
                 size=prev_shape[2:],
@@ -157,7 +157,7 @@ class UPerNetHead(nn.Layer):
         for i in range(fpn_levels - 1, 0, -1):
             fpn_outs[i] = F.interpolate(
                 fpn_outs[i],
-                size=paddle.shape(fpn_outs[0])[2:],
+                size=fpn_outs[0].shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
         fuse_out = paddle.concat(fpn_outs, axis=1)

@@ -78,7 +78,7 @@ class PFPNNet(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -183,12 +183,12 @@ class PFPNHead(nn.Layer):
         for i in reversed(range(len(conv_out) - 1)):
             conv_x = conv_out[i]
             conv_x = self.lateral_convs[i](conv_x)
-            prev_shape = paddle.shape(conv_x)[2:]
+            prev_shape = conv_x.shape[2:]
             f = conv_x + F.interpolate(
                 f, prev_shape, mode='bilinear', align_corners=True)
             fpn_feature_list.append(self.fpn_out[i](f))
 
-        output_size = paddle.shape(fpn_feature_list[-1])[2:]
+        output_size = fpn_feature_list[-1].shape[2:]
 
         x = self.scale_heads[0](fpn_feature_list[-1])
         for index in range(len(self.scale_heads) - 2, 0, -1):

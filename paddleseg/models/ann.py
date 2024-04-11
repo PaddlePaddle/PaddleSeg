@@ -74,7 +74,7 @@ class ANN(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -350,7 +350,7 @@ class SelfAttentionBlock_AFNB(nn.Layer):
 
         context = paddle.matmul(sim_map, value)
         context = paddle.transpose(context, perm=(0, 2, 1))
-        hf_shape = paddle.shape(high_feats)
+        hf_shape = high_feats.shape
         context = paddle.reshape(
             context, shape=[0, self.value_channels, hf_shape[2], hf_shape[3]])
 
@@ -426,7 +426,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         context = paddle.matmul(sim_map, value)
         context = paddle.transpose(context, perm=(0, 2, 1))
 
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         context = paddle.reshape(
             context, shape=[0, self.value_channels, x_shape[2], x_shape[3]])
         context = self.W(context)

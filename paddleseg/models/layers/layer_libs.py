@@ -350,7 +350,7 @@ class JPU(nn.Layer):
             self.conv5(inputs[-1]), self.conv4(inputs[-2]),
             self.conv3(inputs[-3])
         ]
-        size = paddle.shape(feats[-1])[2:]
+        size = feats[-1].shape[2:]
         feats[-2] = F.interpolate(
             feats[-2], size, mode='bilinear', align_corners=True)
         feats[-3] = F.interpolate(

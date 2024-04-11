@@ -84,10 +84,10 @@ class SegFormer(nn.Layer):
         c1, c2, c3, c4 = feats
 
         ############## MLP decoder on C1-C4 ###########
-        c1_shape = paddle.shape(c1)
-        c2_shape = paddle.shape(c2)
-        c3_shape = paddle.shape(c3)
-        c4_shape = paddle.shape(c4)
+        c1_shape = c1.shape
+        c2_shape = c2.shape
+        c3_shape = c3.shape
+        c4_shape = c4.shape
 
         _c4 = self.linear_c4(c4).transpose([0, 2, 1]).reshape(
             [0, 0, c4_shape[2], c4_shape[3]])
@@ -123,7 +123,7 @@ class SegFormer(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                size=paddle.shape(x)[2:],
+                size=x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
         ]

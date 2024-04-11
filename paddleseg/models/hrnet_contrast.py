@@ -85,7 +85,7 @@ class HRNetW48Contrast(nn.Layer):
             logit_list.append(
                 F.interpolate(
                     out,
-                    paddle.shape(x)[2:],
+                    x.shape[2:],
                     mode='bilinear',
                     align_corners=self.align_corners))
             logit_list.append({'seg': out, 'embed': emb})
@@ -93,7 +93,7 @@ class HRNetW48Contrast(nn.Layer):
             logit_list.append(
                 F.interpolate(
                     out,
-                    paddle.shape(x)[2:],
+                    x.shape[2:],
                     mode='bilinear',
                     align_corners=self.align_corners))
         return logit_list

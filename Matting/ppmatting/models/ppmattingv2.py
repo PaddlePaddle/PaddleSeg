@@ -141,7 +141,7 @@ class PPMattingV2(nn.Layer):
 
     def forward(self, inputs):
         img = inputs['img']
-        input_shape = paddle.shape(img)
+        input_shape = img.shape
         feats_backbone = self.backbone(
             img)  # stdc1 [2x, 4x, 8x, 16x, 32x] [32, 64, 256, 512, 1024]
         x = self.dpp([feats_backbone[i] for i in self.dpp_index])
@@ -149,27 +149,27 @@ class PPMattingV2(nn.Layer):
 
         input_32x = [feats_backbone[-1], x]
         x = self.mlff32x(input_32x,
-                         paddle.shape(feats_backbone[-1])[-2:])  # 32x
+                         feats_backbone[-1].shape[-2:])  # 32x
 
         input_16x = [feats_backbone[-2], x, dpp_out]
         x = self.mlff16x(input_16x,
-                         paddle.shape(feats_backbone[-2])[-2:])  # 16x
+                         feats_backbone[-2].shape[-2:])  # 16x
 
         input_8x = [feats_backbone[-3], x, dpp_out]
-        x = self.mlff8x(input_8x, paddle.shape(feats_backbone[-3])[-2:])  # 8x
+        x = self.mlff8x(input_8x, feats_backbone[-3].shape[-2:])  # 8x
         mlff8x_output = x
 
         input_4x = [feats_backbone[-4], x]
         input_4x.append(
             F.interpolate(
                 img, feats_backbone[-4].shape[2:], mode='area'))
-        x = self.mlff4x(input_4x, paddle.shape(feats_backbone[-4])[-2:])  # 4x
+        x = self.mlff4x(input_4x, feats_backbone[-4].shape[-2:])  # 4x
 
         input_2x = [feats_backbone[-5], x]
         input_2x.append(
             F.interpolate(
                 img, feats_backbone[-5].shape[2:], mode='area'))
-        x = self.mlff2x(input_2x, paddle.shape(feats_backbone[-5])[-2:])  # 2x
+        x = self.mlff2x(input_2x, feats_backbone[-5].shape[-2:])  # 2x
 
         x = F.interpolate(
             x, input_shape[-2:], mode='bilinear', align_corners=False)
@@ -357,7 +357,7 @@ class DoublePyramidPoolModule(nn.Layer):
             x = stage(pp2_input)
             x = F.interpolate(
                 x,
-                paddle.shape(pp2_input)[2:],
+                pp2_input.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
             cat_layers.append(x)
@@ -470,7 +470,7 @@ class Attention(nn.Layer):
                 self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         H, W = x_shape[2], x_shape[3]
 
         qq = self.to_q(x).reshape(

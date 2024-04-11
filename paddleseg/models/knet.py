@@ -106,7 +106,7 @@ class KNet(nn.Layer):
             for i, v in enumerate(stage_segs):
                 stage_segs[i] = F.interpolate(
                     v,
-                    paddle.shape(x)[2:],
+                    x.shape[2:],
                     mode='bilinear',
                     align_corners=self.align_corners)
             return stage_segs
@@ -114,7 +114,7 @@ class KNet(nn.Layer):
         return [
             F.interpolate(
                 stage_segs[-1],
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
         ]
@@ -143,7 +143,7 @@ class UPerKernelHead(UPerNetHead):
         laterals.append(self.ppm(inputs[-1]))
         fpn_levels = len(laterals)
         for i in range(fpn_levels - 1, 0, -1):
-            prev_shape = paddle.shape(laterals[i - 1])
+            prev_shape = laterals[i - 1].shape
             laterals[i - 1] = laterals[i - 1] + F.interpolate(
                 laterals[i],
                 size=prev_shape[2:],
@@ -158,7 +158,7 @@ class UPerKernelHead(UPerNetHead):
         for i in range(fpn_levels - 1, 0, -1):
             fpn_outs[i] = F.interpolate(
                 fpn_outs[i],
-                size=paddle.shape(fpn_outs[0])[2:],
+                size=fpn_outs[0].shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
         fuse_out = paddle.concat(fpn_outs, axis=1)
@@ -171,7 +171,7 @@ class UPerKernelHead(UPerNetHead):
             # although this may cause little performance drop in mIoU.
             seg_kernels = self.conv_seg.weight
         seg_kernels = seg_kernels[None].expand(
-            [paddle.shape(feats)[0], *paddle.shape(seg_kernels)])
+            [feats.shape[0], *seg_kernels.shape])
         return output, feats, seg_kernels
 
 
@@ -239,7 +239,7 @@ class FCNKernelHead(nn.Layer):
             # although this may cause little performance drop in mIoU.
             seg_kernels = self.conv_seg.weight
         seg_kernels = seg_kernels[None].expand(
-            [paddle.shape(feats)[0], *paddle.shape(seg_kernels)])
+            [feats.shape[0], *seg_kernels.shape])
         return output, feats, seg_kernels
 
 
@@ -326,7 +326,7 @@ class KernelUpdator(nn.Layer):
 
     def forward(self, update_feature, input_feature):
         update_feature = update_feature.reshape([-1, self.in_channels])
-        num_proposals = paddle.shape(update_feature)[0]
+        num_proposals = update_feature.shape[0]
         # dynamic_layer works for
         # phi_1 and psi_3 in Eq.(4) and (5) of K-Net paper
         parameters = self.dynamic_layer(update_feature)
@@ -447,13 +447,13 @@ class KernelUpdateHead(nn.Layer):
         self.fc_mask = nn.Linear(in_channels, out_channels)
 
     def forward(self, x, proposal_feat, mask_preds, mask_shape=None):
-        N, num_proposals = paddle.shape(proposal_feat)[:2]
+        N, num_proposals = proposal_feat.shape[:2]
         if self.feat_transform is not None:
             x = self.feat_transform(x)
 
         C, H, W = x.shape[-3:]
 
-        mask_h, mask_w = paddle.shape(mask_preds)[-2:]
+        mask_h, mask_w = mask_preds.shape[-2:]
         if mask_h != H or mask_w != W:
             gather_mask = F.interpolate(
                 mask_preds, (H, W), align_corners=False, mode='bilinear')
@@ -494,7 +494,7 @@ class KernelUpdateHead(nn.Layer):
         if (self.mask_transform_stride == 2 and self.feat_gather_stride == 1):
             mask_x = F.interpolate(
                 x, scale_factor=0.5, mode='bilinear', align_corners=False)
-            H, W = paddle.shape(mask_x)[-2:]
+            H, W = mask_x.shape[-2:]
         else:
             mask_x = x
         mask_feat = mask_feat.reshape([

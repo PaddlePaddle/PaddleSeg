@@ -57,7 +57,7 @@ class UAFM(nn.Layer):
         return x
 
     def prepare_y(self, x, y):
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode=self.resize_mode)
+        y_up = F.interpolate(y, x.shape[2:], mode=self.resize_mode)
         return y_up
 
     def fuse(self, x, y):

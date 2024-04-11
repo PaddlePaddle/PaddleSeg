@@ -1079,7 +1079,7 @@ class nnFormer(nn.Layer):
             for i in range(len(out)):
                 out_put = F.interpolate(
                     self.final[-(i + 1)](out[i]),
-                    size=paddle.shape(x)[2:],
+                    size=x.shape[2:],
                     data_format='NCDHW',
                     mode='trilinear')
 

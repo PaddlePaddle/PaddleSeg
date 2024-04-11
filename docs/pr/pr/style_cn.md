@@ -153,7 +153,7 @@ def __init__(self,
 1. 逻辑尽量简洁，以组件式的调用呈现。
 2. 结果需要`resize`到原图大小，按列表形式返回，第一个元素为主输出，其他为辅助输出。
 3. 如果模型训练和预测时执行分支不同，使用self.training变量作为if判断，实现不同分支（示例参考PPLiteSeg模型文件）。
-4. 获取Tensor的shape，建议使用`paddle.shape(x)`，不要使用`x.shape`，否则在导出预测模型的时候可能出现动转静失败的问题。
+4. 获取Tensor的shape，建议使用`x.shape`，不要使用`x.shape`，否则在导出预测模型的时候可能出现动转静失败的问题。
 5. 组网代码统一使用Paddle API，不支持嵌入numpy操作，即不支持tensor->numpy->tensor转换。
 
 ```python
@@ -163,7 +163,7 @@ def forward(self, x):
     return [
         F.interpolate(
             logit,
-            paddle.shape(x)[2:],
+            x.shape[2:],
             mode='bilinear',
             align_corners=self.align_corners) for logit in logit_list
     ]

@@ -78,7 +78,7 @@ class EMANet(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -187,7 +187,7 @@ class EMAU(nn.Layer):
         self.register_buffer('mu', mu)
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         x = x.flatten(2)
         mu = paddle.tile(self.mu, [x_shape[0], 1, 1])
 

@@ -68,7 +68,7 @@ class ISANet(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners,
                 align_mode=1) for logit in logit_list
@@ -121,7 +121,7 @@ class ISAHead(nn.Layer):
     def forward(self, feat_list):
         C3, C4 = feat_list
         x = self.in_conv(C4)
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         P_h, P_w = self.down_factor
         Q_h, Q_w = paddle.ceil(x_shape[2:3] / P_h).astype('int32'), paddle.ceil(
             x_shape[3:4] / P_w).astype('int32')

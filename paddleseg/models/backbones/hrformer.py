@@ -302,7 +302,7 @@ class InterlacedPoolAttention(nn.Layer):
         B, N, C = x.shape
         x = x.reshape([B, H, W, C])
         # pad
-        x_pad = self.pad_helper.pad_if_needed(x, paddle.shape(x))
+        x_pad = self.pad_helper.pad_if_needed(x, x.shape)
         # permute
         x_permute = self.permute_helper.permute(x_pad, x_pad.shape)
         # attention
@@ -310,7 +310,7 @@ class InterlacedPoolAttention(nn.Layer):
             x_permute, x_permute, x_permute, rpe=self.with_rpe, **kwargs)
         # reverse permutation
         out = self.permute_helper.rev_permute(out, x_pad.shape)
-        out = self.pad_helper.depad_if_needed(out, paddle.shape(x))
+        out = self.pad_helper.depad_if_needed(out, x.shape)
         return out.reshape([B, N, C])
 
 

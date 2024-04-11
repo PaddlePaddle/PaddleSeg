@@ -70,7 +70,7 @@ class GCNet(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -196,7 +196,7 @@ class GlobalContextBlock(nn.Layer):
                 kernel_size=1))
 
     def global_context_block(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
 
         # [N, C, H * W]
         input_x = paddle.reshape(x, shape=[0, self.gc_channels, -1])

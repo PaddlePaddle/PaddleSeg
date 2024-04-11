@@ -50,7 +50,7 @@ class LinearSegmenter(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
 
         feats, shape = self.backbone(x)
         logits = self.head(feats[-1], shape[2:])
@@ -111,7 +111,7 @@ class MaskSegmenter(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
 
         feats, shape = self.backbone(x)
         logits = self.head(feats[-1], shape[2:])
@@ -149,7 +149,7 @@ class SegmenterLinearHead(nn.Layer):
 
         #[b, (h w), c] -> [b, c, h, w]
         h, w = patch_embed_size[0], patch_embed_size[1]
-        masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
+        masks = masks.reshape((0, h, w, masks.shape[-1]))
         masks = masks.transpose((0, 3, 1, 2))
 
         return [masks]
@@ -230,7 +230,7 @@ class SegmenterMaskHead(nn.Layer):
         """
         x = self.proj_input(x)
 
-        cls_token = self.cls_token.expand((paddle.shape(x)[0], -1, -1))
+        cls_token = self.cls_token.expand((x.shape[0], -1, -1))
         x = paddle.concat([x, cls_token], axis=1)
 
         for block in self.blocks:
@@ -250,7 +250,7 @@ class SegmenterMaskHead(nn.Layer):
 
         #[b, (h w), c] -> [b, c, h, w]
         h, w = patch_embed_size[0], patch_embed_size[1]
-        masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
+        masks = masks.reshape((0, h, w, masks.shape[-1]))
         masks = masks.transpose((0, 3, 1, 2))
 
         return [masks]

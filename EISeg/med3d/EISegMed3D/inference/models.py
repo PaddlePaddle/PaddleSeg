@@ -116,14 +116,14 @@ class ISModel3D(nn.Layer):
 
         outputs["instances"] = nn.functional.interpolate(
             outputs["instances"],
-            size=paddle.shape(image)[2:],  # [4, 20, 512, 512, 12]
+            size=image.shape[2:],  # [4, 20, 512, 512, 12]
             mode="trilinear",
             align_corners=True,
             data_format="NCDHW", )  # image [4  , 1  , 512, 512, 12 ]
         if self.with_aux_output:
             outputs["instances_aux"] = nn.functional.interpolate(
                 outputs["instances_aux"],
-                size=paddle.shape(image)[2:],
+                size=image.shape[2:],
                 mode="biltrilinearinear",
                 align_corners=True,
                 data_format="NCDHW", )

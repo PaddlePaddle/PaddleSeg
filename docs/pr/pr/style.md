@@ -155,7 +155,7 @@ class PSPNet(nn.Layer):
 1. The logic should be as concise as possible and make as many as component calls.
 2. Resize the output to the original image size and return them in the form of a list. The first element of the list is the main output, and the others are auxiliary outputs.
 3. If the execution branch is different during model training and prediction, use self.training variable in if statement to implement different branches (for example: bisnetv2 model).
-4. To obtain the shape of the Tensor, it is recommended to use `paddle.shape(x)` instead of `x.shape` to avoid errors in exporting inference model.
+4. To obtain the shape of the Tensor, it is recommended to use `x.shape` instead of `x.shape` to avoid errors in exporting inference model.
 5. The network forward pass dose not support tensor->numpy->tensor operation.
 
     ```python
@@ -165,7 +165,7 @@ class PSPNet(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]

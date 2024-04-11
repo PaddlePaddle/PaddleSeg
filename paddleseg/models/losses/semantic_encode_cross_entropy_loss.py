@@ -35,7 +35,7 @@ class SECrossEntropyLoss(nn.Layer):
         assert logit.ndim == 2, "The shape of logit should be [N, C, 1, 1] or [N, C], but the logit dim is  {}.".format(
             logit.ndim)
 
-        batch_size, num_classes = paddle.shape(logit)
+        batch_size, num_classes = logit.shape
         se_label = paddle.zeros([batch_size, num_classes])
         for i in range(batch_size):
             hist = paddle.histogram(

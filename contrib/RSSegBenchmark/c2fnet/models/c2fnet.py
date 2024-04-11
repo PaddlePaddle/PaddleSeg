@@ -132,7 +132,7 @@ class C2FNet(nn.Layer):
                 mask_regions_selected).astype('bool')
             final_mask_regions_selected.stop_gradient = True
 
-            theld = self.samples * paddle.shape(x)[0]
+            theld = self.samples * x.shape[0]
 
             if paddle.sum(mask_regions_selected) >= theld:
                 _, top_k_idx = paddle.topk(mask_regions_sum, k=theld)
@@ -244,14 +244,14 @@ class C2FNet(nn.Layer):
                 selected_img_regions = paddle.reshape(
                     selected_img_regions,
                     shape=[
-                        paddle.shape(selected_img_regions)[0], 3,
+                        selected_img_regions.shape[0], 3,
                         self.kernel_sizes[0], self.kernel_sizes[1]
                     ])
                 selected_fea_regions = ori_fea_regions[mask_regions_selected]
                 selected_fea_regions = paddle.reshape(
                     selected_fea_regions,
                     shape=[
-                        paddle.shape(selected_fea_regions)[0], self.num_cls,
+                        selected_fea_regions.shape[0], self.num_cls,
                         self.kernel_sizes[0], self.kernel_sizes[1]
                     ])
                 feat_list = self.backbone(selected_img_regions)
@@ -279,18 +279,18 @@ class C2FNet(nn.Layer):
                     x=[front, ship, mid, lv, sv, hl, swp, mid2, pl, hb], axis=1)
                 selected_fea_regions = paddle.reshape(
                     selected_fea_regions,
-                    shape=[paddle.shape(selected_fea_regions)[0], -1])
+                    shape=[selected_fea_regions.shape[0], -1])
                 ori_fea_regions[mask_regions_selected] = selected_fea_regions
                 ori_fea_regions = paddle.reshape(
                     ori_fea_regions,
                     shape=[
-                        paddle.shape(x)[0], -1, self.num_cls *
+                        x.shape[0], -1, self.num_cls *
                         self.kernel_sizes[0] * self.kernel_sizes[1]
                     ])
                 ori_fea_regions = paddle.transpose(
                     ori_fea_regions, perm=[0, 2, 1])
                 fea_out = F.fold(
-                    ori_fea_regions, [paddle.shape(x)[2], paddle.shape(x)[3]],
+                    ori_fea_regions, [x.shape[2], x.shape[3]],
                     self.kernel_sizes,
                     strides=self.kernel_sizes[0],
                     paddings=0,

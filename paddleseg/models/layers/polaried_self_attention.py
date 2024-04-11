@@ -81,7 +81,7 @@ class PolarizedSelfAttentionModule(nn.Layer):
 
     def spatial_pool(self, x):
         input_x = self.conv_v_right(x)
-        batch, _, height, width = paddle.shape(input_x)
+        batch, _, height, width = input_x.shape
         input_x = input_x.reshape((batch, self.inter_planes, height * width))
         context_mask = self.conv_q_right(x)
         context_mask = context_mask.reshape((batch, 1, height * width))
@@ -95,9 +95,9 @@ class PolarizedSelfAttentionModule(nn.Layer):
 
     def channel_pool(self, x):
         g_x = self.conv_q_left(x)
-        batch, channel, height, width = paddle.shape(g_x)
+        batch, channel, height, width = g_x.shape
         avg_x = self.avg_pool(g_x)
-        batch, channel, avg_x_h, avg_x_w = paddle.shape(avg_x)
+        batch, channel, avg_x_h, avg_x_w = avg_x.shape
         avg_x = avg_x.reshape((batch, channel, avg_x_h * avg_x_w))
         avg_x = paddle.reshape(avg_x, [batch, avg_x_h * avg_x_w, channel])
         theta_x = self.conv_v_left(x).reshape(

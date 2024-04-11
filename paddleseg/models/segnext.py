@@ -62,7 +62,7 @@ class SegNeXt(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        input_size = paddle.shape(x)[2:]
+        input_size = x.shape[2:]
         feats = self.backbone(x)
         out = self.decode_head(feats)
         return [
@@ -156,7 +156,7 @@ class LightHamHead(nn.Layer):
 
     def forward(self, inputs):
         inputs = inputs[1:]
-        target_shape = paddle.shape(inputs[0])[2:]
+        target_shape = inputs[0].shape[2:]
         inputs = [
             F.interpolate(
                 level,

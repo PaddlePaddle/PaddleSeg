@@ -146,7 +146,7 @@ class DualResNet(nn.Layer):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        n, c, h, w = paddle.shape(x)
+        n, c, h, w = x.shape
         width_output = w // 8
         height_output = h // 8
 
@@ -349,7 +349,7 @@ class DAPPM(nn.Layer):
                 inplanes, outplanes, kernel_size=1, bias_attr=False))
 
     def forward(self, x):
-        n, c, h, w = paddle.shape(x)
+        n, c, h, w = x.shape
         x0 = self.scale0(x)
         x1 = self.process1(
             F.interpolate(

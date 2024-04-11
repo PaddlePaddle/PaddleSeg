@@ -337,17 +337,17 @@ class UHRNet(nn.Layer):
         st5 = self.st5(tr4)
         x5 = st5[-1]
 
-        tr5 = self.tr5(st5[0], shape=paddle.shape(skip41)[-2:])
+        tr5 = self.tr5(st5[0], shape=skip41.shape[-2:])
         tr5[0] = self._concat(tr5[0], skip41)
         st6 = self.st6(tr5)
         x4 = st6[-1]
 
-        tr6 = self.tr6(st6[0], shape=paddle.shape(skip31)[-2:])
+        tr6 = self.tr6(st6[0], shape=skip31.shape[-2:])
         tr6[0] = self._concat(tr6[0], skip31)
         st7 = self.st7(tr6)
         x3 = st7[-1]
 
-        tr7 = self.tr7(st7[0], shape=paddle.shape(skip21)[-2:])
+        tr7 = self.tr7(st7[0], shape=skip21.shape[-2:])
         tr7[0] = self._concat(tr7[0], skip21)
         st8 = self.st8(tr7)
         x2 = st8[-1]
@@ -363,7 +363,7 @@ class UHRNet(nn.Layer):
                                                                   1)).squeeze(1)
 
         # upsampling
-        x0_h, x0_w = paddle.shape(x[0])[-2:]
+        x0_h, x0_w = x[0].shape[-2:]
         for i in range(1, len(x)):
             x[i] = F.interpolate(
                 x[i],
@@ -820,7 +820,7 @@ class FuseLayers(nn.Layer):
         residual_func_idx = 0
         for i in range(self._actual_ch):
             residual = x[i]
-            residual_shape = paddle.shape(residual)[-2:]
+            residual_shape = residual.shape[-2:]
 
             for j in range(len(self._in_channels)):
                 if j > i:

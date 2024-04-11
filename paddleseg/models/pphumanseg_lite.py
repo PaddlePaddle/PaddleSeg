@@ -77,7 +77,7 @@ class PPHumanSegLite(nn.Layer):
 
     def forward(self, x):
         # Encoder
-        input_shape = paddle.shape(x)[2:]
+        input_shape = x.shape[2:]
 
         x = self.conv_bn0(x)  # 1/2
         shortcut = self.conv_bn1(x)  # shortcut
@@ -87,7 +87,7 @@ class PPHumanSegLite(nn.Layer):
 
         # Decoder
         x = self.depthwise_separable0(x)
-        shortcut_shape = paddle.shape(shortcut)[2:]
+        shortcut_shape = shortcut.shape[2:]
         x = F.interpolate(
             x,
             shortcut_shape,
@@ -238,7 +238,7 @@ class InvertedResidual(nn.Layer):
         output = paddle.concat(x=[shortcut, branch_dw1x1], axis=1)
 
         # channel shuffle
-        out_shape = paddle.shape(output)
+        out_shape = output.shape
         h, w = out_shape[2], out_shape[3]
         output = paddle.reshape(x=output, shape=[0, 2, self.in_channels, h, w])
         output = paddle.transpose(x=output, perm=[0, 2, 1, 3, 4])

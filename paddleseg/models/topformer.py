@@ -72,7 +72,7 @@ class TopFormer(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        x_hw = paddle.shape(x)[2:]
+        x_hw = x.shape[2:]
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
         x = F.interpolate(
@@ -127,7 +127,7 @@ class TopFormerHead(nn.Layer):
             inputs = [
                 F.interpolate(
                     input_data=x,
-                    size=paddle.shape(inputs[0])[2:],
+                    size=inputs[0].shape[2:],
                     mode='bilinear',
                     align_corners=self.align_corners) for x in inputs
             ]
@@ -138,7 +138,7 @@ class TopFormerHead(nn.Layer):
             for x in inputs_tmp[1:]:
                 x = F.interpolate(
                     x,
-                    size=paddle.shape(inputs)[2:],
+                    size=inputs.shape[2:],
                     mode='bilinear',
                     align_corners=self.align_corners)
                 inputs += x

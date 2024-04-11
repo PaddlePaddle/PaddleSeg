@@ -97,7 +97,7 @@ class MobileSeg(nn.Layer):
         self.init_weight()
 
     def forward(self, x):
-        x_hw = paddle.shape(x)[2:]
+        x_hw = x.shape[2:]
 
         feats_backbone = self.backbone(x)  # [x4, x8, x16, x32]
         assert len(feats_backbone) >= len(self.backbone_indices), \
@@ -201,7 +201,7 @@ class MobileSegHead(nn.Layer):
 
         if self.use_last_fuse:
             x_list = [out_feat_list[0]]
-            size = paddle.shape(out_feat_list[0])[2:]
+            size = out_feat_list[0].shape[2:]
             for i, (x, conv
                     ) in enumerate(zip(out_feat_list[1:], self.fuse_convs)):
                 x = conv(x)
@@ -257,7 +257,7 @@ class MobileContextModule(nn.Layer):
 
     def forward(self, input):
         out = None
-        input_shape = paddle.shape(input)[2:]
+        input_shape = input.shape[2:]
 
         for stage in self.stages:
             x = stage(input)

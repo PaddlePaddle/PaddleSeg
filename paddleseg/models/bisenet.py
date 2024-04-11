@@ -84,7 +84,7 @@ class BiSeNetV2(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -285,7 +285,7 @@ class BGA(nn.Layer):
         sb_feat_up = self.sb_branch_up(sfm)
         sb_feat_up = F.interpolate(
             sb_feat_up,
-            paddle.shape(db_feat_keep)[2:],
+            db_feat_keep.shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
 
@@ -295,7 +295,7 @@ class BGA(nn.Layer):
         sb_feat = db_feat_down * sb_feat_keep
         sb_feat = F.interpolate(
             sb_feat,
-            paddle.shape(db_feat)[2:],
+            db_feat.shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
 

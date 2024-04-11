@@ -62,7 +62,7 @@ def Conv2d(in_channels,
 
 
 def channel_shuffle(x, groups):
-    x_shape = paddle.shape(x)
+    x_shape = x.shape
     batch_size, height, width = x_shape[0], x_shape[2], x_shape[3]
     num_channels = x.shape[1]
     channels_per_group = num_channels // groups
@@ -226,7 +226,7 @@ class CrossResolutionWeightingModule(nn.Layer):
         out = paddle.split(out, self.channels, 1)
         out = [
             s * F.interpolate(
-                a, paddle.shape(s)[-2:], mode='nearest') for s, a in zip(x, out)
+                a, s.shape[-2:], mode='nearest') for s, a in zip(x, out)
         ]
         return out
 
@@ -434,7 +434,7 @@ class IterativeHead(nn.Layer):
             if last_x is not None:
                 last_x = F.interpolate(
                     last_x,
-                    size=paddle.shape(s)[-2:],
+                    size=s.shape[-2:],
                     mode='bilinear',
                     align_corners=True)
                 s = s + last_x

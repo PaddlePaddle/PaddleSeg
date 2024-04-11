@@ -61,7 +61,7 @@ class PPMatting(nn.Layer):
 
     def forward(self, inputs):
         x = inputs['img']
-        input_shape = paddle.shape(x)
+        input_shape = x.shape
         fea_list = self.backbone(x)
 
         scb_logits = self.scb(fea_list[-1])
@@ -295,7 +295,7 @@ class HRDB(nn.Layer):
             x = self.convs[i](x)
             gf = self.gf_list[i](scb_logits[self.gf_index[i]])
             gf = F.interpolate(
-                gf, paddle.shape(x)[-2:], mode='bilinear', align_corners=False)
+                gf, x.shape[-2:], mode='bilinear', align_corners=False)
             x = self.gates[i](x, gf)
         return self.detail_conv(x)
 

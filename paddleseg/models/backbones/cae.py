@@ -119,7 +119,7 @@ class Attention(nn.Layer):
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x, rel_pos_bias=None):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         N, C = x_shape[1], x_shape[2]
 
         qkv_bias = None
@@ -445,12 +445,12 @@ class CAE(nn.Layer):
 
     def forward(self, x):
         x = self.patch_embed(x)
-        x_shape = paddle.shape(x)  # b * c * h * w
+        x_shape = x.shape  # b * c * h * w
 
         cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
         x = x.flatten(2).transpose([0, 2, 1])  # b * hw * c
         x = paddle.concat([cls_tokens, x], axis=1)
-        if paddle.shape(x)[1] == self.pos_embed.shape[1]:
+        if x.shape[1] == self.pos_embed.shape[1]:
             x = x + self.pos_embed
         else:
             x = x + self.resize_pos_embed(self.pos_embed,

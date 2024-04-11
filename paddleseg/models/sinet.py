@@ -113,7 +113,7 @@ class SINet(nn.Layer):
 
 
 def channel_shuffle(x, groups):
-    x_shape = paddle.shape(x)
+    x_shape = x.shape
     batch_size, height, width = x_shape[0], x_shape[2], x_shape[3]
     num_channels = x.shape[1]
     channels_per_group = num_channels // groups

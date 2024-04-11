@@ -168,23 +168,23 @@ class RVM(nn.Layer):
 
     def backbone_forward(self, x):
         if x.ndim == 5:
-            B, T = paddle.shape(x)[:2]
+            B, T = x.shape[:2]
             features = self.backbone(x.flatten(0, 1))
             for i, f in enumerate(features):
-                features[i] = f.reshape((B, T, *(paddle.shape(f)[1:])))
+                features[i] = f.reshape((B, T, *(f.shape[1:])))
         else:
             features = self.backbone(x)
         return features
 
     def _interpolate(self, x: Tensor, scale_factor: float):
         if x.ndim == 5:
-            B, T = paddle.shape(x)[:2]
+            B, T = x.shape[:2]
             x = F.interpolate(
                 x.flatten(0, 1),
                 scale_factor=scale_factor,
                 mode='bilinear',
                 align_corners=False)
-            *_, C, H, W = paddle.shape(x)[-3:]
+            *_, C, H, W = x.shape[-3:]
             x = x.reshape((B, T, C, H, W))
         else:
             x = F.interpolate(
@@ -219,7 +219,7 @@ class LRASPP(nn.Layer):
     def forward_time_series(self, x):
         B, T = x.shape[:2]
         x = self.forward_single_frame(x.flatten(0, 1))
-        x = x.reshape((B, T, *(paddle.shape(x)[1:])))
+        x = x.reshape((B, T, *(x.shape[1:])))
         return x
 
     def forward(self, x):
@@ -273,12 +273,12 @@ class AvgPool(nn.Layer):
         return s1, s2, s3
 
     def forward_time_series(self, s0):
-        B, T = paddle.shape(s0)[:2]
+        B, T = s0.shape[:2]
         s0 = s0.flatten(0, 1)
         s1, s2, s3 = self.forward_single_frame(s0)
-        s1 = s1.reshape((B, T, *(paddle.shape(s1)[1:])))
-        s2 = s2.reshape((B, T, *(paddle.shape(s2)[1:])))
-        s3 = s3.reshape((B, T, *(paddle.shape(s3)[1:])))
+        s1 = s1.reshape((B, T, *(s1.shape[1:])))
+        s2 = s2.reshape((B, T, *(s2.shape[1:])))
+        s3 = s3.reshape((B, T, *(s3.shape[1:])))
         return s1, s2, s3
 
     def forward(self, s0):
@@ -321,7 +321,7 @@ class UpsamplingBlock(nn.Layer):
 
     def forward_single_frame(self, x, f, s, r: Optional[Tensor]):
         x = self.upsample(x)
-        x = x[:, :, :paddle.shape(s)[2], :paddle.shape(s)[3]]
+        x = x[:, :, :s.shape[2], :s.shape[3]]
         x = paddle.concat([x, f, s], axis=1)
         x = self.conv(x)
         a, b = x.split(2, axis=1)
@@ -338,7 +338,7 @@ class UpsamplingBlock(nn.Layer):
         x = x[:, :, :H, :W]
         x = paddle.concat([x, f, s], axis=1)
         x = self.conv(x)
-        _, c, h, w = paddle.shape(x)
+        _, c, h, w = x.shape
         x = x.reshape((B, T, c, h, w))
         a, b = x.split(2, axis=2)
         b, r = self.gru(b, r)
@@ -373,7 +373,7 @@ class OutputBlock(nn.Layer):
             nn.ReLU(), )
 
     def forward_single_frame(self, x, s):
-        _, _, H, W = paddle.shape(s)
+        _, _, H, W = s.shape
         x = self.upsample(x)
         x = x[:, :, :H, :W]
         x = paddle.concat([x, s], axis=1)
@@ -381,14 +381,14 @@ class OutputBlock(nn.Layer):
         return x
 
     def forward_time_series(self, x, s):
-        B, T, C, H, W = paddle.shape(s)
+        B, T, C, H, W = s.shape
         x = x.flatten(0, 1)
         s = s.flatten(0, 1)
         x = self.upsample(x)
         x = x[:, :, :H, :W]
         x = paddle.concat([x, s], axis=1)
         x = self.conv(x)
-        x = paddle.reshape(x, (B, T, paddle.shape(x)[1], H, W))
+        x = paddle.reshape(x, (B, T, x.shape[1], H, W))
         return x
 
     def forward(self, x, s):
@@ -428,8 +428,8 @@ class ConvGRU(nn.Layer):
     def forward(self, x, h=None):
         if h is None:
             h = paddle.zeros(
-                (paddle.shape(x)[0], paddle.shape(x)[-3], paddle.shape(x)[-2],
-                 paddle.shape(x)[-1]),
+                (x.shape[0], x.shape[-3], x.shape[-2],
+                 x.shape[-1]),
                 dtype=x.dtype)
 
         if x.ndim == 5:
@@ -447,9 +447,9 @@ class Projection(nn.Layer):
         return self.conv(x)
 
     def forward_time_series(self, x):
-        B, T = paddle.shape(x)[:2]
+        B, T = x.shape[:2]
         x = self.conv(x.flatten(0, 1))
-        _, C, H, W = paddle.shape(x)
+        _, C, H, W = x.shape
         x = x.reshape((B, T, C, H, W))
         return x
 
@@ -486,7 +486,7 @@ class FastGuidedFilterRefiner(nn.Layer):
             fine_src.flatten(0, 1),
             base_src.flatten(0, 1),
             base_fgr.flatten(0, 1), base_pha.flatten(0, 1))
-        *_, C, H, W = paddle.shape(fgr)
+        *_, C, H, W = fgr.shape
         fgr = fgr.reshape((B, T, C, H, W))
         pha = pha.reshape((B, T, 1, H, W))
         return fgr, pha
@@ -540,7 +540,7 @@ class DeepGuidedFilterRefiner(nn.Layer):
         A = self.conv(paddle.concat([cov_xy, var_x, base_hid], axis=1))
         b = mean_y - A * mean_x
 
-        H, W = paddle.shape(fine_src)[2:]
+        H, W = fine_src.shape[2:]
         A = F.interpolate(A, (H, W), mode='bilinear', align_corners=False)
         b = F.interpolate(b, (H, W), mode='bilinear', align_corners=False)
 
@@ -556,7 +556,7 @@ class DeepGuidedFilterRefiner(nn.Layer):
             base_src.flatten(0, 1),
             base_fgr.flatten(0, 1),
             base_pha.flatten(0, 1), base_hid.flatten(0, 1))
-        *_, C, H, W = paddle.shape(fgr)
+        *_, C, H, W = fgr.shape
         fgr = fgr.reshape((B, T, C, H, W))
         pha = pha.reshape((B, T, 1, H, W))
         return fgr, pha

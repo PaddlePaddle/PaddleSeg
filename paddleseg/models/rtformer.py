@@ -182,7 +182,7 @@ class RTFormer(nn.Layer):
         x2 = self.layer2(self.relu(x1))  # 2c, 1/8
         x3 = self.layer3(self.relu(x2))  # 4c, 1/16
         x3_ = x2 + F.interpolate(
-            self.compression3(x3), size=paddle.shape(x2)[2:], mode='bilinear')
+            self.compression3(x3), size=x2.shape[2:], mode='bilinear')
         x3_ = self.layer3_(self.relu(x3_))  # 2c, 1/8
 
         x4_, x4 = self.layer4(
@@ -192,7 +192,7 @@ class RTFormer(nn.Layer):
 
         x6 = self.spp(x5)
         x6 = F.interpolate(
-            x6, size=paddle.shape(x5_)[2:], mode='bilinear')  # 2c, 1/8
+            x6, size=x5_.shape[2:], mode='bilinear')  # 2c, 1/8
         x_out = self.seghead(paddle.concat([x5_, x6], axis=1))  # 4c, 1/8
         logit_list = [x_out]
 
@@ -203,7 +203,7 @@ class RTFormer(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=False) for logit in logit_list
         ]
@@ -379,7 +379,7 @@ class ExternalAttention(nn.Layer):
         return x
 
     def _act_dn(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         h, w = x_shape[2], x_shape[3]
         x = x.reshape(
             [0, self.num_heads, self.inter_channels // self.num_heads, -1])
@@ -554,7 +554,7 @@ class EABlock(nn.Layer):
         x_l = x_l + self.drop_path(self.mlp_l(x_l))  # n,out_chs_l,h,w 
 
         # compression
-        x_h_shape = paddle.shape(x_h)[2:]
+        x_h_shape = x_h.shape[2:]
         x_l_cp = self.compression(x_l)
         x_h += F.interpolate(x_l_cp, size=x_h_shape, mode='bilinear')
 
@@ -678,7 +678,7 @@ class DAPPM(nn.Layer):
                 in_channels, out_channels, kernel_size=1, lr_mult=lr_mult))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)[2:]
+        x_shape = x.shape[2:]
         x_list = []
 
         x_list.append(self.scale0(x))

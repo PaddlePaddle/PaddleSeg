@@ -96,7 +96,7 @@ class ENCNet(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, inputs):
-        N, C, H, W = paddle.shape(inputs)
+        N, C, H, W = inputs.shape
         feats = self.backbone(inputs)
         fcn_feat = feats[2]
 
@@ -109,7 +109,7 @@ class ENCNet(nn.Layer):
                 laterals.append(
                     F.interpolate(
                         lateral_conv(feats[j]),
-                        size=paddle.shape(feat)[2:],
+                        size=feat.shape[2:],
                         mode='bilinear',
                         align_corners=False))
             feat = self.fusion(paddle.concat([feat, *laterals], 1))
@@ -145,7 +145,7 @@ class Encoding(nn.Layer):
         self.channels = channels
 
     def scaled_l2(self, x, codewords, scale):
-        num_codes, channels = paddle.shape(codewords)
+        num_codes, channels = codewords.shape
         reshaped_scale = scale.reshape([1, 1, num_codes])
         expanded_x = paddle.tile(x.unsqueeze(2), [1, 1, num_codes, 1])
         reshaped_codewords = codewords.reshape([1, 1, num_codes, channels])
@@ -156,7 +156,7 @@ class Encoding(nn.Layer):
         return scaled_l2_norm
 
     def aggregate(self, assignment_weights, x, codewords):
-        num_codes, channels = paddle.shape(codewords)
+        num_codes, channels = codewords.shape
         reshaped_codewords = codewords.reshape([1, 1, num_codes, channels])
         expanded_x = paddle.tile(x.unsqueeze(2), [1, 1, num_codes, 1])
 
@@ -171,11 +171,9 @@ class Encoding(nn.Layer):
         x_dims = x.ndim
         assert x_dims == 4, "The dimension of input tensor must equal 4, but got {}.".format(
             x_dims)
-        assert paddle.shape(
-            x
-        )[1] == self.channels, "Encoding channels error, excepted {} but got {}.".format(
-            self.channels, paddle.shape(x)[1])
-        batch_size = paddle.shape(x)[0]
+        assert x.shape[1] == self.channels, "Encoding channels error, excepted {} but got {}.".format(
+            self.channels, x.shape[1])
+        batch_size = x.shape[0]
         x = x.reshape([batch_size, self.channels, -1]).transpose([0, 2, 1])
         assignment_weights = F.softmax(
             self.scaled_l2(x, self.codewords, self.scale), axis=2)
@@ -205,7 +203,7 @@ class EncModule(nn.Layer):
         encoding_feat = self.encoding(encoding_projection)
 
         encoding_feat = encoding_feat.mean(axis=1)
-        batch_size, _, _, _ = paddle.shape(x)
+        batch_size, _, _, _ = x.shape
 
         gamma = self.fc(encoding_feat)
         y = gamma.reshape([batch_size, self.in_channels, 1, 1])

@@ -219,7 +219,7 @@ class DAPPM(nn.Layer):
         for i in range(1, self.num_scales):
             feat_up = F.interpolate(
                 self.scales[i](inputs),
-                size=paddle.shape(inputs)[2:],
+                size=inputs.shape[2:],
                 mode=self.unsample_mode)
             feats.append(self.processes[i - 1](feat_up + feats[i - 1]))
 
@@ -271,7 +271,7 @@ class PAPPM(DAPPM):
         for i in range(1, self.num_scales):
             feat_up = F.interpolate(
                 self.scales[i](inputs),
-                size=paddle.shape(inputs)[2:],
+                size=inputs.shape[2:],
                 mode=self.unsample_mode,
                 align_corners=False)
             feats.append(feat_up + x_)
@@ -327,7 +327,7 @@ class PagFM(nn.Layer):
         f_i = self.f_i(x_i)
         f_i = F.interpolate(
             f_i,
-            size=paddle.shape(x_p)[2:],
+            size=x_p.shape[2:],
             mode=self.upsample_mode,
             align_corners=False)
 
@@ -340,7 +340,7 @@ class PagFM(nn.Layer):
 
         x_i = F.interpolate(
             x_i,
-            size=paddle.shape(x_p)[2:],
+            size=x_p.shape[2:],
             mode=self.upsample_mode,
             align_corners=False)
 
@@ -676,8 +676,8 @@ class PIDNet(nn.Layer):
             Tensor or tuple[Tensor]: If self.training is True, return
                 tuple[Tensor], else return Tensor.
         """
-        w_out = paddle.shape(x)[-1] // 8
-        h_out = paddle.shape(x)[-2] // 8
+        w_out = x.shape[-1] // 8
+        h_out = x.shape[-2] // 8
 
         # stage 0-2
         x = self.stem(x)

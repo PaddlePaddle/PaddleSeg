@@ -284,7 +284,7 @@ class PSPModule(nn.Layer):
             bias_attr=False)
 
     def forward(self, feats):
-        h, w = paddle.shape(feats)[2:4]
+        h, w = feats.shape[2:4]
         out = [feats]
         for stage in self.stages:
             feats = F.avg_pool2d(feats, kernel_size=3, stride=2, padding='same')
@@ -338,12 +338,12 @@ class DownSampler(nn.Layer):
         output = paddle.concat([avg_out, eesp_out], axis=1)
 
         if inputs is not None:
-            w1 = paddle.shape(avg_out)[2]
-            w2 = paddle.shape(inputs)[2]
+            w1 = avg_out.shape[2]
+            w2 = inputs.shape[2]
 
             inputs = paddle.reshape(inputs, [
-                inputs.shape[0], inputs.shape[1], paddle.shape(inputs)[2],
-                paddle.shape(inputs)[3]
+                inputs.shape[0], inputs.shape[1], inputs.shape[2],
+                inputs.shape[3]
             ])
             if hasattr(paddle.framework, "_no_check_dy2st_diff"):
                 # TODO(wanghuancoder): _no_check_dy2st_diff is used to turn off the checking of behavior
@@ -353,12 +353,12 @@ class DownSampler(nn.Layer):
                     while w2 != w1:
                         inputs = F.avg_pool2d(
                             inputs, kernel_size=3, padding=1, stride=2)
-                        w2 = paddle.shape(inputs)[2]
+                        w2 = inputs.shape[2]
             else:
                 while w2 != w1:
                     inputs = F.avg_pool2d(
                         inputs, kernel_size=3, padding=1, stride=2)
-                    w2 = paddle.shape(inputs)[2]
+                    w2 = inputs.shape[2]
 
             output = output + self.shortcut_layer(inputs)
         return self._act(output)

@@ -179,7 +179,7 @@ class SwinUNet(nn.Layer):
 
     def up_x4(self, x):
         H, W = self.patches_resolution
-        B, L, C = paddle.shape(x)[0:3]
+        B, L, C = x.shape[0:3]
         assert L == H * W, "input features has wrong size"
 
         if self.final_upsample:
@@ -262,7 +262,7 @@ class FinalPatchExpandX4(nn.Layer):
         """
         H, W = self.input_resolution
         x = self.expand(x)
-        B, L, C = paddle.shape(x)[0:3]
+        B, L, C = x.shape[0:3]
         assert L == H * W, "input features has wrong size"
 
         x = x.reshape((B, H, W, C))

@@ -276,7 +276,7 @@ class Attention(nn.Layer):
                 self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         H, W = x_shape[2], x_shape[3]
 
         qq = self.to_q(x).reshape(
@@ -421,7 +421,7 @@ class InjectionMultiSum(nn.Layer):
         self.act = HSigmoid()
 
     def forward(self, x_low, x_global):
-        xl_hw = paddle.shape(x_low)[2:]
+        xl_hw = x_low.shape[2:]
         local_feat = self.local_embedding(x_low)
 
         global_act = self.global_act(x_global)
@@ -454,7 +454,7 @@ class InjectionMultiSumCBR(nn.Layer):
         self.act = HSigmoid()
 
     def forward(self, x_low, x_global):
-        xl_hw = paddle.shape(x)[2:]
+        xl_hw = x.shape[2:]
         local_feat = self.local_embedding(x_low)
         # kernel
         global_act = self.global_act(x_global)
@@ -478,7 +478,7 @@ class FuseBlockSum(nn.Layer):
             in_channels, out_channels, kernel_size=1, act=None)
 
     def forward(self, x_low, x_high):
-        xl_hw = paddle.shape(x)[2:]
+        xl_hw = x.shape[2:]
         inp = self.fuse1(x_low)
         kernel = self.fuse2(x_high)
         feat_h = F.interpolate(
@@ -504,7 +504,7 @@ class FuseBlockMulti(nn.Layer):
         self.act = HSigmoid()
 
     def forward(self, x_low, x_high):
-        xl_hw = paddle.shape(x)[2:]
+        xl_hw = x.shape[2:]
         inp = self.fuse1(x_low)
         sig_act = self.fuse2(x_high)
         sig_act = F.interpolate(

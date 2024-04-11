@@ -115,7 +115,7 @@ class Attention(nn.Layer):
                 zeros_(m.bias)
 
     def forward(self, x, H, W):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         B, N = x_shape[0], x_shape[1]
         C = self.dim
 
@@ -248,7 +248,7 @@ class OverlapPatchEmbed(nn.Layer):
 
     def forward(self, x):
         x = self.proj(x)
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         H, W = x_shape[2], x_shape[3]
         x = x.flatten(2).transpose([0, 2, 1])
         x = self.norm(x)
@@ -430,7 +430,7 @@ class MixVisionTransformer(nn.Layer):
                               num_classes) if num_classes > 0 else nn.Identity()
 
     def forward_features(self, x):
-        B = paddle.shape(x)[0]
+        B = x.shape[0]
         outs = []
 
         # stage 1
@@ -482,7 +482,7 @@ class DWConv(nn.Layer):
         self.dwconv = nn.Conv2D(dim, dim, 3, 1, 1, bias_attr=True, groups=dim)
 
     def forward(self, x, H, W):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         B, N = x_shape[0], x_shape[1]
         x = x.transpose([0, 2, 1]).reshape([B, self.dim, H, W])
         x = self.dwconv(x)

@@ -75,7 +75,7 @@ class DNLNet(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners,
                 align_mode=1) for logit in logit_list
@@ -189,7 +189,7 @@ class DisentangledNonLocal2D(layers.NonLocal2D):
         return pairwise_weight
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         g_x = self.g(x).reshape([0, self.inter_channels,
                                  -1]).transpose([0, 2, 1])
 

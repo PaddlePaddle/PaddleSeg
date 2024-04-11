@@ -160,8 +160,8 @@ class edge_branch(nn.Layer):
             out_channels, num_classes, kernel_size=3, stride=1)
 
     def forward(self, conv1_logit, x4):
-        H = paddle.shape(x4)[2]
-        W = paddle.shape(x4)[3]
+        H = x4.shape[2]
+        W = x4.shape[3]
         conv1_logit = F.interpolate(
             conv1_logit, size=[H, W], mode='bilinear', align_corners=True)
 

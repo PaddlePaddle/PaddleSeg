@@ -151,7 +151,7 @@ class MscaleOCRNet(nn.Layer):
         return [pred]
 
     def single_scale_forward(self, x):
-        x_size = paddle.shape(x)[2:]
+        x_size = x.shape[2:]
         cls_out, aux_out, ocr_mid_feats = self.ocrnet(x)
         attn = self.scale_attn(ocr_mid_feats)
 
@@ -197,7 +197,7 @@ def scale_as(x, y, align_corners=False):
     '''
     scale x to the same size as y
     '''
-    y_shape = paddle.shape(y)
+    y_shape = y.shape
     x_scaled = nn.functional.interpolate(
         x, size=y_shape[2:], mode='bilinear', align_corners=align_corners)
     return x_scaled

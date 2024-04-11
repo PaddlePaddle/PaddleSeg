@@ -140,7 +140,7 @@ class GSCNNHead(nn.Layer):
             align_corners=self.align_corners)
 
     def forward(self, x, feat_list, s_input):
-        input_shape = paddle.shape(x)
+        input_shape = x.shape
         m1f = F.interpolate(
             s_input,
             input_shape[2:],
@@ -324,7 +324,7 @@ class ASPPModule(nn.Layer):
 
     def forward(self, x, edge):
         outputs = []
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         for block in self.aspp_blocks:
             y = block(x)
             y = F.interpolate(

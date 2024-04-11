@@ -151,7 +151,7 @@ class PointRend(nn.Layer):
         if self.training:
             logit_list = [
                 F.interpolate(logit,
-                              paddle.shape(x)[2:],
+                              x.shape[2:],
                               mode='bilinear',
                               align_corners=self.align_corners)
                 for logit in pfn_logits
@@ -160,7 +160,7 @@ class PointRend(nn.Layer):
         else:
             logit_list = [
                 F.interpolate(logit,
-                              paddle.shape(x)[2:],
+                              x.shape[2:],
                               mode='bilinear',
                               align_corners=self.align_corners)
                 for logit in point_logits
@@ -331,7 +331,7 @@ class PointHead(nn.Layer):
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
                 F.interpolate(x,
-                              size=paddle.shape(inputs[0])[2:],
+                              size=inputs[0].shape[2:],
                               mode='bilinear',
                               align_corners=self.align_corners) for x in inputs
             ]
@@ -366,7 +366,7 @@ class PointHead(nn.Layer):
         importance_sample_ratio = self.importance_sample_ratio
         assert oversample_ratio >= 1
         assert 0 <= importance_sample_ratio <= 1
-        batch_size = paddle.shape(seg_logits)[0]
+        batch_size = seg_logits.shape[0]
         num_sampled = int(num_points * oversample_ratio)
         point_coords = paddle.rand([batch_size, num_sampled, 2])
         point_logits = point_sample(seg_logits, point_coords)
@@ -420,9 +420,9 @@ class PointHead(nn.Layer):
 
         num_points = self.subdivision_num_points
         uncertainty_map = uncertainty_func(seg_logits)
-        batch_size = paddle.shape(uncertainty_map)[0:1]
-        height = paddle.shape(uncertainty_map)[2:3]
-        width = paddle.shape(uncertainty_map)[3:4]
+        batch_size = uncertainty_map.shape[0:1]
+        height = uncertainty_map.shape[2:3]
+        width = uncertainty_map.shape[3:4]
         h_step = 1.0 / height
         w_step = 1.0 / width
 
@@ -449,11 +449,10 @@ class PointHead(nn.Layer):
             scattered refined_seg_logits(Tensor).
         """
 
-        original_shape = paddle.shape(
-            refined_seg_logits)  # [batch_size, channels, height * width]
+        original_shape = refined_seg_logits.shape  # [batch_size, channels, height * width]
         new_refined_seg_logits = refined_seg_logits.flatten(0, 1)  # [N*C,H*W]
-        offsets = (paddle.arange(paddle.shape(new_refined_seg_logits)[0]) *
-                   paddle.shape(new_refined_seg_logits)[1]).unsqueeze(
+        offsets = (paddle.arange(new_refined_seg_logits.shape[0]) *
+                   new_refined_seg_logits.shape[1]).unsqueeze(
                        -1)  # [N*C,1]
         point_indices = point_indices.flatten(0, 1)  # [N*C,H*W]
         new_point_indices = (point_indices + offsets).flatten()
@@ -508,7 +507,7 @@ class PointHead(nn.Layer):
                     mode='bilinear',
                     align_corners=self.align_corners)
 
-                save_shape = paddle.shape(refined_seg_logits)
+                save_shape = refined_seg_logits.shape
                 point_indices, points = self.get_points_test(
                     refined_seg_logits, calculate_uncertainty)
                 fine_grained_point_feats = self._get_fine_grained_point_feats(
@@ -630,7 +629,7 @@ class FPNHead(nn.Layer):
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
                 F.interpolate(x,
-                              size=paddle.shape(inputs[0])[2:],
+                              size=inputs[0].shape[2:],
                               mode='bilinear',
                               align_corners=self.align_corners) for x in inputs
             ]
@@ -647,7 +646,7 @@ class FPNHead(nn.Layer):
         output = self.scale_heads[0](x[0])
         for i in range(1, len(self.feature_strides)):
             output = output + F.interpolate(self.scale_heads[i](x[i]),
-                                            size=paddle.shape(output)[2:],
+                                            size=output.shape[2:],
                                             mode='bilinear',
                                             align_corners=self.align_corners)
         output = self.cls_seg(output)
@@ -694,7 +693,7 @@ class FPNNeck(nn.Layer):
         for i in reversed(range(len(conv_out) - 1)):
             conv_x = conv_out[i]
             conv_x = self.lateral_convs[i](conv_x)
-            prev_shape = paddle.shape(conv_x)[2:]
+            prev_shape = conv_x.shape[2:]
             f = conv_x + F.interpolate(
                 f, prev_shape, mode='bilinear', align_corners=True)
             fpn_feature_list.append(self.fpn_out[i](f))

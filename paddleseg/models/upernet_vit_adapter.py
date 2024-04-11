@@ -88,7 +88,7 @@ class UPerNetViTAdapter(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -152,7 +152,7 @@ class PPM(nn.Layer):
             ppm_out = ppm(x)
             upsampled_ppm_out = F.interpolate(
                 ppm_out,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
             ppm_outs.append(upsampled_ppm_out)
@@ -243,7 +243,7 @@ class UPerNetHead(nn.Layer):
         for i in range(used_backbone_levels - 1, 0, -1):
             upsampled = F.interpolate(
                 laterals[i],
-                paddle.shape(laterals[i - 1])[2:],
+                laterals[i - 1].shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
             laterals[i - 1] = laterals[i - 1] + upsampled
@@ -258,7 +258,7 @@ class UPerNetHead(nn.Layer):
         for i in range(used_backbone_levels - 1, 0, -1):
             fpn_outs[i] = F.interpolate(
                 fpn_outs[i],
-                size=paddle.shape(fpn_outs[0])[2:],
+                size=fpn_outs[0].shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
         fpn_outs = paddle.concat(fpn_outs, axis=1)

@@ -133,7 +133,7 @@ class UPerNetCAE(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=False) for logit in logit_list
         ]
@@ -215,7 +215,7 @@ class PPModuleCAE(nn.Layer):
             x = stage(input)
             x = F.interpolate(
                 x,
-                paddle.shape(input)[2:],
+                input.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
             cat_layers.append(x)
@@ -316,7 +316,7 @@ class UPerNetHead(nn.Layer):
         for i in reversed(range(len(conv_out) - 1)):
             conv_x = conv_out[i]
             conv_x = self.lateral_convs[i](conv_x)
-            prev_shape = paddle.shape(conv_x)[2:]
+            prev_shape = conv_x.shape[2:]
             f = conv_x + F.interpolate(
                 f, prev_shape, mode='bilinear', align_corners=False)
             fpn_feature_list.append(self.fpn_convs[i](f))

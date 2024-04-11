@@ -184,7 +184,7 @@ class HRNet(nn.Layer):
         tr3 = self.tr3(st3)
         st4 = self.st4(tr3)
 
-        size = paddle.shape(st4[0])[2:]
+        size = st4[0].shape[2:]
         x1 = F.interpolate(
             st4[1], size, mode='bilinear', align_corners=self.align_corners)
         x2 = F.interpolate(
@@ -638,7 +638,7 @@ class FuseLayers(nn.Layer):
         residual_func_idx = 0
         for i in range(self._actual_ch):
             residual = x[i]
-            residual_shape = paddle.shape(residual)[-2:]
+            residual_shape = residual.shape[-2:]
             for j in range(len(self._in_channels)):
                 if j > i:
                     y = self.residual_func_list[residual_func_idx](x[j])

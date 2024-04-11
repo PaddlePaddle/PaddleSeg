@@ -89,7 +89,7 @@ class SegmentationTransformer(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         feats, _shape = self.backbone(x)
         logits = self.head(feats, _shape)
         return [

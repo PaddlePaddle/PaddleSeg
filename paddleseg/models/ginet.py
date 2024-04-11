@@ -78,7 +78,7 @@ class GINet(nn.Layer):
             return c1, c2, c3, c4
 
     def forward(self, x):
-        _, _, h, w = paddle.shape(x)
+        _, _, h, w = x.shape
         _, _, c3, c4 = self.base_forward(x)
 
         logit_list = []
@@ -138,7 +138,7 @@ class GIHead(nn.Layer):
 
     def forward(self, x):
 
-        B, C, H, W = paddle.shape(x)
+        B, C, H, W = x.shape
         inp = self.inp
 
         inp = self.fc1(inp)
@@ -173,10 +173,10 @@ class GlobalReasonUnit(nn.Layer):
 
     def forward(self, x, inp):
         B = self.conv_theta(x)
-        sizeB = paddle.shape(B)
+        sizeB = B.shape
         B = paddle.flatten(B, 2, 3)
 
-        sizex = paddle.shape(x)
+        sizex = x.shape
         x_reduce = self.conv_phi(x)
 
         x_reduce = paddle.flatten(x_reduce, 2, 3).transpose((0, 2, 1))
@@ -205,11 +205,11 @@ class GraphLayer(nn.Layer):
         self.gamma_vis = paddle.zeros([num_node])
         self.gamma_word = paddle.zeros([num_class])
         self.gamma_vis = paddle.create_parameter(
-            shape=paddle.shape(self.gamma_vis),
+            shape=self.gamma_vis.shape,
             dtype=str(self.gamma_vis.numpy().dtype),
             default_initializer=paddle.nn.initializer.Assign(self.gamma_vis))
         self.gamma_word = paddle.create_parameter(
-            shape=paddle.shape(self.gamma_word),
+            shape=self.gamma_word.shape,
             dtype=str(self.gamma_word.numpy().dtype),
             default_initializer=paddle.nn.initializer.Assign(self.gamma_word))
 
@@ -269,8 +269,8 @@ class GraphTransfer(nn.Layer):
         self.softmax_word = nn.Softmax(axis=-2)
 
     def forward(self, word, vis_node):
-        m_batchsize, C, Nc = paddle.shape(word)
-        m_batchsize, C, Nn = paddle.shape(vis_node)
+        m_batchsize, C, Nc = word.shape
+        m_batchsize, C, Nn = vis_node.shape
 
         proj_query = self.query_conv(word).reshape((m_batchsize, -1, Nc))\
                                           .transpose((0, 2, 1))

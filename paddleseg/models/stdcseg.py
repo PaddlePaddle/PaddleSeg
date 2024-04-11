@@ -68,7 +68,7 @@ class STDCSeg(nn.Layer):
         self.init_weight()
 
     def forward(self, x):
-        x_hw = paddle.shape(x)[2:]
+        x_hw = x.shape[2:]
         feat_res2, feat_res4, feat_res8, _, feat_cp8, feat_cp16 = self.cp(x)
 
         logit_list = []
@@ -161,9 +161,9 @@ class ContextPath(nn.Layer):
     def forward(self, x):
         feat2, feat4, feat8, feat16, feat32 = self.backbone(x)
 
-        feat8_hw = paddle.shape(feat8)[2:]
-        feat16_hw = paddle.shape(feat16)[2:]
-        feat32_hw = paddle.shape(feat32)[2:]
+        feat8_hw = feat8.shape[2:]
+        feat16_hw = feat16.shape[2:]
+        feat32_hw = feat32.shape[2:]
 
         avg = F.adaptive_avg_pool2d(feat32, 1)
         avg = self.conv_avg(avg)

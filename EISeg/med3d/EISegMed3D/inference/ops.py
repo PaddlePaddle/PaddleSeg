@@ -101,7 +101,7 @@ class DistMaps3D(nn.Layer):
         else:
             num_points = points.shape[1] // 2  # [1, 2, 4]
             points = points.reshape(
-                [-1, paddle.shape(points)[2]])  # [B*num_points*2, 4]
+                [-1, points.shape[2]])  # [B*num_points*2, 4]
             points, points_order = paddle.split(
                 points, [3, 1], axis=1)  # [2, 3]
             # [B*num_points*2, 3],  [B*num_points*2, 1]
@@ -122,7 +122,7 @@ class DistMaps3D(nn.Layer):
                 paddle.stack(
                     [coord_rows, coord_cols, coor_layers], axis=0),
                 axis=0).tile(  # [B*num_points*2, 3, rows, cols, layers]
-                    [paddle.shape(points)[0], 1, 1, 1,
+                    [points.shape[0], 1, 1, 1,
                      1])  # [B*num_points*2 | 768, 3, 512, 512, 12] # repeat
 
             add_xy = (points * self.spatial_scale).reshape(
@@ -155,6 +155,6 @@ class DistMaps3D(nn.Layer):
         return coords
 
     def forward(self, x, coords):  #  [16, 1, 512, 512, 12], [16, 48, 4]
-        batchsize = paddle.shape(x)[0]
-        rows, cols, layers = paddle.shape(x)[2:5]
+        batchsize = x.shape[0]
+        rows, cols, layers = x.shape[2:5]
         return self.get_coord_features(coords, batchsize, rows, cols, layers)

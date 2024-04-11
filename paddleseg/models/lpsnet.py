@@ -101,13 +101,13 @@ class LPSNet(nn.Layer):
         return nn.LayerList(path)
 
     def _preprocess_input(self, x):
-        h, w = paddle.shape(x)[-2:]
+        h, w = x.shape[-2:]
         return [
             _interpolate(x, (int(r * h), int(r * w))) for r in self.scale_ratios
         ]
 
     def forward(self, x, interact_begin_idx=2):
-        input_size = paddle.shape(x)[-2:]
+        input_size = x.shape[-2:]
         inputs = self._preprocess_input(x)
         feats = []
         for path, x in zip(self.nets, inputs):
@@ -120,7 +120,7 @@ class LPSNet(nn.Layer):
             feats = _multipath_interaction(feats)
             feats = [path[idx](x) for path, x in zip(self.nets, feats)]
 
-        size = paddle.shape(feats[0])[-2:]
+        size = feats[0].shape[-2:]
         feats = [_interpolate(x, size=size) for x in feats]
 
         out = self.head(paddle.concat(feats, 1))
@@ -132,7 +132,7 @@ def _multipath_interaction(feats):
     length = len(feats)
     if length == 1:
         return feats[0]
-    sizes = [paddle.shape(x)[-2:] for x in feats]
+    sizes = [x.shape[-2:] for x in feats]
     outs = []
     looper = list(range(length))
     for i, s in enumerate(sizes):

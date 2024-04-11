@@ -65,14 +65,14 @@ class DIM(nn.Layer):
         self.init_weight()
 
     def forward(self, inputs):
-        input_shape = paddle.shape(inputs['img'])[-2:]
+        input_shape = inputs['img'].shape[-2:]
         x = paddle.concat([inputs['img'], inputs['trimap'] / 255], axis=1)
         fea_list = self.backbone(x)
 
         # decoder stage
         up_shape = []
         for i in range(5):
-            up_shape.append(paddle.shape(fea_list[i])[-2:])
+            up_shape.append(fea_list[i].shape[-2:])
         alpha_raw = self.decoder(fea_list, up_shape)
         alpha_raw = F.interpolate(
             alpha_raw, input_shape, mode='bilinear', align_corners=False)

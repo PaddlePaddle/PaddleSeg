@@ -77,7 +77,7 @@ class OCRNet(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                paddle.shape(x)[2:],
+                x.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -216,7 +216,7 @@ class ObjectAttentionBlock(nn.Layer):
         self.f_up = layers.ConvBNReLU(key_channels, in_channels, 1)
 
     def forward(self, x, proxy):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         # query : from (n, c1, h1, w1) to (n, h1*w1, key_channels)
         query = self.f_pixel(x)
         query = paddle.reshape(query, (0, self.key_channels, -1))
