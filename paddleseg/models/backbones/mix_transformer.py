@@ -26,6 +26,7 @@ from paddleseg.models.backbones.transformer_utils import *
 
 
 class Mlp(nn.Layer):
+
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -69,6 +70,7 @@ class Mlp(nn.Layer):
 
 
 class Attention(nn.Layer):
+
     def __init__(self,
                  dim,
                  num_heads=8,
@@ -115,7 +117,7 @@ class Attention(nn.Layer):
                 zeros_(m.bias)
 
     def forward(self, x, H, W):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         B, N = x_shape[0], x_shape[1]
         C = self.dim
 
@@ -135,11 +137,11 @@ class Attention(nn.Layer):
                  C // self.num_heads]).transpose([2, 0, 3, 1, 4])
         k, v = kv[0], kv[1]
 
-        attn = (q @k.transpose([0, 1, 3, 2])) * self.scale
+        attn = (q @ k.transpose([0, 1, 3, 2])) * self.scale
         attn = F.softmax(attn, axis=-1)
         attn = self.attn_drop(attn)
 
-        x = (attn @v).transpose([0, 2, 1, 3]).reshape([B, N, C])
+        x = (attn @ v).transpose([0, 2, 1, 3]).reshape([B, N, C])
         x = self.proj(x)
         x = self.proj_drop(x)
 
@@ -147,6 +149,7 @@ class Attention(nn.Layer):
 
 
 class Block(nn.Layer):
+
     def __init__(self,
                  dim,
                  num_heads,
@@ -161,14 +164,13 @@ class Block(nn.Layer):
                  sr_ratio=1):
         super().__init__()
         self.norm1 = norm_layer(dim)
-        self.attn = Attention(
-            dim,
-            num_heads=num_heads,
-            qkv_bias=qkv_bias,
-            qk_scale=qk_scale,
-            attn_drop=attn_drop,
-            proj_drop=drop,
-            sr_ratio=sr_ratio)
+        self.attn = Attention(dim,
+                              num_heads=num_heads,
+                              qkv_bias=qkv_bias,
+                              qk_scale=qk_scale,
+                              attn_drop=attn_drop,
+                              proj_drop=drop,
+                              sr_ratio=sr_ratio)
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
         self.norm2 = norm_layer(dim)
@@ -221,12 +223,11 @@ class OverlapPatchEmbed(nn.Layer):
         self.H, self.W = img_size[0] // patch_size[0], img_size[
             1] // patch_size[1]
         self.num_patches = self.H * self.W
-        self.proj = nn.Conv2D(
-            in_chans,
-            embed_dim,
-            kernel_size=patch_size,
-            stride=stride,
-            padding=(patch_size[0] // 2, patch_size[1] // 2))
+        self.proj = nn.Conv2D(in_chans,
+                              embed_dim,
+                              kernel_size=patch_size,
+                              stride=stride,
+                              padding=(patch_size[0] // 2, patch_size[1] // 2))
         self.norm = nn.LayerNorm(embed_dim)
 
         self.apply(self._init_weights)
@@ -248,7 +249,7 @@ class OverlapPatchEmbed(nn.Layer):
 
     def forward(self, x):
         x = self.proj(x)
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         H, W = x_shape[2], x_shape[3]
         x = x.flatten(2).transpose([0, 2, 1])
         x = self.norm(x)
@@ -257,6 +258,7 @@ class OverlapPatchEmbed(nn.Layer):
 
 
 class MixVisionTransformer(nn.Layer):
+
     def __init__(self,
                  img_size=224,
                  patch_size=16,
@@ -280,30 +282,26 @@ class MixVisionTransformer(nn.Layer):
         self.feat_channels = embed_dims[:]
 
         # patch_embed
-        self.patch_embed1 = OverlapPatchEmbed(
-            img_size=img_size,
-            patch_size=7,
-            stride=4,
-            in_chans=in_channels,
-            embed_dim=embed_dims[0])
-        self.patch_embed2 = OverlapPatchEmbed(
-            img_size=img_size // 4,
-            patch_size=3,
-            stride=2,
-            in_chans=embed_dims[0],
-            embed_dim=embed_dims[1])
-        self.patch_embed3 = OverlapPatchEmbed(
-            img_size=img_size // 8,
-            patch_size=3,
-            stride=2,
-            in_chans=embed_dims[1],
-            embed_dim=embed_dims[2])
-        self.patch_embed4 = OverlapPatchEmbed(
-            img_size=img_size // 16,
-            patch_size=3,
-            stride=2,
-            in_chans=embed_dims[2],
-            embed_dim=embed_dims[3])
+        self.patch_embed1 = OverlapPatchEmbed(img_size=img_size,
+                                              patch_size=7,
+                                              stride=4,
+                                              in_chans=in_channels,
+                                              embed_dim=embed_dims[0])
+        self.patch_embed2 = OverlapPatchEmbed(img_size=img_size // 4,
+                                              patch_size=3,
+                                              stride=2,
+                                              in_chans=embed_dims[0],
+                                              embed_dim=embed_dims[1])
+        self.patch_embed3 = OverlapPatchEmbed(img_size=img_size // 8,
+                                              patch_size=3,
+                                              stride=2,
+                                              in_chans=embed_dims[1],
+                                              embed_dim=embed_dims[2])
+        self.patch_embed4 = OverlapPatchEmbed(img_size=img_size // 16,
+                                              patch_size=3,
+                                              stride=2,
+                                              in_chans=embed_dims[2],
+                                              embed_dim=embed_dims[3])
 
         # transformer encoder
         dpr = [
@@ -311,65 +309,61 @@ class MixVisionTransformer(nn.Layer):
         ]  # stochastic depth decay rule
         cur = 0
         self.block1 = nn.LayerList([
-            Block(
-                dim=embed_dims[0],
-                num_heads=num_heads[0],
-                mlp_ratio=mlp_ratios[0],
-                qkv_bias=qkv_bias,
-                qk_scale=qk_scale,
-                drop=drop_rate,
-                attn_drop=attn_drop_rate,
-                drop_path=dpr[cur + i],
-                norm_layer=norm_layer,
-                sr_ratio=sr_ratios[0]) for i in range(depths[0])
+            Block(dim=embed_dims[0],
+                  num_heads=num_heads[0],
+                  mlp_ratio=mlp_ratios[0],
+                  qkv_bias=qkv_bias,
+                  qk_scale=qk_scale,
+                  drop=drop_rate,
+                  attn_drop=attn_drop_rate,
+                  drop_path=dpr[cur + i],
+                  norm_layer=norm_layer,
+                  sr_ratio=sr_ratios[0]) for i in range(depths[0])
         ])
         self.norm1 = norm_layer(embed_dims[0])
 
         cur += depths[0]
         self.block2 = nn.LayerList([
-            Block(
-                dim=embed_dims[1],
-                num_heads=num_heads[1],
-                mlp_ratio=mlp_ratios[1],
-                qkv_bias=qkv_bias,
-                qk_scale=qk_scale,
-                drop=drop_rate,
-                attn_drop=attn_drop_rate,
-                drop_path=dpr[cur + i],
-                norm_layer=norm_layer,
-                sr_ratio=sr_ratios[1]) for i in range(depths[1])
+            Block(dim=embed_dims[1],
+                  num_heads=num_heads[1],
+                  mlp_ratio=mlp_ratios[1],
+                  qkv_bias=qkv_bias,
+                  qk_scale=qk_scale,
+                  drop=drop_rate,
+                  attn_drop=attn_drop_rate,
+                  drop_path=dpr[cur + i],
+                  norm_layer=norm_layer,
+                  sr_ratio=sr_ratios[1]) for i in range(depths[1])
         ])
         self.norm2 = norm_layer(embed_dims[1])
 
         cur += depths[1]
         self.block3 = nn.LayerList([
-            Block(
-                dim=embed_dims[2],
-                num_heads=num_heads[2],
-                mlp_ratio=mlp_ratios[2],
-                qkv_bias=qkv_bias,
-                qk_scale=qk_scale,
-                drop=drop_rate,
-                attn_drop=attn_drop_rate,
-                drop_path=dpr[cur + i],
-                norm_layer=norm_layer,
-                sr_ratio=sr_ratios[2]) for i in range(depths[2])
+            Block(dim=embed_dims[2],
+                  num_heads=num_heads[2],
+                  mlp_ratio=mlp_ratios[2],
+                  qkv_bias=qkv_bias,
+                  qk_scale=qk_scale,
+                  drop=drop_rate,
+                  attn_drop=attn_drop_rate,
+                  drop_path=dpr[cur + i],
+                  norm_layer=norm_layer,
+                  sr_ratio=sr_ratios[2]) for i in range(depths[2])
         ])
         self.norm3 = norm_layer(embed_dims[2])
 
         cur += depths[2]
         self.block4 = nn.LayerList([
-            Block(
-                dim=embed_dims[3],
-                num_heads=num_heads[3],
-                mlp_ratio=mlp_ratios[3],
-                qkv_bias=qkv_bias,
-                qk_scale=qk_scale,
-                drop=drop_rate,
-                attn_drop=attn_drop_rate,
-                drop_path=dpr[cur + i],
-                norm_layer=norm_layer,
-                sr_ratio=sr_ratios[3]) for i in range(depths[3])
+            Block(dim=embed_dims[3],
+                  num_heads=num_heads[3],
+                  mlp_ratio=mlp_ratios[3],
+                  qkv_bias=qkv_bias,
+                  qk_scale=qk_scale,
+                  drop=drop_rate,
+                  attn_drop=attn_drop_rate,
+                  drop_path=dpr[cur + i],
+                  norm_layer=norm_layer,
+                  sr_ratio=sr_ratios[3]) for i in range(depths[3])
         ])
         self.norm4 = norm_layer(embed_dims[3])
 
@@ -426,11 +420,11 @@ class MixVisionTransformer(nn.Layer):
 
     def reset_classifier(self, num_classes, global_pool=''):
         self.num_classes = num_classes
-        self.head = nn.Linear(self.embed_dim,
-                              num_classes) if num_classes > 0 else nn.Identity()
+        self.head = nn.Linear(
+            self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
 
     def forward_features(self, x):
-        B = paddle.shape(x)[0]
+        B = x.shape[0]
         outs = []
 
         # stage 1
@@ -476,13 +470,14 @@ class MixVisionTransformer(nn.Layer):
 
 
 class DWConv(nn.Layer):
+
     def __init__(self, dim=768):
         super(DWConv, self).__init__()
         self.dim = dim
         self.dwconv = nn.Conv2D(dim, dim, 3, 1, 1, bias_attr=True, groups=dim)
 
     def forward(self, x, H, W):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         B, N = x_shape[0], x_shape[1]
         x = x.transpose([0, 2, 1]).reshape([B, self.dim, H, W])
         x = self.dwconv(x)
@@ -493,101 +488,89 @@ class DWConv(nn.Layer):
 
 @manager.BACKBONES.add_component
 def MixVisionTransformer_B0(**kwargs):
-    return MixVisionTransformer(
-        patch_size=4,
-        embed_dims=[32, 64, 160, 256],
-        num_heads=[1, 2, 5, 8],
-        mlp_ratios=[4, 4, 4, 4],
-        qkv_bias=True,
-        norm_layer=partial(
-            nn.LayerNorm, epsilon=1e-6),
-        depths=[2, 2, 2, 2],
-        sr_ratios=[8, 4, 2, 1],
-        drop_rate=0.0,
-        drop_path_rate=0.1,
-        **kwargs)
+    return MixVisionTransformer(patch_size=4,
+                                embed_dims=[32, 64, 160, 256],
+                                num_heads=[1, 2, 5, 8],
+                                mlp_ratios=[4, 4, 4, 4],
+                                qkv_bias=True,
+                                norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+                                depths=[2, 2, 2, 2],
+                                sr_ratios=[8, 4, 2, 1],
+                                drop_rate=0.0,
+                                drop_path_rate=0.1,
+                                **kwargs)
 
 
 @manager.BACKBONES.add_component
 def MixVisionTransformer_B1(**kwargs):
-    return MixVisionTransformer(
-        patch_size=4,
-        embed_dims=[64, 128, 320, 512],
-        num_heads=[1, 2, 5, 8],
-        mlp_ratios=[4, 4, 4, 4],
-        qkv_bias=True,
-        norm_layer=partial(
-            nn.LayerNorm, epsilon=1e-6),
-        depths=[2, 2, 2, 2],
-        sr_ratios=[8, 4, 2, 1],
-        drop_rate=0.0,
-        drop_path_rate=0.1,
-        **kwargs)
+    return MixVisionTransformer(patch_size=4,
+                                embed_dims=[64, 128, 320, 512],
+                                num_heads=[1, 2, 5, 8],
+                                mlp_ratios=[4, 4, 4, 4],
+                                qkv_bias=True,
+                                norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+                                depths=[2, 2, 2, 2],
+                                sr_ratios=[8, 4, 2, 1],
+                                drop_rate=0.0,
+                                drop_path_rate=0.1,
+                                **kwargs)
 
 
 @manager.BACKBONES.add_component
 def MixVisionTransformer_B2(**kwargs):
-    return MixVisionTransformer(
-        patch_size=4,
-        embed_dims=[64, 128, 320, 512],
-        num_heads=[1, 2, 5, 8],
-        mlp_ratios=[4, 4, 4, 4],
-        qkv_bias=True,
-        norm_layer=partial(
-            nn.LayerNorm, epsilon=1e-6),
-        depths=[3, 4, 6, 3],
-        sr_ratios=[8, 4, 2, 1],
-        drop_rate=0.0,
-        drop_path_rate=0.1,
-        **kwargs)
+    return MixVisionTransformer(patch_size=4,
+                                embed_dims=[64, 128, 320, 512],
+                                num_heads=[1, 2, 5, 8],
+                                mlp_ratios=[4, 4, 4, 4],
+                                qkv_bias=True,
+                                norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+                                depths=[3, 4, 6, 3],
+                                sr_ratios=[8, 4, 2, 1],
+                                drop_rate=0.0,
+                                drop_path_rate=0.1,
+                                **kwargs)
 
 
 @manager.BACKBONES.add_component
 def MixVisionTransformer_B3(**kwargs):
-    return MixVisionTransformer(
-        patch_size=4,
-        embed_dims=[64, 128, 320, 512],
-        num_heads=[1, 2, 5, 8],
-        mlp_ratios=[4, 4, 4, 4],
-        qkv_bias=True,
-        norm_layer=partial(
-            nn.LayerNorm, epsilon=1e-6),
-        depths=[3, 4, 18, 3],
-        sr_ratios=[8, 4, 2, 1],
-        drop_rate=0.0,
-        drop_path_rate=0.1,
-        **kwargs)
+    return MixVisionTransformer(patch_size=4,
+                                embed_dims=[64, 128, 320, 512],
+                                num_heads=[1, 2, 5, 8],
+                                mlp_ratios=[4, 4, 4, 4],
+                                qkv_bias=True,
+                                norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+                                depths=[3, 4, 18, 3],
+                                sr_ratios=[8, 4, 2, 1],
+                                drop_rate=0.0,
+                                drop_path_rate=0.1,
+                                **kwargs)
 
 
 @manager.BACKBONES.add_component
 def MixVisionTransformer_B4(**kwargs):
-    return MixVisionTransformer(
-        patch_size=4,
-        embed_dims=[64, 128, 320, 512],
-        num_heads=[1, 2, 5, 8],
-        mlp_ratios=[4, 4, 4, 4],
-        qkv_bias=True,
-        norm_layer=partial(
-            nn.LayerNorm, epsilon=1e-6),
-        depths=[3, 8, 27, 3],
-        sr_ratios=[8, 4, 2, 1],
-        drop_rate=0.0,
-        drop_path_rate=0.1,
-        **kwargs)
+    return MixVisionTransformer(patch_size=4,
+                                embed_dims=[64, 128, 320, 512],
+                                num_heads=[1, 2, 5, 8],
+                                mlp_ratios=[4, 4, 4, 4],
+                                qkv_bias=True,
+                                norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+                                depths=[3, 8, 27, 3],
+                                sr_ratios=[8, 4, 2, 1],
+                                drop_rate=0.0,
+                                drop_path_rate=0.1,
+                                **kwargs)
 
 
 @manager.BACKBONES.add_component
 def MixVisionTransformer_B5(**kwargs):
-    return MixVisionTransformer(
-        patch_size=4,
-        embed_dims=[64, 128, 320, 512],
-        num_heads=[1, 2, 5, 8],
-        mlp_ratios=[4, 4, 4, 4],
-        qkv_bias=True,
-        norm_layer=partial(
-            nn.LayerNorm, epsilon=1e-6),
-        depths=[3, 6, 40, 3],
-        sr_ratios=[8, 4, 2, 1],
-        drop_rate=0.0,
-        drop_path_rate=0.1,
-        **kwargs)
+    return MixVisionTransformer(patch_size=4,
+                                embed_dims=[64, 128, 320, 512],
+                                num_heads=[1, 2, 5, 8],
+                                mlp_ratios=[4, 4, 4, 4],
+                                qkv_bias=True,
+                                norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+                                depths=[3, 6, 40, 3],
+                                sr_ratios=[8, 4, 2, 1],
+                                drop_rate=0.0,
+                                drop_path_rate=0.1,
+                                **kwargs)

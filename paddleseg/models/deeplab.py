@@ -64,14 +64,13 @@ class DeepLabV3P(nn.Layer):
             backbone.feat_channels[i] for i in backbone_indices
         ]
 
-        self.head = DeepLabV3PHead(
-            num_classes,
-            backbone_indices,
-            backbone_channels,
-            aspp_ratios,
-            aspp_out_channels,
-            align_corners,
-            data_format=data_format)
+        self.head = DeepLabV3PHead(num_classes,
+                                   backbone_indices,
+                                   backbone_channels,
+                                   aspp_ratios,
+                                   aspp_out_channels,
+                                   align_corners,
+                                   data_format=data_format)
 
         self.align_corners = align_corners
         self.pretrained = pretrained
@@ -82,16 +81,15 @@ class DeepLabV3P(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         if self.data_format == 'NCHW':
-            ori_shape = paddle.shape(x)[2:]
+            ori_shape = x.shape[2:]
         else:
-            ori_shape = paddle.shape(x)[1:3]
+            ori_shape = x.shape[1:3]
         return [
-            F.interpolate(
-                logit,
-                ori_shape,
-                mode='bilinear',
-                align_corners=self.align_corners,
-                data_format=self.data_format) for logit in logit_list
+            F.interpolate(logit,
+                          ori_shape,
+                          mode='bilinear',
+                          align_corners=self.align_corners,
+                          data_format=self.data_format) for logit in logit_list
         ]
 
     def init_weight(self):
@@ -130,19 +128,17 @@ class DeepLabV3PHead(nn.Layer):
                  data_format='NCHW'):
         super().__init__()
 
-        self.aspp = layers.ASPPModule(
-            aspp_ratios,
-            backbone_channels[1],
-            aspp_out_channels,
-            align_corners,
-            use_sep_conv=True,
-            image_pooling=True,
-            data_format=data_format)
-        self.decoder = Decoder(
-            num_classes,
-            backbone_channels[0],
-            align_corners,
-            data_format=data_format)
+        self.aspp = layers.ASPPModule(aspp_ratios,
+                                      backbone_channels[1],
+                                      aspp_out_channels,
+                                      align_corners,
+                                      use_sep_conv=True,
+                                      image_pooling=True,
+                                      data_format=data_format)
+        self.decoder = Decoder(num_classes,
+                               backbone_channels[0],
+                               align_corners,
+                               data_format=data_format)
         self.backbone_indices = backbone_indices
 
     def forward(self, feat_list):
@@ -195,11 +191,11 @@ class DeepLabV3(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
     def init_weight(self):
@@ -219,18 +215,16 @@ class DeepLabV3Head(nn.Layer):
                  aspp_ratios, aspp_out_channels, align_corners):
         super().__init__()
 
-        self.aspp = layers.ASPPModule(
-            aspp_ratios,
-            backbone_channels[0],
-            aspp_out_channels,
-            align_corners,
-            use_sep_conv=False,
-            image_pooling=True)
+        self.aspp = layers.ASPPModule(aspp_ratios,
+                                      backbone_channels[0],
+                                      aspp_out_channels,
+                                      align_corners,
+                                      use_sep_conv=False,
+                                      image_pooling=True)
 
-        self.cls = nn.Conv2D(
-            in_channels=aspp_out_channels,
-            out_channels=num_classes,
-            kernel_size=1)
+        self.cls = nn.Conv2D(in_channels=aspp_out_channels,
+                             out_channels=num_classes,
+                             kernel_size=1)
 
         self.backbone_indices = backbone_indices
 
@@ -261,46 +255,41 @@ class Decoder(nn.Layer):
         super(Decoder, self).__init__()
 
         self.data_format = data_format
-        self.conv_bn_relu1 = layers.ConvBNReLU(
-            in_channels=in_channels,
-            out_channels=48,
-            kernel_size=1,
-            data_format=data_format)
+        self.conv_bn_relu1 = layers.ConvBNReLU(in_channels=in_channels,
+                                               out_channels=48,
+                                               kernel_size=1,
+                                               data_format=data_format)
 
-        self.conv_bn_relu2 = layers.SeparableConvBNReLU(
-            in_channels=304,
-            out_channels=256,
-            kernel_size=3,
-            padding=1,
-            data_format=data_format)
-        self.conv_bn_relu3 = layers.SeparableConvBNReLU(
-            in_channels=256,
-            out_channels=256,
-            kernel_size=3,
-            padding=1,
-            data_format=data_format)
-        self.conv = nn.Conv2D(
-            in_channels=256,
-            out_channels=num_classes,
-            kernel_size=1,
-            data_format=data_format)
+        self.conv_bn_relu2 = layers.SeparableConvBNReLU(in_channels=304,
+                                                        out_channels=256,
+                                                        kernel_size=3,
+                                                        padding=1,
+                                                        data_format=data_format)
+        self.conv_bn_relu3 = layers.SeparableConvBNReLU(in_channels=256,
+                                                        out_channels=256,
+                                                        kernel_size=3,
+                                                        padding=1,
+                                                        data_format=data_format)
+        self.conv = nn.Conv2D(in_channels=256,
+                              out_channels=num_classes,
+                              kernel_size=1,
+                              data_format=data_format)
 
         self.align_corners = align_corners
 
     def forward(self, x, low_level_feat):
         low_level_feat = self.conv_bn_relu1(low_level_feat)
         if self.data_format == 'NCHW':
-            low_level_shape = paddle.shape(low_level_feat)[-2:]
+            low_level_shape = low_level_feat.shape[-2:]
             axis = 1
         else:
-            low_level_shape = paddle.shape(low_level_feat)[1:3]
+            low_level_shape = low_level_feat.shape[1:3]
             axis = -1
-        x = F.interpolate(
-            x,
-            low_level_shape,
-            mode='bilinear',
-            align_corners=self.align_corners,
-            data_format=self.data_format)
+        x = F.interpolate(x,
+                          low_level_shape,
+                          mode='bilinear',
+                          align_corners=self.align_corners,
+                          data_format=self.data_format)
         x = paddle.concat([x, low_level_feat], axis=axis)
         x = self.conv_bn_relu2(x)
         x = self.conv_bn_relu3(x)

@@ -61,8 +61,10 @@ class GINet(nn.Layer):
         self.head = GIHead(in_channels=2048, nclass=num_classes)
 
         if self.aux:
-            self.auxlayer = layers.AuxLayer(
-                1024, 1024 // 4, num_classes, bias_attr=False)
+            self.auxlayer = layers.AuxLayer(1024,
+                                            1024 // 4,
+                                            num_classes,
+                                            bias_attr=False)
 
         self.pretrained = pretrained
         self.init_weight()
@@ -78,7 +80,7 @@ class GINet(nn.Layer):
             return c1, c2, c3, c4
 
     def forward(self, x):
-        _, _, h, w = paddle.shape(x)
+        _, _, h, w = x.shape
         _, _, c3, c4 = self.base_forward(x)
 
         logit_list = []
@@ -91,10 +93,10 @@ class GINet(nn.Layer):
             logit_list.append(auxout)
 
         return [
-            F.interpolate(
-                logit, [h, w],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit, [h, w],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
     def init_weight(self):
@@ -116,29 +118,27 @@ class GIHead(nn.Layer):
             default_initializer=paddle.nn.initializer.Assign(self.inp))
         self.inp.stop_gradient = True
 
-        self.fc1 = nn.Sequential(
-            nn.Linear(300, 128), nn.BatchNorm1D(128), nn.ReLU())
-        self.fc2 = nn.Sequential(
-            nn.Linear(128, 256), nn.BatchNorm1D(256), nn.ReLU())
-        self.conv5 = layers.ConvBNReLU(
-            in_channels,
-            inter_channels,
-            3,
-            padding=1,
-            bias_attr=False,
-            stride=1)
+        self.fc1 = nn.Sequential(nn.Linear(300, 128), nn.BatchNorm1D(128),
+                                 nn.ReLU())
+        self.fc2 = nn.Sequential(nn.Linear(128, 256), nn.BatchNorm1D(256),
+                                 nn.ReLU())
+        self.conv5 = layers.ConvBNReLU(in_channels,
+                                       inter_channels,
+                                       3,
+                                       padding=1,
+                                       bias_attr=False,
+                                       stride=1)
 
-        self.gloru = GlobalReasonUnit(
-            in_channels=inter_channels,
-            num_state=256,
-            num_node=84,
-            nclass=nclass)
-        self.conv6 = nn.Sequential(
-            nn.Dropout(0.1), nn.Conv2D(inter_channels, nclass, 1))
+        self.gloru = GlobalReasonUnit(in_channels=inter_channels,
+                                      num_state=256,
+                                      num_node=84,
+                                      nclass=nclass)
+        self.conv6 = nn.Sequential(nn.Dropout(0.1),
+                                   nn.Conv2D(inter_channels, nclass, 1))
 
     def forward(self, x):
 
-        B, C, H, W = paddle.shape(x)
+        B, C, H, W = x.shape
         inp = self.inp
 
         inp = self.fc1(inp)
@@ -161,22 +161,30 @@ class GlobalReasonUnit(nn.Layer):
     def __init__(self, in_channels, num_state=256, num_node=84, nclass=59):
         super().__init__()
         self.num_state = num_state
-        self.conv_theta = nn.Conv2D(
-            in_channels, num_node, kernel_size=1, stride=1, padding=0)
-        self.conv_phi = nn.Conv2D(
-            in_channels, num_state, kernel_size=1, stride=1, padding=0)
+        self.conv_theta = nn.Conv2D(in_channels,
+                                    num_node,
+                                    kernel_size=1,
+                                    stride=1,
+                                    padding=0)
+        self.conv_phi = nn.Conv2D(in_channels,
+                                  num_state,
+                                  kernel_size=1,
+                                  stride=1,
+                                  padding=0)
         self.graph = GraphLayer(num_state, num_node, nclass)
-        self.extend_dim = nn.Conv2D(
-            num_state, in_channels, kernel_size=1, bias_attr=False)
+        self.extend_dim = nn.Conv2D(num_state,
+                                    in_channels,
+                                    kernel_size=1,
+                                    bias_attr=False)
 
         self.bn = layers.SyncBatchNorm(in_channels)
 
     def forward(self, x, inp):
         B = self.conv_theta(x)
-        sizeB = paddle.shape(B)
+        sizeB = B.shape
         B = paddle.flatten(B, 2, 3)
 
-        sizex = paddle.shape(x)
+        sizex = x.shape
         x_reduce = self.conv_phi(x)
 
         x_reduce = paddle.flatten(x_reduce, 2, 3).transpose((0, 2, 1))
@@ -197,6 +205,7 @@ class GlobalReasonUnit(nn.Layer):
 
 
 class GraphLayer(nn.Layer):
+
     def __init__(self, num_state, num_node, num_class):
         super().__init__()
         self.vis_gcn = GCN(num_state, num_node)
@@ -205,11 +214,11 @@ class GraphLayer(nn.Layer):
         self.gamma_vis = paddle.zeros([num_node])
         self.gamma_word = paddle.zeros([num_class])
         self.gamma_vis = paddle.create_parameter(
-            shape=paddle.shape(self.gamma_vis),
+            shape=self.gamma_vis.shape,
             dtype=str(self.gamma_vis.numpy().dtype),
             default_initializer=paddle.nn.initializer.Assign(self.gamma_vis))
         self.gamma_word = paddle.create_parameter(
-            shape=paddle.shape(self.gamma_word),
+            shape=self.gamma_word.shape,
             dtype=str(self.gamma_word.numpy().dtype),
             default_initializer=paddle.nn.initializer.Assign(self.gamma_word))
 
@@ -224,6 +233,7 @@ class GraphLayer(nn.Layer):
 
 
 class GCN(nn.Layer):
+
     def __init__(self, num_state=128, num_node=64, bias=False):
         super().__init__()
         self.conv1 = nn.Conv1D(
@@ -232,16 +242,16 @@ class GCN(nn.Layer):
             kernel_size=1,
             padding=0,
             stride=1,
-            groups=1, )
-        self.relu = nn.ReLU()
-        self.conv2 = nn.Conv1D(
-            num_state,
-            num_state,
-            kernel_size=1,
-            padding=0,
-            stride=1,
             groups=1,
-            bias_attr=bias)
+        )
+        self.relu = nn.ReLU()
+        self.conv2 = nn.Conv1D(num_state,
+                               num_state,
+                               kernel_size=1,
+                               padding=0,
+                               stride=1,
+                               groups=1,
+                               bias_attr=bias)
 
     def forward(self, x):
         h = self.conv1(x.transpose((0, 2, 1))).transpose((0, 2, 1))
@@ -257,20 +267,24 @@ class GraphTransfer(nn.Layer):
     def __init__(self, in_dim):
         super().__init__()
         self.channle_in = in_dim
-        self.query_conv = nn.Conv1D(
-            in_channels=in_dim, out_channels=in_dim // 2, kernel_size=1)
-        self.key_conv = nn.Conv1D(
-            in_channels=in_dim, out_channels=in_dim // 2, kernel_size=1)
-        self.value_conv_vis = nn.Conv1D(
-            in_channels=in_dim, out_channels=in_dim, kernel_size=1)
-        self.value_conv_word = nn.Conv1D(
-            in_channels=in_dim, out_channels=in_dim, kernel_size=1)
+        self.query_conv = nn.Conv1D(in_channels=in_dim,
+                                    out_channels=in_dim // 2,
+                                    kernel_size=1)
+        self.key_conv = nn.Conv1D(in_channels=in_dim,
+                                  out_channels=in_dim // 2,
+                                  kernel_size=1)
+        self.value_conv_vis = nn.Conv1D(in_channels=in_dim,
+                                        out_channels=in_dim,
+                                        kernel_size=1)
+        self.value_conv_word = nn.Conv1D(in_channels=in_dim,
+                                         out_channels=in_dim,
+                                         kernel_size=1)
         self.softmax_vis = nn.Softmax(axis=-1)
         self.softmax_word = nn.Softmax(axis=-2)
 
     def forward(self, word, vis_node):
-        m_batchsize, C, Nc = paddle.shape(word)
-        m_batchsize, C, Nn = paddle.shape(vis_node)
+        m_batchsize, C, Nc = word.shape
+        m_batchsize, C, Nn = vis_node.shape
 
         proj_query = self.query_conv(word).reshape((m_batchsize, -1, Nc))\
                                           .transpose((0, 2, 1))
@@ -280,10 +294,10 @@ class GraphTransfer(nn.Layer):
         attention_vis = self.softmax_vis(energy).transpose((0, 2, 1))
         attention_word = self.softmax_word(energy)
 
-        proj_value_vis = self.value_conv_vis(vis_node).reshape((m_batchsize, -1,
-                                                                Nn))
-        proj_value_word = self.value_conv_word(word).reshape((m_batchsize, -1,
-                                                              Nc))
+        proj_value_vis = self.value_conv_vis(vis_node).reshape(
+            (m_batchsize, -1, Nn))
+        proj_value_word = self.value_conv_word(word).reshape(
+            (m_batchsize, -1, Nc))
 
         class_out = paddle.bmm(proj_value_vis, attention_vis)
         node_out = paddle.bmm(proj_value_word, attention_word)

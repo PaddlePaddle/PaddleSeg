@@ -97,7 +97,7 @@ class MobileSeg(nn.Layer):
         self.init_weight()
 
     def forward(self, x):
-        x_hw = paddle.shape(x)[2:]
+        x_hw = x.shape[2:]
 
         feats_backbone = self.backbone(x)  # [x4, x8, x16, x32]
         assert len(feats_backbone) >= len(self.backbone_indices), \
@@ -113,8 +113,7 @@ class MobileSeg(nn.Layer):
                 x = seg_head(x)
                 logit_list.append(x)
             logit_list = [
-                F.interpolate(
-                    x, x_hw, mode='bilinear', align_corners=False)
+                F.interpolate(x, x_hw, mode='bilinear', align_corners=False)
                 for x in logit_list
             ]
         else:
@@ -159,25 +158,27 @@ class MobileSegHead(nn.Layer):
             high_ch = cm_out_ch if i == len(
                 backbone_out_chs) - 1 else arm_out_chs[i + 1]
             out_ch = arm_out_chs[i]
-            arm = arm_class(
-                low_chs, high_ch, out_ch, ksize=3, resize_mode=resize_mode)
+            arm = arm_class(low_chs,
+                            high_ch,
+                            out_ch,
+                            ksize=3,
+                            resize_mode=resize_mode)
             self.arm_list.append(arm)
 
         self.use_last_fuse = use_last_fuse
         if self.use_last_fuse:
             self.fuse_convs = nn.LayerList()
             for i in range(1, len(arm_out_chs)):
-                conv = layers.SeparableConvBNReLU(
-                    arm_out_chs[i],
-                    arm_out_chs[0],
-                    kernel_size=3,
-                    bias_attr=False)
+                conv = layers.SeparableConvBNReLU(arm_out_chs[i],
+                                                  arm_out_chs[0],
+                                                  kernel_size=3,
+                                                  bias_attr=False)
                 self.fuse_convs.append(conv)
-            self.last_conv = layers.SeparableConvBNReLU(
-                len(arm_out_chs) * arm_out_chs[0],
-                arm_out_chs[0],
-                kernel_size=3,
-                bias_attr=False)
+            self.last_conv = layers.SeparableConvBNReLU(len(arm_out_chs) *
+                                                        arm_out_chs[0],
+                                                        arm_out_chs[0],
+                                                        kernel_size=3,
+                                                        bias_attr=False)
 
     def forward(self, in_feat_list):
         """
@@ -201,12 +202,14 @@ class MobileSegHead(nn.Layer):
 
         if self.use_last_fuse:
             x_list = [out_feat_list[0]]
-            size = paddle.shape(out_feat_list[0])[2:]
-            for i, (x, conv
-                    ) in enumerate(zip(out_feat_list[1:], self.fuse_convs)):
+            size = out_feat_list[0].shape[2:]
+            for i, (x,
+                    conv) in enumerate(zip(out_feat_list[1:], self.fuse_convs)):
                 x = conv(x)
-                x = F.interpolate(
-                    x, size=size, mode='bilinear', align_corners=False)
+                x = F.interpolate(x,
+                                  size=size,
+                                  mode='bilinear',
+                                  align_corners=False)
                 x_list.append(x)
             x = paddle.concat(x_list, axis=1)
             x = self.last_conv(x)
@@ -241,31 +244,30 @@ class MobileContextModule(nn.Layer):
             for size in bin_sizes
         ])
 
-        self.conv_out = layers.SeparableConvBNReLU(
-            in_channels=inter_channels,
-            out_channels=out_channels,
-            kernel_size=3,
-            bias_attr=False)
+        self.conv_out = layers.SeparableConvBNReLU(in_channels=inter_channels,
+                                                   out_channels=out_channels,
+                                                   kernel_size=3,
+                                                   bias_attr=False)
 
         self.align_corners = align_corners
 
     def _make_stage(self, in_channels, out_channels, size):
         prior = nn.AdaptiveAvgPool2D(output_size=size)
-        conv = layers.ConvBNReLU(
-            in_channels=in_channels, out_channels=out_channels, kernel_size=1)
+        conv = layers.ConvBNReLU(in_channels=in_channels,
+                                 out_channels=out_channels,
+                                 kernel_size=1)
         return nn.Sequential(prior, conv)
 
     def forward(self, input):
         out = None
-        input_shape = paddle.shape(input)[2:]
+        input_shape = input.shape[2:]
 
         for stage in self.stages:
             x = stage(input)
-            x = F.interpolate(
-                x,
-                input_shape,
-                mode='bilinear',
-                align_corners=self.align_corners)
+            x = F.interpolate(x,
+                              input_shape,
+                              mode='bilinear',
+                              align_corners=self.align_corners)
             if out is None:
                 out = x
             else:
@@ -276,12 +278,17 @@ class MobileContextModule(nn.Layer):
 
 
 class SegHead(nn.Layer):
+
     def __init__(self, in_chan, mid_chan, n_classes):
         super().__init__()
-        self.conv = layers.SeparableConvBNReLU(
-            in_chan, mid_chan, kernel_size=3, bias_attr=False)
-        self.conv_out = nn.Conv2D(
-            mid_chan, n_classes, kernel_size=1, bias_attr=False)
+        self.conv = layers.SeparableConvBNReLU(in_chan,
+                                               mid_chan,
+                                               kernel_size=3,
+                                               bias_attr=False)
+        self.conv_out = nn.Conv2D(mid_chan,
+                                  n_classes,
+                                  kernel_size=1,
+                                  bias_attr=False)
 
     def forward(self, x):
         x = self.conv(x)

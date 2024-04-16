@@ -114,205 +114,194 @@ class UHRNet(nn.Layer):
 
         cur_stride = 1
         # stem net
-        self.conv_layer1_1 = layers.ConvBNReLU(
-            in_channels=3,
-            out_channels=64,
-            kernel_size=3,
-            stride=2,
-            padding='same',
-            bias_attr=False)
+        self.conv_layer1_1 = layers.ConvBNReLU(in_channels=3,
+                                               out_channels=64,
+                                               kernel_size=3,
+                                               stride=2,
+                                               padding='same',
+                                               bias_attr=False)
         cur_stride *= 2
 
-        self.conv_layer1_2 = layers.ConvBNReLU(
-            in_channels=64,
-            out_channels=64,
-            kernel_size=3,
-            stride=2,
-            padding='same',
-            bias_attr=False)
+        self.conv_layer1_2 = layers.ConvBNReLU(in_channels=64,
+                                               out_channels=64,
+                                               kernel_size=3,
+                                               stride=2,
+                                               padding='same',
+                                               bias_attr=False)
         cur_stride *= 2
 
-        self.la1 = Layer1(
-            num_channels=64,
-            num_blocks=stage1_num_blocks[0],
-            num_filters=stage1_num_channels[0],
-            has_se=has_se,
-            name="layer2")
+        self.la1 = Layer1(num_channels=64,
+                          num_blocks=stage1_num_blocks[0],
+                          num_filters=stage1_num_channels[0],
+                          has_se=has_se,
+                          name="layer2")
 
-        self.tr1 = TransitionLayer(
-            stride_pre=cur_stride,
-            in_channel=stage1_num_channels[0] * 4,
-            stride_cur=[
-                cur_stride * (2**i) for i in range(len(stage2_num_channels))
-            ],
-            out_channels=stage2_num_channels,
-            align_corners=self.align_corners,
-            name="tr1")
-        self.st2 = Stage(
-            num_channels=stage2_num_channels,
-            num_modules=stage2_num_modules,
-            num_blocks=stage2_num_blocks,
-            num_filters=stage2_num_channels,
-            has_se=self.has_se,
-            name="st2",
-            align_corners=align_corners)
+        self.tr1 = TransitionLayer(stride_pre=cur_stride,
+                                   in_channel=stage1_num_channels[0] * 4,
+                                   stride_cur=[
+                                       cur_stride * (2**i)
+                                       for i in range(len(stage2_num_channels))
+                                   ],
+                                   out_channels=stage2_num_channels,
+                                   align_corners=self.align_corners,
+                                   name="tr1")
+        self.st2 = Stage(num_channels=stage2_num_channels,
+                         num_modules=stage2_num_modules,
+                         num_blocks=stage2_num_blocks,
+                         num_filters=stage2_num_channels,
+                         has_se=self.has_se,
+                         name="st2",
+                         align_corners=align_corners)
         cur_stride *= 2
 
-        self.tr2 = TransitionLayer(
-            stride_pre=cur_stride,
-            in_channel=stage2_num_channels[-1],
-            stride_cur=[
-                cur_stride * (2**i) for i in range(len(stage3_num_channels))
-            ],
-            out_channels=stage3_num_channels,
-            align_corners=self.align_corners,
-            name="tr2")
-        self.st3 = Stage(
-            num_channels=stage3_num_channels,
-            num_modules=stage3_num_modules,
-            num_blocks=stage3_num_blocks,
-            num_filters=stage3_num_channels,
-            has_se=self.has_se,
-            name="st3",
-            align_corners=align_corners)
+        self.tr2 = TransitionLayer(stride_pre=cur_stride,
+                                   in_channel=stage2_num_channels[-1],
+                                   stride_cur=[
+                                       cur_stride * (2**i)
+                                       for i in range(len(stage3_num_channels))
+                                   ],
+                                   out_channels=stage3_num_channels,
+                                   align_corners=self.align_corners,
+                                   name="tr2")
+        self.st3 = Stage(num_channels=stage3_num_channels,
+                         num_modules=stage3_num_modules,
+                         num_blocks=stage3_num_blocks,
+                         num_filters=stage3_num_channels,
+                         has_se=self.has_se,
+                         name="st3",
+                         align_corners=align_corners)
         cur_stride *= 2
 
-        self.tr3 = TransitionLayer(
-            stride_pre=cur_stride,
-            in_channel=stage3_num_channels[-1],
-            stride_cur=[
-                cur_stride * (2**i) for i in range(len(stage4_num_channels))
-            ],
-            out_channels=stage4_num_channels,
-            align_corners=self.align_corners,
-            name="tr3")
-        self.st4 = Stage(
-            num_channels=stage4_num_channels,
-            num_modules=stage4_num_modules,
-            num_blocks=stage4_num_blocks,
-            num_filters=stage4_num_channels,
-            has_se=self.has_se,
-            name="st4",
-            align_corners=align_corners)
+        self.tr3 = TransitionLayer(stride_pre=cur_stride,
+                                   in_channel=stage3_num_channels[-1],
+                                   stride_cur=[
+                                       cur_stride * (2**i)
+                                       for i in range(len(stage4_num_channels))
+                                   ],
+                                   out_channels=stage4_num_channels,
+                                   align_corners=self.align_corners,
+                                   name="tr3")
+        self.st4 = Stage(num_channels=stage4_num_channels,
+                         num_modules=stage4_num_modules,
+                         num_blocks=stage4_num_blocks,
+                         num_filters=stage4_num_channels,
+                         has_se=self.has_se,
+                         name="st4",
+                         align_corners=align_corners)
         cur_stride *= 2
 
-        self.tr4 = TransitionLayer(
-            stride_pre=cur_stride,
-            in_channel=stage4_num_channels[-1],
-            stride_cur=[
-                cur_stride * (2**i) for i in range(len(stage5_num_channels))
-            ],
-            out_channels=stage5_num_channels,
-            align_corners=self.align_corners,
-            name="tr4")
-        self.st5 = Stage(
-            num_channels=stage5_num_channels,
-            num_modules=stage5_num_modules,
-            num_blocks=stage5_num_blocks,
-            num_filters=stage5_num_channels,
-            has_se=self.has_se,
-            name="st5",
-            align_corners=align_corners)
+        self.tr4 = TransitionLayer(stride_pre=cur_stride,
+                                   in_channel=stage4_num_channels[-1],
+                                   stride_cur=[
+                                       cur_stride * (2**i)
+                                       for i in range(len(stage5_num_channels))
+                                   ],
+                                   out_channels=stage5_num_channels,
+                                   align_corners=self.align_corners,
+                                   name="tr4")
+        self.st5 = Stage(num_channels=stage5_num_channels,
+                         num_modules=stage5_num_modules,
+                         num_blocks=stage5_num_blocks,
+                         num_filters=stage5_num_channels,
+                         has_se=self.has_se,
+                         name="st5",
+                         align_corners=align_corners)
 
-        self.tr5 = TransitionLayer(
-            stride_pre=cur_stride,
-            in_channel=stage5_num_channels[0],
-            stride_cur=[
-                cur_stride // (2**(len(stage6_num_channels) - i - 1))
-                for i in range(len(stage6_num_channels))
-            ],
-            out_channels=stage6_num_channels,
-            align_corners=self.align_corners,
-            name="tr5")
-        self.st6 = Stage(
-            num_channels=stage6_num_channels,
-            num_modules=stage6_num_modules,
-            num_blocks=stage6_num_blocks,
-            num_filters=stage6_num_channels,
-            has_se=self.has_se,
-            name="st6",
-            align_corners=align_corners)
+        self.tr5 = TransitionLayer(stride_pre=cur_stride,
+                                   in_channel=stage5_num_channels[0],
+                                   stride_cur=[
+                                       cur_stride //
+                                       (2**(len(stage6_num_channels) - i - 1))
+                                       for i in range(len(stage6_num_channels))
+                                   ],
+                                   out_channels=stage6_num_channels,
+                                   align_corners=self.align_corners,
+                                   name="tr5")
+        self.st6 = Stage(num_channels=stage6_num_channels,
+                         num_modules=stage6_num_modules,
+                         num_blocks=stage6_num_blocks,
+                         num_filters=stage6_num_channels,
+                         has_se=self.has_se,
+                         name="st6",
+                         align_corners=align_corners)
         cur_stride = cur_stride // 2
 
-        self.tr6 = TransitionLayer(
-            stride_pre=cur_stride,
-            in_channel=stage6_num_channels[0],
-            stride_cur=[
-                cur_stride // (2**(len(stage7_num_channels) - i - 1))
-                for i in range(len(stage7_num_channels))
-            ],
-            out_channels=stage7_num_channels,
-            align_corners=self.align_corners,
-            name="tr6")
-        self.st7 = Stage(
-            num_channels=stage7_num_channels,
-            num_modules=stage7_num_modules,
-            num_blocks=stage7_num_blocks,
-            num_filters=stage7_num_channels,
-            has_se=self.has_se,
-            name="st7",
-            align_corners=align_corners)
+        self.tr6 = TransitionLayer(stride_pre=cur_stride,
+                                   in_channel=stage6_num_channels[0],
+                                   stride_cur=[
+                                       cur_stride //
+                                       (2**(len(stage7_num_channels) - i - 1))
+                                       for i in range(len(stage7_num_channels))
+                                   ],
+                                   out_channels=stage7_num_channels,
+                                   align_corners=self.align_corners,
+                                   name="tr6")
+        self.st7 = Stage(num_channels=stage7_num_channels,
+                         num_modules=stage7_num_modules,
+                         num_blocks=stage7_num_blocks,
+                         num_filters=stage7_num_channels,
+                         has_se=self.has_se,
+                         name="st7",
+                         align_corners=align_corners)
         cur_stride = cur_stride // 2
 
-        self.tr7 = TransitionLayer(
-            stride_pre=cur_stride,
-            in_channel=stage7_num_channels[0],
-            stride_cur=[
-                cur_stride // (2**(len(stage8_num_channels) - i - 1))
-                for i in range(len(stage8_num_channels))
-            ],
-            out_channels=stage8_num_channels,
-            align_corners=self.align_corners,
-            name="tr7")
-        self.st8 = Stage(
-            num_channels=stage8_num_channels,
-            num_modules=stage8_num_modules,
-            num_blocks=stage8_num_blocks,
-            num_filters=stage8_num_channels,
-            has_se=self.has_se,
-            name="st8",
-            align_corners=align_corners)
+        self.tr7 = TransitionLayer(stride_pre=cur_stride,
+                                   in_channel=stage7_num_channels[0],
+                                   stride_cur=[
+                                       cur_stride //
+                                       (2**(len(stage8_num_channels) - i - 1))
+                                       for i in range(len(stage8_num_channels))
+                                   ],
+                                   out_channels=stage8_num_channels,
+                                   align_corners=self.align_corners,
+                                   name="tr7")
+        self.st8 = Stage(num_channels=stage8_num_channels,
+                         num_modules=stage8_num_modules,
+                         num_blocks=stage8_num_blocks,
+                         num_filters=stage8_num_channels,
+                         has_se=self.has_se,
+                         name="st8",
+                         align_corners=align_corners)
         cur_stride = cur_stride // 2
 
-        self.tr8 = TransitionLayer(
-            stride_pre=cur_stride,
-            in_channel=stage8_num_channels[0],
-            stride_cur=[
-                cur_stride // (2**(len(stage9_num_channels) - i - 1))
-                for i in range(len(stage9_num_channels))
-            ],
-            out_channels=stage9_num_channels,
-            align_corners=self.align_corners,
-            name="tr8")
-        self.st9 = Stage(
-            num_channels=stage9_num_channels,
-            num_modules=stage9_num_modules,
-            num_blocks=stage9_num_blocks,
-            num_filters=stage9_num_channels,
-            has_se=self.has_se,
-            name="st9",
-            align_corners=align_corners)
+        self.tr8 = TransitionLayer(stride_pre=cur_stride,
+                                   in_channel=stage8_num_channels[0],
+                                   stride_cur=[
+                                       cur_stride //
+                                       (2**(len(stage9_num_channels) - i - 1))
+                                       for i in range(len(stage9_num_channels))
+                                   ],
+                                   out_channels=stage9_num_channels,
+                                   align_corners=self.align_corners,
+                                   name="tr8")
+        self.st9 = Stage(num_channels=stage9_num_channels,
+                         num_modules=stage9_num_modules,
+                         num_blocks=stage9_num_blocks,
+                         num_filters=stage9_num_channels,
+                         has_se=self.has_se,
+                         name="st9",
+                         align_corners=align_corners)
 
         self.last_layer = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels=self.feat_channels[0],
-                out_channels=self.feat_channels[0],
-                kernel_size=1,
-                padding='same',
-                stride=1),
-            nn.Conv2D(
-                in_channels=self.feat_channels[0],
-                out_channels=19,
-                kernel_size=1,
-                stride=1,
-                padding=0))
+            layers.ConvBNReLU(in_channels=self.feat_channels[0],
+                              out_channels=self.feat_channels[0],
+                              kernel_size=1,
+                              padding='same',
+                              stride=1),
+            nn.Conv2D(in_channels=self.feat_channels[0],
+                      out_channels=19,
+                      kernel_size=1,
+                      stride=1,
+                      padding=0))
         self.init_weight()
 
     def _concat(self, x1, x2):
-        x1 = F.avg_pool3d(
-            x1.unsqueeze(1), kernel_size=(2, 1, 1), stride=(2, 1, 1)).squeeze(1)
-        x2 = F.avg_pool3d(
-            x2.unsqueeze(1), kernel_size=(2, 1, 1), stride=(2, 1, 1)).squeeze(1)
+        x1 = F.avg_pool3d(x1.unsqueeze(1),
+                          kernel_size=(2, 1, 1),
+                          stride=(2, 1, 1)).squeeze(1)
+        x2 = F.avg_pool3d(x2.unsqueeze(1),
+                          kernel_size=(2, 1, 1),
+                          stride=(2, 1, 1)).squeeze(1)
         return paddle.concat([x1, x2], axis=1)
 
     def forward(self, x):
@@ -337,17 +326,17 @@ class UHRNet(nn.Layer):
         st5 = self.st5(tr4)
         x5 = st5[-1]
 
-        tr5 = self.tr5(st5[0], shape=paddle.shape(skip41)[-2:])
+        tr5 = self.tr5(st5[0], shape=skip41.shape[-2:])
         tr5[0] = self._concat(tr5[0], skip41)
         st6 = self.st6(tr5)
         x4 = st6[-1]
 
-        tr6 = self.tr6(st6[0], shape=paddle.shape(skip31)[-2:])
+        tr6 = self.tr6(st6[0], shape=skip31.shape[-2:])
         tr6[0] = self._concat(tr6[0], skip31)
         st7 = self.st7(tr6)
         x3 = st7[-1]
 
-        tr7 = self.tr7(st7[0], shape=paddle.shape(skip21)[-2:])
+        tr7 = self.tr7(st7[0], shape=skip21.shape[-2:])
         tr7[0] = self._concat(tr7[0], skip21)
         st8 = self.st8(tr7)
         x2 = st8[-1]
@@ -358,18 +347,17 @@ class UHRNet(nn.Layer):
 
         x = [x1, x2, x3, x4, x5]
         for i in range(len(x)):
-            x[i] = F.avg_pool3d(
-                x[i].unsqueeze(1), kernel_size=(2, 1, 1), stride=(2, 1,
-                                                                  1)).squeeze(1)
+            x[i] = F.avg_pool3d(x[i].unsqueeze(1),
+                                kernel_size=(2, 1, 1),
+                                stride=(2, 1, 1)).squeeze(1)
 
         # upsampling
-        x0_h, x0_w = paddle.shape(x[0])[-2:]
+        x0_h, x0_w = x[0].shape[-2:]
         for i in range(1, len(x)):
-            x[i] = F.interpolate(
-                x[i],
-                size=[x0_h, x0_w],
-                mode='bilinear',
-                align_corners=self.align_corners)
+            x[i] = F.interpolate(x[i],
+                                 size=[x0_h, x0_w],
+                                 mode='bilinear',
+                                 align_corners=self.align_corners)
         x = paddle.concat(x, axis=1)
 
         return [x]
@@ -386,6 +374,7 @@ class UHRNet(nn.Layer):
 
 
 class Layer1(nn.Layer):
+
     def __init__(self,
                  num_channels,
                  num_filters,
@@ -416,6 +405,7 @@ class Layer1(nn.Layer):
 
 
 class TransitionLayer(nn.Layer):
+
     def __init__(self,
                  stride_pre,
                  in_channel,
@@ -437,32 +427,29 @@ class TransitionLayer(nn.Layer):
                 if in_channel != out_channels[i]:
                     residual = self.add_sublayer(
                         "transition_{}_layer_{}".format(name, i + 1),
-                        layers.ConvBNReLU(
-                            in_channels=in_channel,
-                            out_channels=out_channels[i],
-                            kernel_size=3,
-                            padding='same',
-                            bias_attr=False))
+                        layers.ConvBNReLU(in_channels=in_channel,
+                                          out_channels=out_channels[i],
+                                          kernel_size=3,
+                                          padding='same',
+                                          bias_attr=False))
             elif stride_cur[i] > stride_pre:
                 residual = self.add_sublayer(
                     "transition_{}_layer_{}".format(name, i + 1),
-                    layers.ConvBNReLU(
-                        in_channels=in_channel,
-                        out_channels=out_channels[i],
-                        kernel_size=3,
-                        stride=2,
-                        padding='same',
-                        bias_attr=False))
+                    layers.ConvBNReLU(in_channels=in_channel,
+                                      out_channels=out_channels[i],
+                                      kernel_size=3,
+                                      stride=2,
+                                      padding='same',
+                                      bias_attr=False))
             else:
                 residual = self.add_sublayer(
                     "transition_{}_layer_{}".format(name, i + 1),
-                    layers.ConvBNReLU(
-                        in_channels=in_channel,
-                        out_channels=out_channels[i],
-                        kernel_size=1,
-                        stride=1,
-                        padding='same',
-                        bias_attr=False))
+                    layers.ConvBNReLU(in_channels=in_channel,
+                                      out_channels=out_channels[i],
+                                      kernel_size=1,
+                                      stride=1,
+                                      padding='same',
+                                      bias_attr=False))
             self.conv_bn_func_list.append(residual)
 
     def forward(self, x, shape=None):
@@ -473,16 +460,16 @@ class TransitionLayer(nn.Layer):
             else:
                 out = conv_bn_func(x)
                 if shape is not None:
-                    out = F.interpolate(
-                        out,
-                        shape,
-                        mode='bilinear',
-                        align_corners=self.align_corners)
+                    out = F.interpolate(out,
+                                        shape,
+                                        mode='bilinear',
+                                        align_corners=self.align_corners)
                 outs.append(out)
         return outs
 
 
 class Branches(nn.Layer):
+
     def __init__(self,
                  num_blocks,
                  in_channels,
@@ -499,12 +486,11 @@ class Branches(nn.Layer):
                 in_ch = in_channels[i] if j == 0 else out_channels[i]
                 basic_block_func = self.add_sublayer(
                     "bb_{}_branch_layer_{}_{}".format(name, i + 1, j + 1),
-                    BasicBlock(
-                        num_channels=in_ch,
-                        num_filters=out_channels[i],
-                        has_se=has_se,
-                        name=name + '_branch_layer_' + str(i + 1) + '_' +
-                        str(j + 1)))
+                    BasicBlock(num_channels=in_ch,
+                               num_filters=out_channels[i],
+                               has_se=has_se,
+                               name=name + '_branch_layer_' + str(i + 1) + '_' +
+                               str(j + 1)))
                 self.basic_block_list[i].append(basic_block_func)
 
     def forward(self, x):
@@ -518,6 +504,7 @@ class Branches(nn.Layer):
 
 
 class BottleneckBlock(nn.Layer):
+
     def __init__(self,
                  num_channels,
                  num_filters,
@@ -530,42 +517,37 @@ class BottleneckBlock(nn.Layer):
         self.has_se = has_se
         self.downsample = downsample
 
-        self.conv1 = layers.ConvBNReLU(
-            in_channels=num_channels,
-            out_channels=num_filters,
-            kernel_size=1,
-            padding='same',
-            bias_attr=False)
+        self.conv1 = layers.ConvBNReLU(in_channels=num_channels,
+                                       out_channels=num_filters,
+                                       kernel_size=1,
+                                       padding='same',
+                                       bias_attr=False)
 
-        self.conv2 = layers.ConvBNReLU(
-            in_channels=num_filters,
-            out_channels=num_filters,
-            kernel_size=3,
-            stride=stride,
-            padding='same',
-            bias_attr=False)
+        self.conv2 = layers.ConvBNReLU(in_channels=num_filters,
+                                       out_channels=num_filters,
+                                       kernel_size=3,
+                                       stride=stride,
+                                       padding='same',
+                                       bias_attr=False)
 
-        self.conv3 = layers.ConvBN(
-            in_channels=num_filters,
-            out_channels=num_filters * 4,
-            kernel_size=1,
-            padding='same',
-            bias_attr=False)
+        self.conv3 = layers.ConvBN(in_channels=num_filters,
+                                   out_channels=num_filters * 4,
+                                   kernel_size=1,
+                                   padding='same',
+                                   bias_attr=False)
 
         if self.downsample:
-            self.conv_down = layers.ConvBN(
-                in_channels=num_channels,
-                out_channels=num_filters * 4,
-                kernel_size=1,
-                padding='same',
-                bias_attr=False)
+            self.conv_down = layers.ConvBN(in_channels=num_channels,
+                                           out_channels=num_filters * 4,
+                                           kernel_size=1,
+                                           padding='same',
+                                           bias_attr=False)
 
         if self.has_se:
-            self.se = SELayer(
-                num_channels=num_filters * 4,
-                num_filters=num_filters * 4,
-                reduction_ratio=16,
-                name=name + '_fc')
+            self.se = SELayer(num_channels=num_filters * 4,
+                              num_filters=num_filters * 4,
+                              reduction_ratio=16,
+                              name=name + '_fc')
 
     def forward(self, x):
         residual = x
@@ -585,6 +567,7 @@ class BottleneckBlock(nn.Layer):
 
 
 class BasicBlock(nn.Layer):
+
     def __init__(self,
                  num_channels,
                  num_filters,
@@ -597,34 +580,30 @@ class BasicBlock(nn.Layer):
         self.has_se = has_se
         self.downsample = downsample
 
-        self.conv1 = layers.ConvBNReLU(
-            in_channels=num_channels,
-            out_channels=num_filters,
-            kernel_size=3,
-            stride=stride,
-            padding='same',
-            bias_attr=False)
-        self.conv2 = layers.ConvBN(
-            in_channels=num_filters,
-            out_channels=num_filters,
-            kernel_size=3,
-            padding='same',
-            bias_attr=False)
+        self.conv1 = layers.ConvBNReLU(in_channels=num_channels,
+                                       out_channels=num_filters,
+                                       kernel_size=3,
+                                       stride=stride,
+                                       padding='same',
+                                       bias_attr=False)
+        self.conv2 = layers.ConvBN(in_channels=num_filters,
+                                   out_channels=num_filters,
+                                   kernel_size=3,
+                                   padding='same',
+                                   bias_attr=False)
 
         if self.downsample:
-            self.conv_down = layers.ConvBNReLU(
-                in_channels=num_channels,
-                out_channels=num_filters,
-                kernel_size=1,
-                padding='same',
-                bias_attr=False)
+            self.conv_down = layers.ConvBNReLU(in_channels=num_channels,
+                                               out_channels=num_filters,
+                                               kernel_size=1,
+                                               padding='same',
+                                               bias_attr=False)
 
         if self.has_se:
-            self.se = SELayer(
-                num_channels=num_filters,
-                num_filters=num_filters,
-                reduction_ratio=16,
-                name=name + '_fc')
+            self.se = SELayer(num_channels=num_filters,
+                              num_filters=num_filters,
+                              reduction_ratio=16,
+                              name=name + '_fc')
 
     def forward(self, x):
         residual = x
@@ -643,6 +622,7 @@ class BasicBlock(nn.Layer):
 
 
 class SELayer(nn.Layer):
+
     def __init__(self, num_channels, num_filters, reduction_ratio, name=None):
         super(SELayer, self).__init__()
 
@@ -672,13 +652,14 @@ class SELayer(nn.Layer):
         pool = paddle.reshape(pool, shape=[-1, self._num_channels])
         squeeze = self.squeeze(pool)
         excitation = self.excitation(squeeze)
-        excitation = paddle.reshape(
-            excitation, shape=[-1, self._num_channels, 1, 1])
+        excitation = paddle.reshape(excitation,
+                                    shape=[-1, self._num_channels, 1, 1])
         out = x * excitation
         return out
 
 
 class Stage(nn.Layer):
+
     def __init__(self,
                  num_channels,
                  num_modules,
@@ -697,24 +678,22 @@ class Stage(nn.Layer):
             if i == num_modules - 1 and not multi_scale_output:
                 stage_func = self.add_sublayer(
                     "stage_{}_{}".format(name, i + 1),
-                    HighResolutionModule(
-                        num_channels=num_channels,
-                        num_blocks=num_blocks,
-                        num_filters=num_filters,
-                        has_se=has_se,
-                        multi_scale_output=False,
-                        name=name + '_' + str(i + 1),
-                        align_corners=align_corners))
+                    HighResolutionModule(num_channels=num_channels,
+                                         num_blocks=num_blocks,
+                                         num_filters=num_filters,
+                                         has_se=has_se,
+                                         multi_scale_output=False,
+                                         name=name + '_' + str(i + 1),
+                                         align_corners=align_corners))
             else:
                 stage_func = self.add_sublayer(
                     "stage_{}_{}".format(name, i + 1),
-                    HighResolutionModule(
-                        num_channels=num_channels,
-                        num_blocks=num_blocks,
-                        num_filters=num_filters,
-                        has_se=has_se,
-                        name=name + '_' + str(i + 1),
-                        align_corners=align_corners))
+                    HighResolutionModule(num_channels=num_channels,
+                                         num_blocks=num_blocks,
+                                         num_filters=num_filters,
+                                         has_se=has_se,
+                                         name=name + '_' + str(i + 1),
+                                         align_corners=align_corners))
 
             self.stage_func_list.append(stage_func)
 
@@ -726,6 +705,7 @@ class Stage(nn.Layer):
 
 
 class HighResolutionModule(nn.Layer):
+
     def __init__(self,
                  num_channels,
                  num_blocks,
@@ -736,19 +716,17 @@ class HighResolutionModule(nn.Layer):
                  align_corners=False):
         super(HighResolutionModule, self).__init__()
 
-        self.branches_func = Branches(
-            num_blocks=num_blocks,
-            in_channels=num_channels,
-            out_channels=num_filters,
-            has_se=has_se,
-            name=name)
+        self.branches_func = Branches(num_blocks=num_blocks,
+                                      in_channels=num_channels,
+                                      out_channels=num_filters,
+                                      has_se=has_se,
+                                      name=name)
 
-        self.fuse_func = FuseLayers(
-            in_channels=num_filters,
-            out_channels=num_filters,
-            multi_scale_output=multi_scale_output,
-            name=name,
-            align_corners=align_corners)
+        self.fuse_func = FuseLayers(in_channels=num_filters,
+                                    out_channels=num_filters,
+                                    multi_scale_output=multi_scale_output,
+                                    name=name,
+                                    align_corners=align_corners)
 
     def forward(self, x):
         out = self.branches_func(x)
@@ -757,6 +735,7 @@ class HighResolutionModule(nn.Layer):
 
 
 class FuseLayers(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -775,12 +754,11 @@ class FuseLayers(nn.Layer):
                 if j > i:
                     residual_func = self.add_sublayer(
                         "residual_{}_layer_{}_{}".format(name, i + 1, j + 1),
-                        layers.ConvBN(
-                            in_channels=in_channels[j],
-                            out_channels=out_channels[i],
-                            kernel_size=1,
-                            padding='same',
-                            bias_attr=False))
+                        layers.ConvBN(in_channels=in_channels[j],
+                                      out_channels=out_channels[i],
+                                      kernel_size=1,
+                                      padding='same',
+                                      bias_attr=False))
                     self.residual_func_list.append(residual_func)
                 elif j < i:
                     pre_num_filters = in_channels[j]
@@ -789,25 +767,23 @@ class FuseLayers(nn.Layer):
                             residual_func = self.add_sublayer(
                                 "residual_{}_layer_{}_{}_{}".format(
                                     name, i + 1, j + 1, k + 1),
-                                layers.ConvBN(
-                                    in_channels=pre_num_filters,
-                                    out_channels=out_channels[i],
-                                    kernel_size=3,
-                                    stride=2,
-                                    padding='same',
-                                    bias_attr=False))
+                                layers.ConvBN(in_channels=pre_num_filters,
+                                              out_channels=out_channels[i],
+                                              kernel_size=3,
+                                              stride=2,
+                                              padding='same',
+                                              bias_attr=False))
                             pre_num_filters = out_channels[i]
                         else:
                             residual_func = self.add_sublayer(
                                 "residual_{}_layer_{}_{}_{}".format(
                                     name, i + 1, j + 1, k + 1),
-                                layers.ConvBNReLU(
-                                    in_channels=pre_num_filters,
-                                    out_channels=out_channels[j],
-                                    kernel_size=3,
-                                    stride=2,
-                                    padding='same',
-                                    bias_attr=False))
+                                layers.ConvBNReLU(in_channels=pre_num_filters,
+                                                  out_channels=out_channels[j],
+                                                  kernel_size=3,
+                                                  stride=2,
+                                                  padding='same',
+                                                  bias_attr=False))
                             pre_num_filters = out_channels[j]
                         self.residual_func_list.append(residual_func)
         if len(self.residual_func_list) == 0:
@@ -820,18 +796,17 @@ class FuseLayers(nn.Layer):
         residual_func_idx = 0
         for i in range(self._actual_ch):
             residual = x[i]
-            residual_shape = paddle.shape(residual)[-2:]
+            residual_shape = residual.shape[-2:]
 
             for j in range(len(self._in_channels)):
                 if j > i:
                     y = self.residual_func_list[residual_func_idx](x[j])
                     residual_func_idx += 1
 
-                    y = F.interpolate(
-                        y,
-                        residual_shape,
-                        mode='bilinear',
-                        align_corners=self.align_corners)
+                    y = F.interpolate(y,
+                                      residual_shape,
+                                      mode='bilinear',
+                                      align_corners=self.align_corners)
                     residual = residual + y
                 elif j < i:
                     y = x[j]
@@ -849,101 +824,98 @@ class FuseLayers(nn.Layer):
 
 @manager.BACKBONES.add_component
 def UHRNet_W18_Small(**kwargs):
-    model = UHRNet(
-        stage1_num_modules=1,
-        stage1_num_blocks=[2],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_blocks=[2, 2],
-        stage2_num_channels=[18, 36],
-        stage3_num_modules=2,
-        stage3_num_blocks=[2, 2],
-        stage3_num_channels=[36, 72],
-        stage4_num_modules=2,
-        stage4_num_blocks=[2, 2],
-        stage4_num_channels=[72, 144],
-        stage5_num_modules=2,
-        stage5_num_blocks=[2, 2],
-        stage5_num_channels=[144, 288],
-        stage6_num_modules=1,
-        stage6_num_blocks=[2, 2],
-        stage6_num_channels=[72, 144],
-        stage7_num_modules=1,
-        stage7_num_blocks=[2, 2],
-        stage7_num_channels=[36, 72],
-        stage8_num_modules=1,
-        stage8_num_blocks=[2, 2],
-        stage8_num_channels=[18, 36],
-        stage9_num_modules=1,
-        stage9_num_blocks=[2],
-        stage9_num_channels=[18],
-        **kwargs)
+    model = UHRNet(stage1_num_modules=1,
+                   stage1_num_blocks=[2],
+                   stage1_num_channels=[64],
+                   stage2_num_modules=1,
+                   stage2_num_blocks=[2, 2],
+                   stage2_num_channels=[18, 36],
+                   stage3_num_modules=2,
+                   stage3_num_blocks=[2, 2],
+                   stage3_num_channels=[36, 72],
+                   stage4_num_modules=2,
+                   stage4_num_blocks=[2, 2],
+                   stage4_num_channels=[72, 144],
+                   stage5_num_modules=2,
+                   stage5_num_blocks=[2, 2],
+                   stage5_num_channels=[144, 288],
+                   stage6_num_modules=1,
+                   stage6_num_blocks=[2, 2],
+                   stage6_num_channels=[72, 144],
+                   stage7_num_modules=1,
+                   stage7_num_blocks=[2, 2],
+                   stage7_num_channels=[36, 72],
+                   stage8_num_modules=1,
+                   stage8_num_blocks=[2, 2],
+                   stage8_num_channels=[18, 36],
+                   stage9_num_modules=1,
+                   stage9_num_blocks=[2],
+                   stage9_num_channels=[18],
+                   **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def UHRNet_W18(**kwargs):
-    model = UHRNet(
-        stage1_num_modules=1,
-        stage1_num_blocks=(4, ),
-        stage1_num_channels=(64, ),
-        stage2_num_modules=1,
-        stage2_num_blocks=(4, 4),
-        stage2_num_channels=(18, 36),
-        stage3_num_modules=5,
-        stage3_num_blocks=(4, 4),
-        stage3_num_channels=(36, 72),
-        stage4_num_modules=2,
-        stage4_num_blocks=(4, 4),
-        stage4_num_channels=(72, 144),
-        stage5_num_modules=2,
-        stage5_num_blocks=(4, 4),
-        stage5_num_channels=(144, 288),
-        stage6_num_modules=1,
-        stage6_num_blocks=(4, 4),
-        stage6_num_channels=(72, 144),
-        stage7_num_modules=1,
-        stage7_num_blocks=(4, 4),
-        stage7_num_channels=(36, 72),
-        stage8_num_modules=1,
-        stage8_num_blocks=(4, 4),
-        stage8_num_channels=(18, 36),
-        stage9_num_modules=1,
-        stage9_num_blocks=(4, ),
-        stage9_num_channels=(18, ),
-        **kwargs)
+    model = UHRNet(stage1_num_modules=1,
+                   stage1_num_blocks=(4, ),
+                   stage1_num_channels=(64, ),
+                   stage2_num_modules=1,
+                   stage2_num_blocks=(4, 4),
+                   stage2_num_channels=(18, 36),
+                   stage3_num_modules=5,
+                   stage3_num_blocks=(4, 4),
+                   stage3_num_channels=(36, 72),
+                   stage4_num_modules=2,
+                   stage4_num_blocks=(4, 4),
+                   stage4_num_channels=(72, 144),
+                   stage5_num_modules=2,
+                   stage5_num_blocks=(4, 4),
+                   stage5_num_channels=(144, 288),
+                   stage6_num_modules=1,
+                   stage6_num_blocks=(4, 4),
+                   stage6_num_channels=(72, 144),
+                   stage7_num_modules=1,
+                   stage7_num_blocks=(4, 4),
+                   stage7_num_channels=(36, 72),
+                   stage8_num_modules=1,
+                   stage8_num_blocks=(4, 4),
+                   stage8_num_channels=(18, 36),
+                   stage9_num_modules=1,
+                   stage9_num_blocks=(4, ),
+                   stage9_num_channels=(18, ),
+                   **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def UHRNet_W48(**kwargs):
-    model = UHRNet(
-        stage1_num_modules=1,
-        stage1_num_blocks=(4, ),
-        stage1_num_channels=(64, ),
-        stage2_num_modules=1,
-        stage2_num_blocks=(4, 4),
-        stage2_num_channels=(48, 96),
-        stage3_num_modules=5,
-        stage3_num_blocks=(4, 4),
-        stage3_num_channels=(96, 192),
-        stage4_num_modules=2,
-        stage4_num_blocks=(4, 4),
-        stage4_num_channels=(192, 384),
-        stage5_num_modules=2,
-        stage5_num_blocks=(4, 4),
-        stage5_num_channels=(384, 768),
-        stage6_num_modules=1,
-        stage6_num_blocks=(4, 4),
-        stage6_num_channels=(192, 384),
-        stage7_num_modules=1,
-        stage7_num_blocks=(4, 4),
-        stage7_num_channels=(96, 192),
-        stage8_num_modules=1,
-        stage8_num_blocks=(4, 4),
-        stage8_num_channels=(48, 96),
-        stage9_num_modules=1,
-        stage9_num_blocks=(4, ),
-        stage9_num_channels=(48, ),
-        **kwargs)
+    model = UHRNet(stage1_num_modules=1,
+                   stage1_num_blocks=(4, ),
+                   stage1_num_channels=(64, ),
+                   stage2_num_modules=1,
+                   stage2_num_blocks=(4, 4),
+                   stage2_num_channels=(48, 96),
+                   stage3_num_modules=5,
+                   stage3_num_blocks=(4, 4),
+                   stage3_num_channels=(96, 192),
+                   stage4_num_modules=2,
+                   stage4_num_blocks=(4, 4),
+                   stage4_num_channels=(192, 384),
+                   stage5_num_modules=2,
+                   stage5_num_blocks=(4, 4),
+                   stage5_num_channels=(384, 768),
+                   stage6_num_modules=1,
+                   stage6_num_blocks=(4, 4),
+                   stage6_num_channels=(192, 384),
+                   stage7_num_modules=1,
+                   stage7_num_blocks=(4, 4),
+                   stage7_num_channels=(96, 192),
+                   stage8_num_modules=1,
+                   stage8_num_blocks=(4, 4),
+                   stage8_num_channels=(48, 96),
+                   stage9_num_modules=1,
+                   stage9_num_blocks=(4, ),
+                   stage9_num_channels=(48, ),
+                   **kwargs)
     return model

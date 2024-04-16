@@ -35,10 +35,16 @@ class UAFM(nn.Layer):
     def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__()
 
-        self.conv_x = layers.ConvBNReLU(
-            x_ch, y_ch, kernel_size=ksize, padding=ksize // 2, bias_attr=False)
-        self.conv_out = layers.ConvBNReLU(
-            y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+        self.conv_x = layers.ConvBNReLU(x_ch,
+                                        y_ch,
+                                        kernel_size=ksize,
+                                        padding=ksize // 2,
+                                        bias_attr=False)
+        self.conv_out = layers.ConvBNReLU(y_ch,
+                                          out_ch,
+                                          kernel_size=3,
+                                          padding=1,
+                                          bias_attr=False)
         self.resize_mode = resize_mode
 
     def check(self, x, y):
@@ -57,7 +63,7 @@ class UAFM(nn.Layer):
         return x
 
     def prepare_y(self, x, y):
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode=self.resize_mode)
+        y_up = F.interpolate(y, x.shape[2:], mode=self.resize_mode)
         return y_up
 
     def fuse(self, x, y):
@@ -92,14 +98,12 @@ class UAFM_ChAtten(UAFM):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
 
         self.conv_xy_atten = nn.Sequential(
-            layers.ConvBNAct(
-                4 * y_ch,
-                y_ch // 2,
-                kernel_size=1,
-                bias_attr=False,
-                act_type="leakyrelu"),
-            layers.ConvBN(
-                y_ch // 2, y_ch, kernel_size=1, bias_attr=False))
+            layers.ConvBNAct(4 * y_ch,
+                             y_ch // 2,
+                             kernel_size=1,
+                             bias_attr=False,
+                             act_type="leakyrelu"),
+            layers.ConvBN(y_ch // 2, y_ch, kernel_size=1, bias_attr=False))
 
     def fuse(self, x, y):
         """
@@ -130,14 +134,12 @@ class UAFM_ChAtten_S(UAFM):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
 
         self.conv_xy_atten = nn.Sequential(
-            layers.ConvBNAct(
-                2 * y_ch,
-                y_ch // 2,
-                kernel_size=1,
-                bias_attr=False,
-                act_type="leakyrelu"),
-            layers.ConvBN(
-                y_ch // 2, y_ch, kernel_size=1, bias_attr=False))
+            layers.ConvBNAct(2 * y_ch,
+                             y_ch // 2,
+                             kernel_size=1,
+                             bias_attr=False,
+                             act_type="leakyrelu"),
+            layers.ConvBN(y_ch // 2, y_ch, kernel_size=1, bias_attr=False))
 
     def fuse(self, x, y):
         """
@@ -168,10 +170,8 @@ class UAFM_SpAtten(UAFM):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
 
         self.conv_xy_atten = nn.Sequential(
-            layers.ConvBNReLU(
-                4, 2, kernel_size=3, padding=1, bias_attr=False),
-            layers.ConvBN(
-                2, 1, kernel_size=3, padding=1, bias_attr=False))
+            layers.ConvBNReLU(4, 2, kernel_size=3, padding=1, bias_attr=False),
+            layers.ConvBN(2, 1, kernel_size=3, padding=1, bias_attr=False))
         self._scale = self.create_parameter(
             shape=[1],
             attr=ParamAttr(initializer=Constant(value=1.)),
@@ -207,10 +207,8 @@ class UAFM_SpAtten_S(UAFM):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
 
         self.conv_xy_atten = nn.Sequential(
-            layers.ConvBNReLU(
-                2, 2, kernel_size=3, padding=1, bias_attr=False),
-            layers.ConvBN(
-                2, 1, kernel_size=3, padding=1, bias_attr=False))
+            layers.ConvBNReLU(2, 2, kernel_size=3, padding=1, bias_attr=False),
+            layers.ConvBN(2, 1, kernel_size=3, padding=1, bias_attr=False))
 
     def fuse(self, x, y):
         """
@@ -240,10 +238,16 @@ class UAFMMobile(UAFM):
     def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
 
-        self.conv_x = layers.SeparableConvBNReLU(
-            x_ch, y_ch, kernel_size=ksize, padding=ksize // 2, bias_attr=False)
-        self.conv_out = layers.SeparableConvBNReLU(
-            y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+        self.conv_x = layers.SeparableConvBNReLU(x_ch,
+                                                 y_ch,
+                                                 kernel_size=ksize,
+                                                 padding=ksize // 2,
+                                                 bias_attr=False)
+        self.conv_out = layers.SeparableConvBNReLU(y_ch,
+                                                   out_ch,
+                                                   kernel_size=3,
+                                                   padding=1,
+                                                   bias_attr=False)
 
 
 class UAFMMobile_SpAtten(UAFM):
@@ -260,16 +264,20 @@ class UAFMMobile_SpAtten(UAFM):
     def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
 
-        self.conv_x = layers.SeparableConvBNReLU(
-            x_ch, y_ch, kernel_size=ksize, padding=ksize // 2, bias_attr=False)
-        self.conv_out = layers.SeparableConvBNReLU(
-            y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+        self.conv_x = layers.SeparableConvBNReLU(x_ch,
+                                                 y_ch,
+                                                 kernel_size=ksize,
+                                                 padding=ksize // 2,
+                                                 bias_attr=False)
+        self.conv_out = layers.SeparableConvBNReLU(y_ch,
+                                                   out_ch,
+                                                   kernel_size=3,
+                                                   padding=1,
+                                                   bias_attr=False)
 
         self.conv_xy_atten = nn.Sequential(
-            layers.ConvBNReLU(
-                4, 2, kernel_size=3, padding=1, bias_attr=False),
-            layers.ConvBN(
-                2, 1, kernel_size=3, padding=1, bias_attr=False))
+            layers.ConvBNReLU(4, 2, kernel_size=3, padding=1, bias_attr=False),
+            layers.ConvBN(2, 1, kernel_size=3, padding=1, bias_attr=False))
 
     def fuse(self, x, y):
         """

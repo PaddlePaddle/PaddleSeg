@@ -64,15 +64,14 @@ class UPerNetViTAdapter(nn.Layer):
         self.align_corners = align_corners
 
         in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]
-        self.head = UPerNetHead(
-            num_classes=num_classes,
-            in_channels=in_channels,
-            channels=channels,
-            pool_scales=pool_scales,
-            dropout_ratio=dropout_ratio,
-            aux_loss=aux_loss,
-            aux_channels=aux_channels,
-            align_corners=align_corners)
+        self.head = UPerNetHead(num_classes=num_classes,
+                                in_channels=in_channels,
+                                channels=channels,
+                                pool_scales=pool_scales,
+                                dropout_ratio=dropout_ratio,
+                                aux_loss=aux_loss,
+                                aux_channels=aux_channels,
+                                align_corners=align_corners)
 
         self.pretrained = pretrained
         self.init_weight()
@@ -86,16 +85,17 @@ class UPerNetViTAdapter(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
         return logit_list
 
 
 class ConvBNReLU(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -103,12 +103,11 @@ class ConvBNReLU(nn.Layer):
                  bias_attr=False,
                  **kwargs):
         super().__init__()
-        self.conv = nn.Conv2D(
-            in_channels,
-            out_channels,
-            kernel_size,
-            bias_attr=bias_attr,
-            **kwargs)
+        self.conv = nn.Conv2D(in_channels,
+                              out_channels,
+                              kernel_size,
+                              bias_attr=bias_attr,
+                              **kwargs)
         self.bn = nn.BatchNorm2D(out_channels)
         self.relu = nn.ReLU()
 
@@ -141,20 +140,18 @@ class PPM(nn.Layer):
             self.stages.append(
                 nn.Sequential(
                     nn.AdaptiveAvgPool2D(output_size=(pool_scale, pool_scale)),
-                    ConvBNReLU(
-                        in_channels=in_channels,
-                        out_channels=channels,
-                        kernel_size=1)))
+                    ConvBNReLU(in_channels=in_channels,
+                               out_channels=channels,
+                               kernel_size=1)))
 
     def forward(self, x):
         ppm_outs = []
         for ppm in self.stages:
             ppm_out = ppm(x)
-            upsampled_ppm_out = F.interpolate(
-                ppm_out,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
+            upsampled_ppm_out = F.interpolate(ppm_out,
+                                              x.shape[2:],
+                                              mode='bilinear',
+                                              align_corners=self.align_corners)
             ppm_outs.append(upsampled_ppm_out)
         return ppm_outs
 
@@ -193,11 +190,11 @@ class UPerNetHead(nn.Layer):
                                in_channels[-1],
                                channels,
                                align_corners=align_corners)
-        self.bottleneck = ConvBNReLU(
-            in_channels[-1] + len(pool_scales) * channels,
-            channels,
-            3,
-            padding=1)
+        self.bottleneck = ConvBNReLU(in_channels[-1] +
+                                     len(pool_scales) * channels,
+                                     channels,
+                                     3,
+                                     padding=1)
         # FPN Module
         self.lateral_convs = nn.LayerList()
         self.fpn_convs = nn.LayerList()
@@ -207,8 +204,10 @@ class UPerNetHead(nn.Layer):
             self.lateral_convs.append(l_conv)
             self.fpn_convs.append(fpn_conv)
 
-        self.fpn_bottleneck = ConvBNReLU(
-            len(in_channels) * channels, channels, 3, padding=1)
+        self.fpn_bottleneck = ConvBNReLU(len(in_channels) * channels,
+                                         channels,
+                                         3,
+                                         padding=1)
         if dropout_ratio > 0:
             self.dropout = nn.Dropout2D(dropout_ratio)
         else:
@@ -217,10 +216,13 @@ class UPerNetHead(nn.Layer):
 
         self.aux_loss = aux_loss
         if self.aux_loss:
-            self.aux_conv = ConvBNReLU(
-                in_channels[2], aux_channels, 3, padding=1)
-            self.aux_conv_seg = nn.Conv2D(
-                aux_channels, num_classes, kernel_size=1)
+            self.aux_conv = ConvBNReLU(in_channels[2],
+                                       aux_channels,
+                                       3,
+                                       padding=1)
+            self.aux_conv_seg = nn.Conv2D(aux_channels,
+                                          num_classes,
+                                          kernel_size=1)
 
     def psp_forward(self, inputs):
         x = inputs[-1]
@@ -241,11 +243,10 @@ class UPerNetHead(nn.Layer):
         # build top-down path
         used_backbone_levels = len(laterals)
         for i in range(used_backbone_levels - 1, 0, -1):
-            upsampled = F.interpolate(
-                laterals[i],
-                paddle.shape(laterals[i - 1])[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
+            upsampled = F.interpolate(laterals[i],
+                                      laterals[i - 1].shape[2:],
+                                      mode='bilinear',
+                                      align_corners=self.align_corners)
             laterals[i - 1] = laterals[i - 1] + upsampled
 
         # build outputs
@@ -256,11 +257,10 @@ class UPerNetHead(nn.Layer):
         fpn_outs.append(laterals[-1])  # append psp feature
 
         for i in range(used_backbone_levels - 1, 0, -1):
-            fpn_outs[i] = F.interpolate(
-                fpn_outs[i],
-                size=paddle.shape(fpn_outs[0])[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
+            fpn_outs[i] = F.interpolate(fpn_outs[i],
+                                        size=fpn_outs[0].shape[2:],
+                                        mode='bilinear',
+                                        align_corners=self.align_corners)
         fpn_outs = paddle.concat(fpn_outs, axis=1)
         output = self.fpn_bottleneck(fpn_outs)
 

@@ -23,7 +23,6 @@ from paddle import Tensor
 from paddleseg.cvlibs import manager
 from paddleseg.models.layers import ConvBNAct
 
-
 __all__ = [
     "PIDNet_Small",
     "PIDNet_Medium",
@@ -41,17 +40,20 @@ class BasicBlock(nn.Layer):
                  downsample=None,
                  no_relu=False):
         super().__init__()
-        self.conv_bn_relu = ConvBNAct(
-            inplanes,
-            planes,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            act_type='relu',
-            bias_attr=False)
+        self.conv_bn_relu = ConvBNAct(inplanes,
+                                      planes,
+                                      kernel_size=3,
+                                      stride=stride,
+                                      padding=1,
+                                      act_type='relu',
+                                      bias_attr=False)
         self.relu = nn.ReLU()
-        self.conv_bn = ConvBNAct(
-            planes, planes, kernel_size=3, stride=1, padding=1, bias_attr=False)
+        self.conv_bn = ConvBNAct(planes,
+                                 planes,
+                                 kernel_size=3,
+                                 stride=1,
+                                 padding=1,
+                                 bias_attr=False)
         self.downsample = downsample
         self.stride = stride
         self.no_relu = no_relu
@@ -79,18 +81,22 @@ class Bottleneck(nn.Layer):
                  downsample=None,
                  no_relu=True):
         super().__init__()
-        self.conv_bn_relu1 = ConvBNAct(
-            inplanes, planes, kernel_size=1, act_type='relu', bias_attr=False)
-        self.conv_bn_relu2 = ConvBNAct(
-            planes,
-            planes,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            act_type='relu',
-            bias_attr=False)
-        self.conv_bn = ConvBNAct(
-            planes, planes * self.expansion, kernel_size=1, bias_attr=False)
+        self.conv_bn_relu1 = ConvBNAct(inplanes,
+                                       planes,
+                                       kernel_size=1,
+                                       act_type='relu',
+                                       bias_attr=False)
+        self.conv_bn_relu2 = ConvBNAct(planes,
+                                       planes,
+                                       kernel_size=3,
+                                       stride=stride,
+                                       padding=1,
+                                       act_type='relu',
+                                       bias_attr=False)
+        self.conv_bn = ConvBNAct(planes,
+                                 planes * self.expansion,
+                                 kernel_size=1,
+                                 bias_attr=False)
         self.relu = nn.ReLU()
         self.downsample = downsample
         self.stride = stride
@@ -143,84 +149,67 @@ class DAPPM(nn.Layer):
 
         self.scales = nn.LayerList([
             nn.Sequential(
-                nn.SyncBatchNorm(in_channels),
-                nn.ReLU(),
-                nn.Conv2D(
-                    in_channels,
-                    branch_channels,
-                    kernel_size=1,
-                    bias_attr=False))
+                nn.SyncBatchNorm(in_channels), nn.ReLU(),
+                nn.Conv2D(in_channels,
+                          branch_channels,
+                          kernel_size=1,
+                          bias_attr=False))
         ])
         for i in range(1, num_scales - 1):
             self.scales.append(
                 nn.Sequential(*[
-                    nn.AvgPool2D(
-                        kernel_size=kernel_sizes[i - 1],
-                        stride=strides[i - 1],
-                        padding=paddings[i - 1],
-                        exclusive=False),
+                    nn.AvgPool2D(kernel_size=kernel_sizes[i - 1],
+                                 stride=strides[i - 1],
+                                 padding=paddings[i - 1],
+                                 exclusive=False),
                     nn.Sequential(
-                        nn.SyncBatchNorm(in_channels),
-                        nn.ReLU(),
-                        nn.Conv2D(
-                            in_channels,
-                            branch_channels,
-                            kernel_size=1,
-                            bias_attr=False))
+                        nn.SyncBatchNorm(in_channels), nn.ReLU(),
+                        nn.Conv2D(in_channels,
+                                  branch_channels,
+                                  kernel_size=1,
+                                  bias_attr=False))
                 ]))
         self.scales.append(
             nn.Sequential(*[
                 nn.AdaptiveAvgPool2D((1, 1)),
                 nn.Sequential(
-                    nn.SyncBatchNorm(in_channels),
-                    nn.ReLU(),
-                    nn.Conv2D(
-                        in_channels,
-                        branch_channels,
-                        kernel_size=1,
-                        bias_attr=False))
+                    nn.SyncBatchNorm(in_channels), nn.ReLU(),
+                    nn.Conv2D(in_channels,
+                              branch_channels,
+                              kernel_size=1,
+                              bias_attr=False))
             ]))
         self.processes = nn.LayerList()
         for i in range(num_scales - 1):
             self.processes.append(
                 nn.Sequential(
-                    nn.SyncBatchNorm(branch_channels),
-                    nn.ReLU(),
-                    nn.Conv2D(
-                        branch_channels,
-                        branch_channels,
-                        kernel_size=3,
-                        padding=1,
-                        bias_attr=False))
-            )
+                    nn.SyncBatchNorm(branch_channels), nn.ReLU(),
+                    nn.Conv2D(branch_channels,
+                              branch_channels,
+                              kernel_size=3,
+                              padding=1,
+                              bias_attr=False)))
 
         self.compression = nn.Sequential(
-            nn.SyncBatchNorm(branch_channels * num_scales),
-            nn.ReLU(),
-            nn.Conv2D(
-                branch_channels * num_scales,
-                out_channels,
-                kernel_size=1,
-                bias_attr=False))
+            nn.SyncBatchNorm(branch_channels * num_scales), nn.ReLU(),
+            nn.Conv2D(branch_channels * num_scales,
+                      out_channels,
+                      kernel_size=1,
+                      bias_attr=False))
 
         self.shortcut = nn.Sequential(
-            nn.SyncBatchNorm(in_channels),
-            nn.ReLU(),
-            nn.Conv2D(
-                in_channels,
-                out_channels,
-                kernel_size=1,
-                bias_attr=False))
+            nn.SyncBatchNorm(in_channels), nn.ReLU(),
+            nn.Conv2D(in_channels, out_channels, kernel_size=1,
+                      bias_attr=False))
 
     def forward(self, inputs: Tensor):
         feats = []
         feats.append(self.scales[0](inputs))
 
         for i in range(1, self.num_scales):
-            feat_up = F.interpolate(
-                self.scales[i](inputs),
-                size=paddle.shape(inputs)[2:],
-                mode=self.unsample_mode)
+            feat_up = F.interpolate(self.scales[i](inputs),
+                                    size=inputs.shape[2:],
+                                    mode=self.unsample_mode)
             feats.append(self.processes[i - 1](feat_up + feats[i - 1]))
 
         return self.compression(paddle.concat(feats,
@@ -250,33 +239,30 @@ class PAPPM(DAPPM):
                  strides: List[int] = [2, 4, 8],
                  paddings: List[int] = [2, 4, 8],
                  upsample_mode: str = 'bilinear'):
-        super().__init__(in_channels, branch_channels, out_channels,
-                         num_scales, kernel_sizes, strides, paddings,
-                         upsample_mode)
+        super().__init__(in_channels, branch_channels, out_channels, num_scales,
+                         kernel_sizes, strides, paddings, upsample_mode)
 
         self.processes = nn.Sequential(
             nn.SyncBatchNorm(self.branch_channels * (self.num_scales - 1)),
             nn.ReLU(),
-            nn.Conv2D(
-                self.branch_channels * (self.num_scales - 1),
-                self.branch_channels * (self.num_scales - 1),
-                kernel_size=3,
-                padding=1,
-                groups=self.num_scales - 1,
-                bias_attr=False))
+            nn.Conv2D(self.branch_channels * (self.num_scales - 1),
+                      self.branch_channels * (self.num_scales - 1),
+                      kernel_size=3,
+                      padding=1,
+                      groups=self.num_scales - 1,
+                      bias_attr=False))
 
     def forward(self, inputs: Tensor):
         x_ = self.scales[0](inputs)
         feats = []
         for i in range(1, self.num_scales):
-            feat_up = F.interpolate(
-                self.scales[i](inputs),
-                size=paddle.shape(inputs)[2:],
-                mode=self.unsample_mode,
-                align_corners=False)
+            feat_up = F.interpolate(self.scales[i](inputs),
+                                    size=inputs.shape[2:],
+                                    mode=self.unsample_mode,
+                                    align_corners=False)
             feats.append(feat_up + x_)
         scale_out = self.processes(paddle.concat(feats, axis=1))
-        return self.compression(paddle.concat([x_, scale_out], 
+        return self.compression(paddle.concat([x_, scale_out],
                                               axis=1)) + self.shortcut(inputs)
 
 
@@ -325,11 +311,10 @@ class PagFM(nn.Layer):
             x_i = self.relu(x_i)
 
         f_i = self.f_i(x_i)
-        f_i = F.interpolate(
-            f_i,
-            size=paddle.shape(x_p)[2:],
-            mode=self.upsample_mode,
-            align_corners=False)
+        f_i = F.interpolate(f_i,
+                            size=x_p.shape[2:],
+                            mode=self.upsample_mode,
+                            align_corners=False)
 
         f_p = self.f_p(x_p)
 
@@ -338,11 +323,10 @@ class PagFM(nn.Layer):
         else:
             sigma = F.sigmoid(paddle.sum(f_p * f_i, axis=1).unsqueeze(1))
 
-        x_i = F.interpolate(
-            x_i,
-            size=paddle.shape(x_p)[2:],
-            mode=self.upsample_mode,
-            align_corners=False)
+        x_i = F.interpolate(x_i,
+                            size=x_p.shape[2:],
+                            mode=self.upsample_mode,
+                            align_corners=False)
 
         out = sigma * x_i + (1 - sigma) * x_p
         return out
@@ -366,14 +350,12 @@ class Bag(nn.Layer):
         super().__init__()
 
         self.conv = nn.Sequential(
-            nn.SyncBatchNorm(in_channels),
-            nn.ReLU(),
-            nn.Conv2D(
-                in_channels,
-                out_channels,
-                kernel_size,
-                padding=padding,
-                bias_attr=False))
+            nn.SyncBatchNorm(in_channels), nn.ReLU(),
+            nn.Conv2D(in_channels,
+                      out_channels,
+                      kernel_size,
+                      padding=padding,
+                      bias_attr=False))
 
     def forward(self, x_p: Tensor, x_i: Tensor, x_d: Tensor) -> Tensor:
         """Forward function.
@@ -398,20 +380,16 @@ class LightBag(nn.Layer):
         out_channels (int): The number of output channels.
     """
 
-    def __init__(self,
-                 in_channels: int,
-                 out_channels: int):
+    def __init__(self, in_channels: int, out_channels: int):
         super().__init__()
-        self.f_p = ConvBNAct(
-            in_channels,
-            out_channels,
-            kernel_size=1,
-            bias_attr=False)
-        self.f_i = ConvBNAct(
-            in_channels,
-            out_channels,
-            kernel_size=1,
-            bias_attr=False)
+        self.f_p = ConvBNAct(in_channels,
+                             out_channels,
+                             kernel_size=1,
+                             bias_attr=False)
+        self.f_i = ConvBNAct(in_channels,
+                             out_channels,
+                             kernel_size=1,
+                             bias_attr=False)
 
     def forward(self, x_p: Tensor, x_i: Tensor, x_d: Tensor) -> Tensor:
         """Forward function.
@@ -474,32 +452,29 @@ class PIDNet(nn.Layer):
         self.i_branch_layers = nn.LayerList()
         for i in range(3):
             self.i_branch_layers.append(
-                self._make_layer(
-                    block=BasicBlock if i < 2 else Bottleneck,
-                    in_channels=channels * 2**(i + 1),
-                    channels=channels * 8 if i > 0 else channels * 4,
-                    num_blocks=num_branch_blocks if i < 2 else 2,
-                    stride=2))
+                self._make_layer(block=BasicBlock if i < 2 else Bottleneck,
+                                 in_channels=channels * 2**(i + 1),
+                                 channels=channels * 8 if i > 0 else channels *
+                                 4,
+                                 num_blocks=num_branch_blocks if i < 2 else 2,
+                                 stride=2))
 
         # P Branch
         self.p_branch_layers = nn.LayerList()
         for i in range(3):
             self.p_branch_layers.append(
-                self._make_layer(
-                    block=BasicBlock if i < 2 else Bottleneck,
-                    in_channels=channels * 2,
-                    channels=channels * 2,
-                    num_blocks=num_stem_blocks if i < 2 else 1))
-        self.compression_1 = ConvBNAct(
-            channels * 4,
-            channels * 2,
-            kernel_size=1,
-            bias_attr=False)
-        self.compression_2 = ConvBNAct(
-            channels * 8,
-            channels * 2,
-            kernel_size=1,
-            bias_attr=False)
+                self._make_layer(block=BasicBlock if i < 2 else Bottleneck,
+                                 in_channels=channels * 2,
+                                 channels=channels * 2,
+                                 num_blocks=num_stem_blocks if i < 2 else 1))
+        self.compression_1 = ConvBNAct(channels * 4,
+                                       channels * 2,
+                                       kernel_size=1,
+                                       bias_attr=False)
+        self.compression_2 = ConvBNAct(channels * 8,
+                                       channels * 2,
+                                       kernel_size=1,
+                                       bias_attr=False)
         self.pag_1 = PagFM(channels * 2, channels)
         self.pag_2 = PagFM(channels * 2, channels)
 
@@ -510,30 +485,33 @@ class PIDNet(nn.Layer):
                 self._make_layer(Bottleneck, channels, channels, 1)
             ])
             channel_expand = 1
-            self.spp = PAPPM(channels * 16, ppm_channels, channels * 4, num_scales=5)
+            self.spp = PAPPM(channels * 16,
+                             ppm_channels,
+                             channels * 4,
+                             num_scales=5)
             self.dfm = LightBag(channels * 4, channels * 4)
         else:
             self.d_branch_layers = nn.LayerList([
-                self._make_single_layer(BasicBlock, channels * 2,
-                                        channels * 2),
+                self._make_single_layer(BasicBlock, channels * 2, channels * 2),
                 self._make_single_layer(BasicBlock, channels * 2, channels * 2)
             ])
             channel_expand = 2
-            self.spp = DAPPM(channels * 16, ppm_channels, channels * 4, num_scales=5)
+            self.spp = DAPPM(channels * 16,
+                             ppm_channels,
+                             channels * 4,
+                             num_scales=5)
             self.dfm = Bag(channels * 4, channels * 4)
 
-        self.diff_1 = ConvBNAct(
-            channels * 4,
-            channels * channel_expand,
-            kernel_size=3,
-            padding=1,
-            bias_attr=False)
-        self.diff_2 = ConvBNAct(
-            channels * 8,
-            channels * 2,
-            kernel_size=3,
-            padding=1,
-            bias_attr=False)
+        self.diff_1 = ConvBNAct(channels * 4,
+                                channels * channel_expand,
+                                kernel_size=3,
+                                padding=1,
+                                bias_attr=False)
+        self.diff_2 = ConvBNAct(channels * 8,
+                                channels * 2,
+                                kernel_size=3,
+                                padding=1,
+                                bias_attr=False)
 
         self.d_branch_layers.append(
             self._make_layer(Bottleneck, channels * 2, channels * 2, 1))
@@ -575,30 +553,31 @@ class PIDNet(nn.Layer):
         """
 
         layers = [
-            ConvBNAct(
-                in_channels,
-                channels,
-                kernel_size=3,
-                stride=2,
-                padding=1,
-                act_type='relu',
-                bias_attr=False),
-            ConvBNAct(
-                channels,
-                channels,
-                kernel_size=3,
-                stride=2,
-                padding=1,
-                act_type='relu',
-                bias_attr=False),
+            ConvBNAct(in_channels,
+                      channels,
+                      kernel_size=3,
+                      stride=2,
+                      padding=1,
+                      act_type='relu',
+                      bias_attr=False),
+            ConvBNAct(channels,
+                      channels,
+                      kernel_size=3,
+                      stride=2,
+                      padding=1,
+                      act_type='relu',
+                      bias_attr=False),
         ]
 
         layers.append(
             self._make_layer(BasicBlock, channels, channels, num_blocks))
         layers.append(nn.ReLU())
         layers.append(
-            self._make_layer(
-                BasicBlock, channels, channels * 2, num_blocks, stride=2))
+            self._make_layer(BasicBlock,
+                             channels,
+                             channels * 2,
+                             num_blocks,
+                             stride=2))
         layers.append(nn.ReLU())
 
         return nn.Sequential(*layers)
@@ -622,22 +601,20 @@ class PIDNet(nn.Layer):
         """
         downsample = None
         if stride != 1 or in_channels != channels * block.expansion:
-            downsample = ConvBNAct(
-                in_channels,
-                channels * block.expansion,
-                kernel_size=1,
-                stride=stride,
-                bias_attr=False)
+            downsample = ConvBNAct(in_channels,
+                                   channels * block.expansion,
+                                   kernel_size=1,
+                                   stride=stride,
+                                   bias_attr=False)
 
         layers = [block(in_channels, channels, stride, downsample)]
         in_channels = channels * block.expansion
         for i in range(1, num_blocks):
             layers.append(
-                block(
-                    in_channels,
-                    channels,
-                    stride=1,
-                    no_relu=(i == num_blocks - 1)))
+                block(in_channels,
+                      channels,
+                      stride=1,
+                      no_relu=(i == num_blocks - 1)))
         return nn.Sequential(*layers)
 
     def _make_single_layer(self,
@@ -658,12 +635,11 @@ class PIDNet(nn.Layer):
 
         downsample = None
         if stride != 1 or in_channels != channels * block.expansion:
-            downsample = ConvBNAct(
-                in_channels,
-                channels * block.expansion,
-                kernel_size=1,
-                stride=stride,
-                bias_attr=False)
+            downsample = ConvBNAct(in_channels,
+                                   channels * block.expansion,
+                                   kernel_size=1,
+                                   stride=stride,
+                                   bias_attr=False)
         return block(in_channels, channels, stride, downsample, no_relu=True)
 
     def forward(self, x: Tensor) -> Union[Tensor, Tuple[Tensor]]:
@@ -676,8 +652,8 @@ class PIDNet(nn.Layer):
             Tensor or tuple[Tensor]: If self.training is True, return
                 tuple[Tensor], else return Tensor.
         """
-        w_out = paddle.shape(x)[-1] // 8
-        h_out = paddle.shape(x)[-2] // 8
+        w_out = x.shape[-1] // 8
+        h_out = x.shape[-2] // 8
 
         # stage 0-2
         x = self.stem(x)
@@ -690,11 +666,10 @@ class PIDNet(nn.Layer):
         comp_i = self.compression_1(x_i)
         x_p = self.pag_1(x_p, comp_i)
         diff_i = self.diff_1(x_i)
-        x_d += F.interpolate(
-            diff_i,
-            size=[h_out, w_out],
-            mode='bilinear',
-            align_corners=self.align_corners)
+        x_d += F.interpolate(diff_i,
+                             size=[h_out, w_out],
+                             mode='bilinear',
+                             align_corners=self.align_corners)
         if self.training:
             temp_p = x_p.clone()
 
@@ -706,11 +681,10 @@ class PIDNet(nn.Layer):
         comp_i = self.compression_2(x_i)
         x_p = self.pag_2(x_p, comp_i)
         diff_i = self.diff_2(x_i)
-        x_d += F.interpolate(
-            diff_i,
-            size=[h_out, w_out],
-            mode='bilinear',
-            align_corners=self.align_corners)
+        x_d += F.interpolate(diff_i,
+                             size=[h_out, w_out],
+                             mode='bilinear',
+                             align_corners=self.align_corners)
         if self.training:
             temp_d = x_d.clone()
 
@@ -720,46 +694,42 @@ class PIDNet(nn.Layer):
         x_d = self.d_branch_layers[2](self.relu(x_d))
 
         x_i = self.spp(x_i)
-        x_i = F.interpolate(
-            x_i,
-            size=[h_out, w_out],
-            mode='bilinear',
-            align_corners=self.align_corners)
+        x_i = F.interpolate(x_i,
+                            size=[h_out, w_out],
+                            mode='bilinear',
+                            align_corners=self.align_corners)
         out = self.dfm(x_p, x_i, x_d)
         return (temp_p, out, temp_d) if self.training else out
 
 
 @manager.BACKBONES.add_component
 def PIDNet_Small(**kwargs):
-    model = PIDNet(
-        channels=32,
-        ppm_channels=96,
-        num_stem_blocks=2,
-        num_branch_blocks=3,
-        align_corners=False,
-        **kwargs)
+    model = PIDNet(channels=32,
+                   ppm_channels=96,
+                   num_stem_blocks=2,
+                   num_branch_blocks=3,
+                   align_corners=False,
+                   **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def PIDNet_Medium(**kwargs):
-    model = PIDNet(
-        channels=64,
-        ppm_channels=96,
-        num_stem_blocks=2,
-        num_branch_blocks=3,
-        align_corners=False,
-        **kwargs)
+    model = PIDNet(channels=64,
+                   ppm_channels=96,
+                   num_stem_blocks=2,
+                   num_branch_blocks=3,
+                   align_corners=False,
+                   **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def PIDNet_Large(**kwargs):
-    model = PIDNet(
-        channels=64,
-        ppm_channels=112,
-        num_stem_blocks=3,
-        num_branch_blocks=4,
-        align_corners=False,
-        **kwargs)
+    model = PIDNet(channels=64,
+                   ppm_channels=112,
+                   num_stem_blocks=3,
+                   num_branch_blocks=4,
+                   align_corners=False,
+                   **kwargs)
     return model

@@ -22,7 +22,9 @@ from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils
 
-__all__ = ["LPSNet", ]
+__all__ = [
+    "LPSNet",
+]
 
 _interpolate = partial(F.interpolate, mode="bilinear", align_corners=True)
 
@@ -46,13 +48,14 @@ class LPSNet(nn.Layer):
     """
 
     def __init__(
-            self,
-            depths,
-            channels,
-            scale_ratios,
-            num_classes,
-            in_channels=3,
-            pretrained=None, ):
+        self,
+        depths,
+        channels,
+        scale_ratios,
+        num_classes,
+        in_channels=3,
+        pretrained=None,
+    ):
         super().__init__()
 
         self.depths = depths
@@ -72,8 +75,10 @@ class LPSNet(nn.Layer):
         self.nets = nn.LayerList(
             [self._build_path() for _ in range(self.num_paths)])
 
-        self.head = nn.Conv2D(
-            channels[-1] * self.num_paths, num_classes, 1, bias_attr=True)
+        self.head = nn.Conv2D(channels[-1] * self.num_paths,
+                              num_classes,
+                              1,
+                              bias_attr=True)
 
         self._init_weight(pretrained)
 
@@ -93,21 +98,22 @@ class LPSNet(nn.Layer):
                         out_channels=c,
                         kernel_size=3,
                         padding=1,
-                        stride=2
-                        if (i == 0 and b != self.num_blocks - 1) else 1,
-                        bias_attr=False, ))
+                        stride=2 if
+                        (i == 0 and b != self.num_blocks - 1) else 1,
+                        bias_attr=False,
+                    ))
                 c_in = c
             path.append(nn.Sequential(*blocks))
         return nn.LayerList(path)
 
     def _preprocess_input(self, x):
-        h, w = paddle.shape(x)[-2:]
+        h, w = x.shape[-2:]
         return [
             _interpolate(x, (int(r * h), int(r * w))) for r in self.scale_ratios
         ]
 
     def forward(self, x, interact_begin_idx=2):
-        input_size = paddle.shape(x)[-2:]
+        input_size = x.shape[-2:]
         inputs = self._preprocess_input(x)
         feats = []
         for path, x in zip(self.nets, inputs):
@@ -120,7 +126,7 @@ class LPSNet(nn.Layer):
             feats = _multipath_interaction(feats)
             feats = [path[idx](x) for path, x in zip(self.nets, feats)]
 
-        size = paddle.shape(feats[0])[-2:]
+        size = feats[0].shape[-2:]
         feats = [_interpolate(x, size=size) for x in feats]
 
         out = self.head(paddle.concat(feats, 1))
@@ -132,7 +138,7 @@ def _multipath_interaction(feats):
     length = len(feats)
     if length == 1:
         return feats[0]
-    sizes = [paddle.shape(x)[-2:] for x in feats]
+    sizes = [x.shape[-2:] for x in feats]
     outs = []
     looper = list(range(length))
     for i, s in enumerate(sizes):

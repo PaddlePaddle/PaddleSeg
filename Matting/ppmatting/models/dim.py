@@ -52,9 +52,8 @@ class DIM(nn.Layer):
         self.loss_func_dict = None
 
         decoder_output_channels = [64, 128, 256, 512]
-        self.decoder = Decoder(
-            input_channels=decoder_input_channels,
-            output_channels=decoder_output_channels)
+        self.decoder = Decoder(input_channels=decoder_input_channels,
+                               output_channels=decoder_output_channels)
         if self.stage == 2:
             for param in self.backbone.parameters():
                 param.stop_gradient = True
@@ -65,17 +64,19 @@ class DIM(nn.Layer):
         self.init_weight()
 
     def forward(self, inputs):
-        input_shape = paddle.shape(inputs['img'])[-2:]
+        input_shape = inputs['img'].shape[-2:]
         x = paddle.concat([inputs['img'], inputs['trimap'] / 255], axis=1)
         fea_list = self.backbone(x)
 
         # decoder stage
         up_shape = []
         for i in range(5):
-            up_shape.append(paddle.shape(fea_list[i])[-2:])
+            up_shape.append(fea_list[i].shape[-2:])
         alpha_raw = self.decoder(fea_list, up_shape)
-        alpha_raw = F.interpolate(
-            alpha_raw, input_shape, mode='bilinear', align_corners=False)
+        alpha_raw = F.interpolate(alpha_raw,
+                                  input_shape,
+                                  mode='bilinear',
+                                  align_corners=False)
         logit_dict = {'alpha_raw': alpha_raw}
         if self.stage < 2:
             return logit_dict
@@ -87,8 +88,10 @@ class DIM(nn.Layer):
 
             # finally alpha
             alpha_pred = alpha_refine + alpha_raw
-            alpha_pred = F.interpolate(
-                alpha_pred, input_shape, mode='bilinear', align_corners=False)
+            alpha_pred = F.interpolate(alpha_pred,
+                                       input_shape,
+                                       mode='bilinear',
+                                       align_corners=False)
             if not self.training:
                 alpha_pred = paddle.clip(alpha_pred, min=0, max=1)
             logit_dict['alpha_pred'] = alpha_pred
@@ -121,8 +124,9 @@ class DIM(nn.Layer):
         if self.stage == 1 or self.stage == 3:
             comp_pred = logit_dict['alpha_raw'] * label_dict['fg'] + \
                 (1 - logit_dict['alpha_raw']) * label_dict['bg']
-            loss['comp'] = self.loss_func_dict['comp'][0](
-                comp_pred, label_dict['img'], mask)
+            loss['comp'] = self.loss_func_dict['comp'][0](comp_pred,
+                                                          label_dict['img'],
+                                                          mask)
             loss['comp'] = 0.5 * loss['comp']
             loss['all'] = loss['all'] + loss['comp']
 
@@ -140,18 +144,20 @@ class DIM(nn.Layer):
 
 # bilinear interpolate skip connect
 class Up(nn.Layer):
+
     def __init__(self, input_channels, output_channels):
         super().__init__()
-        self.conv = layers.ConvBNReLU(
-            input_channels,
-            output_channels,
-            kernel_size=5,
-            padding=2,
-            bias_attr=False)
+        self.conv = layers.ConvBNReLU(input_channels,
+                                      output_channels,
+                                      kernel_size=5,
+                                      padding=2,
+                                      bias_attr=False)
 
     def forward(self, x, skip, output_shape):
-        x = F.interpolate(
-            x, size=output_shape, mode='bilinear', align_corners=False)
+        x = F.interpolate(x,
+                          size=output_shape,
+                          mode='bilinear',
+                          align_corners=False)
         x = x + skip
         x = self.conv(x)
         x = F.relu(x)
@@ -160,18 +166,24 @@ class Up(nn.Layer):
 
 
 class Decoder(nn.Layer):
+
     def __init__(self, input_channels, output_channels=(64, 128, 256, 512)):
         super().__init__()
-        self.deconv6 = nn.Conv2D(
-            input_channels, input_channels, kernel_size=1, bias_attr=False)
+        self.deconv6 = nn.Conv2D(input_channels,
+                                 input_channels,
+                                 kernel_size=1,
+                                 bias_attr=False)
         self.deconv5 = Up(input_channels, output_channels[-1])
         self.deconv4 = Up(output_channels[-1], output_channels[-2])
         self.deconv3 = Up(output_channels[-2], output_channels[-3])
         self.deconv2 = Up(output_channels[-3], output_channels[-4])
         self.deconv1 = Up(output_channels[-4], 64)
 
-        self.alpha_conv = nn.Conv2D(
-            64, 1, kernel_size=5, padding=2, bias_attr=False)
+        self.alpha_conv = nn.Conv2D(64,
+                                    1,
+                                    kernel_size=5,
+                                    padding=2,
+                                    bias_attr=False)
 
     def forward(self, fea_list, shape_list):
         x = fea_list[-1]
@@ -188,16 +200,29 @@ class Decoder(nn.Layer):
 
 
 class Refine(nn.Layer):
+
     def __init__(self):
         super().__init__()
-        self.conv1 = layers.ConvBNReLU(
-            4, 64, kernel_size=3, padding=1, bias_attr=False)
-        self.conv2 = layers.ConvBNReLU(
-            64, 64, kernel_size=3, padding=1, bias_attr=False)
-        self.conv3 = layers.ConvBNReLU(
-            64, 64, kernel_size=3, padding=1, bias_attr=False)
-        self.alpha_pred = layers.ConvBNReLU(
-            64, 1, kernel_size=3, padding=1, bias_attr=False)
+        self.conv1 = layers.ConvBNReLU(4,
+                                       64,
+                                       kernel_size=3,
+                                       padding=1,
+                                       bias_attr=False)
+        self.conv2 = layers.ConvBNReLU(64,
+                                       64,
+                                       kernel_size=3,
+                                       padding=1,
+                                       bias_attr=False)
+        self.conv3 = layers.ConvBNReLU(64,
+                                       64,
+                                       kernel_size=3,
+                                       padding=1,
+                                       bias_attr=False)
+        self.alpha_pred = layers.ConvBNReLU(64,
+                                            1,
+                                            kernel_size=3,
+                                            padding=1,
+                                            bias_attr=False)
 
     def forward(self, x):
         x = self.conv1(x)

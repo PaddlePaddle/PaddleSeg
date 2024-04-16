@@ -75,49 +75,45 @@ class C2FNet(nn.Layer):
                 "Please note that currently C2FNet can only be trained and evaluated on the iSAID dataset."
             )
         heatmap = paddle.where(
-            (heatmap == 10) | (heatmap == 11) | (heatmap == 8) |
-            (heatmap == 15) | (heatmap == 9) | (heatmap == 1) | (heatmap == 14),
+            (heatmap == 10) | (heatmap == 11) | (heatmap == 8) | (heatmap == 15)
+            | (heatmap == 9) | (heatmap == 1) | (heatmap == 14),
             paddle.ones_like(heatmap),
             paddle.zeros_like(heatmap)).astype('float32')
 
         if self.training:
             label = paddle.unsqueeze(label, axis=1).astype('float32')
-            label = paddle.where((label == 10) | (label == 11) | (label == 8) |
-                                 (label == 15) | (label == 9) | (label == 1) |
-                                 (label == 14),
-                                 paddle.ones_like(label),
-                                 paddle.zeros_like(label))
-            mask_regions = F.unfold(
-                heatmap,
-                kernel_sizes=self.kernel_sizes,
-                strides=self.training_stride,
-                paddings=0,
-                dilations=1,
-                name=None)
+            label = paddle.where(
+                (label == 10) | (label == 11) | (label == 8) | (label == 15) |
+                (label == 9) | (label == 1) | (label == 14),
+                paddle.ones_like(label), paddle.zeros_like(label))
+            mask_regions = F.unfold(heatmap,
+                                    kernel_sizes=self.kernel_sizes,
+                                    strides=self.training_stride,
+                                    paddings=0,
+                                    dilations=1,
+                                    name=None)
             mask_regions = paddle.transpose(mask_regions, perm=[0, 2, 1])
             mask_regions = paddle.reshape(
                 mask_regions,
                 shape=[-1, self.kernel_sizes[0] * self.kernel_sizes[1]])
 
-            img_regions = F.unfold(
-                x,
-                kernel_sizes=self.kernel_sizes,
-                strides=self.training_stride,
-                paddings=0,
-                dilations=1,
-                name=None)
+            img_regions = F.unfold(x,
+                                   kernel_sizes=self.kernel_sizes,
+                                   strides=self.training_stride,
+                                   paddings=0,
+                                   dilations=1,
+                                   name=None)
             img_regions = paddle.transpose(img_regions, perm=[0, 2, 1])
             img_regions = paddle.reshape(
                 img_regions,
                 shape=[-1, 3 * self.kernel_sizes[0] * self.kernel_sizes[1]])
 
-            label_regions = F.unfold(
-                label,
-                kernel_sizes=self.kernel_sizes,
-                strides=self.training_stride,
-                paddings=0,
-                dilations=1,
-                name=None)
+            label_regions = F.unfold(label,
+                                     kernel_sizes=self.kernel_sizes,
+                                     strides=self.training_stride,
+                                     paddings=0,
+                                     dilations=1,
+                                     name=None)
             label_regions = paddle.transpose(label_regions, perm=[0, 2, 1])
             label_regions = paddle.reshape(
                 label_regions,
@@ -125,24 +121,24 @@ class C2FNet(nn.Layer):
 
             mask_regions_sum = paddle.sum(mask_regions, axis=1)
             mask_regions_selected = paddle.where(
-                mask_regions_sum > 0,
-                paddle.ones_like(mask_regions_sum),
+                mask_regions_sum > 0, paddle.ones_like(mask_regions_sum),
                 paddle.zeros_like(mask_regions_sum))
             final_mask_regions_selected = paddle.zeros_like(
                 mask_regions_selected).astype('bool')
             final_mask_regions_selected.stop_gradient = True
 
-            theld = self.samples * paddle.shape(x)[0]
+            theld = self.samples * x.shape[0]
 
             if paddle.sum(mask_regions_selected) >= theld:
                 _, top_k_idx = paddle.topk(mask_regions_sum, k=theld)
                 final_mask_regions_selected[top_k_idx] = True
                 selected_img_regions = img_regions[final_mask_regions_selected]
-                selected_img_regions = paddle.reshape(
-                    selected_img_regions,
-                    shape=[
-                        theld, 3, self.kernel_sizes[0], self.kernel_sizes[1]
-                    ])
+                selected_img_regions = paddle.reshape(selected_img_regions,
+                                                      shape=[
+                                                          theld, 3,
+                                                          self.kernel_sizes[0],
+                                                          self.kernel_sizes[1]
+                                                      ])
 
                 selected_label_regions = label_regions[
                     final_mask_regions_selected]
@@ -154,11 +150,10 @@ class C2FNet(nn.Layer):
                 feat_list = self.backbone(selected_img_regions)
                 bgfg = self.head_fgbg(feat_list)
 
-                binary_fea = F.interpolate(
-                    bgfg[0],
-                    self.kernel_sizes,
-                    mode='bilinear',
-                    align_corners=self.align_corners)
+                binary_fea = F.interpolate(bgfg[0],
+                                           self.kernel_sizes,
+                                           mode='bilinear',
+                                           align_corners=self.align_corners)
 
                 return [binary_fea, selected_label_regions]
             else:
@@ -167,11 +162,12 @@ class C2FNet(nn.Layer):
                 final_mask_regions_selected[top_k_idx] = True
 
                 selected_img_regions = img_regions[final_mask_regions_selected]
-                selected_img_regions = paddle.reshape(
-                    selected_img_regions,
-                    shape=[
-                        theld, 3, self.kernel_sizes[0], self.kernel_sizes[1]
-                    ])
+                selected_img_regions = paddle.reshape(selected_img_regions,
+                                                      shape=[
+                                                          theld, 3,
+                                                          self.kernel_sizes[0],
+                                                          self.kernel_sizes[1]
+                                                      ])
 
                 selected_label_regions = label_regions[
                     final_mask_regions_selected]
@@ -183,34 +179,31 @@ class C2FNet(nn.Layer):
                 feat_list = self.backbone(selected_img_regions)
                 bgfg = self.head_fgbg(feat_list)
 
-                binary_fea = F.interpolate(
-                    bgfg[0],
-                    self.kernel_sizes,
-                    mode='bilinear',
-                    align_corners=self.align_corners)
+                binary_fea = F.interpolate(bgfg[0],
+                                           self.kernel_sizes,
+                                           mode='bilinear',
+                                           align_corners=self.align_corners)
 
                 return [binary_fea, selected_label_regions]
 
         else:
-            mask_regions = F.unfold(
-                heatmap,
-                kernel_sizes=self.kernel_sizes,
-                strides=self.kernel_sizes[0],
-                paddings=0,
-                dilations=1,
-                name=None)
+            mask_regions = F.unfold(heatmap,
+                                    kernel_sizes=self.kernel_sizes,
+                                    strides=self.kernel_sizes[0],
+                                    paddings=0,
+                                    dilations=1,
+                                    name=None)
             mask_regions = paddle.transpose(mask_regions, perm=[0, 2, 1])
             mask_regions = paddle.reshape(
                 mask_regions,
                 shape=[-1, self.kernel_sizes[0] * self.kernel_sizes[1]])
 
-            img_regions = F.unfold(
-                x,
-                kernel_sizes=self.kernel_sizes,
-                strides=self.kernel_sizes[0],
-                paddings=0,
-                dilations=1,
-                name=None)
+            img_regions = F.unfold(x,
+                                   kernel_sizes=self.kernel_sizes,
+                                   strides=self.kernel_sizes[0],
+                                   paddings=0,
+                                   dilations=1,
+                                   name=None)
             img_regions = paddle.transpose(img_regions, perm=[0, 2, 1])
             img_regions = paddle.reshape(
                 img_regions,
@@ -218,22 +211,20 @@ class C2FNet(nn.Layer):
 
             mask_regions_sum = paddle.sum(mask_regions, axis=1)
             mask_regions_selected = paddle.where(
-                mask_regions_sum > 0,
-                paddle.ones_like(mask_regions_sum),
+                mask_regions_sum > 0, paddle.ones_like(mask_regions_sum),
                 paddle.zeros_like(mask_regions_sum)).astype('bool')
 
             if paddle.sum(mask_regions_selected.astype('int')) == 0:
                 return [ori_heatmap]
             else:
-                ori_fea_regions = F.unfold(
-                    ori_heatmap,
-                    kernel_sizes=self.kernel_sizes,
-                    strides=self.kernel_sizes[0],
-                    paddings=0,
-                    dilations=1,
-                    name=None)
-                ori_fea_regions = paddle.transpose(
-                    ori_fea_regions, perm=[0, 2, 1])
+                ori_fea_regions = F.unfold(ori_heatmap,
+                                           kernel_sizes=self.kernel_sizes,
+                                           strides=self.kernel_sizes[0],
+                                           paddings=0,
+                                           dilations=1,
+                                           name=None)
+                ori_fea_regions = paddle.transpose(ori_fea_regions,
+                                                   perm=[0, 2, 1])
                 ori_fea_regions = paddle.reshape(
                     ori_fea_regions,
                     shape=[
@@ -244,26 +235,26 @@ class C2FNet(nn.Layer):
                 selected_img_regions = paddle.reshape(
                     selected_img_regions,
                     shape=[
-                        paddle.shape(selected_img_regions)[0], 3,
-                        self.kernel_sizes[0], self.kernel_sizes[1]
+                        selected_img_regions.shape[0], 3, self.kernel_sizes[0],
+                        self.kernel_sizes[1]
                     ])
                 selected_fea_regions = ori_fea_regions[mask_regions_selected]
                 selected_fea_regions = paddle.reshape(
                     selected_fea_regions,
                     shape=[
-                        paddle.shape(selected_fea_regions)[0], self.num_cls,
+                        selected_fea_regions.shape[0], self.num_cls,
                         self.kernel_sizes[0], self.kernel_sizes[1]
                     ])
                 feat_list = self.backbone(selected_img_regions)
                 bgfg = self.head_fgbg(feat_list)
-                binary_fea = F.interpolate(
-                    bgfg[0],
-                    self.kernel_sizes,
-                    mode='bilinear',
-                    align_corners=self.align_corners)
+                binary_fea = F.interpolate(bgfg[0],
+                                           self.kernel_sizes,
+                                           mode='bilinear',
+                                           align_corners=self.align_corners)
                 binary_fea = F.softmax(binary_fea, axis=1)
-                bg_binary, fg_binary = paddle.chunk(
-                    binary_fea, chunks=2, axis=1)
+                bg_binary, fg_binary = paddle.chunk(binary_fea,
+                                                    chunks=2,
+                                                    axis=1)
                 front, ship, mid, lv, sv, hl, swp, mid2, pl, hb = paddle.split(
                     selected_fea_regions,
                     num_or_sections=[1, 1, 6, 1, 1, 1, 1, 2, 1, 1],
@@ -279,23 +270,22 @@ class C2FNet(nn.Layer):
                     x=[front, ship, mid, lv, sv, hl, swp, mid2, pl, hb], axis=1)
                 selected_fea_regions = paddle.reshape(
                     selected_fea_regions,
-                    shape=[paddle.shape(selected_fea_regions)[0], -1])
+                    shape=[selected_fea_regions.shape[0], -1])
                 ori_fea_regions[mask_regions_selected] = selected_fea_regions
                 ori_fea_regions = paddle.reshape(
                     ori_fea_regions,
                     shape=[
-                        paddle.shape(x)[0], -1, self.num_cls *
-                        self.kernel_sizes[0] * self.kernel_sizes[1]
+                        x.shape[0], -1, self.num_cls * self.kernel_sizes[0] *
+                        self.kernel_sizes[1]
                     ])
-                ori_fea_regions = paddle.transpose(
-                    ori_fea_regions, perm=[0, 2, 1])
-                fea_out = F.fold(
-                    ori_fea_regions, [paddle.shape(x)[2], paddle.shape(x)[3]],
-                    self.kernel_sizes,
-                    strides=self.kernel_sizes[0],
-                    paddings=0,
-                    dilations=1,
-                    name=None)
+                ori_fea_regions = paddle.transpose(ori_fea_regions,
+                                                   perm=[0, 2, 1])
+                fea_out = F.fold(ori_fea_regions, [x.shape[2], x.shape[3]],
+                                 self.kernel_sizes,
+                                 strides=self.kernel_sizes[0],
+                                 paddings=0,
+                                 dilations=1,
+                                 name=None)
 
                 return [fea_out]
 
@@ -305,6 +295,7 @@ class C2FNet(nn.Layer):
 
 
 class FCNHead(nn.Layer):
+
     def __init__(self,
                  num_classes,
                  backbone_indices=(-1, ),
@@ -317,18 +308,16 @@ class FCNHead(nn.Layer):
         if channels is None:
             channels = backbone_channels[0]
 
-        self.conv_1 = layers.ConvBNReLU(
-            in_channels=backbone_channels[0],
-            out_channels=channels,
-            kernel_size=1,
-            stride=1,
-            bias_attr=True)
-        self.cls = nn.Conv2D(
-            in_channels=channels,
-            out_channels=self.num_classes,
-            kernel_size=1,
-            stride=1,
-            bias_attr=True)
+        self.conv_1 = layers.ConvBNReLU(in_channels=backbone_channels[0],
+                                        out_channels=channels,
+                                        kernel_size=1,
+                                        stride=1,
+                                        bias_attr=True)
+        self.cls = nn.Conv2D(in_channels=channels,
+                             out_channels=self.num_classes,
+                             kernel_size=1,
+                             stride=1,
+                             bias_attr=True)
         self.init_weight()
 
     def forward(self, feat_list):

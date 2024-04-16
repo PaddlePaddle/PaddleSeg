@@ -72,11 +72,11 @@ class ANN(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
     def init_weight(self):
@@ -117,38 +117,35 @@ class ANNHead(nn.Layer):
         low_in_channels = backbone_channels[0]
         high_in_channels = backbone_channels[1]
 
-        self.fusion = AFNB(
-            low_in_channels=low_in_channels,
-            high_in_channels=high_in_channels,
-            out_channels=high_in_channels,
-            key_channels=key_value_channels,
-            value_channels=key_value_channels,
-            dropout_prob=0.05,
-            repeat_sizes=([1]),
-            psp_size=psp_size)
+        self.fusion = AFNB(low_in_channels=low_in_channels,
+                           high_in_channels=high_in_channels,
+                           out_channels=high_in_channels,
+                           key_channels=key_value_channels,
+                           value_channels=key_value_channels,
+                           dropout_prob=0.05,
+                           repeat_sizes=([1]),
+                           psp_size=psp_size)
 
         self.context = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels=high_in_channels,
-                out_channels=inter_channels,
-                kernel_size=3,
-                padding=1),
-            APNB(
-                in_channels=inter_channels,
-                out_channels=inter_channels,
-                key_channels=key_value_channels,
-                value_channels=key_value_channels,
-                dropout_prob=0.05,
-                repeat_sizes=([1]),
-                psp_size=psp_size))
+            layers.ConvBNReLU(in_channels=high_in_channels,
+                              out_channels=inter_channels,
+                              kernel_size=3,
+                              padding=1),
+            APNB(in_channels=inter_channels,
+                 out_channels=inter_channels,
+                 key_channels=key_value_channels,
+                 value_channels=key_value_channels,
+                 dropout_prob=0.05,
+                 repeat_sizes=([1]),
+                 psp_size=psp_size))
 
-        self.cls = nn.Conv2D(
-            in_channels=inter_channels, out_channels=num_classes, kernel_size=1)
-        self.auxlayer = layers.AuxLayer(
-            in_channels=low_in_channels,
-            inter_channels=low_in_channels // 2,
-            out_channels=num_classes,
-            dropout_prob=0.05)
+        self.cls = nn.Conv2D(in_channels=inter_channels,
+                             out_channels=num_classes,
+                             kernel_size=1)
+        self.auxlayer = layers.AuxLayer(in_channels=low_in_channels,
+                                        inter_channels=low_in_channels // 2,
+                                        out_channels=num_classes,
+                                        dropout_prob=0.05)
 
         self.backbone_indices = backbone_indices
         self.enable_auxiliary_loss = enable_auxiliary_loss
@@ -201,10 +198,10 @@ class AFNB(nn.Layer):
                                     key_channels, value_channels, out_channels,
                                     size) for size in repeat_sizes
         ])
-        self.conv_bn = layers.ConvBN(
-            in_channels=out_channels + high_in_channels,
-            out_channels=out_channels,
-            kernel_size=1)
+        self.conv_bn = layers.ConvBN(in_channels=out_channels +
+                                     high_in_channels,
+                                     out_channels=out_channels,
+                                     kernel_size=1)
         self.dropout = nn.Dropout(p=dropout_prob)
 
     def forward(self, low_feats, high_feats):
@@ -245,14 +242,13 @@ class APNB(nn.Layer):
 
         self.psp_size = psp_size
         self.stages = nn.LayerList([
-            SelfAttentionBlock_APNB(in_channels, out_channels,
-                                    key_channels, value_channels, size)
+            SelfAttentionBlock_APNB(in_channels, out_channels, key_channels,
+                                    value_channels, size)
             for size in repeat_sizes
         ])
-        self.conv_bn = layers.ConvBNReLU(
-            in_channels=in_channels * 2,
-            out_channels=out_channels,
-            kernel_size=1)
+        self.conv_bn = layers.ConvBNReLU(in_channels=in_channels * 2,
+                                         out_channels=out_channels,
+                                         kernel_size=1)
         self.dropout = nn.Dropout(p=dropout_prob)
 
     def forward(self, x):
@@ -310,23 +306,19 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         if out_channels == None:
             self.out_channels = high_in_channels
         self.pool = nn.MaxPool2D(scale)
-        self.f_key = layers.ConvBNReLU(
-            in_channels=low_in_channels,
-            out_channels=key_channels,
-            kernel_size=1)
-        self.f_query = layers.ConvBNReLU(
-            in_channels=high_in_channels,
-            out_channels=key_channels,
-            kernel_size=1)
-        self.f_value = nn.Conv2D(
-            in_channels=low_in_channels,
-            out_channels=value_channels,
-            kernel_size=1)
+        self.f_key = layers.ConvBNReLU(in_channels=low_in_channels,
+                                       out_channels=key_channels,
+                                       kernel_size=1)
+        self.f_query = layers.ConvBNReLU(in_channels=high_in_channels,
+                                         out_channels=key_channels,
+                                         kernel_size=1)
+        self.f_value = nn.Conv2D(in_channels=low_in_channels,
+                                 out_channels=value_channels,
+                                 kernel_size=1)
 
-        self.W = nn.Conv2D(
-            in_channels=value_channels,
-            out_channels=out_channels,
-            kernel_size=1)
+        self.W = nn.Conv2D(in_channels=value_channels,
+                           out_channels=out_channels,
+                           kernel_size=1)
 
         self.psp_size = psp_size
 
@@ -350,7 +342,7 @@ class SelfAttentionBlock_AFNB(nn.Layer):
 
         context = paddle.matmul(sim_map, value)
         context = paddle.transpose(context, perm=(0, 2, 1))
-        hf_shape = paddle.shape(high_feats)
+        hf_shape = high_feats.shape
         context = paddle.reshape(
             context, shape=[0, self.value_channels, hf_shape[2], hf_shape[3]])
 
@@ -387,19 +379,16 @@ class SelfAttentionBlock_APNB(nn.Layer):
         self.key_channels = key_channels
         self.value_channels = value_channels
         self.pool = nn.MaxPool2D(scale)
-        self.f_key = layers.ConvBNReLU(
-            in_channels=self.in_channels,
-            out_channels=self.key_channels,
-            kernel_size=1)
+        self.f_key = layers.ConvBNReLU(in_channels=self.in_channels,
+                                       out_channels=self.key_channels,
+                                       kernel_size=1)
         self.f_query = self.f_key
-        self.f_value = nn.Conv2D(
-            in_channels=self.in_channels,
-            out_channels=self.value_channels,
-            kernel_size=1)
-        self.W = nn.Conv2D(
-            in_channels=self.value_channels,
-            out_channels=self.out_channels,
-            kernel_size=1)
+        self.f_value = nn.Conv2D(in_channels=self.in_channels,
+                                 out_channels=self.value_channels,
+                                 kernel_size=1)
+        self.W = nn.Conv2D(in_channels=self.value_channels,
+                           out_channels=self.out_channels,
+                           kernel_size=1)
 
         self.psp_size = psp_size
 
@@ -426,7 +415,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         context = paddle.matmul(sim_map, value)
         context = paddle.transpose(context, perm=(0, 2, 1))
 
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         context = paddle.reshape(
             context, shape=[0, self.value_channels, x_shape[2], x_shape[3]])
         context = self.W(context)

@@ -73,7 +73,7 @@ class DecoupledSegNet(nn.Layer):
 
         seg_logit, body_logit, edge_logit = [
             F.interpolate(logit,
-                          paddle.shape(x)[2:],
+                          x.shape[2:],
                           mode='bilinear',
                           align_corners=self.align_corners)
             for logit in logit_list
@@ -151,7 +151,7 @@ class DecoupledSegNetHead(nn.Layer):
 
     def forward(self, feat_list):
         fine_fea = feat_list[self.backbone_indices[0]]
-        fine_size = paddle.shape(fine_fea)
+        fine_size = fine_fea.shape
         x = feat_list[self.backbone_indices[1]]
         aspp = self.aspp(x)
 
@@ -206,7 +206,7 @@ class SqueezeBodyEdge(nn.Layer):
                                    bias_attr=False)
 
     def forward(self, x):
-        size = paddle.shape(x)[2:]
+        size = x.shape[2:]
         seg_down = self.down(x)
         seg_down = F.interpolate(seg_down,
                                  size=size,
@@ -218,7 +218,7 @@ class SqueezeBodyEdge(nn.Layer):
         return seg_flow_warp, seg_edge
 
     def flow_warp(self, input, flow, size):
-        input_shape = paddle.shape(input)
+        input_shape = input.shape
         norm = size[::-1].reshape([1, 1, 1, -1])
         norm.stop_gradient = True
         h_grid = paddle.linspace(-1.0, 1.0, size[0]).reshape([-1, 1])

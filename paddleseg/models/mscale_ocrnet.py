@@ -57,7 +57,7 @@ class MscaleOCRNet(nn.Layer):
         self.init_weight()
 
     def _fwd(self, x):
-        x_size = paddle.shape(x)[2:]
+        x_size = x.shape[2:]
         high_level_features = self.backbone(x)
         pred_out, aux_out, ocr_mid_feats = self.ocr(high_level_features)
         attn = self.scale_attn(ocr_mid_feats)
@@ -92,21 +92,26 @@ class MscaleOCRNet(nn.Layer):
                 pred = pred_out
                 aux = aux_out
             elif s[0] >= 1.0:
-                pred = F.interpolate(
-                    pred, size=paddle.shape(pred_out)[2:4], mode='bilinear')
+                pred = F.interpolate(pred,
+                                     size=pred_out.shape[2:4],
+                                     mode='bilinear')
                 pred = attn_out * pred_out + (1 - attn_out) * pred
-                aux = F.interpolate(
-                    aux, size=paddle.shape(pred_out)[2:4], mode='bilinear')
+                aux = F.interpolate(aux,
+                                    size=pred_out.shape[2:4],
+                                    mode='bilinear')
                 aux = attn_out * aux_out + (1 - attn_out) * aux
             else:
                 pred_out = attn_out * pred_out
                 aux_out = attn_out * aux_out
-                pred_out = F.interpolate(
-                    pred_out, size=paddle.shape(pred)[2:4], mode='bilinear')
-                aux_out = F.interpolate(
-                    aux_out, size=paddle.shape(pred)[2:4], mode='bilinear')
-                attn_out = F.interpolate(
-                    attn_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                pred_out = F.interpolate(pred_out,
+                                         size=pred.shape[2:4],
+                                         mode='bilinear')
+                aux_out = F.interpolate(aux_out,
+                                        size=pred.shape[2:4],
+                                        mode='bilinear')
+                attn_out = F.interpolate(attn_out,
+                                         size=pred.shape[2:4],
+                                         mode='bilinear')
                 pred = pred_out + (1 - attn_out) * pred
                 aux = aux_out + (1 - attn_out) * aux
         logit_list = [aux, pred] if self.training else [pred]
@@ -127,20 +132,24 @@ class MscaleOCRNet(nn.Layer):
 
         pred_lower = logit_attn * pred_lower
         aux_lower = logit_attn * aux_lower
-        pred_lower = F.interpolate(
-            pred_lower, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
+        pred_lower = F.interpolate(pred_lower,
+                                   size=pred_higher.shape[2:4],
+                                   mode='bilinear')
 
-        aux_lower = F.interpolate(
-            aux_lower, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
+        aux_lower = F.interpolate(aux_lower,
+                                  size=pred_higher.shape[2:4],
+                                  mode='bilinear')
 
-        logit_attn = F.interpolate(
-            logit_attn, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
+        logit_attn = F.interpolate(logit_attn,
+                                   size=pred_higher.shape[2:4],
+                                   mode='bilinear')
 
         joint_pred = pred_lower + (1 - logit_attn) * pred_higher
         joint_aux = aux_lower + (1 - logit_attn) * aux_higher
         if self.training:
-            scaled_pred_05x = F.interpolate(
-                pred_05x, size=paddle.shape(pred_higher)[2:4], mode='bilinear')
+            scaled_pred_05x = F.interpolate(pred_05x,
+                                            size=pred_higher.shape[2:4],
+                                            mode='bilinear')
             logit_list = [joint_aux, joint_pred, scaled_pred_05x, pred_10x]
         else:
             logit_list = [joint_pred]
@@ -158,13 +167,20 @@ class MscaleOCRNet(nn.Layer):
 
 
 class AttenHead(nn.Layer):
+
     def __init__(self, in_ch, out_ch):
         super().__init__()
         bot_ch = 256
-        self.conv_bn_re0 = layers.ConvBNReLU(
-            in_ch, bot_ch, kernel_size=3, padding=1, bias_attr=False)
-        self.conv_bn_re1 = layers.ConvBNReLU(
-            bot_ch, bot_ch, kernel_size=3, padding=1, bias_attr=False)
+        self.conv_bn_re0 = layers.ConvBNReLU(in_ch,
+                                             bot_ch,
+                                             kernel_size=3,
+                                             padding=1,
+                                             bias_attr=False)
+        self.conv_bn_re1 = layers.ConvBNReLU(bot_ch,
+                                             bot_ch,
+                                             kernel_size=3,
+                                             padding=1,
+                                             bias_attr=False)
         self.conv2 = nn.Conv2D(bot_ch, out_ch, kernel_size=1, bias_attr=False)
         self.sig = nn.Sigmoid()
 
@@ -177,6 +193,7 @@ class AttenHead(nn.Layer):
 
 
 class SpatialConvBNReLU(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -185,19 +202,17 @@ class SpatialConvBNReLU(nn.Layer):
                  **kwargs):
         super().__init__()
 
-        self.conv_bn_relu_1 = layers.ConvBNReLU(
-            in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            padding=padding,
-            **kwargs)
+        self.conv_bn_relu_1 = layers.ConvBNReLU(in_channels,
+                                                out_channels=out_channels,
+                                                kernel_size=kernel_size,
+                                                padding=padding,
+                                                **kwargs)
 
-        self.conv_bn_relu_2 = layers.ConvBNReLU(
-            out_channels,
-            out_channels=out_channels,
-            kernel_size=1,
-            padding=padding,
-            **kwargs)
+        self.conv_bn_relu_2 = layers.ConvBNReLU(out_channels,
+                                                out_channels=out_channels,
+                                                kernel_size=1,
+                                                padding=padding,
+                                                **kwargs)
 
     def forward(self, x):
         x = self.conv_bn_relu_1(x)
@@ -232,6 +247,7 @@ class SpatialGatherModule(nn.Layer):
 
 
 class SpatialOCRModule(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  key_channels,
@@ -243,43 +259,37 @@ class SpatialOCRModule(nn.Layer):
         self.in_channels = in_channels
         self.key_channels = key_channels
         self.pool = nn.MaxPool2D(kernel_size=(scale, scale))
-        self.f_pixel = SpatialConvBNReLU(
-            self.in_channels,
-            self.key_channels,
-            kernel_size=1,
-            padding=0,
-            bias_attr=False)
-        self.f_object = SpatialConvBNReLU(
-            self.in_channels,
-            self.key_channels,
-            kernel_size=1,
-            padding=0,
-            bias_attr=False)
-        self.f_down = layers.ConvBNReLU(
-            self.in_channels,
-            self.key_channels,
-            kernel_size=1,
-            padding=0,
-            bias_attr=False)
-        self.f_up = layers.ConvBNReLU(
-            self.key_channels,
-            self.in_channels,
-            kernel_size=1,
-            padding=0,
-            bias_attr=False)
+        self.f_pixel = SpatialConvBNReLU(self.in_channels,
+                                         self.key_channels,
+                                         kernel_size=1,
+                                         padding=0,
+                                         bias_attr=False)
+        self.f_object = SpatialConvBNReLU(self.in_channels,
+                                          self.key_channels,
+                                          kernel_size=1,
+                                          padding=0,
+                                          bias_attr=False)
+        self.f_down = layers.ConvBNReLU(self.in_channels,
+                                        self.key_channels,
+                                        kernel_size=1,
+                                        padding=0,
+                                        bias_attr=False)
+        self.f_up = layers.ConvBNReLU(self.key_channels,
+                                      self.in_channels,
+                                      kernel_size=1,
+                                      padding=0,
+                                      bias_attr=False)
 
         _in_channels = 2 * in_channels
         self.conv_bn_dropout = nn.Sequential(
-            layers.ConvBNReLU(
-                _in_channels,
-                out_channels,
-                kernel_size=1,
-                padding=0,
-                bias_attr=False),
-            nn.Dropout2D(dropout))
+            layers.ConvBNReLU(_in_channels,
+                              out_channels,
+                              kernel_size=1,
+                              padding=0,
+                              bias_attr=False), nn.Dropout2D(dropout))
 
     def forward(self, feats, proxy):
-        batch_size, _, h, w = paddle.shape(feats)
+        batch_size, _, h, w = feats.shape
         if self.scale > 1:
             feats = self.pool(feats)
 
@@ -293,8 +303,8 @@ class SpatialOCRModule(nn.Layer):
         sim_map = F.softmax(sim_map, axis=-1)
         context = paddle.matmul(sim_map, value)
         context = context.transpose((0, 2, 1))
-        context = context.reshape((batch_size, self.key_channels,
-                                   *paddle.shape(feats)[2:]))
+        context = context.reshape(
+            (batch_size, self.key_channels, *feats.shape[2:]))
         context = self.f_up(context)
         if self.scale > 1:
             context = F.interpolate(context, size=(h, w), mode='bilinear')
@@ -304,6 +314,7 @@ class SpatialOCRModule(nn.Layer):
 
 
 class OCRHead(nn.Layer):
+
     def __init__(self,
                  num_classes,
                  in_channels,
@@ -312,40 +323,37 @@ class OCRHead(nn.Layer):
         super().__init__()
 
         self.indices = [-2, -1] if len(in_channels) > 1 else [-1, -1]
-        self.conv3x3_ocr = layers.ConvBNReLU(
-            in_channels[self.indices[1]],
-            ocr_mid_channels,
-            kernel_size=3,
-            stride=1,
-            padding=1)
+        self.conv3x3_ocr = layers.ConvBNReLU(in_channels[self.indices[1]],
+                                             ocr_mid_channels,
+                                             kernel_size=3,
+                                             stride=1,
+                                             padding=1)
         self.ocr_gather_head = SpatialGatherModule(num_classes)
         self.ocr_distri_head = SpatialOCRModule(
             in_channels=ocr_mid_channels,
             key_channels=ocr_key_channels,
             out_channels=ocr_mid_channels,
             scale=1,
-            dropout=0.05, )
-        self.cls_head = nn.Conv2D(
-            ocr_mid_channels,
-            num_classes,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            bias_attr=True)
+            dropout=0.05,
+        )
+        self.cls_head = nn.Conv2D(ocr_mid_channels,
+                                  num_classes,
+                                  kernel_size=1,
+                                  stride=1,
+                                  padding=0,
+                                  bias_attr=True)
         self.aux_head = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels[self.indices[0]],
-                in_channels[self.indices[0]],
-                kernel_size=1,
-                stride=1,
-                padding=0),
-            nn.Conv2D(
-                in_channels[self.indices[0]],
-                num_classes,
-                kernel_size=1,
-                stride=1,
-                padding=0,
-                bias_attr=True))
+            layers.ConvBNReLU(in_channels[self.indices[0]],
+                              in_channels[self.indices[0]],
+                              kernel_size=1,
+                              stride=1,
+                              padding=0),
+            nn.Conv2D(in_channels[self.indices[0]],
+                      num_classes,
+                      kernel_size=1,
+                      stride=1,
+                      padding=0,
+                      bias_attr=True))
         self.init_weight()
 
     def forward(self, high_level_features):

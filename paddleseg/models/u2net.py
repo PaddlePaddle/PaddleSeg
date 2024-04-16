@@ -263,11 +263,15 @@ class U2Netp(nn.Layer):
 
 
 class REBNCONV(nn.Layer):
+
     def __init__(self, in_ch=3, out_ch=3, dirate=1):
         super(REBNCONV, self).__init__()
 
-        self.conv_s1 = nn.Conv2D(
-            in_ch, out_ch, 3, padding=1 * dirate, dilation=1 * dirate)
+        self.conv_s1 = nn.Conv2D(in_ch,
+                                 out_ch,
+                                 3,
+                                 padding=1 * dirate,
+                                 dilation=1 * dirate)
         self.bn_s1 = nn.BatchNorm2D(out_ch)
         self.relu_s1 = nn.ReLU()
 
@@ -282,13 +286,14 @@ class REBNCONV(nn.Layer):
 ## upsample tensor 'src' to have the same spatial size with tensor 'tar'
 def _upsample_like(src, tar):
 
-    src = F.upsample(src, size=paddle.shape(tar)[2:], mode='bilinear')
+    src = F.upsample(src, size=tar.shape[2:], mode='bilinear')
 
     return src
 
 
 ### RSU-7 ###
 class RSU7(nn.Layer):  #UNet07DRES(nn.Layer):
+
     def __init__(self, in_ch=3, mid_ch=12, out_ch=3):
         super(RSU7, self).__init__()
 
@@ -366,6 +371,7 @@ class RSU7(nn.Layer):  #UNet07DRES(nn.Layer):
 
 ### RSU-6 ###
 class RSU6(nn.Layer):  #UNet06DRES(nn.Layer):
+
     def __init__(self, in_ch=3, mid_ch=12, out_ch=3):
         super(RSU6, self).__init__()
 
@@ -434,6 +440,7 @@ class RSU6(nn.Layer):  #UNet06DRES(nn.Layer):
 
 ### RSU-5 ###
 class RSU5(nn.Layer):  #UNet05DRES(nn.Layer):
+
     def __init__(self, in_ch=3, mid_ch=12, out_ch=3):
         super(RSU5, self).__init__()
 
@@ -492,6 +499,7 @@ class RSU5(nn.Layer):  #UNet05DRES(nn.Layer):
 
 ### RSU-4 ###
 class RSU4(nn.Layer):  #UNet04DRES(nn.Layer):
+
     def __init__(self, in_ch=3, mid_ch=12, out_ch=3):
         super(RSU4, self).__init__()
 
@@ -540,6 +548,7 @@ class RSU4(nn.Layer):  #UNet04DRES(nn.Layer):
 
 ### RSU-4F ###
 class RSU4F(nn.Layer):  #UNet04FRES(nn.Layer):
+
     def __init__(self, in_ch=3, mid_ch=12, out_ch=3):
         super(RSU4F, self).__init__()
 

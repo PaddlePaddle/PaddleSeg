@@ -50,14 +50,14 @@ class LinearSegmenter(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
 
         feats, shape = self.backbone(x)
         logits = self.head(feats[-1], shape[2:])
 
         logit_list = [
-            F.interpolate(
-                logit, x_shape[2:], mode='bilinear') for logit in logits
+            F.interpolate(logit, x_shape[2:], mode='bilinear')
+            for logit in logits
         ]
 
         return logit_list
@@ -99,10 +99,11 @@ class MaskSegmenter(nn.Layer):
                  pretrained=None):
         super().__init__()
         self.backbone = backbone
-        self.head = SegmenterMaskHead(
-            num_classes, backbone.embed_dim, h_embed_dim, h_depth, h_num_heads,
-            h_mlp_ratio, h_drop_rate, h_drop_path_rate, h_attn_drop_rate,
-            h_qkv_bias)
+        self.head = SegmenterMaskHead(num_classes, backbone.embed_dim,
+                                      h_embed_dim, h_depth, h_num_heads,
+                                      h_mlp_ratio, h_drop_rate,
+                                      h_drop_path_rate, h_attn_drop_rate,
+                                      h_qkv_bias)
         self.pretrained = pretrained
         self.init_weight()
 
@@ -111,14 +112,14 @@ class MaskSegmenter(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
 
         feats, shape = self.backbone(x)
         logits = self.head(feats[-1], shape[2:])
 
         logit_list = [
-            F.interpolate(
-                logit, x_shape[2:], mode='bilinear') for logit in logits
+            F.interpolate(logit, x_shape[2:], mode='bilinear')
+            for logit in logits
         ]
 
         return logit_list
@@ -149,7 +150,7 @@ class SegmenterLinearHead(nn.Layer):
 
         #[b, (h w), c] -> [b, c, h, w]
         h, w = patch_embed_size[0], patch_embed_size[1]
-        masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
+        masks = masks.reshape((0, h, w, masks.shape[-1]))
         masks = masks.transpose((0, 3, 1, 2))
 
         return [masks]
@@ -193,14 +194,13 @@ class SegmenterMaskHead(nn.Layer):
 
         dpr = [x for x in np.linspace(0, drop_path_rate, depth)]
         self.blocks = nn.LayerList([
-            vision_transformer.Block(
-                dim=embed_dim,
-                num_heads=num_heads,
-                mlp_ratio=mlp_ratio,
-                drop=drop_rate,
-                drop_path=dpr[i],
-                attn_drop=attn_drop_rate,
-                qkv_bias=qkv_bias) for i in range(depth)
+            vision_transformer.Block(dim=embed_dim,
+                                     num_heads=num_heads,
+                                     mlp_ratio=mlp_ratio,
+                                     drop=drop_rate,
+                                     drop_path=dpr[i],
+                                     attn_drop=attn_drop_rate,
+                                     qkv_bias=qkv_bias) for i in range(depth)
         ])
 
         initializer = paddle.nn.initializer.TruncatedNormal(std=0.02)
@@ -230,7 +230,7 @@ class SegmenterMaskHead(nn.Layer):
         """
         x = self.proj_input(x)
 
-        cls_token = self.cls_token.expand((paddle.shape(x)[0], -1, -1))
+        cls_token = self.cls_token.expand((x.shape[0], -1, -1))
         x = paddle.concat([x, cls_token], axis=1)
 
         for block in self.blocks:
@@ -243,14 +243,14 @@ class SegmenterMaskHead(nn.Layer):
         patches = patches / paddle.norm(patches, axis=-1, keepdim=True)
         masks = masks / paddle.norm(masks, axis=-1, keepdim=True)
 
-        masks = patches @masks.transpose((0, 2, 1))
-        masks = masks.reshape((0, 0,
-                               self.num_classes))  # For export inference model
+        masks = patches @ masks.transpose((0, 2, 1))
+        masks = masks.reshape(
+            (0, 0, self.num_classes))  # For export inference model
         masks = self.mask_norm(masks)
 
         #[b, (h w), c] -> [b, c, h, w]
         h, w = patch_embed_size[0], patch_embed_size[1]
-        masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
+        masks = masks.reshape((0, h, w, masks.shape[-1]))
         masks = masks.transpose((0, 3, 1, 2))
 
         return [masks]

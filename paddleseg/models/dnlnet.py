@@ -73,12 +73,11 @@ class DNLNet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners,
-                align_mode=1) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners,
+                          align_mode=1) for logit in logit_list
         ]
         return logit_list
 
@@ -120,38 +119,32 @@ class DNLHead(nn.Layer):
         self.enable_auxiliary_loss = enable_auxiliary_loss
         inter_channels = self.in_channels // 4
 
-        self.dnl_block = DisentangledNonLocal2D(
-            in_channels=inter_channels,
-            reduction=reduction,
-            use_scale=use_scale,
-            temperature=temperature,
-            mode=mode)
-        self.conv0 = layers.ConvBNReLU(
-            in_channels=self.in_channels,
-            out_channels=inter_channels,
-            kernel_size=3,
-            bias_attr=False)
-        self.conv1 = layers.ConvBNReLU(
-            in_channels=inter_channels,
-            out_channels=inter_channels,
-            kernel_size=3,
-            bias_attr=False)
-        self.cls = nn.Sequential(
-            nn.Dropout2D(p=0.1), nn.Conv2D(inter_channels, num_classes, 1))
+        self.dnl_block = DisentangledNonLocal2D(in_channels=inter_channels,
+                                                reduction=reduction,
+                                                use_scale=use_scale,
+                                                temperature=temperature,
+                                                mode=mode)
+        self.conv0 = layers.ConvBNReLU(in_channels=self.in_channels,
+                                       out_channels=inter_channels,
+                                       kernel_size=3,
+                                       bias_attr=False)
+        self.conv1 = layers.ConvBNReLU(in_channels=inter_channels,
+                                       out_channels=inter_channels,
+                                       kernel_size=3,
+                                       bias_attr=False)
+        self.cls = nn.Sequential(nn.Dropout2D(p=0.1),
+                                 nn.Conv2D(inter_channels, num_classes, 1))
         self.aux = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels=1024,
-                out_channels=256,
-                kernel_size=3,
-                bias_attr=False),
-            nn.Dropout2D(p=0.1),
+            layers.ConvBNReLU(in_channels=1024,
+                              out_channels=256,
+                              kernel_size=3,
+                              bias_attr=False), nn.Dropout2D(p=0.1),
             nn.Conv2D(256, num_classes, 1))
         if self.concat_input:
-            self.conv_cat = layers.ConvBNReLU(
-                self.in_channels + inter_channels,
-                inter_channels,
-                kernel_size=3,
-                bias_attr=False)
+            self.conv_cat = layers.ConvBNReLU(self.in_channels + inter_channels,
+                                              inter_channels,
+                                              kernel_size=3,
+                                              bias_attr=False)
 
     def forward(self, feat_list):
         C3, C4 = feat_list
@@ -189,21 +182,21 @@ class DisentangledNonLocal2D(layers.NonLocal2D):
         return pairwise_weight
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         g_x = self.g(x).reshape([0, self.inter_channels,
                                  -1]).transpose([0, 2, 1])
 
         if self.mode == "gaussian":
-            theta_x = paddle.transpose(
-                x.reshape([0, self.in_channels, -1]), [0, 2, 1])
+            theta_x = paddle.transpose(x.reshape([0, self.in_channels, -1]),
+                                       [0, 2, 1])
             if self.sub_sample:
                 phi_x = paddle.transpose(self.phi(x), [0, self.in_channels, -1])
             else:
                 phi_x = paddle.transpose(x, [0, self.in_channels, -1])
 
         elif self.mode == "concatenation":
-            theta_x = paddle.reshape(
-                self.theta(x), [0, self.inter_channels, -1, 1])
+            theta_x = paddle.reshape(self.theta(x),
+                                     [0, self.inter_channels, -1, 1])
             phi_x = paddle.reshape(self.phi(x), [0, self.inter_channels, 1, -1])
 
         else:
@@ -219,8 +212,8 @@ class DisentangledNonLocal2D(layers.NonLocal2D):
 
         y = paddle.matmul(pairwise_weight, g_x).transpose([0, 2, 1]).reshape(
             [0, self.inter_channels, x_shape[2], x_shape[3]])
-        unary_mask = F.softmax(
-            paddle.reshape(self.conv_mask(x), [0, 1, -1]), -1)
+        unary_mask = F.softmax(paddle.reshape(self.conv_mask(x), [0, 1, -1]),
+                               -1)
         unary_x = paddle.matmul(unary_mask, g_x).transpose([0, 2, 1]).reshape(
             [0, self.inter_channels, 1, 1])
         output = x + self.conv_out(y + unary_x)

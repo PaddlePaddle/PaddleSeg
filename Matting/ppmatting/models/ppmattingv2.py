@@ -80,17 +80,17 @@ class PPMattingV2(nn.Layer):
 
         # dpp module
         self.dpp_index = dpp_index
-        self.dpp = DoublePyramidPoolModule(
-            stride=2,
-            input_channel=sum(self.backbone_channels[i]
-                              for i in self.dpp_index),
-            mid_channel=dpp_mid_channel,
-            output_channel=dpp_output_channel,
-            len_trans=dpp_len_trans,
-            bin_sizes=dpp_bin_sizes,
-            mlp_ratios=dpp_mlp_ratios,
-            attn_ratio=dpp_attn_ratio,
-            merge_type=dpp_merge_type)
+        self.dpp = DoublePyramidPoolModule(stride=2,
+                                           input_channel=sum(
+                                               self.backbone_channels[i]
+                                               for i in self.dpp_index),
+                                           mid_channel=dpp_mid_channel,
+                                           output_channel=dpp_output_channel,
+                                           len_trans=dpp_len_trans,
+                                           bin_sizes=dpp_bin_sizes,
+                                           mlp_ratios=dpp_mlp_ratios,
+                                           attn_ratio=dpp_attn_ratio,
+                                           merge_type=dpp_merge_type)
 
         # decoder
         self.mlff32x = MLFF(
@@ -98,26 +98,24 @@ class PPMattingV2(nn.Layer):
             mid_channels=[dpp_output_channel, dpp_output_channel],
             out_channel=decoder_channels[0],
             merge_type=mlff_merge_type)
-        self.mlff16x = MLFF(
-            in_channels=[
-                self.backbone_channels[-2], decoder_channels[0],
-                dpp_output_channel
-            ],
-            mid_channels=[
-                decoder_channels[0], decoder_channels[0], decoder_channels[0]
-            ],
-            out_channel=decoder_channels[1],
-            merge_type=mlff_merge_type)
-        self.mlff8x = MLFF(
-            in_channels=[
-                self.backbone_channels[-3], decoder_channels[1],
-                dpp_output_channel
-            ],
-            mid_channels=[
-                decoder_channels[1], decoder_channels[1], decoder_channels[1]
-            ],
-            out_channel=decoder_channels[2],
-            merge_type=mlff_merge_type)
+        self.mlff16x = MLFF(in_channels=[
+            self.backbone_channels[-2], decoder_channels[0], dpp_output_channel
+        ],
+                            mid_channels=[
+                                decoder_channels[0], decoder_channels[0],
+                                decoder_channels[0]
+                            ],
+                            out_channel=decoder_channels[1],
+                            merge_type=mlff_merge_type)
+        self.mlff8x = MLFF(in_channels=[
+            self.backbone_channels[-3], decoder_channels[1], dpp_output_channel
+        ],
+                           mid_channels=[
+                               decoder_channels[1], decoder_channels[1],
+                               decoder_channels[1]
+                           ],
+                           out_channel=decoder_channels[2],
+                           merge_type=mlff_merge_type)
         self.mlff4x = MLFF(
             in_channels=[self.backbone_channels[-4], decoder_channels[2], 3],
             mid_channels=[decoder_channels[2], decoder_channels[2], 3],
@@ -127,10 +125,11 @@ class PPMattingV2(nn.Layer):
             mid_channels=[decoder_channels[3], decoder_channels[3], 3],
             out_channel=decoder_channels[4])
 
-        self.matting_head_mlff8x = MattingHead(
-            in_chan=decoder_channels[2], mid_chan=32)
-        self.matting_head_mlff2x = MattingHead(
-            in_chan=decoder_channels[4] + 3, mid_chan=head_channel, mid_num=2)
+        self.matting_head_mlff8x = MattingHead(in_chan=decoder_channels[2],
+                                               mid_chan=32)
+        self.matting_head_mlff2x = MattingHead(in_chan=decoder_channels[4] + 3,
+                                               mid_chan=head_channel,
+                                               mid_num=2)
 
         # loss
         self.loss_func_dict = None
@@ -141,38 +140,36 @@ class PPMattingV2(nn.Layer):
 
     def forward(self, inputs):
         img = inputs['img']
-        input_shape = paddle.shape(img)
+        input_shape = img.shape
         feats_backbone = self.backbone(
             img)  # stdc1 [2x, 4x, 8x, 16x, 32x] [32, 64, 256, 512, 1024]
         x = self.dpp([feats_backbone[i] for i in self.dpp_index])
         dpp_out = x
 
         input_32x = [feats_backbone[-1], x]
-        x = self.mlff32x(input_32x,
-                         paddle.shape(feats_backbone[-1])[-2:])  # 32x
+        x = self.mlff32x(input_32x, feats_backbone[-1].shape[-2:])  # 32x
 
         input_16x = [feats_backbone[-2], x, dpp_out]
-        x = self.mlff16x(input_16x,
-                         paddle.shape(feats_backbone[-2])[-2:])  # 16x
+        x = self.mlff16x(input_16x, feats_backbone[-2].shape[-2:])  # 16x
 
         input_8x = [feats_backbone[-3], x, dpp_out]
-        x = self.mlff8x(input_8x, paddle.shape(feats_backbone[-3])[-2:])  # 8x
+        x = self.mlff8x(input_8x, feats_backbone[-3].shape[-2:])  # 8x
         mlff8x_output = x
 
         input_4x = [feats_backbone[-4], x]
         input_4x.append(
-            F.interpolate(
-                img, feats_backbone[-4].shape[2:], mode='area'))
-        x = self.mlff4x(input_4x, paddle.shape(feats_backbone[-4])[-2:])  # 4x
+            F.interpolate(img, feats_backbone[-4].shape[2:], mode='area'))
+        x = self.mlff4x(input_4x, feats_backbone[-4].shape[-2:])  # 4x
 
         input_2x = [feats_backbone[-5], x]
         input_2x.append(
-            F.interpolate(
-                img, feats_backbone[-5].shape[2:], mode='area'))
-        x = self.mlff2x(input_2x, paddle.shape(feats_backbone[-5])[-2:])  # 2x
+            F.interpolate(img, feats_backbone[-5].shape[2:], mode='area'))
+        x = self.mlff2x(input_2x, feats_backbone[-5].shape[-2:])  # 2x
 
-        x = F.interpolate(
-            x, input_shape[-2:], mode='bilinear', align_corners=False)
+        x = F.interpolate(x,
+                          input_shape[-2:],
+                          mode='bilinear',
+                          align_corners=False)
         x = paddle.concat([x, img], axis=1)
         alpha = self.matting_head_mlff2x(x)
 
@@ -199,11 +196,10 @@ class PPMattingV2(nn.Layer):
             self.loss_func_dict = loss_func_dict
 
         loss = {}
-        alpha_8x_label = F.interpolate(
-            label_dict['alpha'],
-            size=logit_dict['alpha_8x'].shape[-2:],
-            mode='area',
-            align_corners=False)
+        alpha_8x_label = F.interpolate(label_dict['alpha'],
+                                       size=logit_dict['alpha_8x'].shape[-2:],
+                                       mode='area',
+                                       align_corners=False)
         loss['alpha_8x_mrsd'] = self.loss_func_dict['alpha_8x'][0](
             logit_dict['alpha_8x'], alpha_8x_label)
         loss['alpha_8x_grad'] = self.loss_func_dict['alpha_8x'][1](
@@ -230,26 +226,27 @@ class PPMattingV2(nn.Layer):
 
 
 class MattingHead(nn.Layer):
+
     def __init__(self, in_chan, mid_chan, mid_num=1, out_channels=1):
         super().__init__()
-        self.conv = layers.ConvBNReLU(
-            in_chan,
-            mid_chan,
-            kernel_size=3,
-            stride=1,
-            padding=1,
-            bias_attr=False)
+        self.conv = layers.ConvBNReLU(in_chan,
+                                      mid_chan,
+                                      kernel_size=3,
+                                      stride=1,
+                                      padding=1,
+                                      bias_attr=False)
         self.mid_conv = nn.LayerList([
-            layers.ConvBNReLU(
-                mid_chan,
-                mid_chan,
-                kernel_size=3,
-                stride=1,
-                padding=1,
-                bias_attr=False) for i in range(mid_num - 1)
+            layers.ConvBNReLU(mid_chan,
+                              mid_chan,
+                              kernel_size=3,
+                              stride=1,
+                              padding=1,
+                              bias_attr=False) for i in range(mid_num - 1)
         ])
-        self.conv_out = nn.Conv2D(
-            mid_chan, out_channels, kernel_size=1, bias_attr=False)
+        self.conv_out = nn.Conv2D(mid_chan,
+                                  out_channels,
+                                  kernel_size=1,
+                                  bias_attr=False)
 
     def forward(self, x):
         x = self.conv(x)
@@ -314,8 +311,9 @@ class DoublePyramidPoolModule(nn.Layer):
         self.pp1 = PyramidPoolAgg(stride=stride)
         self.conv_mid = layers.ConvBN(input_channel, mid_channel, 1)
         self.pp2 = nn.LayerList([
-            self._make_stage(
-                embdeding_channels=mid_channel, size=size, block_num=block_num)
+            self._make_stage(embdeding_channels=mid_channel,
+                             size=size,
+                             block_num=block_num)
             for size, block_num in zip(bin_sizes, self.len_trans)
         ])
 
@@ -323,29 +321,28 @@ class DoublePyramidPoolModule(nn.Layer):
             in_chan = mid_channel + mid_channel * len(bin_sizes)
         else:
             in_chan = mid_channel
-        self.conv_out = layers.ConvBNReLU(
-            in_chan, output_channel, kernel_size=1)
+        self.conv_out = layers.ConvBNReLU(in_chan,
+                                          output_channel,
+                                          kernel_size=1)
 
     def _make_stage(self, embdeding_channels, size, block_num):
         prior = nn.AdaptiveAvgPool2D(output_size=size)
         if size == 1:
-            trans = layers.ConvBNReLU(
-                in_channels=embdeding_channels,
-                out_channels=embdeding_channels,
-                kernel_size=1)
+            trans = layers.ConvBNReLU(in_channels=embdeding_channels,
+                                      out_channels=embdeding_channels,
+                                      kernel_size=1)
         else:
-            trans = BasicLayer(
-                block_num=block_num,
-                embedding_dim=embdeding_channels,
-                key_dim=16,
-                num_heads=8,
-                mlp_ratios=self.mlp_rations,
-                attn_ratio=self.attn_ratio,
-                drop=0,
-                attn_drop=0,
-                drop_path=0,
-                act_layer=nn.ReLU6,
-                lr_mult=1.0)
+            trans = BasicLayer(block_num=block_num,
+                               embedding_dim=embdeding_channels,
+                               key_dim=16,
+                               num_heads=8,
+                               mlp_ratios=self.mlp_rations,
+                               attn_ratio=self.attn_ratio,
+                               drop=0,
+                               attn_drop=0,
+                               drop_path=0,
+                               act_layer=nn.ReLU6,
+                               lr_mult=1.0)
         return nn.Sequential(prior, trans)
 
     def forward(self, inputs):
@@ -355,11 +352,10 @@ class DoublePyramidPoolModule(nn.Layer):
         cat_layers = []
         for stage in self.pp2:
             x = stage(pp2_input)
-            x = F.interpolate(
-                x,
-                paddle.shape(pp2_input)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
+            x = F.interpolate(x,
+                              pp2_input.shape[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners)
             cat_layers.append(x)
         cat_layers = [pp2_input] + cat_layers[::-1]
         if self.merge_type == 'concat':
@@ -371,6 +367,7 @@ class DoublePyramidPoolModule(nn.Layer):
 
 
 class Conv2DBN(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -383,23 +380,23 @@ class Conv2DBN(nn.Layer):
                  lr_mult=1.0):
         super().__init__()
         conv_weight_attr = paddle.ParamAttr(learning_rate=lr_mult)
-        self.c = nn.Conv2D(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=ks,
-            stride=stride,
-            padding=pad,
-            dilation=dilation,
-            groups=groups,
-            weight_attr=conv_weight_attr,
-            bias_attr=False)
+        self.c = nn.Conv2D(in_channels=in_channels,
+                           out_channels=out_channels,
+                           kernel_size=ks,
+                           stride=stride,
+                           padding=pad,
+                           dilation=dilation,
+                           groups=groups,
+                           weight_attr=conv_weight_attr,
+                           bias_attr=False)
         bn_weight_attr = paddle.ParamAttr(
             initializer=nn.initializer.Constant(bn_weight_init),
             learning_rate=lr_mult)
-        bn_bias_attr = paddle.ParamAttr(
-            initializer=nn.initializer.Constant(0), learning_rate=lr_mult)
-        self.bn = nn.BatchNorm2D(
-            out_channels, weight_attr=bn_weight_attr, bias_attr=bn_bias_attr)
+        bn_bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(0),
+                                        learning_rate=lr_mult)
+        self.bn = nn.BatchNorm2D(out_channels,
+                                 weight_attr=bn_weight_attr,
+                                 bias_attr=bn_bias_attr)
 
     def forward(self, inputs):
         out = self.c(inputs)
@@ -408,6 +405,7 @@ class Conv2DBN(nn.Layer):
 
 
 class MLP(nn.Layer):
+
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -420,15 +418,14 @@ class MLP(nn.Layer):
         hidden_features = hidden_features or in_features
         self.fc1 = Conv2DBN(in_features, hidden_features, lr_mult=lr_mult)
         param_attr = paddle.ParamAttr(learning_rate=lr_mult)
-        self.dwconv = nn.Conv2D(
-            hidden_features,
-            hidden_features,
-            3,
-            1,
-            1,
-            groups=hidden_features,
-            weight_attr=param_attr,
-            bias_attr=param_attr)
+        self.dwconv = nn.Conv2D(hidden_features,
+                                hidden_features,
+                                3,
+                                1,
+                                1,
+                                groups=hidden_features,
+                                weight_attr=param_attr,
+                                bias_attr=param_attr)
         self.act = act_layer()
         self.fc2 = Conv2DBN(hidden_features, out_features, lr_mult=lr_mult)
         self.drop = nn.Dropout(drop)
@@ -444,6 +441,7 @@ class MLP(nn.Layer):
 
 
 class Attention(nn.Layer):
+
     def __init__(self,
                  dim,
                  key_dim,
@@ -466,18 +464,17 @@ class Attention(nn.Layer):
 
         self.proj = nn.Sequential(
             activation(),
-            Conv2DBN(
-                self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
+            Conv2DBN(self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         H, W = x_shape[2], x_shape[3]
 
-        qq = self.to_q(x).reshape(
-            [0, self.num_heads, self.key_dim, -1]).transpose([0, 1, 3, 2])
+        qq = self.to_q(x).reshape([0, self.num_heads, self.key_dim,
+                                   -1]).transpose([0, 1, 3, 2])
         kk = self.to_k(x).reshape([0, self.num_heads, self.key_dim, -1])
-        vv = self.to_v(x).reshape([0, self.num_heads, self.d, -1]).transpose(
-            [0, 1, 3, 2])
+        vv = self.to_v(x).reshape([0, self.num_heads, self.d,
+                                   -1]).transpose([0, 1, 3, 2])
 
         attn = paddle.matmul(qq, kk)
         attn = F.softmax(attn, axis=-1)
@@ -490,6 +487,7 @@ class Attention(nn.Layer):
 
 
 class Block(nn.Layer):
+
     def __init__(self,
                  dim,
                  key_dim,
@@ -505,13 +503,12 @@ class Block(nn.Layer):
         self.num_heads = num_heads
         self.mlp_ratios = mlp_ratios
 
-        self.attn = Attention(
-            dim,
-            key_dim=key_dim,
-            num_heads=num_heads,
-            attn_ratio=attn_ratio,
-            activation=act_layer,
-            lr_mult=lr_mult)
+        self.attn = Attention(dim,
+                              key_dim=key_dim,
+                              num_heads=num_heads,
+                              attn_ratio=attn_ratio,
+                              activation=act_layer,
+                              lr_mult=lr_mult)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
@@ -536,6 +533,7 @@ class Block(nn.Layer):
 
 
 class BasicLayer(nn.Layer):
+
     def __init__(self,
                  block_num,
                  embedding_dim,
@@ -554,26 +552,26 @@ class BasicLayer(nn.Layer):
         self.transformer_blocks = nn.LayerList()
         for i in range(self.block_num):
             self.transformer_blocks.append(
-                Block(
-                    embedding_dim,
-                    key_dim=key_dim,
-                    num_heads=num_heads,
-                    mlp_ratios=mlp_ratios,
-                    attn_ratio=attn_ratio,
-                    drop=drop,
-                    drop_path=drop_path[i]
-                    if isinstance(drop_path, list) else drop_path,
-                    act_layer=act_layer,
-                    lr_mult=lr_mult))
+                Block(embedding_dim,
+                      key_dim=key_dim,
+                      num_heads=num_heads,
+                      mlp_ratios=mlp_ratios,
+                      attn_ratio=attn_ratio,
+                      drop=drop,
+                      drop_path=drop_path[i]
+                      if isinstance(drop_path, list) else drop_path,
+                      act_layer=act_layer,
+                      lr_mult=lr_mult))
 
     def forward(self, x):
-        # token * N 
+        # token * N
         for i in range(self.block_num):
             x = self.transformer_blocks[i](x)
         return x
 
 
 class PyramidPoolAgg(nn.Layer):
+
     def __init__(self, stride):
         super().__init__()
         self.stride = stride

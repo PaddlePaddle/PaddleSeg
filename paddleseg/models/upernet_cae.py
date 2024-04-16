@@ -82,25 +82,33 @@ class UPerNetCAE(nn.Layer):
     def _init_fpn(self, embed_dim=768, patch_size=16, out_with_norm=False):
         if patch_size == 16:
             self.fpn1 = nn.Sequential(
-                nn.Conv2DTranspose(
-                    embed_dim, embed_dim, kernel_size=2, stride=2),
-                nn.SyncBatchNorm(
-                    embed_dim, momentum=0.1),
+                nn.Conv2DTranspose(embed_dim,
+                                   embed_dim,
+                                   kernel_size=2,
+                                   stride=2),
+                nn.SyncBatchNorm(embed_dim, momentum=0.1),
                 nn.GELU(),
-                nn.Conv2DTranspose(
-                    embed_dim, embed_dim, kernel_size=2, stride=2), )
+                nn.Conv2DTranspose(embed_dim,
+                                   embed_dim,
+                                   kernel_size=2,
+                                   stride=2),
+            )
 
             self.fpn2 = nn.Sequential(
-                nn.Conv2DTranspose(
-                    embed_dim, embed_dim, kernel_size=2, stride=2), )
+                nn.Conv2DTranspose(embed_dim,
+                                   embed_dim,
+                                   kernel_size=2,
+                                   stride=2), )
 
             self.fpn3 = Identity()
 
             self.fpn4 = nn.MaxPool2D(kernel_size=2, stride=2)
         elif patch_size == 8:
             self.fpn1 = nn.Sequential(
-                nn.Conv2DTranspose(
-                    embed_dim, embed_dim, kernel_size=2, stride=2), )
+                nn.Conv2DTranspose(embed_dim,
+                                   embed_dim,
+                                   kernel_size=2,
+                                   stride=2), )
 
             self.fpn2 = Identity()
 
@@ -120,10 +128,9 @@ class UPerNetCAE(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
 
         for i, feat in enumerate(feats):
-            feats[i] = paddle.reshape(
-                paddle.transpose(
-                    self.norm(feat), perm=[0, 2, 1]),
-                shape=[B, -1, Hp, Wp])
+            feats[i] = paddle.reshape(paddle.transpose(self.norm(feat),
+                                                       perm=[0, 2, 1]),
+                                      shape=[B, -1, Hp, Wp])
 
         ops = [self.fpn1, self.fpn2, self.fpn3, self.fpn4]
         for i in range(len(feats)):
@@ -131,11 +138,10 @@ class UPerNetCAE(nn.Layer):
 
         logit_list = self.decode_head(feats)
         logit_list = [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=False) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=False) for logit in logit_list
         ]
         return logit_list
 
@@ -173,12 +179,12 @@ class PPModuleCAE(nn.Layer):
             for size in bin_sizes
         ])
 
-        self.conv_bn_relu2 = layers.ConvBNReLU(
-            in_channels=in_channels + inter_channels * len(bin_sizes),
-            out_channels=out_channels,
-            kernel_size=3,
-            padding=1,
-            bias_attr=False)
+        self.conv_bn_relu2 = layers.ConvBNReLU(in_channels=in_channels +
+                                               inter_channels * len(bin_sizes),
+                                               out_channels=out_channels,
+                                               kernel_size=3,
+                                               padding=1,
+                                               bias_attr=False)
 
         self.align_corners = align_corners
 
@@ -201,11 +207,10 @@ class PPModuleCAE(nn.Layer):
         """
 
         prior = nn.AdaptiveAvgPool2D(output_size=(size, size))
-        conv = layers.ConvBNReLU(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=1,
-            bias_attr=False)
+        conv = layers.ConvBNReLU(in_channels=in_channels,
+                                 out_channels=out_channels,
+                                 kernel_size=1,
+                                 bias_attr=False)
 
         return nn.Sequential(prior, conv)
 
@@ -213,11 +218,10 @@ class PPModuleCAE(nn.Layer):
         cat_layers = []
         for stage in self.stages:
             x = stage(input)
-            x = F.interpolate(
-                x,
-                paddle.shape(input)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
+            x = F.interpolate(x,
+                              input.shape[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners)
             cat_layers.append(x)
         cat_layers = [input] + cat_layers
         cat = paddle.concat(cat_layers, axis=1)
@@ -247,12 +251,11 @@ class UPerNetHead(nn.Layer):
                  fpn_channels=512,
                  enable_auxiliary_loss=False):
         super(UPerNetHead, self).__init__()
-        self.psp_modules = PPModuleCAE(
-            in_channels=inplane,
-            out_channels=fpn_channels,
-            bin_sizes=(1, 2, 3, 6),
-            dim_reduction=False,
-            align_corners=False)
+        self.psp_modules = PPModuleCAE(in_channels=inplane,
+                                       out_channels=fpn_channels,
+                                       bin_sizes=(1, 2, 3, 6),
+                                       dim_reduction=False,
+                                       align_corners=False)
 
         self.enable_auxiliary_loss = enable_auxiliary_loss
         self.lateral_convs = []
@@ -261,14 +264,14 @@ class UPerNetHead(nn.Layer):
         for fpn_inplane in channels_fpn[:-1]:
             self.lateral_convs.append(
                 nn.Sequential(
-                    nn.Conv2D(
-                        fpn_inplane, fpn_channels, 1, bias_attr=False),
-                    layers.SyncBatchNorm(fpn_channels),
-                    nn.ReLU()))
+                    nn.Conv2D(fpn_inplane, fpn_channels, 1, bias_attr=False),
+                    layers.SyncBatchNorm(fpn_channels), nn.ReLU()))
             self.fpn_convs.append(
                 nn.Sequential(
-                    layers.ConvBNReLU(
-                        fpn_channels, fpn_channels, 3, bias_attr=False)))
+                    layers.ConvBNReLU(fpn_channels,
+                                      fpn_channels,
+                                      3,
+                                      bias_attr=False)))
 
         self.lateral_convs = nn.LayerList(self.lateral_convs)
         self.fpn_convs = nn.LayerList(self.fpn_convs)
@@ -276,29 +279,32 @@ class UPerNetHead(nn.Layer):
         if self.enable_auxiliary_loss:
             if dropout_ratio is not None:
                 self.dsn = nn.Sequential(
-                    layers.ConvBNReLU(
-                        channels_fpn[2], 256, 3, padding=1, bias_attr=False),
+                    layers.ConvBNReLU(channels_fpn[2],
+                                      256,
+                                      3,
+                                      padding=1,
+                                      bias_attr=False),
                     nn.Dropout2D(dropout_ratio),
-                    nn.Conv2D(
-                        256, num_class, kernel_size=1))
+                    nn.Conv2D(256, num_class, kernel_size=1))
             else:
                 self.dsn = nn.Sequential(
-                    layers.ConvBNReLU(
-                        channels_fpn[2], 256, 3, padding=1, bias_attr=False),
-                    nn.Conv2D(
-                        256, num_class, kernel_size=1))
+                    layers.ConvBNReLU(channels_fpn[2],
+                                      256,
+                                      3,
+                                      padding=1,
+                                      bias_attr=False),
+                    nn.Conv2D(256, num_class, kernel_size=1))
 
         if dropout_ratio is not None:
             self.dropout = nn.Dropout2D(dropout_ratio)
         else:
             self.dropout = None
 
-        self.fpn_bottleneck = layers.ConvBNReLU(
-            len(channels_fpn) * channels,
-            channels,
-            3,
-            padding=1,
-            bias_attr=False)
+        self.fpn_bottleneck = layers.ConvBNReLU(len(channels_fpn) * channels,
+                                                channels,
+                                                3,
+                                                padding=1,
+                                                bias_attr=False)
         self.conv_seg = nn.Conv2D(channels, num_class, kernel_size=1)
 
     def cls_seg(self, feat):
@@ -316,7 +322,7 @@ class UPerNetHead(nn.Layer):
         for i in reversed(range(len(conv_out) - 1)):
             conv_x = conv_out[i]
             conv_x = self.lateral_convs[i](conv_x)
-            prev_shape = paddle.shape(conv_x)[2:]
+            prev_shape = conv_x.shape[2:]
             f = conv_x + F.interpolate(
                 f, prev_shape, mode='bilinear', align_corners=False)
             fpn_feature_list.append(self.fpn_convs[i](f))
@@ -325,11 +331,10 @@ class UPerNetHead(nn.Layer):
         output_size = fpn_feature_list[0].shape[2:]
         # resize multi-scales feature
         for index in range(len(conv_out) - 1, 0, -1):
-            fpn_feature_list[index] = F.interpolate(
-                fpn_feature_list[index],
-                size=output_size,
-                mode='bilinear',
-                align_corners=False)
+            fpn_feature_list[index] = F.interpolate(fpn_feature_list[index],
+                                                    size=output_size,
+                                                    mode='bilinear',
+                                                    align_corners=False)
         fusion_out = paddle.concat(fpn_feature_list, 1)
         x = self.fpn_bottleneck(fusion_out)
         x = self.cls_seg(x)

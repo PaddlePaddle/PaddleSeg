@@ -43,6 +43,7 @@ def make_divisible(val, divisor, min_value=None):
 
 
 class HSigmoid(nn.Layer):
+
     def __init__(self, inplace=True):
         super().__init__()
         self.relu = nn.ReLU6()
@@ -52,6 +53,7 @@ class HSigmoid(nn.Layer):
 
 
 class Conv2DBN(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -64,23 +66,23 @@ class Conv2DBN(nn.Layer):
                  lr_mult=1.0):
         super().__init__()
         conv_weight_attr = paddle.ParamAttr(learning_rate=lr_mult)
-        self.c = nn.Conv2D(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=ks,
-            stride=stride,
-            padding=pad,
-            dilation=dilation,
-            groups=groups,
-            weight_attr=conv_weight_attr,
-            bias_attr=False)
+        self.c = nn.Conv2D(in_channels=in_channels,
+                           out_channels=out_channels,
+                           kernel_size=ks,
+                           stride=stride,
+                           padding=pad,
+                           dilation=dilation,
+                           groups=groups,
+                           weight_attr=conv_weight_attr,
+                           bias_attr=False)
         bn_weight_attr = paddle.ParamAttr(
             initializer=nn.initializer.Constant(bn_weight_init),
             learning_rate=lr_mult)
-        bn_bias_attr = paddle.ParamAttr(
-            initializer=nn.initializer.Constant(0), learning_rate=lr_mult)
-        self.bn = nn.BatchNorm2D(
-            out_channels, weight_attr=bn_weight_attr, bias_attr=bn_bias_attr)
+        bn_bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(0),
+                                        learning_rate=lr_mult)
+        self.bn = nn.BatchNorm2D(out_channels,
+                                 weight_attr=bn_weight_attr,
+                                 bias_attr=bn_bias_attr)
 
     def forward(self, inputs):
         out = self.c(inputs)
@@ -89,6 +91,7 @@ class Conv2DBN(nn.Layer):
 
 
 class ConvBNAct(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -102,15 +105,14 @@ class ConvBNAct(nn.Layer):
                  lr_mult=1.0):
         super(ConvBNAct, self).__init__()
         param_attr = paddle.ParamAttr(learning_rate=lr_mult)
-        self.conv = nn.Conv2D(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            groups=groups,
-            weight_attr=param_attr,
-            bias_attr=param_attr if bias_attr else False)
+        self.conv = nn.Conv2D(in_channels=in_channels,
+                              out_channels=out_channels,
+                              kernel_size=kernel_size,
+                              stride=stride,
+                              padding=padding,
+                              groups=groups,
+                              weight_attr=param_attr,
+                              bias_attr=param_attr if bias_attr else False)
         self.act = act() if act is not None else Identity()
         self.bn = norm(out_channels, weight_attr=param_attr, bias_attr=param_attr) \
             if norm is not None else Identity()
@@ -123,6 +125,7 @@ class ConvBNAct(nn.Layer):
 
 
 class MLP(nn.Layer):
+
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -135,15 +138,14 @@ class MLP(nn.Layer):
         hidden_features = hidden_features or in_features
         self.fc1 = Conv2DBN(in_features, hidden_features, lr_mult=lr_mult)
         param_attr = paddle.ParamAttr(learning_rate=lr_mult)
-        self.dwconv = nn.Conv2D(
-            hidden_features,
-            hidden_features,
-            3,
-            1,
-            1,
-            groups=hidden_features,
-            weight_attr=param_attr,
-            bias_attr=param_attr)
+        self.dwconv = nn.Conv2D(hidden_features,
+                                hidden_features,
+                                3,
+                                1,
+                                1,
+                                groups=hidden_features,
+                                weight_attr=param_attr,
+                                bias_attr=param_attr)
         self.act = act_layer()
         self.fc2 = Conv2DBN(hidden_features, out_features, lr_mult=lr_mult)
         self.drop = nn.Dropout(drop)
@@ -159,6 +161,7 @@ class MLP(nn.Layer):
 
 
 class InvertedResidual(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -179,19 +182,18 @@ class InvertedResidual(nn.Layer):
         layers = []
         if expand_ratio != 1:
             layers.append(
-                Conv2DBN(
-                    in_channels, hidden_dim, ks=1, lr_mult=lr_mult))
+                Conv2DBN(in_channels, hidden_dim, ks=1, lr_mult=lr_mult))
             layers.append(activations())
         layers.extend([
-            Conv2DBN(
-                hidden_dim,
-                hidden_dim,
-                ks=kernel_size,
-                stride=stride,
-                pad=kernel_size // 2,
-                groups=hidden_dim,
-                lr_mult=lr_mult), activations(), Conv2DBN(
-                    hidden_dim, out_channels, ks=1, lr_mult=lr_mult)
+            Conv2DBN(hidden_dim,
+                     hidden_dim,
+                     ks=kernel_size,
+                     stride=stride,
+                     pad=kernel_size // 2,
+                     groups=hidden_dim,
+                     lr_mult=lr_mult),
+            activations(),
+            Conv2DBN(hidden_dim, out_channels, ks=1, lr_mult=lr_mult)
         ])
         self.conv = nn.Sequential(*layers)
         self.out_channels = out_channels
@@ -204,6 +206,7 @@ class InvertedResidual(nn.Layer):
 
 
 class TokenPyramidModule(nn.Layer):
+
     def __init__(self,
                  cfgs,
                  out_indices,
@@ -216,8 +219,7 @@ class TokenPyramidModule(nn.Layer):
         self.out_indices = out_indices
 
         self.stem = nn.Sequential(
-            Conv2DBN(
-                in_channels, inp_channel, 3, 2, 1, lr_mult=lr_mult),
+            Conv2DBN(in_channels, inp_channel, 3, 2, 1, lr_mult=lr_mult),
             activation())
 
         self.layers = []
@@ -226,14 +228,13 @@ class TokenPyramidModule(nn.Layer):
             exp_size = t * inp_channel
             exp_size = make_divisible(exp_size * width_mult, 8)
             layer_name = 'layer{}'.format(i + 1)
-            layer = InvertedResidual(
-                inp_channel,
-                output_channel,
-                kernel_size=k,
-                stride=s,
-                expand_ratio=t,
-                activations=activation,
-                lr_mult=lr_mult)
+            layer = InvertedResidual(inp_channel,
+                                     output_channel,
+                                     kernel_size=k,
+                                     stride=s,
+                                     expand_ratio=t,
+                                     activations=activation,
+                                     lr_mult=lr_mult)
             self.add_sublayer(layer_name, layer)
             self.layers.append(layer_name)
             inp_channel = output_channel
@@ -250,6 +251,7 @@ class TokenPyramidModule(nn.Layer):
 
 
 class Attention(nn.Layer):
+
     def __init__(self,
                  dim,
                  key_dim,
@@ -272,18 +274,17 @@ class Attention(nn.Layer):
 
         self.proj = nn.Sequential(
             activation(),
-            Conv2DBN(
-                self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
+            Conv2DBN(self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
 
     def forward(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         H, W = x_shape[2], x_shape[3]
 
-        qq = self.to_q(x).reshape(
-            [0, self.num_heads, self.key_dim, -1]).transpose([0, 1, 3, 2])
+        qq = self.to_q(x).reshape([0, self.num_heads, self.key_dim,
+                                   -1]).transpose([0, 1, 3, 2])
         kk = self.to_k(x).reshape([0, self.num_heads, self.key_dim, -1])
-        vv = self.to_v(x).reshape([0, self.num_heads, self.d, -1]).transpose(
-            [0, 1, 3, 2])
+        vv = self.to_v(x).reshape([0, self.num_heads, self.d,
+                                   -1]).transpose([0, 1, 3, 2])
 
         attn = paddle.matmul(qq, kk)
         attn = F.softmax(attn, axis=-1)
@@ -296,6 +297,7 @@ class Attention(nn.Layer):
 
 
 class Block(nn.Layer):
+
     def __init__(self,
                  dim,
                  key_dim,
@@ -311,13 +313,12 @@ class Block(nn.Layer):
         self.num_heads = num_heads
         self.mlp_ratios = mlp_ratios
 
-        self.attn = Attention(
-            dim,
-            key_dim=key_dim,
-            num_heads=num_heads,
-            attn_ratio=attn_ratio,
-            activation=act_layer,
-            lr_mult=lr_mult)
+        self.attn = Attention(dim,
+                              key_dim=key_dim,
+                              num_heads=num_heads,
+                              attn_ratio=attn_ratio,
+                              activation=act_layer,
+                              lr_mult=lr_mult)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
@@ -342,6 +343,7 @@ class Block(nn.Layer):
 
 
 class BasicLayer(nn.Layer):
+
     def __init__(self,
                  block_num,
                  embedding_dim,
@@ -360,26 +362,26 @@ class BasicLayer(nn.Layer):
         self.transformer_blocks = nn.LayerList()
         for i in range(self.block_num):
             self.transformer_blocks.append(
-                Block(
-                    embedding_dim,
-                    key_dim=key_dim,
-                    num_heads=num_heads,
-                    mlp_ratios=mlp_ratios,
-                    attn_ratio=attn_ratio,
-                    drop=drop,
-                    drop_path=drop_path[i]
-                    if isinstance(drop_path, list) else drop_path,
-                    act_layer=act_layer,
-                    lr_mult=lr_mult))
+                Block(embedding_dim,
+                      key_dim=key_dim,
+                      num_heads=num_heads,
+                      mlp_ratios=mlp_ratios,
+                      attn_ratio=attn_ratio,
+                      drop=drop,
+                      drop_path=drop_path[i]
+                      if isinstance(drop_path, list) else drop_path,
+                      act_layer=act_layer,
+                      lr_mult=lr_mult))
 
     def forward(self, x):
-        # token * N 
+        # token * N
         for i in range(self.block_num):
             x = self.transformer_blocks[i](x)
         return x
 
 
 class PyramidPoolAgg(nn.Layer):
+
     def __init__(self, stride):
         super().__init__()
         self.stride = stride
@@ -408,35 +410,50 @@ class PyramidPoolAgg(nn.Layer):
 
 
 class InjectionMultiSum(nn.Layer):
-    def __init__(self, in_channels, out_channels, activations=None,
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 activations=None,
                  lr_mult=1.0):
         super(InjectionMultiSum, self).__init__()
 
-        self.local_embedding = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
-        self.global_embedding = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
-        self.global_act = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, lr_mult=lr_mult)
+        self.local_embedding = ConvBNAct(in_channels,
+                                         out_channels,
+                                         kernel_size=1,
+                                         lr_mult=lr_mult)
+        self.global_embedding = ConvBNAct(in_channels,
+                                          out_channels,
+                                          kernel_size=1,
+                                          lr_mult=lr_mult)
+        self.global_act = ConvBNAct(in_channels,
+                                    out_channels,
+                                    kernel_size=1,
+                                    lr_mult=lr_mult)
         self.act = HSigmoid()
 
     def forward(self, x_low, x_global):
-        xl_hw = paddle.shape(x_low)[2:]
+        xl_hw = x_low.shape[2:]
         local_feat = self.local_embedding(x_low)
 
         global_act = self.global_act(x_global)
-        sig_act = F.interpolate(
-            self.act(global_act), xl_hw, mode='bilinear', align_corners=False)
+        sig_act = F.interpolate(self.act(global_act),
+                                xl_hw,
+                                mode='bilinear',
+                                align_corners=False)
 
         global_feat = self.global_embedding(x_global)
-        global_feat = F.interpolate(
-            global_feat, xl_hw, mode='bilinear', align_corners=False)
+        global_feat = F.interpolate(global_feat,
+                                    xl_hw,
+                                    mode='bilinear',
+                                    align_corners=False)
 
         out = local_feat * sig_act + global_feat
         return out
 
 
 class InjectionMultiSumCBR(nn.Layer):
+
     def __init__(self, in_channels, out_channels, activations=None):
         '''
         local_embedding: conv-bn-relu
@@ -445,70 +462,94 @@ class InjectionMultiSumCBR(nn.Layer):
         '''
         super(InjectionMultiSumCBR, self).__init__()
 
-        self.local_embedding = ConvBNAct(
-            in_channels, out_channels, kernel_size=1)
-        self.global_embedding = ConvBNAct(
-            in_channels, out_channels, kernel_size=1)
-        self.global_act = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, norm=None, act=None)
+        self.local_embedding = ConvBNAct(in_channels,
+                                         out_channels,
+                                         kernel_size=1)
+        self.global_embedding = ConvBNAct(in_channels,
+                                          out_channels,
+                                          kernel_size=1)
+        self.global_act = ConvBNAct(in_channels,
+                                    out_channels,
+                                    kernel_size=1,
+                                    norm=None,
+                                    act=None)
         self.act = HSigmoid()
 
     def forward(self, x_low, x_global):
-        xl_hw = paddle.shape(x)[2:]
+        xl_hw = x.shape[2:]
         local_feat = self.local_embedding(x_low)
         # kernel
         global_act = self.global_act(x_global)
-        global_act = F.interpolate(
-            self.act(global_act), xl_hw, mode='bilinear', align_corners=False)
+        global_act = F.interpolate(self.act(global_act),
+                                   xl_hw,
+                                   mode='bilinear',
+                                   align_corners=False)
         # feat_h
         global_feat = self.global_embedding(x_global)
-        global_feat = F.interpolate(
-            global_feat, xl_hw, mode='bilinear', align_corners=False)
+        global_feat = F.interpolate(global_feat,
+                                    xl_hw,
+                                    mode='bilinear',
+                                    align_corners=False)
         out = local_feat * global_act + global_feat
         return out
 
 
 class FuseBlockSum(nn.Layer):
+
     def __init__(self, in_channels, out_channels, activations=None):
         super(FuseBlockSum, self).__init__()
 
-        self.fuse1 = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, act=None)
-        self.fuse2 = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, act=None)
+        self.fuse1 = ConvBNAct(in_channels,
+                               out_channels,
+                               kernel_size=1,
+                               act=None)
+        self.fuse2 = ConvBNAct(in_channels,
+                               out_channels,
+                               kernel_size=1,
+                               act=None)
 
     def forward(self, x_low, x_high):
-        xl_hw = paddle.shape(x)[2:]
+        xl_hw = x.shape[2:]
         inp = self.fuse1(x_low)
         kernel = self.fuse2(x_high)
-        feat_h = F.interpolate(
-            kernel, xl_hw, mode='bilinear', align_corners=False)
+        feat_h = F.interpolate(kernel,
+                               xl_hw,
+                               mode='bilinear',
+                               align_corners=False)
         out = inp + feat_h
         return out
 
 
 class FuseBlockMulti(nn.Layer):
+
     def __init__(
-            self,
-            in_channels,
-            out_channels,
-            stride=1,
-            activations=None, ):
+        self,
+        in_channels,
+        out_channels,
+        stride=1,
+        activations=None,
+    ):
         super(FuseBlockMulti, self).__init__()
         assert stride in [1, 2], "The stride should be 1 or 2."
 
-        self.fuse1 = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, act=None)
-        self.fuse2 = ConvBNAct(
-            in_channels, out_channels, kernel_size=1, act=None)
+        self.fuse1 = ConvBNAct(in_channels,
+                               out_channels,
+                               kernel_size=1,
+                               act=None)
+        self.fuse2 = ConvBNAct(in_channels,
+                               out_channels,
+                               kernel_size=1,
+                               act=None)
         self.act = HSigmoid()
 
     def forward(self, x_low, x_high):
-        xl_hw = paddle.shape(x)[2:]
+        xl_hw = x.shape[2:]
         inp = self.fuse1(x_low)
         sig_act = self.fuse2(x_high)
-        sig_act = F.interpolate(
-            self.act(sig_act), xl_hw, mode='bilinear', align_corners=False)
+        sig_act = F.interpolate(self.act(sig_act),
+                                xl_hw,
+                                mode='bilinear',
+                                align_corners=False)
         out = inp * sig_act
         return out
 
@@ -522,6 +563,7 @@ SIM_BLOCK = {
 
 
 class TopTransformer(nn.Layer):
+
     def __init__(self,
                  cfgs,
                  injection_out_channels,
@@ -549,27 +591,25 @@ class TopTransformer(nn.Layer):
         self.embed_dim = sum(self.feat_channels)
         self.trans_out_indices = trans_out_indices
 
-        self.tpm = TokenPyramidModule(
-            cfgs=cfgs,
-            out_indices=encoder_out_indices,
-            in_channels=in_channels,
-            lr_mult=lr_mult)
+        self.tpm = TokenPyramidModule(cfgs=cfgs,
+                                      out_indices=encoder_out_indices,
+                                      in_channels=in_channels,
+                                      lr_mult=lr_mult)
         self.ppa = PyramidPoolAgg(stride=c2t_stride)
 
         dpr = [x.item() for x in \
                paddle.linspace(0, drop_path_rate, depths)]
-        self.trans = BasicLayer(
-            block_num=depths,
-            embedding_dim=self.embed_dim,
-            key_dim=key_dim,
-            num_heads=num_heads,
-            mlp_ratios=mlp_ratios,
-            attn_ratio=attn_ratios,
-            drop=0,
-            attn_drop=0,
-            drop_path=dpr,
-            act_layer=act_layer,
-            lr_mult=lr_mult)
+        self.trans = BasicLayer(block_num=depths,
+                                embedding_dim=self.embed_dim,
+                                key_dim=key_dim,
+                                num_heads=num_heads,
+                                mlp_ratios=mlp_ratios,
+                                attn_ratio=attn_ratios,
+                                drop=0,
+                                attn_drop=0,
+                                drop_path=dpr,
+                                act_layer=act_layer,
+                                lr_mult=lr_mult)
 
         self.SIM = nn.LayerList()
         inj_module = SIM_BLOCK[injection_type]
@@ -577,11 +617,10 @@ class TopTransformer(nn.Layer):
             for i in range(len(self.feat_channels)):
                 if i in trans_out_indices:
                     self.SIM.append(
-                        inj_module(
-                            self.feat_channels[i],
-                            injection_out_channels[i],
-                            activations=act_layer,
-                            lr_mult=lr_mult))
+                        inj_module(self.feat_channels[i],
+                                   injection_out_channels[i],
+                                   activations=act_layer,
+                                   lr_mult=lr_mult))
                 else:
                     self.SIM.append(Identity())
 
@@ -628,22 +667,21 @@ def TopTransformer_Base(**kwargs):
         [3, 6, 160, 1],  #            
     ]
 
-    model = TopTransformer(
-        cfgs=cfgs,
-        injection_out_channels=[None, 256, 256, 256],
-        encoder_out_indices=[2, 4, 6, 9],
-        trans_out_indices=[1, 2, 3],
-        depths=4,
-        key_dim=16,
-        num_heads=8,
-        attn_ratios=2,
-        mlp_ratios=2,
-        c2t_stride=2,
-        drop_path_rate=0.,
-        act_layer=nn.ReLU6,
-        injection_type="multi_sum",
-        injection=True,
-        **kwargs)
+    model = TopTransformer(cfgs=cfgs,
+                           injection_out_channels=[None, 256, 256, 256],
+                           encoder_out_indices=[2, 4, 6, 9],
+                           trans_out_indices=[1, 2, 3],
+                           depths=4,
+                           key_dim=16,
+                           num_heads=8,
+                           attn_ratios=2,
+                           mlp_ratios=2,
+                           c2t_stride=2,
+                           drop_path_rate=0.,
+                           act_layer=nn.ReLU6,
+                           injection_type="multi_sum",
+                           injection=True,
+                           **kwargs)
     return model
 
 
@@ -663,22 +701,21 @@ def TopTransformer_Small(**kwargs):
         [3, 6, 128, 1],  #           
     ]
 
-    model = TopTransformer(
-        cfgs=cfgs,
-        injection_out_channels=[None, 192, 192, 192],
-        encoder_out_indices=[2, 4, 6, 9],
-        trans_out_indices=[1, 2, 3],
-        depths=4,
-        key_dim=16,
-        num_heads=6,
-        attn_ratios=2,
-        mlp_ratios=2,
-        c2t_stride=2,
-        drop_path_rate=0.,
-        act_layer=nn.ReLU6,
-        injection_type="multi_sum",
-        injection=True,
-        **kwargs)
+    model = TopTransformer(cfgs=cfgs,
+                           injection_out_channels=[None, 192, 192, 192],
+                           encoder_out_indices=[2, 4, 6, 9],
+                           trans_out_indices=[1, 2, 3],
+                           depths=4,
+                           key_dim=16,
+                           num_heads=6,
+                           attn_ratios=2,
+                           mlp_ratios=2,
+                           c2t_stride=2,
+                           drop_path_rate=0.,
+                           act_layer=nn.ReLU6,
+                           injection_type="multi_sum",
+                           injection=True,
+                           **kwargs)
     return model
 
 
@@ -697,20 +734,19 @@ def TopTransformer_Tiny(**kwargs):
         [5, 6, 96, 1],  #               
     ]
 
-    model = TopTransformer(
-        cfgs=cfgs,
-        injection_out_channels=[None, 128, 128, 128],
-        encoder_out_indices=[2, 4, 6, 8],
-        trans_out_indices=[1, 2, 3],
-        depths=4,
-        key_dim=16,
-        num_heads=4,
-        attn_ratios=2,
-        mlp_ratios=2,
-        c2t_stride=2,
-        drop_path_rate=0.,
-        act_layer=nn.ReLU6,
-        injection_type="multi_sum",
-        injection=True,
-        **kwargs)
+    model = TopTransformer(cfgs=cfgs,
+                           injection_out_channels=[None, 128, 128, 128],
+                           encoder_out_indices=[2, 4, 6, 8],
+                           trans_out_indices=[1, 2, 3],
+                           depths=4,
+                           key_dim=16,
+                           num_heads=4,
+                           attn_ratios=2,
+                           mlp_ratios=2,
+                           c2t_stride=2,
+                           drop_path_rate=0.,
+                           act_layer=nn.ReLU6,
+                           injection_type="multi_sum",
+                           injection=True,
+                           **kwargs)
     return model

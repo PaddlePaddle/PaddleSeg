@@ -53,10 +53,9 @@ class PIDNet(nn.Layer):
         self.ignore_index = ignore_index
         self.align_corners = True
 
-        self.decode_head = PIDHead(
-            in_channels=backbone.feat_channels[0],
-            channels=head_channels,
-            num_classes=num_classes)
+        self.decode_head = PIDHead(in_channels=backbone.feat_channels[0],
+                                   channels=head_channels,
+                                   num_classes=num_classes)
 
         self.pretrained = pretrained
         self.init_weight()
@@ -69,25 +68,26 @@ class PIDNet(nn.Layer):
         feat = self.backbone(x)
         logit_list = self.decode_head(feat)
         return [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
     def loss_computation(self, logits_list, losses, data):
         label = paddle.cast(data['label'], 'int64')
         edge = paddle.cast(data['edge'], 'int64')
         bd_label = paddle.where(
-            F.sigmoid(logits_list[2][:, 0, :, :]) > 0.8,
-            label,
+            F.sigmoid(logits_list[2][:, 0, :, :]) > 0.8, label,
             self.ignore_index)
 
-        loss_s = (losses['coef'][0] * losses['types'][0](logits_list[0], label) +
-                  losses['coef'][1] * losses['types'][1](logits_list[1], label))
-        loss_b =  losses['coef'][2] * losses['types'][2](logits_list[2], edge)
-        loss_sb = losses['coef'][3] * losses['types'][3](logits_list[1], bd_label)
+        loss_s = (
+            losses['coef'][0] * losses['types'][0](logits_list[0], label) +
+            losses['coef'][1] * losses['types'][1](logits_list[1], label))
+        loss_b = losses['coef'][2] * losses['types'][2](logits_list[2], edge)
+        loss_sb = losses['coef'][3] * losses['types'][3](logits_list[1],
+                                                         bd_label)
 
         return [loss_s, loss_b, loss_sb]
 
@@ -103,14 +103,12 @@ class BasePIDHead(nn.Layer):
     def __init__(self, in_channels: int, channels: int):
         super().__init__()
         self.conv = nn.Sequential(
-            nn.SyncBatchNorm(in_channels),
-            nn.ReLU(),
-            nn.Conv2D(
-                in_channels,
-                channels,
-                kernel_size=3,
-                padding=1,
-                bias_attr=False))
+            nn.SyncBatchNorm(in_channels), nn.ReLU(),
+            nn.Conv2D(in_channels,
+                      channels,
+                      kernel_size=3,
+                      padding=1,
+                      bias_attr=False))
         self.norm = nn.SyncBatchNorm(channels)
         self.act = nn.ReLU()
 
@@ -165,7 +163,9 @@ class PIDHead(nn.Layer):
                 Constant(1)(layer.weight)
                 Constant(0)(layer.bias)
 
-    def forward(self, inputs: Union[Tensor, Tuple[Tensor]]) -> Union[Tensor, Tuple[Tensor]]:
+    def forward(
+            self, inputs: Union[Tensor,
+                                Tuple[Tensor]]) -> Union[Tensor, Tuple[Tensor]]:
         """Forward function.
         Args:
             inputs (Tensor | tuple[Tensor]): Input tensor or tuple of

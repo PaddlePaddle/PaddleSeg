@@ -57,11 +57,10 @@ class TopFormer(nn.Layer):
         head_in_channels = [
             i for i in backbone.injection_out_channels if i is not None
         ]
-        self.decode_head = TopFormerHead(
-            num_classes=num_classes,
-            in_channels=head_in_channels,
-            use_dw=head_use_dw,
-            align_corners=align_corners)
+        self.decode_head = TopFormerHead(num_classes=num_classes,
+                                         in_channels=head_in_channels,
+                                         use_dw=head_use_dw,
+                                         align_corners=align_corners)
 
         self.align_corners = align_corners
         self.pretrained = pretrained
@@ -72,16 +71,19 @@ class TopFormer(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        x_hw = paddle.shape(x)[2:]
+        x_hw = x.shape[2:]
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
-        x = F.interpolate(
-            x, x_hw, mode='bilinear', align_corners=self.align_corners)
+        x = F.interpolate(x,
+                          x_hw,
+                          mode='bilinear',
+                          align_corners=self.align_corners)
 
         return [x]
 
 
 class TopFormerHead(nn.Layer):
+
     def __init__(self,
                  num_classes,
                  in_channels,
@@ -97,16 +99,16 @@ class TopFormerHead(nn.Layer):
         self.align_corners = align_corners
 
         self._init_inputs(in_channels, in_index, in_transform)
-        self.linear_fuse = ConvBNAct(
-            in_channels=self.last_channels,
-            out_channels=self.last_channels,
-            kernel_size=1,
-            stride=1,
-            groups=self.last_channels if use_dw else 1,
-            act=nn.ReLU)
+        self.linear_fuse = ConvBNAct(in_channels=self.last_channels,
+                                     out_channels=self.last_channels,
+                                     kernel_size=1,
+                                     stride=1,
+                                     groups=self.last_channels if use_dw else 1,
+                                     act=nn.ReLU)
         self.dropout = nn.Dropout2D(dropout_ratio)
-        self.conv_seg = nn.Conv2D(
-            self.last_channels, num_classes, kernel_size=1)
+        self.conv_seg = nn.Conv2D(self.last_channels,
+                                  num_classes,
+                                  kernel_size=1)
 
     def _init_inputs(self, in_channels, in_index, in_transform):
         assert in_transform in [None, 'resize_concat', 'multiple_select']
@@ -125,22 +127,20 @@ class TopFormerHead(nn.Layer):
         if self.in_transform == 'resize_concat':
             inputs = [inputs[i] for i in self.in_index]
             inputs = [
-                F.interpolate(
-                    input_data=x,
-                    size=paddle.shape(inputs[0])[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners) for x in inputs
+                F.interpolate(input_data=x,
+                              size=inputs[0].shape[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners) for x in inputs
             ]
             inputs = paddle.concat(inputs, axis=1)
         elif self.in_transform == 'multiple_select':
             inputs_tmp = [inputs[i] for i in self.in_index]
             inputs = inputs_tmp[0]
             for x in inputs_tmp[1:]:
-                x = F.interpolate(
-                    x,
-                    size=paddle.shape(inputs)[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners)
+                x = F.interpolate(x,
+                                  size=inputs.shape[2:],
+                                  mode='bilinear',
+                                  align_corners=self.align_corners)
                 inputs += x
         else:
             inputs = inputs[self.in_index]

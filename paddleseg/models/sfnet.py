@@ -78,7 +78,7 @@ class SFNet(nn.Layer):
         logit_list = self.head(feats)
         logit_list = [
             F.interpolate(logit,
-                          paddle.shape(x)[2:],
+                          x.shape[2:],
                           mode='bilinear',
                           align_corners=self.align_corners)
             for logit in logit_list
@@ -164,7 +164,7 @@ class SFNetHead(nn.Layer):
                 out.append(self.dsn[i](f))
 
         fpn_feature_list.reverse()
-        output_size = paddle.shape(fpn_feature_list[0])[2:]
+        output_size = fpn_feature_list[0].shape[2:]
         fusion_list = [fpn_feature_list[0]]
 
         for i in range(1, len(fpn_feature_list)):
@@ -203,7 +203,7 @@ class AlignedModule(nn.Layer):
                                    bias_attr=False)
 
     def flow_warp(self, input, flow, size):
-        input_shape = paddle.shape(input)
+        input_shape = input.shape
         norm = size[::-1].reshape([1, 1, 1, -1])
         norm.stop_gradient = True
         h_grid = paddle.linspace(-1.0, 1.0, size[0]).reshape([-1, 1])
@@ -221,7 +221,7 @@ class AlignedModule(nn.Layer):
     def forward(self, x):
         low_feature, h_feature = x
         h_feature_orign = h_feature
-        size = paddle.shape(low_feature)[2:]
+        size = low_feature.shape[2:]
         low_feature = self.down_l(low_feature)
         h_feature = self.down_h(h_feature)
         h_feature = F.interpolate(h_feature,

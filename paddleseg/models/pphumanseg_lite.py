@@ -41,43 +41,31 @@ class PPHumanSegLite(nn.Layer):
         self.conv_bn1 = _ConvBNReLU(36, 18, 1, 1, 0)
 
         self.block1 = nn.Sequential(
-            InvertedResidual(
-                36, stride=2, out_channels=72),
-            InvertedResidual(
-                72, stride=1),
-            InvertedResidual(
-                72, stride=1),
-            InvertedResidual(
-                72, stride=1))
+            InvertedResidual(36, stride=2, out_channels=72),
+            InvertedResidual(72, stride=1), InvertedResidual(72, stride=1),
+            InvertedResidual(72, stride=1))
 
-        self.block2 = nn.Sequential(
-            InvertedResidual(
-                72, stride=2),
-            InvertedResidual(
-                144, stride=1),
-            InvertedResidual(
-                144, stride=1),
-            InvertedResidual(
-                144, stride=1),
-            InvertedResidual(
-                144, stride=1),
-            InvertedResidual(
-                144, stride=1),
-            InvertedResidual(
-                144, stride=1),
-            InvertedResidual(
-                144, stride=1))
+        self.block2 = nn.Sequential(InvertedResidual(72, stride=2),
+                                    InvertedResidual(144, stride=1),
+                                    InvertedResidual(144, stride=1),
+                                    InvertedResidual(144, stride=1),
+                                    InvertedResidual(144, stride=1),
+                                    InvertedResidual(144, stride=1),
+                                    InvertedResidual(144, stride=1),
+                                    InvertedResidual(144, stride=1))
 
         self.depthwise_separable0 = _SeparableConvBNReLU(144, 64, 3, stride=1)
         self.depthwise_separable1 = _SeparableConvBNReLU(82, 64, 3, stride=1)
-        self.depthwise_separable2 = _SeparableConvBNReLU(
-            64, self.num_classes, 3, stride=1)
+        self.depthwise_separable2 = _SeparableConvBNReLU(64,
+                                                         self.num_classes,
+                                                         3,
+                                                         stride=1)
 
         self.init_weight()
 
     def forward(self, x):
         # Encoder
-        input_shape = paddle.shape(x)[2:]
+        input_shape = x.shape[2:]
 
         x = self.conv_bn0(x)  # 1/2
         shortcut = self.conv_bn1(x)  # shortcut
@@ -87,21 +75,19 @@ class PPHumanSegLite(nn.Layer):
 
         # Decoder
         x = self.depthwise_separable0(x)
-        shortcut_shape = paddle.shape(shortcut)[2:]
-        x = F.interpolate(
-            x,
-            shortcut_shape,
-            mode='bilinear',
-            align_corners=self.align_corners)
+        shortcut_shape = shortcut.shape[2:]
+        x = F.interpolate(x,
+                          shortcut_shape,
+                          mode='bilinear',
+                          align_corners=self.align_corners)
         x = paddle.concat(x=[shortcut, x], axis=1)
         x = self.depthwise_separable1(x)
 
         logit = self.depthwise_separable2(x)
-        logit = F.interpolate(
-            logit,
-            input_shape,
-            mode='bilinear',
-            align_corners=self.align_corners)
+        logit = F.interpolate(logit,
+                              input_shape,
+                              mode='bilinear',
+                              align_corners=self.align_corners)
 
         return [logit]
 
@@ -117,6 +103,7 @@ class PPHumanSegLite(nn.Layer):
 
 
 class _ConvBNReLU(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -128,16 +115,15 @@ class _ConvBNReLU(nn.Layer):
         super().__init__()
         weight_attr = paddle.ParamAttr(
             learning_rate=1, initializer=nn.initializer.KaimingUniform())
-        self._conv = nn.Conv2D(
-            in_channels,
-            out_channels,
-            kernel_size,
-            padding=padding,
-            stride=stride,
-            groups=groups,
-            weight_attr=weight_attr,
-            bias_attr=False,
-            **kwargs)
+        self._conv = nn.Conv2D(in_channels,
+                               out_channels,
+                               kernel_size,
+                               padding=padding,
+                               stride=stride,
+                               groups=groups,
+                               weight_attr=weight_attr,
+                               bias_attr=False,
+                               **kwargs)
 
         self._batch_norm = layers.SyncBatchNorm(out_channels)
 
@@ -149,6 +135,7 @@ class _ConvBNReLU(nn.Layer):
 
 
 class _ConvBN(nn.Layer):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -160,16 +147,15 @@ class _ConvBN(nn.Layer):
         super().__init__()
         weight_attr = paddle.ParamAttr(
             learning_rate=1, initializer=nn.initializer.KaimingUniform())
-        self._conv = nn.Conv2D(
-            in_channels,
-            out_channels,
-            kernel_size,
-            padding=padding,
-            stride=stride,
-            groups=groups,
-            weight_attr=weight_attr,
-            bias_attr=False,
-            **kwargs)
+        self._conv = nn.Conv2D(in_channels,
+                               out_channels,
+                               kernel_size,
+                               padding=padding,
+                               stride=stride,
+                               groups=groups,
+                               weight_attr=weight_attr,
+                               bias_attr=False,
+                               **kwargs)
 
         self._batch_norm = layers.SyncBatchNorm(out_channels)
 
@@ -180,22 +166,21 @@ class _ConvBN(nn.Layer):
 
 
 class _SeparableConvBNReLU(nn.Layer):
+
     def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
         super().__init__()
-        self.depthwise_conv = _ConvBN(
-            in_channels,
-            out_channels=in_channels,
-            kernel_size=kernel_size,
-            padding=int(kernel_size / 2),
-            groups=in_channels,
-            **kwargs)
-        self.piontwise_conv = _ConvBNReLU(
-            in_channels,
-            out_channels,
-            kernel_size=1,
-            groups=1,
-            stride=1,
-            padding=0)
+        self.depthwise_conv = _ConvBN(in_channels,
+                                      out_channels=in_channels,
+                                      kernel_size=kernel_size,
+                                      padding=int(kernel_size / 2),
+                                      groups=in_channels,
+                                      **kwargs)
+        self.piontwise_conv = _ConvBNReLU(in_channels,
+                                          out_channels,
+                                          kernel_size=1,
+                                          groups=1,
+                                          stride=1,
+                                          padding=0)
 
     def forward(self, x):
         x = self.depthwise_conv(x)
@@ -204,6 +189,7 @@ class _SeparableConvBNReLU(nn.Layer):
 
 
 class InvertedResidual(nn.Layer):
+
     def __init__(self, input_channels, stride, out_channels=None):
         super().__init__()
         if stride == 1:
@@ -216,12 +202,19 @@ class InvertedResidual(nn.Layer):
         else:
             self.in_channels = int(out_channels / 2)
 
-        self._depthwise_separable_0 = _SeparableConvBNReLU(
-            input_channels, self.in_channels, 3, stride=stride)
-        self._conv = _ConvBNReLU(
-            branch_channel, self.in_channels, 1, stride=1, padding=0)
-        self._depthwise_separable_1 = _SeparableConvBNReLU(
-            self.in_channels, self.in_channels, 3, stride=stride)
+        self._depthwise_separable_0 = _SeparableConvBNReLU(input_channels,
+                                                           self.in_channels,
+                                                           3,
+                                                           stride=stride)
+        self._conv = _ConvBNReLU(branch_channel,
+                                 self.in_channels,
+                                 1,
+                                 stride=1,
+                                 padding=0)
+        self._depthwise_separable_1 = _SeparableConvBNReLU(self.in_channels,
+                                                           self.in_channels,
+                                                           3,
+                                                           stride=stride)
 
         self.stride = stride
 
@@ -238,7 +231,7 @@ class InvertedResidual(nn.Layer):
         output = paddle.concat(x=[shortcut, branch_dw1x1], axis=1)
 
         # channel shuffle
-        out_shape = paddle.shape(output)
+        out_shape = output.shape
         h, w = out_shape[2], out_shape[3]
         output = paddle.reshape(x=output, shape=[0, 2, self.in_channels, h, w])
         output = paddle.transpose(x=output, perm=[0, 2, 1, 3, 4])

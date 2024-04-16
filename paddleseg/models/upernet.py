@@ -77,11 +77,11 @@ class UPerNet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
         return logit_list
 
@@ -91,6 +91,7 @@ class UPerNet(nn.Layer):
 
 
 class UPerNetHead(nn.Layer):
+
     def __init__(self,
                  num_classes,
                  fpn_inplanes,
@@ -100,12 +101,11 @@ class UPerNetHead(nn.Layer):
                  align_corners=True):
         super(UPerNetHead, self).__init__()
         self.align_corners = align_corners
-        self.ppm = layers.PPModule(
-            in_channels=fpn_inplanes[-1],
-            out_channels=channels,
-            bin_sizes=(1, 2, 3, 6),
-            dim_reduction=True,
-            align_corners=True)
+        self.ppm = layers.PPModule(in_channels=fpn_inplanes[-1],
+                                   out_channels=channels,
+                                   bin_sizes=(1, 2, 3, 6),
+                                   dim_reduction=True,
+                                   align_corners=True)
         self.enable_auxiliary_loss = enable_auxiliary_loss
         self.lateral_convs = nn.LayerList()
         self.fpn_convs = nn.LayerList()
@@ -114,24 +114,25 @@ class UPerNetHead(nn.Layer):
             self.lateral_convs.append(
                 layers.ConvBNReLU(fpn_inplane, channels, 1))
             self.fpn_convs.append(
-                layers.ConvBNReLU(
-                    channels, channels, 3, bias_attr=False))
+                layers.ConvBNReLU(channels, channels, 3, bias_attr=False))
 
         if self.enable_auxiliary_loss:
-            self.aux_head = layers.AuxLayer(
-                fpn_inplanes[2],
-                fpn_inplanes[2],
-                num_classes,
-                dropout_prob=dropout_prob)
+            self.aux_head = layers.AuxLayer(fpn_inplanes[2],
+                                            fpn_inplanes[2],
+                                            num_classes,
+                                            dropout_prob=dropout_prob)
 
-        self.fpn_bottleneck = layers.ConvBNReLU(
-            len(fpn_inplanes) * channels, channels, 3, padding=1)
+        self.fpn_bottleneck = layers.ConvBNReLU(len(fpn_inplanes) * channels,
+                                                channels,
+                                                3,
+                                                padding=1)
 
         self.conv_last = nn.Sequential(
-            layers.ConvBNReLU(
-                len(fpn_inplanes) * channels, channels, 3, bias_attr=False),
-            nn.Conv2D(
-                channels, num_classes, kernel_size=1))
+            layers.ConvBNReLU(len(fpn_inplanes) * channels,
+                              channels,
+                              3,
+                              bias_attr=False),
+            nn.Conv2D(channels, num_classes, kernel_size=1))
         self.conv_seg = nn.Conv2D(channels, num_classes, kernel_size=1)
 
     def forward(self, inputs):
@@ -142,7 +143,7 @@ class UPerNetHead(nn.Layer):
         laterals.append(self.ppm(inputs[-1]))
         fpn_levels = len(laterals)
         for i in range(fpn_levels - 1, 0, -1):
-            prev_shape = paddle.shape(laterals[i - 1])
+            prev_shape = laterals[i - 1].shape
             laterals[i - 1] = laterals[i - 1] + F.interpolate(
                 laterals[i],
                 size=prev_shape[2:],
@@ -155,11 +156,10 @@ class UPerNetHead(nn.Layer):
         fpn_outs.append(laterals[-1])
 
         for i in range(fpn_levels - 1, 0, -1):
-            fpn_outs[i] = F.interpolate(
-                fpn_outs[i],
-                size=paddle.shape(fpn_outs[0])[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
+            fpn_outs[i] = F.interpolate(fpn_outs[i],
+                                        size=fpn_outs[0].shape[2:],
+                                        mode='bilinear',
+                                        align_corners=self.align_corners)
         fuse_out = paddle.concat(fpn_outs, axis=1)
         x = self.fpn_bottleneck(fuse_out)
 

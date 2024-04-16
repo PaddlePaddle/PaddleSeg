@@ -66,12 +66,11 @@ class ISANet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners,
-                align_mode=1) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners,
+                          align_mode=1) for logit in logit_list
         ]
 
         return logit_list
@@ -101,39 +100,39 @@ class ISAHead(nn.Layer):
         self.inter_channels = inter_channels
         self.down_factor = down_factor
         self.enable_auxiliary_loss = enable_auxiliary_loss
-        self.in_conv = layers.ConvBNReLU(
-            self.in_channels, inter_channels, 3, bias_attr=False)
+        self.in_conv = layers.ConvBNReLU(self.in_channels,
+                                         inter_channels,
+                                         3,
+                                         bias_attr=False)
         self.global_relation = SelfAttentionBlock(inter_channels, isa_channels)
         self.local_relation = SelfAttentionBlock(inter_channels, isa_channels)
-        self.out_conv = layers.ConvBNReLU(
-            inter_channels * 2, inter_channels, 1, bias_attr=False)
-        self.cls = nn.Sequential(
-            nn.Dropout2D(p=0.1), nn.Conv2D(inter_channels, num_classes, 1))
+        self.out_conv = layers.ConvBNReLU(inter_channels * 2,
+                                          inter_channels,
+                                          1,
+                                          bias_attr=False)
+        self.cls = nn.Sequential(nn.Dropout2D(p=0.1),
+                                 nn.Conv2D(inter_channels, num_classes, 1))
         self.aux = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels=1024,
-                out_channels=256,
-                kernel_size=3,
-                bias_attr=False),
-            nn.Dropout2D(p=0.1),
+            layers.ConvBNReLU(in_channels=1024,
+                              out_channels=256,
+                              kernel_size=3,
+                              bias_attr=False), nn.Dropout2D(p=0.1),
             nn.Conv2D(256, num_classes, 1))
 
     def forward(self, feat_list):
         C3, C4 = feat_list
         x = self.in_conv(C4)
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
         P_h, P_w = self.down_factor
         Q_h, Q_w = paddle.ceil(x_shape[2:3] / P_h).astype('int32'), paddle.ceil(
             x_shape[3:4] / P_w).astype('int32')
         pad_h, pad_w = (Q_h * P_h - x_shape[2:3]).astype('int32'), (
             Q_w * P_w - x_shape[3:4]).astype('int32')
         if pad_h > 0 or pad_w > 0:
-            padding = paddle.concat(
-                [
-                    pad_w // 2, pad_w - pad_w // 2, pad_h // 2,
-                    pad_h - pad_h // 2
-                ],
-                axis=0)
+            padding = paddle.concat([
+                pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2
+            ],
+                                    axis=0)
             feat = F.pad(x, padding)
         else:
             feat = x
@@ -177,23 +176,24 @@ class SelfAttentionBlock(layers.AttentionBlock):
     """
 
     def __init__(self, in_channels, channels):
-        super(SelfAttentionBlock, self).__init__(
-            key_in_channels=in_channels,
-            query_in_channels=in_channels,
-            channels=channels,
-            out_channels=in_channels,
-            share_key_query=False,
-            query_downsample=None,
-            key_downsample=None,
-            key_query_num_convs=2,
-            key_query_norm=True,
-            value_out_num_convs=1,
-            value_out_norm=False,
-            matmul_norm=True,
-            with_out=False)
+        super(SelfAttentionBlock, self).__init__(key_in_channels=in_channels,
+                                                 query_in_channels=in_channels,
+                                                 channels=channels,
+                                                 out_channels=in_channels,
+                                                 share_key_query=False,
+                                                 query_downsample=None,
+                                                 key_downsample=None,
+                                                 key_query_num_convs=2,
+                                                 key_query_norm=True,
+                                                 value_out_num_convs=1,
+                                                 value_out_norm=False,
+                                                 matmul_norm=True,
+                                                 with_out=False)
 
-        self.output_project = self.build_project(
-            in_channels, in_channels, num_convs=1, use_conv_module=True)
+        self.output_project = self.build_project(in_channels,
+                                                 in_channels,
+                                                 num_convs=1,
+                                                 use_conv_module=True)
 
     def forward(self, x):
         context = super(SelfAttentionBlock, self).forward(x, x)

@@ -35,11 +35,13 @@ class SECrossEntropyLoss(nn.Layer):
         assert logit.ndim == 2, "The shape of logit should be [N, C, 1, 1] or [N, C], but the logit dim is  {}.".format(
             logit.ndim)
 
-        batch_size, num_classes = paddle.shape(logit)
+        batch_size, num_classes = logit.shape
         se_label = paddle.zeros([batch_size, num_classes])
         for i in range(batch_size):
-            hist = paddle.histogram(
-                label[i], bins=num_classes, min=0, max=num_classes - 1)
+            hist = paddle.histogram(label[i],
+                                    bins=num_classes,
+                                    min=0,
+                                    max=num_classes - 1)
             hist = hist.astype('float32') / hist.sum().astype('float32')
             se_label[i] = (hist > 0).astype('float32')
         loss = F.binary_cross_entropy_with_logits(logit, se_label)

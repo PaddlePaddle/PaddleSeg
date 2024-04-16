@@ -29,14 +29,14 @@ __all__ = [
 
 
 def channel_shuffle(x, groups):
-    x_shape = paddle.shape(x)
+    x_shape = x.shape
     batch_size, height, width = x_shape[0], x_shape[2], x_shape[3]
     num_channels = x.shape[1]
     channels_per_group = num_channels // groups
 
     # reshape
-    x = reshape(
-        x=x, shape=[batch_size, groups, channels_per_group, height, width])
+    x = reshape(x=x,
+                shape=[batch_size, groups, channels_per_group, height, width])
 
     # transpose
     x = transpose(x=x, perm=[0, 2, 1, 3, 4])
@@ -48,27 +48,28 @@ def channel_shuffle(x, groups):
 
 
 class ConvBNLayer(Layer):
+
     def __init__(
-            self,
-            in_channels,
-            out_channels,
-            kernel_size,
-            stride,
-            padding,
-            groups=1,
-            act=None,
-            name=None, ):
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        groups=1,
+        act=None,
+        name=None,
+    ):
         super(ConvBNLayer, self).__init__()
-        self._conv = Conv2D(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            groups=groups,
-            weight_attr=ParamAttr(
-                initializer=KaimingNormal(), name=name + "_weights"),
-            bias_attr=False)
+        self._conv = Conv2D(in_channels=in_channels,
+                            out_channels=out_channels,
+                            kernel_size=kernel_size,
+                            stride=stride,
+                            padding=padding,
+                            groups=groups,
+                            weight_attr=ParamAttr(initializer=KaimingNormal(),
+                                                  name=name + "_weights"),
+                            bias_attr=False)
 
         self._batch_norm = BatchNorm(
             out_channels,
@@ -85,36 +86,38 @@ class ConvBNLayer(Layer):
 
 
 class InvertedResidual(Layer):
-    def __init__(self, in_channels, out_channels, stride, act="relu",
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 stride,
+                 act="relu",
                  name=None):
         super(InvertedResidual, self).__init__()
-        self._conv_pw = ConvBNLayer(
-            in_channels=in_channels // 2,
-            out_channels=out_channels // 2,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            groups=1,
-            act=act,
-            name='stage_' + name + '_conv1')
-        self._conv_dw = ConvBNLayer(
-            in_channels=out_channels // 2,
-            out_channels=out_channels // 2,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            groups=out_channels // 2,
-            act=None,
-            name='stage_' + name + '_conv2')
-        self._conv_linear = ConvBNLayer(
-            in_channels=out_channels // 2,
-            out_channels=out_channels // 2,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            groups=1,
-            act=act,
-            name='stage_' + name + '_conv3')
+        self._conv_pw = ConvBNLayer(in_channels=in_channels // 2,
+                                    out_channels=out_channels // 2,
+                                    kernel_size=1,
+                                    stride=1,
+                                    padding=0,
+                                    groups=1,
+                                    act=act,
+                                    name='stage_' + name + '_conv1')
+        self._conv_dw = ConvBNLayer(in_channels=out_channels // 2,
+                                    out_channels=out_channels // 2,
+                                    kernel_size=3,
+                                    stride=stride,
+                                    padding=1,
+                                    groups=out_channels // 2,
+                                    act=None,
+                                    name='stage_' + name + '_conv2')
+        self._conv_linear = ConvBNLayer(in_channels=out_channels // 2,
+                                        out_channels=out_channels // 2,
+                                        kernel_size=1,
+                                        stride=1,
+                                        padding=0,
+                                        groups=1,
+                                        act=act,
+                                        name='stage_' + name + '_conv3')
 
     def forward(self, inputs):
         x1, x2 = split(
@@ -129,57 +132,57 @@ class InvertedResidual(Layer):
 
 
 class InvertedResidualDS(Layer):
-    def __init__(self, in_channels, out_channels, stride, act="relu",
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 stride,
+                 act="relu",
                  name=None):
         super(InvertedResidualDS, self).__init__()
 
         # branch1
-        self._conv_dw_1 = ConvBNLayer(
-            in_channels=in_channels,
-            out_channels=in_channels,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            groups=in_channels,
-            act=None,
-            name='stage_' + name + '_conv4')
-        self._conv_linear_1 = ConvBNLayer(
-            in_channels=in_channels,
-            out_channels=out_channels // 2,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            groups=1,
-            act=act,
-            name='stage_' + name + '_conv5')
+        self._conv_dw_1 = ConvBNLayer(in_channels=in_channels,
+                                      out_channels=in_channels,
+                                      kernel_size=3,
+                                      stride=stride,
+                                      padding=1,
+                                      groups=in_channels,
+                                      act=None,
+                                      name='stage_' + name + '_conv4')
+        self._conv_linear_1 = ConvBNLayer(in_channels=in_channels,
+                                          out_channels=out_channels // 2,
+                                          kernel_size=1,
+                                          stride=1,
+                                          padding=0,
+                                          groups=1,
+                                          act=act,
+                                          name='stage_' + name + '_conv5')
         # branch2
-        self._conv_pw_2 = ConvBNLayer(
-            in_channels=in_channels,
-            out_channels=out_channels // 2,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            groups=1,
-            act=act,
-            name='stage_' + name + '_conv1')
-        self._conv_dw_2 = ConvBNLayer(
-            in_channels=out_channels // 2,
-            out_channels=out_channels // 2,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            groups=out_channels // 2,
-            act=None,
-            name='stage_' + name + '_conv2')
-        self._conv_linear_2 = ConvBNLayer(
-            in_channels=out_channels // 2,
-            out_channels=out_channels // 2,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            groups=1,
-            act=act,
-            name='stage_' + name + '_conv3')
+        self._conv_pw_2 = ConvBNLayer(in_channels=in_channels,
+                                      out_channels=out_channels // 2,
+                                      kernel_size=1,
+                                      stride=1,
+                                      padding=0,
+                                      groups=1,
+                                      act=act,
+                                      name='stage_' + name + '_conv1')
+        self._conv_dw_2 = ConvBNLayer(in_channels=out_channels // 2,
+                                      out_channels=out_channels // 2,
+                                      kernel_size=3,
+                                      stride=stride,
+                                      padding=1,
+                                      groups=out_channels // 2,
+                                      act=None,
+                                      name='stage_' + name + '_conv2')
+        self._conv_linear_2 = ConvBNLayer(in_channels=out_channels // 2,
+                                          out_channels=out_channels // 2,
+                                          kernel_size=1,
+                                          stride=1,
+                                          padding=0,
+                                          groups=1,
+                                          act=act,
+                                          name='stage_' + name + '_conv3')
 
     def forward(self, inputs):
         x1 = self._conv_dw_1(inputs)
@@ -193,6 +196,7 @@ class InvertedResidualDS(Layer):
 
 
 class ShuffleNet(Layer):
+
     def __init__(self, scale=1.0, act="relu", in_channels=3, pretrained=None):
         super(ShuffleNet, self).__init__()
         self.scale = scale
@@ -219,14 +223,13 @@ class ShuffleNet(Layer):
         self.feat_channels = stage_out_channels[1:5]
 
         # 1. conv1
-        self._conv1 = ConvBNLayer(
-            in_channels=in_channels,
-            out_channels=stage_out_channels[1],
-            kernel_size=3,
-            stride=2,
-            padding=1,
-            act=act,
-            name='stage1_conv')
+        self._conv1 = ConvBNLayer(in_channels=in_channels,
+                                  out_channels=stage_out_channels[1],
+                                  kernel_size=3,
+                                  stride=2,
+                                  padding=1,
+                                  act=act,
+                                  name='stage1_conv')
         self._max_pool = MaxPool2D(kernel_size=3, stride=2, padding=1)
 
         # 2. bottleneck sequences

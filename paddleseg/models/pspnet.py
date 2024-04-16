@@ -69,11 +69,11 @@ class PSPNet(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
     def init_weight(self):
@@ -109,19 +109,17 @@ class PSPNetHead(nn.Layer):
 
         self.backbone_indices = backbone_indices
 
-        self.psp_module = layers.PPModule(
-            in_channels=backbone_channels[1],
-            out_channels=pp_out_channels,
-            bin_sizes=bin_sizes,
-            dim_reduction=True,
-            align_corners=align_corners)
+        self.psp_module = layers.PPModule(in_channels=backbone_channels[1],
+                                          out_channels=pp_out_channels,
+                                          bin_sizes=bin_sizes,
+                                          dim_reduction=True,
+                                          align_corners=align_corners)
 
         self.dropout = nn.Dropout(p=0.1)  # dropout_prob
 
-        self.conv = nn.Conv2D(
-            in_channels=pp_out_channels,
-            out_channels=num_classes,
-            kernel_size=1)
+        self.conv = nn.Conv2D(in_channels=pp_out_channels,
+                              out_channels=num_classes,
+                              kernel_size=1)
 
         if enable_auxiliary_loss:
             self.auxlayer = layers.AuxLayer(

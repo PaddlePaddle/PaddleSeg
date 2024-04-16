@@ -61,24 +61,23 @@ class HarDNet(nn.Layer):
         encoder_in_channels = stem_channels[3]
 
         self.stem = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels, stem_channels[0], kernel_size=3, bias_attr=False),
-            layers.ConvBNReLU(
-                stem_channels[0],
-                stem_channels[1],
-                kernel_size=3,
-                bias_attr=False),
-            layers.ConvBNReLU(
-                stem_channels[1],
-                stem_channels[2],
-                kernel_size=3,
-                stride=2,
-                bias_attr=False),
-            layers.ConvBNReLU(
-                stem_channels[2],
-                stem_channels[3],
-                kernel_size=3,
-                bias_attr=False))
+            layers.ConvBNReLU(in_channels,
+                              stem_channels[0],
+                              kernel_size=3,
+                              bias_attr=False),
+            layers.ConvBNReLU(stem_channels[0],
+                              stem_channels[1],
+                              kernel_size=3,
+                              bias_attr=False),
+            layers.ConvBNReLU(stem_channels[1],
+                              stem_channels[2],
+                              kernel_size=3,
+                              stride=2,
+                              bias_attr=False),
+            layers.ConvBNReLU(stem_channels[2],
+                              stem_channels[3],
+                              kernel_size=3,
+                              bias_attr=False))
 
         self.encoder = Encoder(encoder_blks_num, encoder_in_channels, ch_list,
                                gr, grmul, n_layers)
@@ -90,24 +89,22 @@ class HarDNet(nn.Layer):
                                skip_connection_channels, gr, grmul, n_layers,
                                align_corners)
 
-        self.cls_head = nn.Conv2D(
-            in_channels=self.decoder.get_out_channels(),
-            out_channels=num_classes,
-            kernel_size=1)
+        self.cls_head = nn.Conv2D(in_channels=self.decoder.get_out_channels(),
+                                  out_channels=num_classes,
+                                  kernel_size=1)
 
         self.init_weight()
 
     def forward(self, x):
-        input_shape = paddle.shape(x)[2:]
+        input_shape = x.shape[2:]
         x = self.stem(x)
         x, skip_connections = self.encoder(x)
         x = self.decoder(x, skip_connections)
         logit = self.cls_head(x)
-        logit = F.interpolate(
-            logit,
-            size=input_shape,
-            mode="bilinear",
-            align_corners=self.align_corners)
+        logit = F.interpolate(logit,
+                              size=input_shape,
+                              mode="bilinear",
+                              align_corners=self.align_corners)
         return [logit]
 
     def init_weight(self):
@@ -141,8 +138,10 @@ class Encoder(nn.Layer):
             if i < n_blocks - 1:
                 self.shortcut_layers.append(len(self.blks) - 1)
             self.blks.append(
-                layers.ConvBNReLU(
-                    ch, ch_list[i], kernel_size=1, bias_attr=False))
+                layers.ConvBNReLU(ch,
+                                  ch_list[i],
+                                  kernel_size=1,
+                                  bias_attr=False))
 
             ch = ch_list[i]
             if i < n_blocks - 1:
@@ -193,16 +192,14 @@ class Decoder(nn.Layer):
         for i in range(n_blocks - 1, -1, -1):
             cur_channels_count = prev_block_channels + skip_connection_channels[
                 i]
-            conv1x1 = layers.ConvBNReLU(
-                cur_channels_count,
-                cur_channels_count // 2,
-                kernel_size=1,
-                bias_attr=False)
-            blk = HarDBlock(
-                base_channels=cur_channels_count // 2,
-                growth_rate=gr[i],
-                grmul=grmul,
-                n_layers=n_layers[i])
+            conv1x1 = layers.ConvBNReLU(cur_channels_count,
+                                        cur_channels_count // 2,
+                                        kernel_size=1,
+                                        bias_attr=False)
+            blk = HarDBlock(base_channels=cur_channels_count // 2,
+                            growth_rate=gr[i],
+                            grmul=grmul,
+                            n_layers=n_layers[i])
 
             self.conv1x1_up.append(conv1x1)
             self.dense_blocks_up.append(blk)
@@ -215,11 +212,10 @@ class Decoder(nn.Layer):
     def forward(self, x, skip_connections):
         for i in range(self.n_blocks):
             skip = skip_connections.pop()
-            x = F.interpolate(
-                x,
-                size=paddle.shape(skip)[2:],
-                mode="bilinear",
-                align_corners=self.align_corners)
+            x = F.interpolate(x,
+                              size=skip.shape[2:],
+                              mode="bilinear",
+                              align_corners=self.align_corners)
             x = paddle.concat([x, skip], axis=1)
             x = self.conv1x1_up[i](x)
             x = self.dense_blocks_up[i](x)
@@ -257,8 +253,7 @@ class HarDBlock(nn.Layer):
 
             self.links.append(link)
             layers_.append(
-                layers.ConvBNReLU(
-                    inch, outch, kernel_size=3, bias_attr=False))
+                layers.ConvBNReLU(inch, outch, kernel_size=3, bias_attr=False))
             if (i % 2 == 0) or (i == n_layers - 1):
                 self.out_channels += outch
         self.layers = nn.LayerList(layers_)

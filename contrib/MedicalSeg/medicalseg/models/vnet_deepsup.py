@@ -30,6 +30,7 @@ from medicalseg.utils import utils
 
 
 class LUConv(nn.Layer):
+
     def __init__(self, nchan, elu):
         super(LUConv, self).__init__()
         self.relu1 = nn.ELU() if elu else nn.PReLU(nchan)
@@ -64,8 +65,10 @@ class InputTransition(nn.Layer):
         self.num_features = 16
         self.in_channels = in_channels
 
-        self.conv1 = nn.Conv3D(
-            self.in_channels, self.num_features, kernel_size=5, padding=2)
+        self.conv1 = nn.Conv3D(self.in_channels,
+                               self.num_features,
+                               kernel_size=5,
+                               padding=2)
 
         self.bn1 = nn.BatchNorm3D(self.num_features)
 
@@ -80,6 +83,7 @@ class InputTransition(nn.Layer):
 
 
 class DownTransition(nn.Layer):
+
     def __init__(self,
                  inChans,
                  nConvs,
@@ -95,8 +99,10 @@ class DownTransition(nn.Layer):
         super(DownTransition, self).__init__()
         outChans = 2 * inChans
         self.if_dropout = dropout
-        self.down_conv = nn.Conv3D(
-            inChans, outChans, kernel_size=kernel, stride=downsample_stride)
+        self.down_conv = nn.Conv3D(inChans,
+                                   outChans,
+                                   kernel_size=kernel,
+                                   stride=downsample_stride)
         self.bn1 = nn.BatchNorm3D(outChans)
         self.relu1 = nn.ELU() if elu else nn.PReLU(outChans)
         self.relu2 = nn.ELU() if elu else nn.PReLU(outChans)
@@ -114,6 +120,7 @@ class DownTransition(nn.Layer):
 
 
 class UpTransition(nn.Layer):
+
     def __init__(self,
                  inChans,
                  outChans,
@@ -130,11 +137,10 @@ class UpTransition(nn.Layer):
         3. concate the upsampled and skipx (multi-leval feature fusion)
         4. Add nConvs convs and residually add with result of step(residual + nonlinearity)
         """
-        self.up_conv = nn.Conv3DTranspose(
-            inChans,
-            outChans // 2,
-            kernel_size=kernel,
-            stride=upsample_stride_size)
+        self.up_conv = nn.Conv3DTranspose(inChans,
+                                          outChans // 2,
+                                          kernel_size=kernel,
+                                          stride=upsample_stride_size)
 
         self.bn1 = nn.BatchNorm3D(outChans // 2)
         self.relu1 = nn.ELU() if elu else nn.PReLU(outChans // 2)
@@ -157,13 +163,16 @@ class UpTransition(nn.Layer):
 
 
 class OutputTransition(nn.Layer):
+
     def __init__(self, in_channels, num_classes, elu):
         """
         conv the output down to channels as the desired classesv
         """
         super(OutputTransition, self).__init__()
-        self.conv1 = nn.Conv3D(
-            in_channels, num_classes, kernel_size=5, padding=2)
+        self.conv1 = nn.Conv3D(in_channels,
+                               num_classes,
+                               kernel_size=5,
+                               padding=2)
         self.bn1 = nn.BatchNorm3D(num_classes)
 
         self.conv2 = nn.Conv3D(num_classes, num_classes, kernel_size=1)
@@ -194,56 +203,56 @@ class VNetDeepSup(nn.Layer):
         self.in_channels = in_channels
 
         self.in_tr = InputTransition(in_channels, elu=elu)
-        self.down_tr32 = DownTransition(
-            16, 1, elu, downsample_stride=stride_size[0], kernel=kernel_size[0])
-        self.down_tr64 = DownTransition(
-            32, 2, elu, downsample_stride=stride_size[1], kernel=kernel_size[1])
-        self.down_tr128 = DownTransition(
-            64,
-            3,
-            elu,
-            dropout=True,
-            downsample_stride=stride_size[2],
-            kernel=kernel_size[2])
-        self.down_tr256 = DownTransition(
-            128,
-            2,
-            elu,
-            dropout=True,
-            downsample_stride=stride_size[3],
-            kernel=kernel_size[3])
-        self.up_tr256 = UpTransition(
-            256,
-            256,
-            2,
-            elu,
-            dropout=True,
-            dropout2=True,
-            upsample_stride_size=stride_size[3],
-            kernel=kernel_size[3])
-        self.up_tr128 = UpTransition(
-            256,
-            128,
-            2,
-            elu,
-            dropout=True,
-            dropout2=True,
-            upsample_stride_size=stride_size[2],
-            kernel=kernel_size[2])
-        self.up_tr64 = UpTransition(
-            128,
-            64,
-            1,
-            elu,
-            upsample_stride_size=stride_size[1],
-            kernel=kernel_size[1])
-        self.up_tr32 = UpTransition(
-            64,
-            32,
-            1,
-            elu,
-            upsample_stride_size=stride_size[0],
-            kernel=kernel_size[0])
+        self.down_tr32 = DownTransition(16,
+                                        1,
+                                        elu,
+                                        downsample_stride=stride_size[0],
+                                        kernel=kernel_size[0])
+        self.down_tr64 = DownTransition(32,
+                                        2,
+                                        elu,
+                                        downsample_stride=stride_size[1],
+                                        kernel=kernel_size[1])
+        self.down_tr128 = DownTransition(64,
+                                         3,
+                                         elu,
+                                         dropout=True,
+                                         downsample_stride=stride_size[2],
+                                         kernel=kernel_size[2])
+        self.down_tr256 = DownTransition(128,
+                                         2,
+                                         elu,
+                                         dropout=True,
+                                         downsample_stride=stride_size[3],
+                                         kernel=kernel_size[3])
+        self.up_tr256 = UpTransition(256,
+                                     256,
+                                     2,
+                                     elu,
+                                     dropout=True,
+                                     dropout2=True,
+                                     upsample_stride_size=stride_size[3],
+                                     kernel=kernel_size[3])
+        self.up_tr128 = UpTransition(256,
+                                     128,
+                                     2,
+                                     elu,
+                                     dropout=True,
+                                     dropout2=True,
+                                     upsample_stride_size=stride_size[2],
+                                     kernel=kernel_size[2])
+        self.up_tr64 = UpTransition(128,
+                                    64,
+                                    1,
+                                    elu,
+                                    upsample_stride_size=stride_size[1],
+                                    kernel=kernel_size[1])
+        self.up_tr32 = UpTransition(64,
+                                    32,
+                                    1,
+                                    elu,
+                                    upsample_stride_size=stride_size[0],
+                                    kernel=kernel_size[0])
         self.out_tr32 = OutputTransition(32, num_classes, elu)
         self.out_tr64 = nn.Conv3D(64, num_classes, kernel_size=3, padding=1)
         self.out_tr128 = nn.Conv3D(128, num_classes, kernel_size=3, padding=1)
@@ -265,16 +274,22 @@ class VNetDeepSup(nn.Layer):
         out256 = self.down_tr256(out128)  # [4, 256, 32, 32, 2]
         out = self.up_tr256(out256, out128)  # [4, 256, 64, 64, 4]
         d1 = self.out_tr256(out)
-        d1 = F.interpolate(
-            d1, size=paddle.shape(x)[2:], data_format='NCDHW', mode='trilinear')
+        d1 = F.interpolate(d1,
+                           size=x.shape[2:],
+                           data_format='NCDHW',
+                           mode='trilinear')
         out = self.up_tr128(out, out64)  # [4, 128, 128, 128, 8]
         d2 = self.out_tr128(out)
-        d2 = F.interpolate(
-            d2, size=paddle.shape(x)[2:], data_format='NCDHW', mode='trilinear')
+        d2 = F.interpolate(d2,
+                           size=x.shape[2:],
+                           data_format='NCDHW',
+                           mode='trilinear')
         out = self.up_tr64(out, out32)  # [4, 64, 256, 256, 9]
         d3 = self.out_tr64(out)
-        d3 = F.interpolate(
-            d3, size=paddle.shape(x)[2:], data_format='NCDHW', mode='trilinear')
+        d3 = F.interpolate(d3,
+                           size=x.shape[2:],
+                           data_format='NCDHW',
+                           mode='trilinear')
         out = self.up_tr32(out, out16)  # [4, 32, 512, 512, 12]
         out = self.out_tr32(out)
 

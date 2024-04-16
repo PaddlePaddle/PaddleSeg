@@ -57,7 +57,7 @@ class PixelContrastCrossEntropyLoss(nn.Layer):
             y_hat (Tensor): reshaped label, shape = [N, H * W]
             y (Tensor): reshaped predict, shape = [N, H * W]
         """
-        batch_size, feat_dim = paddle.shape(X)[0], paddle.shape(X)[-1]
+        batch_size, feat_dim = x.shape[0], x.shape[-1]
         classes = []
         total_classes = 0
         for i in range(batch_size):

@@ -28,10 +28,10 @@ from ppmatting.models.losses import MRSD
 
 def conv_up_psp(in_channels, out_channels, up_sample):
     return nn.Sequential(
-        layers.ConvBNReLU(
-            in_channels, out_channels, 3, padding=1),
-        nn.Upsample(
-            scale_factor=up_sample, mode='bilinear', align_corners=False))
+        layers.ConvBNReLU(in_channels, out_channels, 3, padding=1),
+        nn.Upsample(scale_factor=up_sample,
+                    mode='bilinear',
+                    align_corners=False))
 
 
 @manager.MODELS.add_component
@@ -65,148 +65,118 @@ class HumanMatting(nn.Layer):
         ######################
         ### Decoder part - Glance
         ######################
-        self.psp_module = layers.PPModule(
-            self.backbone_channels[-1],
-            512,
-            bin_sizes=(1, 3, 5),
-            dim_reduction=False,
-            align_corners=False)
+        self.psp_module = layers.PPModule(self.backbone_channels[-1],
+                                          512,
+                                          bin_sizes=(1, 3, 5),
+                                          dim_reduction=False,
+                                          align_corners=False)
         self.psp4 = conv_up_psp(512, 256, 2)
         self.psp3 = conv_up_psp(512, 128, 4)
         self.psp2 = conv_up_psp(512, 64, 8)
         self.psp1 = conv_up_psp(512, 64, 16)
         # stage 5g
         self.decoder5_g = nn.Sequential(
-            layers.ConvBNReLU(
-                512 + self.backbone_channels[-1], 512, 3, padding=1),
-            layers.ConvBNReLU(
-                512, 512, 3, padding=2, dilation=2),
-            layers.ConvBNReLU(
-                512, 256, 3, padding=2, dilation=2),
-            nn.Upsample(
-                scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(512 + self.backbone_channels[-1],
+                              512,
+                              3,
+                              padding=1),
+            layers.ConvBNReLU(512, 512, 3, padding=2, dilation=2),
+            layers.ConvBNReLU(512, 256, 3, padding=2, dilation=2),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 4g
         self.decoder4_g = nn.Sequential(
-            layers.ConvBNReLU(
-                512, 256, 3, padding=1),
-            layers.ConvBNReLU(
-                256, 256, 3, padding=1),
-            layers.ConvBNReLU(
-                256, 128, 3, padding=1),
-            nn.Upsample(
-                scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(512, 256, 3, padding=1),
+            layers.ConvBNReLU(256, 256, 3, padding=1),
+            layers.ConvBNReLU(256, 128, 3, padding=1),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 3g
         self.decoder3_g = nn.Sequential(
-            layers.ConvBNReLU(
-                256, 128, 3, padding=1),
-            layers.ConvBNReLU(
-                128, 128, 3, padding=1),
-            layers.ConvBNReLU(
-                128, 64, 3, padding=1),
-            nn.Upsample(
-                scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(256, 128, 3, padding=1),
+            layers.ConvBNReLU(128, 128, 3, padding=1),
+            layers.ConvBNReLU(128, 64, 3, padding=1),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 2g
         self.decoder2_g = nn.Sequential(
-            layers.ConvBNReLU(
-                128, 128, 3, padding=1),
-            layers.ConvBNReLU(
-                128, 128, 3, padding=1),
-            layers.ConvBNReLU(
-                128, 64, 3, padding=1),
-            nn.Upsample(
-                scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(128, 128, 3, padding=1),
+            layers.ConvBNReLU(128, 128, 3, padding=1),
+            layers.ConvBNReLU(128, 64, 3, padding=1),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 1g
         self.decoder1_g = nn.Sequential(
-            layers.ConvBNReLU(
-                128, 64, 3, padding=1),
-            layers.ConvBNReLU(
-                64, 64, 3, padding=1),
-            layers.ConvBNReLU(
-                64, 64, 3, padding=1),
-            nn.Upsample(
-                scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(128, 64, 3, padding=1),
+            layers.ConvBNReLU(64, 64, 3, padding=1),
+            layers.ConvBNReLU(64, 64, 3, padding=1),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 0g
-        self.decoder0_g = nn.Sequential(
-            layers.ConvBNReLU(
-                64, 64, 3, padding=1),
-            layers.ConvBNReLU(
-                64, 64, 3, padding=1),
-            nn.Conv2D(
-                64, 3, 3, padding=1))
+        self.decoder0_g = nn.Sequential(layers.ConvBNReLU(64, 64, 3, padding=1),
+                                        layers.ConvBNReLU(64, 64, 3, padding=1),
+                                        nn.Conv2D(64, 3, 3, padding=1))
 
         ##########################
         ### Decoder part - FOCUS
         ##########################
         self.bridge_block = nn.Sequential(
-            layers.ConvBNReLU(
-                self.backbone_channels[-1], 512, 3, dilation=2, padding=2),
-            layers.ConvBNReLU(
-                512, 512, 3, dilation=2, padding=2),
-            layers.ConvBNReLU(
-                512, 512, 3, dilation=2, padding=2))
+            layers.ConvBNReLU(self.backbone_channels[-1],
+                              512,
+                              3,
+                              dilation=2,
+                              padding=2),
+            layers.ConvBNReLU(512, 512, 3, dilation=2, padding=2),
+            layers.ConvBNReLU(512, 512, 3, dilation=2, padding=2))
         # stage 5f
         self.decoder5_f = nn.Sequential(
-            layers.ConvBNReLU(
-                512 + self.backbone_channels[-1], 512, 3, padding=1),
-            layers.ConvBNReLU(
-                512, 512, 3, padding=2, dilation=2),
-            layers.ConvBNReLU(
-                512, 256, 3, padding=2, dilation=2),
-            nn.Upsample(
-                scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(512 + self.backbone_channels[-1],
+                              512,
+                              3,
+                              padding=1),
+            layers.ConvBNReLU(512, 512, 3, padding=2, dilation=2),
+            layers.ConvBNReLU(512, 256, 3, padding=2, dilation=2),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 4f
         self.decoder4_f = nn.Sequential(
-            layers.ConvBNReLU(
-                256 + self.backbone_channels[-2], 256, 3, padding=1),
-            layers.ConvBNReLU(
-                256, 256, 3, padding=1),
-            layers.ConvBNReLU(
-                256, 128, 3, padding=1),
-            nn.Upsample(
-                scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(256 + self.backbone_channels[-2],
+                              256,
+                              3,
+                              padding=1),
+            layers.ConvBNReLU(256, 256, 3, padding=1),
+            layers.ConvBNReLU(256, 128, 3, padding=1),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 3f
         self.decoder3_f = nn.Sequential(
-            layers.ConvBNReLU(
-                128 + self.backbone_channels[-3], 128, 3, padding=1),
-            layers.ConvBNReLU(
-                128, 128, 3, padding=1),
-            layers.ConvBNReLU(
-                128, 64, 3, padding=1),
-            nn.Upsample(
-                scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(128 + self.backbone_channels[-3],
+                              128,
+                              3,
+                              padding=1),
+            layers.ConvBNReLU(128, 128, 3, padding=1),
+            layers.ConvBNReLU(128, 64, 3, padding=1),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 2f
         self.decoder2_f = nn.Sequential(
-            layers.ConvBNReLU(
-                64 + self.backbone_channels[-4], 128, 3, padding=1),
-            layers.ConvBNReLU(
-                128, 128, 3, padding=1),
-            layers.ConvBNReLU(
-                128, 64, 3, padding=1),
-            nn.Upsample(
-                scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(64 + self.backbone_channels[-4],
+                              128,
+                              3,
+                              padding=1),
+            layers.ConvBNReLU(128, 128, 3, padding=1),
+            layers.ConvBNReLU(128, 64, 3, padding=1),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 1f
         self.decoder1_f = nn.Sequential(
-            layers.ConvBNReLU(
-                64 + self.backbone_channels[-5], 64, 3, padding=1),
-            layers.ConvBNReLU(
-                64, 64, 3, padding=1),
-            layers.ConvBNReLU(
-                64, 64, 3, padding=1),
-            nn.Upsample(
-                scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(64 + self.backbone_channels[-5], 64, 3,
+                              padding=1), layers.ConvBNReLU(64,
+                                                            64,
+                                                            3,
+                                                            padding=1),
+            layers.ConvBNReLU(64, 64, 3, padding=1),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 0f
-        self.decoder0_f = nn.Sequential(
-            layers.ConvBNReLU(
-                64, 64, 3, padding=1),
-            layers.ConvBNReLU(
-                64, 64, 3, padding=1),
-            nn.Conv2D(
-                64, 1 + 1 + 32, 3, padding=1))
+        self.decoder0_f = nn.Sequential(layers.ConvBNReLU(64, 64, 3, padding=1),
+                                        layers.ConvBNReLU(64, 64, 3, padding=1),
+                                        nn.Conv2D(64, 1 + 1 + 32, 3, padding=1))
         self.init_weight()
 
     def forward(self, data):
         src = data['img']
-        src_h, src_w = paddle.shape(src)[2:]
+        src_h, src_w = src.shape[2:]
         if self.if_refine:
             # It is not need when exporting.
             if isinstance(src_h, paddle.Tensor):
@@ -216,11 +186,10 @@ class HumanMatting(nn.Layer):
                     )
 
         # Downsample src for backbone
-        src_sm = F.interpolate(
-            src,
-            scale_factor=self.backbone_scale,
-            mode='bilinear',
-            align_corners=False)
+        src_sm = F.interpolate(src,
+                               scale_factor=self.backbone_scale,
+                               mode='bilinear',
+                               align_corners=False)
 
         # Base
         fea_list = self.backbone(src_sm)
@@ -270,8 +239,11 @@ class HumanMatting(nn.Layer):
 
         # Refiner
         if self.if_refine:
-            pha = self.refiner(
-                src=src, pha=pha_sm, err=err_sm, hid=hid_sm, tri=glance_sigmoid)
+            pha = self.refiner(src=src,
+                               pha=pha_sm,
+                               err=err_sm,
+                               hid=hid_sm,
+                               tri=glance_sigmoid)
             # Clamp outputs
             pha = paddle.clip(pha, 0., 1.)
 
@@ -305,11 +277,10 @@ class HumanMatting(nn.Layer):
 
         # glance loss computation
         # get glance label
-        glance_label = F.interpolate(
-            label_dict['trimap'],
-            logit_dict['glance'].shape[2:],
-            mode='nearest',
-            align_corners=False)
+        glance_label = F.interpolate(label_dict['trimap'],
+                                     logit_dict['glance'].shape[2:],
+                                     mode='nearest',
+                                     align_corners=False)
         glance_label_trans = (glance_label == 128).astype('int64')
         glance_label_bg = (glance_label == 0).astype('int64')
         glance_label = glance_label_trans + glance_label_bg * 2
@@ -318,13 +289,13 @@ class HumanMatting(nn.Layer):
         loss['glance'] = loss_glance
 
         # focus loss computation
-        focus_label = F.interpolate(
-            label_dict['alpha'],
-            logit_dict['focus'].shape[2:],
-            mode='bilinear',
-            align_corners=False)
-        loss_focus = self.loss_func_dict['focus'][0](
-            logit_dict['focus'], focus_label, glance_label_trans)
+        focus_label = F.interpolate(label_dict['alpha'],
+                                    logit_dict['focus'].shape[2:],
+                                    mode='bilinear',
+                                    align_corners=False)
+        loss_focus = self.loss_func_dict['focus'][0](logit_dict['focus'],
+                                                     focus_label,
+                                                     glance_label_trans)
         loss['focus'] = loss_focus
 
         # collaborative matting loss
@@ -334,16 +305,15 @@ class HumanMatting(nn.Layer):
         loss['cm'] = loss_cm
 
         # error loss
-        err = F.interpolate(
-            logit_dict['error'],
-            label_dict['alpha'].shape[2:],
-            mode='bilinear',
-            align_corners=False)
-        err_label = (F.interpolate(
-            logit_dict['fusion'],
-            label_dict['alpha'].shape[2:],
-            mode='bilinear',
-            align_corners=False) - label_dict['alpha']).abs()
+        err = F.interpolate(logit_dict['error'],
+                            label_dict['alpha'].shape[2:],
+                            mode='bilinear',
+                            align_corners=False)
+        err_label = (F.interpolate(logit_dict['fusion'],
+                                   label_dict['alpha'].shape[2:],
+                                   mode='bilinear',
+                                   align_corners=False) -
+                     label_dict['alpha']).abs()
         loss_err = self.loss_func_dict['err'][0](err, err_label)
         loss['err'] = loss_err
 
@@ -390,22 +360,26 @@ class Refiner(nn.Layer):
         self.kernel_size = kernel_size
 
         channels = [32, 24, 16, 12, 1]
-        self.conv1 = layers.ConvBNReLU(
-            channels[0] + 4 + 3,
-            channels[1],
-            kernel_size,
-            padding=0,
-            bias_attr=False)
-        self.conv2 = layers.ConvBNReLU(
-            channels[1], channels[2], kernel_size, padding=0, bias_attr=False)
-        self.conv3 = layers.ConvBNReLU(
-            channels[2] + 3,
-            channels[3],
-            kernel_size,
-            padding=0,
-            bias_attr=False)
-        self.conv4 = nn.Conv2D(
-            channels[3], channels[4], kernel_size, padding=0, bias_attr=True)
+        self.conv1 = layers.ConvBNReLU(channels[0] + 4 + 3,
+                                       channels[1],
+                                       kernel_size,
+                                       padding=0,
+                                       bias_attr=False)
+        self.conv2 = layers.ConvBNReLU(channels[1],
+                                       channels[2],
+                                       kernel_size,
+                                       padding=0,
+                                       bias_attr=False)
+        self.conv3 = layers.ConvBNReLU(channels[2] + 3,
+                                       channels[3],
+                                       kernel_size,
+                                       padding=0,
+                                       bias_attr=False)
+        self.conv4 = nn.Conv2D(channels[3],
+                               channels[4],
+                               kernel_size,
+                               padding=0,
+                               bias_attr=True)
 
     def forward(self, src, pha, err, hid, tri):
         '''
@@ -416,21 +390,19 @@ class Refiner(nn.Layer):
             hid: (B, 32, Hc, Hc) coarse hidden encoding.
             tri: (B, 1, Hc, Hc) trimap prediction.
         '''
-        h_full, w_full = paddle.shape(src)[2:]
+        h_full, w_full = src.shape[2:]
         h_half, w_half = h_full // 2, w_full // 2
         h_quat, w_quat = h_full // 4, w_full // 4
 
         x = paddle.concat([hid, pha, tri], axis=1)
-        x = F.interpolate(
-            x,
-            paddle.stack((h_half, w_half)).squeeze(),
-            mode='bilinear',
-            align_corners=False)
-        y = F.interpolate(
-            src,
-            paddle.stack((h_half, w_half)).squeeze(),
-            mode='bilinear',
-            align_corners=False)
+        x = F.interpolate(x,
+                          paddle.stack((h_half, w_half)).squeeze(),
+                          mode='bilinear',
+                          align_corners=False)
+        y = F.interpolate(src,
+                          paddle.stack((h_half, w_half)).squeeze(),
+                          mode='bilinear',
+                          align_corners=False)
 
         if self.kernel_size == 3:
             x = F.pad(x, [3, 3, 3, 3])
@@ -440,11 +412,13 @@ class Refiner(nn.Layer):
         x = self.conv2(x)
 
         if self.kernel_size == 3:
-            x = F.interpolate(x, paddle.stack((h_full + 4, w_full + 4)).squeeze())
+            x = F.interpolate(x,
+                              paddle.stack((h_full + 4, w_full + 4)).squeeze())
             y = F.pad(src, [2, 2, 2, 2])
         else:
-            x = F.interpolate(
-                x, paddle.stack((h_full, w_full)).squeeze(), mode='nearest')
+            x = F.interpolate(x,
+                              paddle.stack((h_full, w_full)).squeeze(),
+                              mode='nearest')
             y = src
 
         x = self.conv3(paddle.concat([x, y], axis=1))

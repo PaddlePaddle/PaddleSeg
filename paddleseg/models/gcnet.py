@@ -68,11 +68,11 @@ class GCNet(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          x.shape[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
     def init_weight(self):
@@ -106,31 +106,31 @@ class GCNetHead(nn.Layer):
         super().__init__()
 
         in_channels = backbone_channels[1]
-        self.conv_bn_relu1 = layers.ConvBNReLU(
-            in_channels=in_channels,
-            out_channels=gc_channels,
-            kernel_size=3,
-            padding=1)
+        self.conv_bn_relu1 = layers.ConvBNReLU(in_channels=in_channels,
+                                               out_channels=gc_channels,
+                                               kernel_size=3,
+                                               padding=1)
 
-        self.gc_block = GlobalContextBlock(
-            gc_channels=gc_channels, in_channels=gc_channels, ratio=ratio)
+        self.gc_block = GlobalContextBlock(gc_channels=gc_channels,
+                                           in_channels=gc_channels,
+                                           ratio=ratio)
 
-        self.conv_bn_relu2 = layers.ConvBNReLU(
-            in_channels=gc_channels,
-            out_channels=gc_channels,
-            kernel_size=3,
-            padding=1)
+        self.conv_bn_relu2 = layers.ConvBNReLU(in_channels=gc_channels,
+                                               out_channels=gc_channels,
+                                               kernel_size=3,
+                                               padding=1)
 
-        self.conv_bn_relu3 = layers.ConvBNReLU(
-            in_channels=in_channels + gc_channels,
-            out_channels=gc_channels,
-            kernel_size=3,
-            padding=1)
+        self.conv_bn_relu3 = layers.ConvBNReLU(in_channels=in_channels +
+                                               gc_channels,
+                                               out_channels=gc_channels,
+                                               kernel_size=3,
+                                               padding=1)
 
         self.dropout = nn.Dropout(p=0.1)
 
-        self.conv = nn.Conv2D(
-            in_channels=gc_channels, out_channels=num_classes, kernel_size=1)
+        self.conv = nn.Conv2D(in_channels=gc_channels,
+                              out_channels=num_classes,
+                              kernel_size=1)
 
         if enable_auxiliary_loss:
             self.auxlayer = layers.AuxLayer(
@@ -177,26 +177,24 @@ class GlobalContextBlock(nn.Layer):
         super().__init__()
         self.gc_channels = gc_channels
 
-        self.conv_mask = nn.Conv2D(
-            in_channels=in_channels, out_channels=1, kernel_size=1)
+        self.conv_mask = nn.Conv2D(in_channels=in_channels,
+                                   out_channels=1,
+                                   kernel_size=1)
 
         self.softmax = nn.Softmax(axis=2)
 
         inter_channels = int(in_channels * ratio)
         self.channel_add_conv = nn.Sequential(
-            nn.Conv2D(
-                in_channels=in_channels,
-                out_channels=inter_channels,
-                kernel_size=1),
-            nn.LayerNorm(normalized_shape=[inter_channels, 1, 1]),
-            nn.ReLU(),
-            nn.Conv2D(
-                in_channels=inter_channels,
-                out_channels=in_channels,
-                kernel_size=1))
+            nn.Conv2D(in_channels=in_channels,
+                      out_channels=inter_channels,
+                      kernel_size=1),
+            nn.LayerNorm(normalized_shape=[inter_channels, 1, 1]), nn.ReLU(),
+            nn.Conv2D(in_channels=inter_channels,
+                      out_channels=in_channels,
+                      kernel_size=1))
 
     def global_context_block(self, x):
-        x_shape = paddle.shape(x)
+        x_shape = x.shape
 
         # [N, C, H * W]
         input_x = paddle.reshape(x, shape=[0, self.gc_channels, -1])
