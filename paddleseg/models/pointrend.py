@@ -420,9 +420,9 @@ class PointHead(nn.Layer):
 
         num_points = self.subdivision_num_points
         uncertainty_map = uncertainty_func(seg_logits)
-        batch_size = uncertainty_map.shape[0:1]
-        height = uncertainty_map.shape[2:3]
-        width = uncertainty_map.shape[3:4]
+        batch_size = paddle.shape(uncertainty_map)[0:1]
+        height = paddle.shape(uncertainty_map)[2:3]
+        width = paddle.shape(uncertainty_map)[3:4]
         h_step = 1.0 / height
         w_step = 1.0 / width
 

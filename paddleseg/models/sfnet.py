@@ -221,7 +221,7 @@ class AlignedModule(nn.Layer):
     def forward(self, x):
         low_feature, h_feature = x
         h_feature_orign = h_feature
-        size = low_feature.shape[2:]
+        size = paddle.shape(low_feature)[2:]
         low_feature = self.down_l(low_feature)
         h_feature = self.down_h(h_feature)
         h_feature = F.interpolate(h_feature,
