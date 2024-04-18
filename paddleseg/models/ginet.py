@@ -184,7 +184,7 @@ class GlobalReasonUnit(nn.Layer):
         sizeB = B.shape
         B = paddle.flatten(B, 2, 3)
 
-        sizex = x.shape
+        sizex = paddle.shape(x)
         x_reduce = self.conv_phi(x)
 
         x_reduce = paddle.flatten(x_reduce, 2, 3).transpose((0, 2, 1))

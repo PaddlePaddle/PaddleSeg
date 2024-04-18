@@ -206,7 +206,7 @@ class SqueezeBodyEdge(nn.Layer):
                                    bias_attr=False)
 
     def forward(self, x):
-        size = x.shape[2:]
+        size = paddle.shape(x)[2:]
         seg_down = self.down(x)
         seg_down = F.interpolate(seg_down,
                                  size=size,
