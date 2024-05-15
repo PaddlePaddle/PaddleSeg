@@ -19,6 +19,15 @@ from paddle import nn
 from paddleseg.models import layers
 
 
+class CustomAvgPool2D(nn.Layer):
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        return paddle.mean(x, axis=[2, 3], keepdim=True)
+
+
 class ASPPModule(nn.Layer):
     """
     Atrous Spatial Pyramid Pooling.
@@ -64,9 +73,11 @@ class ASPPModule(nn.Layer):
         out_size = len(self.aspp_blocks)
 
         if image_pooling:
+            pool_layer = CustomAvgPool2D() if "npu" in paddle.get_device(
+            ) else nn.AdaptiveAvgPool2D(output_size=(1, 1),
+                                        data_format=data_format)
             self.global_avg_pool = nn.Sequential(
-                nn.AdaptiveAvgPool2D(output_size=(1, 1),
-                                     data_format=data_format),
+                pool_layer,
                 layers.ConvBNReLU(in_channels,
                                   out_channels,
                                   kernel_size=1,
