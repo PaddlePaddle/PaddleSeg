@@ -345,15 +345,29 @@ def train(model,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
                     os.makedirs(current_save_dir)
+                states_dict = {
+                    'mIoU': mean_iou,
+                    'Acc': acc,
+                    'iter': iter
+                }
                 paddle.save(model.state_dict(),
                             os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
+                paddle.save(states_dict,
+                            os.path.join(current_save_dir, 'model.pdstates'))
 
                 if use_ema:
+                    ema_states_dict = {
+                        'mIoU': ema_mean_iou,
+                        'Acc': ema_acc,
+                        'iter': iter
+                    }
                     paddle.save(
                         ema_model.state_dict(),
                         os.path.join(current_save_dir, 'ema_model.pdparams'))
+                    paddle.save(ema_states_dict,
+                        os.path.join(current_save_dir, 'ema_model.pdstates'))
 
                 save_models.append(current_save_dir)
                 if len(save_models) > keep_checkpoint_max > 0:
@@ -369,6 +383,8 @@ def train(model,
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
+                        paddle.save(states_dict,
+                            os.path.join(best_model_dir, 'model.pdstates'))
                     elif mean_iou < best_mean_iou:
                         stop_count += 1
 
@@ -391,6 +407,8 @@ def train(model,
                             paddle.save(ema_model.state_dict(),
                                         os.path.join(best_ema_model_dir,
                                                      'ema_model.pdparams'))
+                            paddle.save(ema_states_dict,
+                                        os.path.join(best_ema_model_dir, 'ema_model.pdstates'))
                         logger.info(
                             '[EVAL] The EMA model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                             .format(best_ema_mean_iou, best_ema_model_iter))
