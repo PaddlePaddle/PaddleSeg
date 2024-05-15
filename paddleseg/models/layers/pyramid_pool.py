@@ -73,6 +73,8 @@ class ASPPModule(nn.Layer):
         out_size = len(self.aspp_blocks)
 
         if image_pooling:
+            # avgpool with outsize=(1,1) is extreamly slow when backward,
+            # so we replace it with equivalent mean operation.
             pool_layer = CustomAvgPool2D() if "npu" in paddle.get_device(
             ) else nn.AdaptiveAvgPool2D(output_size=(1, 1),
                                         data_format=data_format)
