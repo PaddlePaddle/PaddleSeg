@@ -143,7 +143,7 @@ def SyncBatchNorm(*args, **kwargs):
         return nn.BatchNorm2D(*args, **kwargs)
     elif paddle.distributed.ParallelEnv().nranks == 1:
         return nn.BatchNorm2D(*args, **kwargs)
-    elif paddle.get_device() == 'npu':
+    elif 'npu' in paddle.get_device():
         return NaiveSyncBatchNorm(*args, **kwargs)
     else:
         return nn.SyncBatchNorm(*args, **kwargs)
