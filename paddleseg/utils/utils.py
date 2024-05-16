@@ -25,6 +25,7 @@ import cv2
 
 from paddleseg.utils import logger, seg_env, get_sys_env
 from paddleseg.utils.download import download_file_and_uncompress
+from paddleseg.models.layers.layer_libs import NaiveSyncBatchNorm
 
 
 def set_seed(seed=None):
@@ -83,6 +84,9 @@ def convert_sync_batchnorm(model, device):
         and env_info['GPUs used'] and paddle.distributed.ParallelEnv().nranks > 1:
         model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(model)
         logger.info("Convert bn to sync_bn")
+    elif device == "npu" and paddle.distributed.ParallelEnv().nranks > 1:
+        model = NaiveSyncBatchNorm.convert_sync_batchnorm(model)
+        logger.info("Convert bn to sync_bn in NPU Device")
     return model
 
 
@@ -97,7 +101,7 @@ def set_cv2_num_threads(num_workers):
 
 
 @contextlib.contextmanager
-def generate_tempdir(directory: str=None, **kwargs):
+def generate_tempdir(directory: str = None, **kwargs):
     '''Generate a temporary directory'''
     directory = seg_env.TMP_HOME if not directory else directory
     with tempfile.TemporaryDirectory(dir=directory, **kwargs) as _dir:
@@ -160,23 +164,24 @@ def load_pretrained_model(model, pretrained_model):
             for k in keys:
                 if k not in para_state_dict:
                     logger.warning("{} is not in pretrained model".format(k))
-                elif list(para_state_dict[k].shape) != list(model_state_dict[k]
-                                                            .shape):
+                elif list(para_state_dict[k].shape) != list(
+                        model_state_dict[k].shape):
                     logger.warning(
                         "[SKIP] Shape of pretrained params {} doesn't match.(Pretrained: {}, Actual: {})"
-                        .format(k, para_state_dict[k].shape, model_state_dict[k]
-                                .shape))
+                        .format(k, para_state_dict[k].shape,
+                                model_state_dict[k].shape))
                 else:
                     model_state_dict[k] = para_state_dict[k]
                     num_params_loaded += 1
             model.set_dict(model_state_dict)
             logger.info("There are {}/{} variables loaded into {}.".format(
-                num_params_loaded,
-                len(model_state_dict), model.__class__.__name__))
+                num_params_loaded, len(model_state_dict),
+                model.__class__.__name__))
 
         else:
-            raise ValueError('The pretrained model directory is not Found: {}'.
-                             format(pretrained_model))
+            raise ValueError(
+                'The pretrained model directory is not Found: {}'.format(
+                    pretrained_model))
     else:
         logger.info(
             'No pretrained model to load, {} will be trained from scratch.'.
@@ -251,6 +256,7 @@ def get_image_list(image_path):
 
 
 class NoAliasDumper(yaml.SafeDumper):
+
     def ignore_aliases(self, data):
         return True
 
