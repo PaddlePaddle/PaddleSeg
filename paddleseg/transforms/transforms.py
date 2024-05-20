@@ -845,9 +845,10 @@ class RandomBlur:
             Default: gaussian.
     """
 
-    def __init__(self, prob=0.1, blur_type="gaussian"):
+    def __init__(self, prob=0.1, blur_type="gaussian", max_radius=10):
         self.prob = prob
         self.blur_type = blur_type
+        self.max_radius = max_radius
 
     def __call__(self, data):
 
@@ -859,11 +860,11 @@ class RandomBlur:
             n = int(1.0 / self.prob)
         if n > 0:
             if np.random.randint(0, n) == 0:
-                radius = np.random.randint(3, 10)
+                radius = np.random.randint(3, self.max_radius)
                 if radius % 2 != 1:
                     radius = radius + 1
-                if radius > 9:
-                    radius = 9
+                #if radius > 9:
+                #    radius = 9
                 data['img'] = np.array(data['img'], dtype='uint8')
                 if self.blur_type == "gaussian":
                     data['img'] = cv2.GaussianBlur(data['img'],
@@ -1244,4 +1245,83 @@ class AddMultiLabelAuxiliaryCategory:
             aux_label = (data['label'].sum(axis=-1, keepdims=True) == 0).astype('uint8')
             data['label'] = np.concatenate([aux_label, data['label']], axis=-1)
 
+        return data
+
+
+
+
+@manager.TRANSFORMS.add_component
+class RandomRainbow:
+    def __init__(self):
+        pass
+    def __call__(self, data):
+        img_input = data['img']
+        height, width, _ = img_input.shape
+
+        width_rainbow = random.randint(2, 10)    
+        height_rainbow = random.randint(2, 10)
+        factor_rainbow = random.randint(3, 20)    
+        img_rainbow = np.random.rand(height_rainbow, width_rainbow, 3)
+        img_rainbow -= 0.5
+        img_rainbow /= factor_rainbow   
+        img_rainbow = cv2.resize(img_rainbow, (width, height))    
+    
+        img_input /= 255.
+        img_input = np.minimum(1, np.maximum(0., img_rainbow+img_input))    
+        img_input = (img_input*255).astype(np.uint8)
+        data['img'] = img_input
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class RandomPerspectiveTransform:
+    def __init__(self, range_dist = 0.3):
+        self.range_dist = range_dist
+        pass
+        
+    def __call__(self, data):
+        #.\venv\Scripts\activate  & cd paddleseg & python setup.py install & cd.. & train_roadseg_1920_1080
+        
+        h, w, c = data['img'].shape
+        
+        range_pix_x = round(w*self.range_dist)
+        range_pix_y = round(h*self.range_dist)
+        
+        ptlx = np.random.randint(0, range_pix_x)
+        ptly = np.random.randint(0, range_pix_y)
+        
+        ptrx = w-np.random.randint(0, range_pix_x)
+        ptry = np.random.randint(0, range_pix_y)
+        
+        pbrx = w-np.random.randint(0, range_pix_x)
+        pbry = h-np.random.randint(0, range_pix_y)
+        
+        pblx = np.random.randint(0, range_pix_x)
+        pbly = h-np.random.randint(0, range_pix_y)
+        
+        pts1 = np.array([[ptlx, ptly], [ptrx, ptry], [pbrx, pbry], [pblx, pbly]]).astype(np.float32)
+        
+        
+        ptlx2 = np.random.randint(0, range_pix_x)
+        ptly2 = np.random.randint(0, range_pix_y)
+        
+        ptrx2 = w-np.random.randint(0, range_pix_x)
+        ptry2 = np.random.randint(0, range_pix_y)
+        
+        pbrx2 = w-np.random.randint(0, range_pix_x)
+        pbry2 = h-np.random.randint(0, range_pix_y)
+        
+        pblx2 = np.random.randint(0, range_pix_x)
+        pbly2 = h-np.random.randint(0, range_pix_y)
+        
+        pts2 = np.array([[ptlx2, ptly2], [ptrx2, ptry2], [pbrx2, pbry2], [pblx2, pbly2]]).astype(np.float32)
+        
+        ma = cv2.getPerspectiveTransform(pts1, pts2)
+        #print(pts1, pts2)
+        #print(ma)
+        
+        data['img'] = cv2.warpPerspective(data['img'],ma,(w, h),flags=cv2.INTER_LINEAR)
+        for key in data.get('gt_fields', []):
+            data[key] = cv2.warpPerspective(data[key],ma,(w, h),flags=cv2.INTER_NEAREST)
+            
         return data
