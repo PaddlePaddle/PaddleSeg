@@ -345,29 +345,15 @@ def train(model,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
                     os.makedirs(current_save_dir)
-                states_dict = {
-                    'mIoU': mean_iou,
-                    'Acc': acc,
-                    'iter': iter
-                }
                 paddle.save(model.state_dict(),
                             os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
-                paddle.save(states_dict,
-                            os.path.join(current_save_dir, 'model.pdstates'))
 
                 if use_ema:
-                    ema_states_dict = {
-                        'mIoU': ema_mean_iou,
-                        'Acc': ema_acc,
-                        'iter': iter
-                    }
                     paddle.save(
                         ema_model.state_dict(),
                         os.path.join(current_save_dir, 'ema_model.pdparams'))
-                    paddle.save(ema_states_dict,
-                        os.path.join(current_save_dir, 'ema_model.pdstates'))
 
                 save_models.append(current_save_dir)
                 if len(save_models) > keep_checkpoint_max > 0:
@@ -375,6 +361,14 @@ def train(model,
                     shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
+                    states_dict = {
+                        'mIoU': mean_iou,
+                        'Acc': acc,
+                        'iter': iter
+                    }
+                    paddle.save(states_dict,
+                                os.path.join(current_save_dir, 'model.pdstates'))
+
                     if mean_iou > best_mean_iou:
                         stop_count = 0
                         best_mean_iou = mean_iou
@@ -399,6 +393,14 @@ def train(model,
                             .format(best_mean_iou, best_model_iter))
 
                     if use_ema:
+                        ema_states_dict = {
+                            'mIoU': ema_mean_iou,
+                            'Acc': ema_acc,
+                            'iter': iter
+                        }
+                        paddle.save(ema_states_dict,
+                            os.path.join(current_save_dir, 'ema_model.pdstates'))
+                            
                         if ema_mean_iou > best_ema_mean_iou:
                             best_ema_mean_iou = ema_mean_iou
                             best_ema_model_iter = iter
