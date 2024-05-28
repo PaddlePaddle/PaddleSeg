@@ -122,22 +122,21 @@ class Predictor:
         if hasattr(args, 'benchmark') and args.benchmark:
             import auto_log
             pid = os.getpid()
-            self.autolog = auto_log.AutoLogger(model_name=args.model_name,
-                                               model_precision=args.precision,
-                                               batch_size=args.batch_size,
-                                               data_shape="dynamic",
-                                               save_path=None,
-                                               inference_config=self.pred_cfg,
-                                               pids=pid,
-                                               process_name=None,
-                                               gpu_ids=0,
-                                               time_keys=[
-                                                   'preprocess_time',
-                                                   'inference_time',
-                                                   'postprocess_time'
-                                               ],
-                                               warmup=0,
-                                               logger=logger)
+            self.autolog = auto_log.AutoLogger(
+                model_name=args.model_name,
+                model_precision=args.precision,
+                batch_size=args.batch_size,
+                data_shape="dynamic",
+                save_path=None,
+                inference_config=self.pred_cfg,
+                pids=pid,
+                process_name=None,
+                gpu_ids=0 if "gpu" in args.device else None,
+                time_keys=[
+                    'preprocess_time', 'inference_time', 'postprocess_time'
+                ],
+                warmup=0,
+                logger=logger)
 
     def _init_base_config(self):
         self.pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
