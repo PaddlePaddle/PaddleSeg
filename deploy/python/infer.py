@@ -86,6 +86,7 @@ def auto_tune(args, imgs, img_nums):
 
 
 class Predictor:
+
     def __init__(self, args):
         """
         Prepare for prediction.
@@ -128,7 +129,7 @@ class Predictor:
                 inference_config=self.pred_cfg,
                 pids=pid,
                 process_name=None,
-                gpu_ids=0,
+                gpu_ids=0 if "gpu" in args.device else None,
                 time_keys=[
                     'preprocess_time', 'inference_time', 'postprocess_time'
                 ],
@@ -224,9 +225,8 @@ class Predictor:
             if args.benchmark:
                 self.autolog.times.start()
 
-            data = np.array([
-                self._preprocess(p) for p in imgs_path[i:i + args.batch_size]
-            ])
+            data = np.array(
+                [self._preprocess(p) for p in imgs_path[i:i + args.batch_size]])
             input_handle.reshape(data.shape)
             input_handle.copy_from_cpu(data)
 
@@ -268,13 +268,12 @@ class Predictor:
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Test')
-    parser.add_argument(
-        "--config",
-        dest="cfg",
-        help="The config file.",
-        default=None,
-        type=str,
-        required=True)
+    parser.add_argument("--config",
+                        dest="cfg",
+                        help="The config file.",
+                        default=None,
+                        type=str,
+                        required=True)
     parser.add_argument(
         '--image_path',
         dest='image_path',
@@ -282,18 +281,16 @@ def parse_args():
         type=str,
         default=None,
         required=True)
-    parser.add_argument(
-        '--batch_size',
-        dest='batch_size',
-        help='Mini batch size of one gpu or cpu.',
-        type=int,
-        default=1)
-    parser.add_argument(
-        '--save_dir',
-        dest='save_dir',
-        help='The directory for saving the predict result.',
-        type=str,
-        default='./output')
+    parser.add_argument('--batch_size',
+                        dest='batch_size',
+                        help='Mini batch size of one gpu or cpu.',
+                        type=int,
+                        default=1)
+    parser.add_argument('--save_dir',
+                        dest='save_dir',
+                        help='The directory for saving the predict result.',
+                        type=str,
+                        default='./output')
     parser.add_argument(
         '--device',
         choices=['cpu', 'gpu', 'xpu', 'npu'],
@@ -306,48 +303,45 @@ def parse_args():
         type=eval,
         choices=[True, False],
         help='Whether to use Nvidia TensorRT to accelerate prediction.')
-    parser.add_argument(
-        "--precision",
-        default="fp32",
-        type=str,
-        choices=["fp32", "fp16", "int8"],
-        help='The tensorrt precision.')
-    parser.add_argument(
-        '--min_subgraph_size',
-        default=3,
-        type=int,
-        help='The min subgraph size in tensorrt prediction.')
+    parser.add_argument("--precision",
+                        default="fp32",
+                        type=str,
+                        choices=["fp32", "fp16", "int8"],
+                        help='The tensorrt precision.')
+    parser.add_argument('--min_subgraph_size',
+                        default=3,
+                        type=int,
+                        help='The min subgraph size in tensorrt prediction.')
     parser.add_argument(
         '--enable_auto_tune',
         default=False,
         type=eval,
         choices=[True, False],
-        help='Whether to enable tuned dynamic shape. We uses some images to collect '
+        help=
+        'Whether to enable tuned dynamic shape. We uses some images to collect '
         'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
     )
-    parser.add_argument(
-        '--auto_tuned_shape_file',
-        type=str,
-        default="auto_tune_tmp.pbtxt",
-        help='The temp file to save tuned dynamic shape.')
+    parser.add_argument('--auto_tuned_shape_file',
+                        type=str,
+                        default="auto_tune_tmp.pbtxt",
+                        help='The temp file to save tuned dynamic shape.')
 
-    parser.add_argument(
-        '--cpu_threads',
-        default=10,
-        type=int,
-        help='Number of threads to predict when using cpu.')
-    parser.add_argument(
-        '--enable_mkldnn',
-        default=False,
-        type=eval,
-        choices=[True, False],
-        help='Enable to use mkldnn to speed up when using cpu.')
+    parser.add_argument('--cpu_threads',
+                        default=10,
+                        type=int,
+                        help='Number of threads to predict when using cpu.')
+    parser.add_argument('--enable_mkldnn',
+                        default=False,
+                        type=eval,
+                        choices=[True, False],
+                        help='Enable to use mkldnn to speed up when using cpu.')
 
     parser.add_argument(
         "--benchmark",
         type=eval,
         default=False,
-        help="Whether to log some information about environment, model, configuration and performance."
+        help=
+        "Whether to log some information about environment, model, configuration and performance."
     )
     parser.add_argument(
         "--model_name",
@@ -356,17 +350,15 @@ def parse_args():
         help='When `--benchmark` is True, the specified model name is displayed.'
     )
 
-    parser.add_argument(
-        '--with_argmax',
-        dest='with_argmax',
-        help='Perform argmax operation on the predict result.',
-        action='store_true')
-    parser.add_argument(
-        '--print_detail',
-        default=True,
-        type=eval,
-        choices=[True, False],
-        help='Print GLOG information of Paddle Inference.')
+    parser.add_argument('--with_argmax',
+                        dest='with_argmax',
+                        help='Perform argmax operation on the predict result.',
+                        action='store_true')
+    parser.add_argument('--print_detail',
+                        default=True,
+                        type=eval,
+                        choices=[True, False],
+                        help='Print GLOG information of Paddle Inference.')
 
     return parser.parse_args()
 
