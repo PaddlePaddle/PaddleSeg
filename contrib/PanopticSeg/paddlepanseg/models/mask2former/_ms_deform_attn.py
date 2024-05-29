@@ -181,7 +181,7 @@ class MSDeformAttn(nn.Layer, THLinearInitMixin):
         if reference_points.shape[-1] == 2:
             offset_normalizer = paddle.stack(
                 [input_spatial_shapes[..., 1], input_spatial_shapes[..., 0]],
-                -1)
+                -1).astype('float32')
             sampling_locations = reference_points[:, :, None, :, None, :] \
                                  + sampling_offsets / offset_normalizer[None, None, None, :, None, :]
         elif reference_points.shape[-1] == 4:
