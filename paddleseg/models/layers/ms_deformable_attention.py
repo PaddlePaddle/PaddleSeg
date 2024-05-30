@@ -11,6 +11,7 @@ from paddleseg.cvlibs.param_init import constant_init, xavier_uniform
 
 
 class MSDeformAttn(nn.Layer):
+
     def __init__(self,
                  d_model=256,
                  n_levels=4,
@@ -57,18 +58,20 @@ class MSDeformAttn(nn.Layer):
     @staticmethod
     def _is_power_of_2(n):
         if (not isinstance(n, int)) or (n < 0):
-            raise ValueError('invalid input for _is_power_of_2: {} (type: {})'.
-                             format(n, type(n)))
+            raise ValueError(
+                'invalid input for _is_power_of_2: {} (type: {})'.format(
+                    n, type(n)))
         return (n & (n - 1) == 0) and n != 0
 
     def _reset_parameters(self):
         constant_init(self.sampling_offsets.weight, value=0.)
-        thetas = paddle.arange(
-            self.n_heads, dtype='float32') * (2.0 * math.pi / self.n_heads)
+        thetas = paddle.arange(self.n_heads,
+                               dtype='float32') * (2.0 * math.pi / self.n_heads)
         grid_init = paddle.stack([thetas.cos(), thetas.sin()], -1)
-        grid_init = (grid_init / grid_init.abs().max(
-            -1, keepdim=True)[0]).reshape([self.n_heads, 1, 1, 2]).tile(
-                [1, self.n_levels, self.n_points, 1])
+        grid_init = (grid_init /
+                     grid_init.abs().max(-1, keepdim=True)[0]).reshape(
+                         [self.n_heads, 1, 1,
+                          2]).tile([1, self.n_levels, self.n_points, 1])
         for i in range(self.n_points):
             grid_init[:, :, i, :] *= i + 1
 
@@ -112,8 +115,8 @@ class MSDeformAttn(nn.Layer):
 
         N, Len_q, _ = query.shape
         N, Len_in, _ = input_flatten.shape
-        assert (input_spatial_shapes[:, 0] * input_spatial_shapes[:, 1]
-                ).sum() == Len_in
+        assert (input_spatial_shapes[:, 0] *
+                input_spatial_shapes[:, 1]).sum() == Len_in
 
         value = self.value_proj(input_flatten)
         if input_padding_mask is not None:
@@ -152,8 +155,10 @@ class MSDeformAttn(nn.Layer):
                 "https://paddleseg.bj.bcebos.com/dygraph/customized_ops/ms_deform_attn.zip"
             )
             exit()
-        output = ms_deform_attn.ms_deform_attn(
-            value, input_spatial_shapes, input_level_start_index,
-            sampling_locations, attention_weights, self.im2col_step)
+        output = ms_deform_attn.ms_deform_attn(value, input_spatial_shapes,
+                                               input_level_start_index,
+                                               sampling_locations,
+                                               attention_weights,
+                                               self.im2col_step)
         output = self.output_proj(output)
         return output
