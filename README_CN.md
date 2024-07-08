@@ -22,6 +22,11 @@
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
 
+- [2024-06-27] **💥 飞桨低代码开发工具 PaddleX 3.0 重磅更新！**
+  - 丰富的模型产线：精选 68 个优质飞桨模型，涵盖图像分类、目标检测、图像分割、OCR、文本图像版面分析、时序分析等任务场景；
+  - 低代码开发范式：支持单模型和模型产线全流程低代码开发，提供 Python API，支持用户自定义串联模型；
+  - 多硬件训推支持：支持英伟达 GPU、昆仑芯、昇腾和寒武纪等多种硬件进行模型训练与推理。
+
 * [2023-10-29] :fire:  PaddleSeg 2.9版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
   * 增加对多标签分割[Multi-label segmentation](./configs/multilabelseg)，提供数据转换代码及结果可视化，实现对一系列语义分割模型的多标签分割支持。
   * 发布轻量视觉大模型[MobileSAM](./contrib/SegmentAnything)，实现更快速的SAM推理。
