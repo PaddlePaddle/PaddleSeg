@@ -62,7 +62,7 @@ def collect_dynamic_shape(args):
 
     # prepare config
     cfg = DeployConfig(args.config)
-    pred_cfg = PredictConfig(cfg.model, cfg.params)
+    pred_cfg = PredictConfig(cfg.model_dir, cfg.model_prefix)
     pred_cfg.enable_use_gpu(1000, 0)
     pred_cfg.collect_shape_range_info(args.dynamic_shape_path)
 

@@ -34,12 +34,12 @@ class DeployConfig:
         return self._transforms
 
     @property
-    def model(self):
-        return os.path.join(self._dir, self.dic['Deploy']['model'])
+    def model_dir(self):
+        return self._dir
 
     @property
-    def params(self):
-        return os.path.join(self._dir, self.dic['Deploy']['params'])
+    def model_prefix(self):
+        return self.dic['Deploy']['model_prefix']
 
     @staticmethod
     def load_transforms(t_list):

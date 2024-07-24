@@ -8,20 +8,20 @@ English | [简体中文](install_cn.md)
 - pip/pip3(9.0.1+)，64-bit version
 - CUDA >= 10.2
 - cuDNN >= 7.6
-- PaddlePaddle (the version >= 2.4)
+- PaddlePaddle (the version >= 3.0.0b0)
 
 ## 2 Installation
 
 ### 2.1 Install PaddlePaddle
 
-Please refer to the [installation doc](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html) to install PaddlePaddle (the version >= 2.4).
+Please refer to the [installation doc](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html) to install PaddlePaddle (the version >= 3.0.0b0).
 
 Highly recommend you install the GPU version of PaddlePaddle, due to the large overhead of segmentation models, otherwise, it could be out of memory while running the models.
 
 For example, run the following command to install Paddle with pip for Linux, CUDA 10.2.
 
 ```
-python -m pip install paddlepaddle-gpu==2.4.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
+python -m pip install paddlepaddle-gpu==3.0.0b0 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 

@@ -203,7 +203,7 @@ class EfficientFormer(nn.Layer):
     def forward(self, x):
         x = self.patch_embed(x)
         x = self.forward_tokens(x)
-        if self.mode is not 'multi_scale':
+        if self.mode != 'multi_scale':
             x = [
                 paddle.concat(
                     [

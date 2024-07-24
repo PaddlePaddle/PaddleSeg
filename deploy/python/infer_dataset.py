@@ -191,7 +191,7 @@ def auto_tune(args, dataset, img_nums):
     num = min(len(dataset), img_nums)
 
     cfg = DeployConfig(args.cfg)
-    pred_cfg = PredictConfig(cfg.model, cfg.params)
+    pred_cfg = PredictConfig(cfg.model_dir, cfg.model_prefix)
     pred_cfg.enable_use_gpu(100, 0)
     if not args.print_detail:
         pred_cfg.disable_glog_info()

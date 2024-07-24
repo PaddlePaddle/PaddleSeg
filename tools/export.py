@@ -97,8 +97,7 @@ def main(args):
     # TODO add test config
     deploy_info = {
         'Deploy': {
-            'model': save_name + '.pdmodel',
-            'params': save_name + '.pdiparams',
+            'model_prefix': save_name,
             'transforms': transforms,
             'input_shape': shape,
             'output_op': args.output_op,
