@@ -18,6 +18,8 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
 
+_IS_NPU = "npu" in paddle.get_device()
+
 
 @manager.LOSSES.add_component
 class CrossEntropyLoss(nn.Layer):
@@ -81,11 +83,20 @@ class CrossEntropyLoss(nn.Layer):
             logit = paddle.transpose(logit, [0, 2, 3, 1])
         label = label.astype('int64')
 
-        loss = F.cross_entropy(logit,
-                               label,
-                               ignore_index=self.ignore_index,
-                               reduction='none',
-                               weight=self.weight)
+        if _IS_NPU:
+            logit = logit.transpose([0, 3, 1, 2])
+            logit = F.log_softmax(logit, axis=1)
+            loss = F.nll_loss(logit,
+                              label,
+                              weight=self.weight,
+                              ignore_index=self.ignore_index,
+                              reduction='none')
+        else:
+            loss = F.cross_entropy(logit,
+                                   label,
+                                   ignore_index=self.ignore_index,
+                                   reduction='none',
+                                   weight=self.weight)
 
         return self._post_process_loss(logit, label, semantic_weights, loss)
 
