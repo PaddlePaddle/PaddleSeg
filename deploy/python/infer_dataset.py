@@ -32,13 +32,12 @@ from infer import auto_tune, use_auto_tune, Predictor
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model Infer')
-    parser.add_argument(
-        "--config",
-        dest="cfg",
-        help="The config file.",
-        default=None,
-        type=str,
-        required=True)
+    parser.add_argument("--config",
+                        dest="cfg",
+                        help="The config file.",
+                        default=None,
+                        type=str,
+                        required=True)
 
     parser.add_argument(
         '--dataset_type',
@@ -53,11 +52,10 @@ def parse_args():
         type=str,
         default=None,
         required=True)
-    parser.add_argument(
-        '--dataset_mode',
-        help='The dataset mode, such as train, val.',
-        type=str,
-        default="val")
+    parser.add_argument('--dataset_mode',
+                        help='The dataset mode, such as train, val.',
+                        type=str,
+                        default="val")
     parser.add_argument(
         '--resize_width',
         help='Set the resize width to acclerate the test. In default, it is 0, '
@@ -70,11 +68,10 @@ def parse_args():
         'which means use the origin height.',
         type=int,
         default=0)
-    parser.add_argument(
-        '--batch_size',
-        help='Mini batch size of one gpu or cpu.',
-        type=int,
-        default=1)
+    parser.add_argument('--batch_size',
+                        help='Mini batch size of one gpu or cpu.',
+                        type=int,
+                        default=1)
 
     parser.add_argument(
         '--device',
@@ -88,51 +85,45 @@ def parse_args():
         type=eval,
         choices=[True, False],
         help='Whether to use Nvidia TensorRT to accelerate prediction.')
-    parser.add_argument(
-        "--precision",
-        default="fp32",
-        type=str,
-        choices=["fp32", "fp16", "int8"],
-        help='The tensorrt precision.')
+    parser.add_argument("--precision",
+                        default="fp32",
+                        type=str,
+                        choices=["fp32", "fp16", "int8"],
+                        help='The tensorrt precision.')
     parser.add_argument(
         '--enable_auto_tune',
         default=False,
         type=eval,
         choices=[True, False],
-        help='Whether to enable tuned dynamic shape. We uses some images to collect '
+        help=
+        'Whether to enable tuned dynamic shape. We uses some images to collect '
         'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
     )
-    parser.add_argument(
-        '--auto_tuned_shape_file',
-        type=str,
-        default="auto_tune_tmp.pbtxt",
-        help='The temp file to save tuned dynamic shape.')
-    parser.add_argument(
-        '--min_subgraph_size',
-        default=3,
-        type=int,
-        help='The min subgraph size in tensorrt prediction.')
+    parser.add_argument('--auto_tuned_shape_file',
+                        type=str,
+                        default="auto_tune_tmp.pbtxt",
+                        help='The temp file to save tuned dynamic shape.')
+    parser.add_argument('--min_subgraph_size',
+                        default=3,
+                        type=int,
+                        help='The min subgraph size in tensorrt prediction.')
 
-    parser.add_argument(
-        '--cpu_threads',
-        default=10,
-        type=int,
-        help='Number of threads to predict when using cpu.')
-    parser.add_argument(
-        '--enable_mkldnn',
-        default=False,
-        type=eval,
-        choices=[True, False],
-        help='Enable to use mkldnn to speed up when using cpu.')
+    parser.add_argument('--cpu_threads',
+                        default=10,
+                        type=int,
+                        help='Number of threads to predict when using cpu.')
+    parser.add_argument('--enable_mkldnn',
+                        default=False,
+                        type=eval,
+                        choices=[True, False],
+                        help='Enable to use mkldnn to speed up when using cpu.')
 
-    parser.add_argument(
-        '--with_argmax',
-        help='Perform argmax operation on the predict result.',
-        action='store_true')
-    parser.add_argument(
-        '--print_detail',
-        help='Print GLOG information of Paddle Inference.',
-        action='store_true')
+    parser.add_argument('--with_argmax',
+                        help='Perform argmax operation on the predict result.',
+                        action='store_true')
+    parser.add_argument('--print_detail',
+                        help='Print GLOG information of Paddle Inference.',
+                        action='store_true')
 
     return parser.parse_args()
 
@@ -152,10 +143,11 @@ def get_dataset(args):
         with codecs.open(args.cfg, 'r', 'utf-8') as file:
             dic = yaml.load(file, Loader=yaml.FullLoader)
         transforms_dic = dic['Deploy']['transforms']
-        transforms_dic.insert(0, {
-            "type": "Resize",
-            'target_size': [args.resize_width, args.resize_height]
-        })
+        transforms_dic.insert(
+            0, {
+                "type": "Resize",
+                'target_size': [args.resize_width, args.resize_height]
+            })
         transforms = DeployConfig.load_transforms(transforms_dic).transforms
 
     kwargs = {
@@ -191,7 +183,10 @@ def auto_tune(args, dataset, img_nums):
     num = min(len(dataset), img_nums)
 
     cfg = DeployConfig(args.cfg)
-    pred_cfg = PredictConfig(cfg.model_dir, cfg.model_prefix)
+    if paddle.__version__.split('.')[0] == '2':
+        pred_cfg = PredictConfig(cfg.model, cfg.params)
+    else:
+        pred_cfg = PredictConfig(cfg.model_dir, cfg.model_prefix)
     pred_cfg.enable_use_gpu(100, 0)
     if not args.print_detail:
         pred_cfg.disable_glog_info()
@@ -224,6 +219,7 @@ def auto_tune(args, dataset, img_nums):
 
 
 class DatasetPredictor(Predictor):
+
     def __init__(self, args):
         super().__init__(args)
 

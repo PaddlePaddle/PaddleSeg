@@ -10,7 +10,7 @@ English | [简体中文](README_CN.md)
 
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
-![python version](https://img.shields.io/badge/python-3.8+-orange.svg)
+![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 ![stars](https://img.shields.io/github/stars/PaddlePaddle/PaddleSeg?color=ccf)
 

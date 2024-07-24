@@ -16,6 +16,7 @@ import argparse
 import os
 
 import numpy as np
+import paddle
 from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
 
@@ -52,7 +53,10 @@ def auto_tune(args, imgs, img_nums):
     num = min(len(imgs), img_nums)
 
     cfg = DeployConfig(args.cfg)
-    pred_cfg = PredictConfig(cfg.model_dir, cfg.model_prefix)
+    if paddle.__version__.split('.')[0] == '2':
+        pred_cfg = PredictConfig(cfg.model, cfg.params)
+    else:
+        pred_cfg = PredictConfig(cfg.model_dir, cfg.model_prefix)
     pred_cfg.enable_use_gpu(100, 0)
     if not args.print_detail:
         pred_cfg.disable_glog_info()
@@ -139,7 +143,11 @@ class Predictor:
                 logger=logger)
 
     def _init_base_config(self):
-        self.pred_cfg = PredictConfig(self.cfg.model_dir, self.cfg.model_prefix)
+        if paddle.__version__.split('.')[0] == '2':
+            self.pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
+        else:
+            self.pred_cfg = PredictConfig(self.cfg.model_dir,
+                                          self.cfg.model_prefix)
         if not self.args.print_detail:
             self.pred_cfg.disable_glog_info()
         self.pred_cfg.enable_memory_optim()

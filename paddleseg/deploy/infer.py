@@ -21,17 +21,35 @@ from paddleseg.cvlibs import manager
 
 
 class DeployConfig:
+
     def __init__(self, path):
         with codecs.open(path, 'r', 'utf-8') as file:
             self.dic = yaml.load(file, Loader=yaml.FullLoader)
 
-        self._transforms = self.load_transforms(self.dic['Deploy'][
-            'transforms'])
+        self._transforms = self.load_transforms(
+            self.dic['Deploy']['transforms'])
         self._dir = os.path.dirname(path)
+        self._is_old_format = 'model_prefix' not in self.dic['Deploy']
 
     @property
     def transforms(self):
         return self._transforms
+
+    @property
+    def model(self):
+        if self._is_old_format:
+            return os.path.join(self._dir, self.dic['Deploy']['model'])
+        else:
+            return os.path.join(self._dir,
+                                self.dic['Deploy']['model_prefix'] + '.pdmodel')
+
+    @property
+    def params(self):
+        if self._is_old_format:
+            return os.path.join(self._dir, self.dic['Deploy']['params'])
+        else:
+            return os.path.join(
+                self._dir, self.dic['Deploy']['model_prefix'] + '.pdiparams')
 
     @property
     def model_dir(self):
@@ -39,6 +57,8 @@ class DeployConfig:
 
     @property
     def model_prefix(self):
+        if self._is_old_format:
+            return self.dic['Deploy']['model'][:-8]
         return self.dic['Deploy']['model_prefix']
 
     @staticmethod

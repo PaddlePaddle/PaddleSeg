@@ -9,18 +9,18 @@
 - pip/pip3(9.0.1+)，64位版本
 - CUDA >= 10.2
 - cuDNN >= 7.6
-- PaddlePaddle (版本>=3.0.0b0)
+- PaddlePaddle (版本==2.5)
 
 ## 2 本地安装说明
 
 ### 2.1 安装PaddlePaddle
 
-请参考[快速安装文档](https://www.paddlepaddle.org.cn/install/quick)或者[详细安装文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_cn.html)，安装PaddlePaddle （要求不低于3.0.0b0版本，推荐安装最新版本）。
+请参考[快速安装文档](https://www.paddlepaddle.org.cn/install/quick)或者[详细安装文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_cn.html)，安装PaddlePaddle （要求不低于2.4版本，推荐安装最新版本）。
 
 比如Linux、CUDA 10.2，使用pip安装GPU版本，执行如下命令。
 
 ```
-python -m pip install paddlepaddle-gpu==3.0.0b0 -i https://pypi.tuna.tsinghua.edu.cn/simple
+python -m pip install paddlepaddle-gpu==2.4.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 使用如下命令验证PaddlePaddle是否安装成功，并且查看版本。
