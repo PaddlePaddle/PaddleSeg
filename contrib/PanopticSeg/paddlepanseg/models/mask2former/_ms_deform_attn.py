@@ -13,8 +13,8 @@
 # limitations under the License.
 
 # Adapted from https://github.com/facebookresearch/Mask2Former
-# 
-# Original copyright info: 
+#
+# Original copyright info:
 
 # ------------------------------------------------------------------------------------------------
 # Deformable DETR
@@ -56,24 +56,23 @@ def slow_ms_deform_attn(value, value_spatial_shapes, sampling_locations,
             (b * num_heads, depth, h, w))
         sampling_grid_l_ = sampling_grids[:, :, :, i].transpose(
             (0, 2, 1, 3, 4)).flatten(0, 1)
-        sampling_value_l_ = F.grid_sample(
-            value_l_,
-            sampling_grid_l_,
-            mode='bilinear',
-            padding_mode='zeros',
-            align_corners=False)
+        sampling_value_l_ = F.grid_sample(value_l_,
+                                          sampling_grid_l_,
+                                          mode='bilinear',
+                                          padding_mode='zeros',
+                                          align_corners=False)
         sampling_value_list.append(sampling_value_l_)
     # (b, n_queries, num_heads, num_levels*num_points) -> (b, num_heads, n_queries, num_levels*num_points) -> (b, num_heads, 1, n_queries, num_levels*num_points)
     attention_weights = attention_weights.transpose((0, 2, 1, 3, 4)).reshape(
         (b * num_heads, 1, n_queries, num_levels * num_points))
-    output = (paddle.stack(
-        sampling_value_list,
-        axis=-2).flatten(-2) * attention_weights).sum(-1).reshape(
-            (b, num_heads * depth, n_queries))
+    output = (paddle.stack(sampling_value_list, axis=-2).flatten(-2) *
+              attention_weights).sum(-1).reshape(
+                  (b, num_heads * depth, n_queries))
     return output.transpose((0, 2, 1))
 
 
 class LinearWithFrozenBias(nn.Layer):
+
     def __init__(self,
                  in_features,
                  out_features,
@@ -83,11 +82,10 @@ class LinearWithFrozenBias(nn.Layer):
         super().__init__()
         self._dtype = self._helper.get_default_dtype()
         self._weight_attr = weight_attr
-        self.weight = self.create_parameter(
-            shape=[in_features, out_features],
-            attr=self._weight_attr,
-            dtype=self._dtype,
-            is_bias=False)
+        self.weight = self.create_parameter(shape=[in_features, out_features],
+                                            attr=self._weight_attr,
+                                            dtype=self._dtype,
+                                            is_bias=False)
         bias_init_val = bias_init_val.flatten()
         bias_init_val = bias_init_val.astype(self._dtype)
         if bias_init_val.shape[0] != out_features:
@@ -107,12 +105,13 @@ class LinearWithFrozenBias(nn.Layer):
 
 
 class MSDeformAttn(nn.Layer, THLinearInitMixin):
+
     def __init__(self, embed_dim=256, num_levels=4, num_heads=8, num_points=4):
         super().__init__()
         if embed_dim % num_heads != 0:
             raise ValueError(
-                "`embed_dim` must be divisible by `num_heads`, but got {} and {}".
-                format(embed_dim, num_heads))
+                "`embed_dim` must be divisible by `num_heads`, but got {} and {}"
+                .format(embed_dim, num_heads))
 
         self.im2col_step = 128
 
@@ -121,8 +120,8 @@ class MSDeformAttn(nn.Layer, THLinearInitMixin):
         self.num_heads = num_heads
         self.num_points = num_points
 
-        self.sampling_offsets = nn.Linear(embed_dim, num_heads * num_levels *
-                                          num_points * 2)
+        self.sampling_offsets = nn.Linear(
+            embed_dim, num_heads * num_levels * num_points * 2)
         self.attention_weights = nn.Linear(embed_dim,
                                            num_heads * num_levels * num_points)
         self.value_proj = nn.Linear(embed_dim, embed_dim)
@@ -162,8 +161,8 @@ class MSDeformAttn(nn.Layer, THLinearInitMixin):
                 input_padding_mask=None):
         n, len_q, _ = query.shape
         n, len_in, _ = input_flatten.shape
-        assert (input_spatial_shapes[:, 0] * input_spatial_shapes[:, 1]
-                ).sum() == len_in
+        assert (input_spatial_shapes[:, 0] *
+                input_spatial_shapes[:, 1]).sum() == len_in
 
         value = self.value_proj(input_flatten)
         if input_padding_mask is not None:
@@ -181,7 +180,7 @@ class MSDeformAttn(nn.Layer, THLinearInitMixin):
         if reference_points.shape[-1] == 2:
             offset_normalizer = paddle.stack(
                 [input_spatial_shapes[..., 1], input_spatial_shapes[..., 0]],
-                -1)
+                -1).astype('float32')
             sampling_locations = reference_points[:, :, None, :, None, :] \
                                  + sampling_offsets / offset_normalizer[None, None, None, :, None, :]
         elif reference_points.shape[-1] == 4:
@@ -189,14 +188,16 @@ class MSDeformAttn(nn.Layer, THLinearInitMixin):
                                  + sampling_offsets / self.num_points * reference_points[:, :, None, :, None, 2:] * 0.5
         else:
             raise ValueError(
-                "Last dim of reference_points must be 2 or 4, but get {} instead.".
-                format(reference_points.shape[-1]))
+                "Last dim of reference_points must be 2 or 4, but get {} instead."
+                .format(reference_points.shape[-1]))
         if paddle.is_compiled_with_cuda():
             # GPU
             with use_custom_op('ms_deform_attn') as msda:
-                output = msda.ms_deform_attn(
-                    value, input_spatial_shapes, input_level_start_index,
-                    sampling_locations, attention_weights, self.im2col_step)
+                output = msda.ms_deform_attn(value, input_spatial_shapes,
+                                             input_level_start_index,
+                                             sampling_locations,
+                                             attention_weights,
+                                             self.im2col_step)
         else:
             # CPU
             output = slow_ms_deform_attn(value, input_spatial_shapes,
