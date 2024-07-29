@@ -21,7 +21,6 @@ from paddleseg.cvlibs import manager
 _IS_NPU = "npu" in paddle.get_device()
 _IS_MLU = "mlu" in paddle.get_device()
 
-
 @manager.LOSSES.add_component
 class OhemCrossEntropyLoss(nn.Layer):
     """
