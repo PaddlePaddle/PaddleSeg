@@ -16,14 +16,12 @@
 from setuptools import find_packages
 from setuptools import setup
 
-import paddleseg
-
 with open("requirements.txt") as file:
     REQUIRED_PACKAGES = file.read()
 
 setup(
     name='paddleseg',
-    version=paddleseg.__version__.replace('-', ''),
+    version='0.0.0.dev0',
     description=('End-to-end image segmentation kit based on PaddlePaddle.'),
     long_description='',
     url='https://github.com/PaddlePaddle/PaddleSeg',
