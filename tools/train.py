@@ -168,6 +168,8 @@ def main(args):
         else:
             cfg.dic['test_config']['use_multilabel'] = True
 
+    print_mem_info = cfg.dic.get('print_mem_info', False)
+
     # TODO refactor
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
@@ -211,7 +213,8 @@ def main(args):
         precision=args.precision,
         amp_level=args.amp_level,
         profiler_options=args.profiler_options,
-        to_static_training=cfg.to_static_training)
+        to_static_training=cfg.to_static_training,
+        print_mem_info=print_mem_info)
 
 
 if __name__ == '__main__':

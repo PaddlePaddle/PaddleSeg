@@ -78,7 +78,8 @@ def train(model,
           precision='fp32',
           amp_level='O1',
           profiler_options=None,
-          to_static_training=False):
+          to_static_training=False,
+          print_mem_info=False):
     """
     Launch training.
 
@@ -285,15 +286,17 @@ def train(model,
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 max_mem_reserved_str = ""
                 max_mem_allocated_str = ""
-                if paddle.device.is_compiled_with_cuda():
-                    max_mem_reserved_str = f"max_mem_reserved: {paddle.device.cuda.max_memory_reserved() // (1024 ** 2)} MB,"
-                    max_mem_allocated_str = f"max_mem_allocated: {paddle.device.cuda.max_memory_allocated() // (1024 ** 2)} MB"
+                if print_mem_info:
+                    if paddle.device.is_compiled_with_cuda():
+                        max_mem_reserved_str = f", max_mem_reserved: {paddle.device.cuda.max_memory_reserved() // (1024 ** 2)} MB, "
+                        max_mem_allocated_str = f"max_mem_allocated: {paddle.device.cuda.max_memory_allocated() // (1024 ** 2)} MB"
                 logger.info(
-                    "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec, {} {} | ETA {}"
+                    "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec{}{} | ETA {}"
                     .format((iter - 1
                              ) // iters_per_epoch + 1, iter, iters, avg_loss,
                             lr, avg_train_batch_cost, avg_train_reader_cost,
-                            batch_cost_averager.get_ips_average(), max_mem_reserved_str, max_mem_allocated_str, eta))
+                            batch_cost_averager.get_ips_average(),
+                            max_mem_reserved_str, max_mem_allocated_str, eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
                     # Record all losses if there are more than 2 losses.
