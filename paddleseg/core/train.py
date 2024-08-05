@@ -21,10 +21,11 @@ from copy import deepcopy
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
+from paddleseg.utils import (TimeAverager, calculate_eta, resume,
                              worker_init_fn, train_profiler, op_flops_funs,
                              init_ema_params, update_ema_model)
 from paddleseg.core.val import evaluate
+from paddleseg.utils.logger import setup_logger
 
 
 def check_logits_losses(logits_list, losses):
@@ -78,7 +79,9 @@ def train(model,
           precision='fp32',
           amp_level='O1',
           profiler_options=None,
-          to_static_training=False):
+          to_static_training=False,
+          logger=setup_logger(__file__),
+          print_mem_info=False):
     """
     Launch training.
 
@@ -105,6 +108,8 @@ def train(model,
             parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel and batchnorm. Default is O1(amp)
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
+        logger (Logger, optional): Logger for logging. Default: setup_logger(__file__).
+        print_mem_info (bool, optional): Whether to print memory info. Default: False.  
     """
 
     if use_ema:
@@ -133,11 +138,10 @@ def train(model,
         logger.info('use AMP to train. AMP level = {}'.format(amp_level))
         scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
         if amp_level == 'O2':
-            model, optimizer = paddle.amp.decorate(
-                models=model,
-                optimizers=optimizer,
-                level='O2',
-                save_dtype='float32')
+            model, optimizer = paddle.amp.decorate(models=model,
+                                                   optimizers=optimizer,
+                                                   level='O2',
+                                                   save_dtype='float32')
 
     if nranks > 1:
         paddle.distributed.fleet.init(is_collective=True)
@@ -145,15 +149,18 @@ def train(model,
             optimizer)  # The return is Fleet object
         ddp_model = paddle.distributed.fleet.distributed_model(model)
 
-    batch_sampler = paddle.io.DistributedBatchSampler(
-        train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+    batch_sampler = paddle.io.DistributedBatchSampler(train_dataset,
+                                                      batch_size=batch_size,
+                                                      shuffle=True,
+                                                      drop_last=True)
 
     loader = paddle.io.DataLoader(
         train_dataset,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
         return_list=True,
-        worker_init_fn=worker_init_fn, )
+        worker_init_fn=worker_init_fn,
+    )
 
     if use_vdl:
         from visualdl import LogWriter
@@ -214,14 +221,13 @@ def train(model,
                         loss_list = ddp_model._layers.loss_computation(
                             logits_list, losses, data)
                     elif nranks == 1 and hasattr(model, 'loss_computation'):
-                        loss_list = model.loss_computation(logits_list, losses,
-                                                           data)
+                        loss_list = model.loss_computation(
+                            logits_list, losses, data)
                     else:
-                        loss_list = loss_computation(
-                            logits_list=logits_list,
-                            labels=labels,
-                            edges=edges,
-                            losses=losses)
+                        loss_list = loss_computation(logits_list=logits_list,
+                                                     labels=labels,
+                                                     edges=edges,
+                                                     losses=losses)
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss
@@ -236,17 +242,16 @@ def train(model,
 
                 if nranks > 1 and hasattr(ddp_model._layers,
                                           'loss_computation'):
-                    loss_list = ddp_model._layers.loss_computation(logits_list,
-                                                                   losses, data)
+                    loss_list = ddp_model._layers.loss_computation(
+                        logits_list, losses, data)
                 elif nranks == 1 and hasattr(model, 'loss_computation'):
                     loss_list = model.loss_computation(logits_list, losses,
                                                        data)
                 else:
-                    loss_list = loss_computation(
-                        logits_list=logits_list,
-                        labels=labels,
-                        edges=edges,
-                        losses=losses)
+                    loss_list = loss_computation(logits_list=logits_list,
+                                                 labels=labels,
+                                                 edges=edges,
+                                                 losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
                 optimizer.step()
@@ -273,10 +278,10 @@ def train(model,
             else:
                 for i in range(len(loss_list)):
                     avg_loss_list[i] += float(loss_list[i])
-            batch_cost_averager.record(
-                time.time() - batch_start, num_samples=batch_size)
+            batch_cost_averager.record(time.time() - batch_start,
+                                       num_samples=batch_size)
 
-            if (iter) % log_iters == 0 and local_rank == 0:
+            if (iter) % log_iters == 0:
                 avg_loss /= log_iters
                 avg_loss_list = [l / log_iters for l in avg_loss_list]
                 remain_iters = iters - iter
@@ -285,15 +290,16 @@ def train(model,
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 max_mem_reserved_str = ""
                 max_mem_allocated_str = ""
-                if paddle.device.is_compiled_with_cuda():
-                    max_mem_reserved_str = f"max_mem_reserved: {paddle.device.cuda.max_memory_reserved() // (1024 ** 2)} MB,"
-                    max_mem_allocated_str = f"max_mem_allocated: {paddle.device.cuda.max_memory_allocated() // (1024 ** 2)} MB"
+                if paddle.device.is_compiled_with_cuda() and print_mem_info:
+                    max_mem_reserved_str = f", max_mem_reserved: {paddle.device.cuda.max_memory_reserved() // (1024 ** 2)} MB"
+                    max_mem_allocated_str = f", max_mem_allocated: {paddle.device.cuda.max_memory_allocated() // (1024 ** 2)} MB"
                 logger.info(
-                    "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec, {} {} | ETA {}"
-                    .format((iter - 1
-                             ) // iters_per_epoch + 1, iter, iters, avg_loss,
-                            lr, avg_train_batch_cost, avg_train_reader_cost,
-                            batch_cost_averager.get_ips_average(), max_mem_reserved_str, max_mem_allocated_str, eta))
+                    "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec{}{} | ETA {}"
+                    .format((iter - 1) // iters_per_epoch + 1, iter, iters,
+                            avg_loss, lr, avg_train_batch_cost,
+                            avg_train_reader_cost,
+                            batch_cost_averager.get_ips_average(),
+                            max_mem_reserved_str, max_mem_allocated_str, eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
                     # Record all losses if there are more than 2 losses.
@@ -318,20 +324,19 @@ def train(model,
             if use_ema:
                 update_ema_model(ema_model, model, step=iter)
 
-            if (iter % save_interval == 0 or
-                    iter == iters) and (val_dataset is not None):
+            if (iter % save_interval == 0 or iter == iters) and (val_dataset
+                                                                 is not None):
                 num_workers = 1 if num_workers > 0 else 0
 
                 if test_config is None:
                     test_config = {}
 
-                mean_iou, acc, _, _, _ = evaluate(
-                    model,
-                    val_dataset,
-                    num_workers=num_workers,
-                    precision=precision,
-                    amp_level=amp_level,
-                    **test_config)
+                mean_iou, acc, _, _, _ = evaluate(model,
+                                                  val_dataset,
+                                                  num_workers=num_workers,
+                                                  precision=precision,
+                                                  amp_level=amp_level,
+                                                  **test_config)
 
                 if use_ema:
                     ema_mean_iou, ema_acc, _, _, _ = evaluate(
@@ -365,13 +370,10 @@ def train(model,
                     shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
-                    states_dict = {
-                        'mIoU': mean_iou,
-                        'Acc': acc,
-                        'iter': iter
-                    }
-                    paddle.save(states_dict,
-                                os.path.join(current_save_dir, 'model.pdstates'))
+                    states_dict = {'mIoU': mean_iou, 'Acc': acc, 'iter': iter}
+                    paddle.save(
+                        states_dict,
+                        os.path.join(current_save_dir, 'model.pdstates'))
 
                     if mean_iou > best_mean_iou:
                         stop_count = 0
@@ -381,7 +383,8 @@ def train(model,
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
-                        paddle.save(states_dict,
+                        paddle.save(
+                            states_dict,
                             os.path.join(best_model_dir, 'model.pdstates'))
                     elif mean_iou < best_mean_iou:
                         stop_count += 1
@@ -402,19 +405,24 @@ def train(model,
                             'Acc': ema_acc,
                             'iter': iter
                         }
-                        paddle.save(ema_states_dict,
-                            os.path.join(current_save_dir, 'ema_model.pdstates'))
-                            
+                        paddle.save(
+                            ema_states_dict,
+                            os.path.join(current_save_dir,
+                                         'ema_model.pdstates'))
+
                         if ema_mean_iou > best_ema_mean_iou:
                             best_ema_mean_iou = ema_mean_iou
                             best_ema_model_iter = iter
-                            best_ema_model_dir = os.path.join(save_dir,
-                                                              "ema_best_model")
-                            paddle.save(ema_model.state_dict(),
-                                        os.path.join(best_ema_model_dir,
-                                                     'ema_model.pdparams'))
-                            paddle.save(ema_states_dict,
-                                        os.path.join(best_ema_model_dir, 'ema_model.pdstates'))
+                            best_ema_model_dir = os.path.join(
+                                save_dir, "ema_best_model")
+                            paddle.save(
+                                ema_model.state_dict(),
+                                os.path.join(best_ema_model_dir,
+                                             'ema_model.pdparams'))
+                            paddle.save(
+                                ema_states_dict,
+                                os.path.join(best_ema_model_dir,
+                                             'ema_model.pdstates'))
                         logger.info(
                             '[EVAL] The EMA model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                             .format(best_ema_mean_iou, best_ema_model_iter))
