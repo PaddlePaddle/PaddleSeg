@@ -68,8 +68,6 @@
 
 - PaddleX官网地址：https://aistudio.baidu.com/intro/paddlex
 
-- PaddleX官方交流频道：https://aistudio.baidu.com/community/channel/610
-
 ## <img src="./docs/images/model.png" width="20"/> 产品矩阵
 
 <table align="center">
