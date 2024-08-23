@@ -159,6 +159,10 @@ def main(args):
     utils.set_device(args.device)
     utils.set_cv2_num_threads(args.num_workers)
 
+    print_mem_info = cfg.dic.pop('print_mem_info', True)
+    shuffle = cfg.dic['train_dataset'].pop('shuffle', True)
+    log_ranks = cfg.dic.pop('log_ranks', '0')
+
     if args.use_multilabel:
         if 'test_config' not in cfg.dic:
             cfg.dic['test_config'] = {'use_multilabel': True}
@@ -186,8 +190,6 @@ def main(args):
     val_dataset = builder.val_dataset if args.do_eval else None
     optimizer = builder.optimizer
     loss = builder.loss
-    print_mem_info = cfg.dic.get('print_mem_info', True)
-    log_ranks = cfg.dic.get('log_ranks', '0')
     logger = setup_logger(log_ranks=log_ranks)
     train(model,
           train_dataset,
@@ -211,7 +213,8 @@ def main(args):
           profiler_options=args.profiler_options,
           to_static_training=cfg.to_static_training,
           logger=logger,
-          print_mem_info=print_mem_info)
+          print_mem_info=print_mem_info,
+          shuffle=shuffle)
 
 
 if __name__ == '__main__':
