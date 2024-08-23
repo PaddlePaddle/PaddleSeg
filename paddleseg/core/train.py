@@ -81,7 +81,8 @@ def train(model,
           profiler_options=None,
           to_static_training=False,
           logger=setup_logger(__file__),
-          print_mem_info=False):
+          print_mem_info=False,
+          shuffle=True):
     """
     Launch training.
 
@@ -151,7 +152,7 @@ def train(model,
 
     batch_sampler = paddle.io.DistributedBatchSampler(train_dataset,
                                                       batch_size=batch_size,
-                                                      shuffle=True,
+                                                      shuffle=shuffle,
                                                       drop_last=True)
 
     loader = paddle.io.DataLoader(
