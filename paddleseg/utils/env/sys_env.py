@@ -99,9 +99,10 @@ def get_sys_env():
         cuda_home = _find_cuda_home()
         env_info['NVCC'] = _get_nvcc_info(cuda_home)
         # refer to https://github.com/PaddlePaddle/Paddle/blob/release/2.0-rc/paddle/fluid/platform/device_context.cc#L327
-        v = paddle.get_cudnn_version()
-        v = str(v // 1000) + '.' + str(v % 1000 // 100)
-        env_info['cudnn'] = v
+        v = paddle.get_cudnn_version() #if cuda toolkit is not avaliable 
+        if v is not None:
+            v = str(v // 1000) + '.' + str(v % 1000 // 100)
+            env_info['cudnn'] = v
         if 'gpu' in paddle.get_device():
             gpu_nums = paddle.distributed.ParallelEnv().nranks
         else:
