@@ -21,6 +21,7 @@ import yaml
 from paddleseg.cvlibs import Config, SegBuilder
 from paddleseg.utils import logger, utils
 from paddleseg.deploy.export import WrappedModel
+from paddleseg.core.export import export
 
 
 def parse_args():
@@ -38,20 +39,21 @@ def parse_args():
     parser.add_argument(
         "--input_shape",
         nargs='+',
-        help="Export the model with fixed input shape, e.g., `--input_shape 1 3 1024 1024`.",
+        help=
+        "Export the model with fixed input shape, e.g., `--input_shape 1 3 1024 1024`.",
         type=int,
         default=None)
     parser.add_argument(
         '--output_op',
         choices=['argmax', 'softmax', 'none'],
         default="argmax",
-        help="Select the op to be appended to the last of inference model, default: argmax."
+        help=
+        "Select the op to be appended to the last of inference model, default: argmax."
         "In PaddleSeg, the output of trained model is logit (H*C*H*W). We can apply argmax and"
         "softmax op to the logit according the actual situation.")
-    parser.add_argument(
-        '--for_fd',
-        action='store_true',
-        help="Export the model to FD-compatible format.")
+    parser.add_argument('--for_fd',
+                        action='store_true',
+                        help="Export the model to FD-compatible format.")
 
     return parser.parse_args()
 
@@ -59,61 +61,7 @@ def parse_args():
 def main(args):
     assert args.config is not None, \
         'No configuration file specified, please set --config'
-    cfg = Config(args.config)
-    builder = SegBuilder(cfg)
-
-    utils.show_env_info()
-    utils.show_cfg_info(cfg)
-    os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
-
-    # save model
-    model = builder.model
-    if args.model_path is not None:
-        state_dict = paddle.load(args.model_path)
-        model.set_dict(state_dict)
-        logger.info('Loaded trained params successfully.')
-    if args.output_op != 'none':
-        model = WrappedModel(model, args.output_op)
-
-    shape = [None, 3, None, None] if args.input_shape is None \
-        else args.input_shape
-    input_spec = [paddle.static.InputSpec(shape=shape, dtype='float32')]
-    model.eval()
-    model = paddle.jit.to_static(model, input_spec=input_spec)
-    if args.for_fd:
-        save_name = 'inference'
-        yaml_name = 'inference.yml'
-    else:
-        save_name = 'model'
-        yaml_name = 'deploy.yaml'
-    paddle.jit.save(model, os.path.join(args.save_dir, save_name))
-
-    # save deploy.yaml
-    val_dataset_cfg = cfg.val_dataset_cfg
-    assert val_dataset_cfg != {}, 'No val_dataset specified in the configuration file.'
-    transforms = val_dataset_cfg.get('transforms', None)
-    output_dtype = 'int32' if args.output_op == 'argmax' else 'float32'
-
-    # TODO add test config
-    deploy_info = {
-        'Deploy': {
-            'model': save_name + '.pdmodel',
-            'params': save_name + '.pdiparams',
-            'transforms': transforms,
-            'input_shape': shape,
-            'output_op': args.output_op,
-            'output_dtype': output_dtype
-        }
-    }
-    msg = '\n---------------Deploy Information---------------\n'
-    msg += str(yaml.dump(deploy_info))
-    logger.info(msg)
-
-    yml_file = os.path.join(args.save_dir, yaml_name)
-    with open(yml_file, 'w') as file:
-        yaml.dump(deploy_info, file)
-
-    logger.info(f'The inference model is saved in {args.save_dir}')
+    export(args)
 
 
 if __name__ == '__main__':
