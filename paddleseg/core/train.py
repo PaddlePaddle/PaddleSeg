@@ -14,6 +14,8 @@
 
 import os
 import time
+import yaml
+import json
 from collections import deque
 import shutil
 from copy import deepcopy
@@ -23,8 +25,9 @@ import paddle.nn.functional as F
 
 from paddleseg.utils import (TimeAverager, calculate_eta, resume,
                              worker_init_fn, train_profiler, op_flops_funs,
-                             init_ema_params, update_ema_model)
+                             init_ema_params, update_ema_model, logger)
 from paddleseg.core.val import evaluate
+from paddleseg.core.export import export, save_model_info, update_train_results
 from paddleseg.utils.logger import setup_logger
 
 
@@ -82,7 +85,8 @@ def train(model,
           to_static_training=False,
           logger=setup_logger(__file__),
           print_mem_info=False,
-          shuffle=True):
+          shuffle=True,
+          **kwargs):
     """
     Launch training.
 
@@ -119,6 +123,8 @@ def train(model,
         for param in ema_model.parameters():
             param.stop_gradient = True
 
+    uniform_output_enabled = kwargs.pop("uniform_output_enabled", False)
+    cli_args = kwargs.pop("cli_args", None)
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -359,11 +365,15 @@ def train(model,
                             os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
+                if uniform_output_enabled:
+                    export(cli_args, model, current_save_dir)
 
                 if use_ema:
                     paddle.save(
                         ema_model.state_dict(),
                         os.path.join(current_save_dir, 'ema_model.pdparams'))
+                    if uniform_output_enabled:
+                        export(cli_args, ema_model, current_save_dir, use_ema)
 
                 save_models.append(current_save_dir)
                 if len(save_models) > keep_checkpoint_max > 0:
@@ -375,6 +385,12 @@ def train(model,
                     paddle.save(
                         states_dict,
                         os.path.join(current_save_dir, 'model.pdstates'))
+                    if uniform_output_enabled:
+                        save_model_info(states_dict, current_save_dir)
+                        update_train_results(cli_args,
+                                             "iter_{}".format(iter),
+                                             states_dict,
+                                             done_flag=iter == iters)
 
                     if mean_iou > best_mean_iou:
                         stop_count = 0
@@ -387,6 +403,13 @@ def train(model,
                         paddle.save(
                             states_dict,
                             os.path.join(best_model_dir, 'model.pdstates'))
+                        if uniform_output_enabled:
+                            export(cli_args, model, best_model_dir)
+                            save_model_info(states_dict, best_model_dir)
+                            update_train_results(cli_args,
+                                                 "best_model",
+                                                 states_dict,
+                                                 done_flag=iter == iters)
                     elif mean_iou < best_mean_iou:
                         stop_count += 1
 
@@ -424,6 +447,16 @@ def train(model,
                                 ema_states_dict,
                                 os.path.join(best_ema_model_dir,
                                              'ema_model.pdstates'))
+                            if uniform_output_enabled:
+                                export(cli_args, ema_model, best_ema_model_dir,
+                                       use_ema)
+                                save_model_info(ema_states_dict,
+                                                best_ema_model_dir)
+                                update_train_results(cli_args,
+                                                     "ema_best_model",
+                                                     ema_states_dict,
+                                                     done_flag=iter == iters,
+                                                     ema=use_ema)
                         logger.info(
                             '[EVAL] The EMA model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                             .format(best_ema_mean_iou, best_ema_model_iter))
@@ -440,6 +473,7 @@ def train(model,
 
                     if stop_status:
                         break
+                model.train()
 
             batch_start = time.time()
 

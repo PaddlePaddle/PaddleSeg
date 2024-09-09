@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import yaml
 import argparse
 import random
 
@@ -138,6 +140,25 @@ def parse_args():
                         action='store_true',
                         default=None,
                         help='Whether to enable to_static in training')
+    parser.add_argument(
+        '--output_op',
+        choices=['argmax', 'softmax', 'none'],
+        default="argmax",
+        help=
+        "Select the op to be appended to the last of inference model, default: argmax."
+        "In PaddleSeg, the output of trained model is logit (H*C*H*W). We can apply argmax and"
+        "softmax op to the logit according the actual situation.")
+    parser.add_argument(
+        "--input_shape",
+        nargs='+',
+        help=
+        "Export the model with fixed input shape, e.g., `--input_shape 1 3 1024 1024`.",
+        type=int,
+        default=None)
+
+    parser.add_argument('--for_fd',
+                        action='store_true',
+                        help="Export the model to FD-compatible format.")
 
     return parser.parse_args()
 
@@ -158,7 +179,14 @@ def main(args):
     utils.set_seed(args.seed)
     utils.set_device(args.device)
     utils.set_cv2_num_threads(args.num_workers)
-
+    uniform_output_enabled = cfg.dic.get("uniform_output_enabled", False)
+    if uniform_output_enabled:
+        if not os.path.exists(args.save_dir):
+            os.makedirs(args.save_dir)
+        if os.path.exists(os.path.join(args.save_dir, "train_results.json")):
+            os.remove(os.path.join(args.save_dir, "train_results.json"))
+        with open(os.path.join(args.save_dir, "config.yaml"), "w") as f:
+            yaml.dump(cfg.dic, f)
     print_mem_info = cfg.dic.pop('print_mem_info', True)
     shuffle = cfg.dic['train_dataset'].pop('shuffle', True)
     log_ranks = cfg.dic.pop('log_ranks', '0')
@@ -214,7 +242,9 @@ def main(args):
           to_static_training=cfg.to_static_training,
           logger=logger,
           print_mem_info=print_mem_info,
-          shuffle=shuffle)
+          shuffle=shuffle,
+          uniform_output_enabled=uniform_output_enabled,
+          cli_args=None if not uniform_output_enabled else args)
 
 
 if __name__ == '__main__':
