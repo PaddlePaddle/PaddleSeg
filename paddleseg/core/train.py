@@ -175,6 +175,10 @@ def train(model,
         if iter == start_iter and use_ema:
             init_ema_params(ema_model, model)
         for data in loader:
+            if iter == start_iter and "npu" in paddle.get_device():
+                logger.info(
+                    "sleep 1 second at the first iter for npu to fix nan loss")
+                time.sleep(1)
             iter += 1
             if iter > iters:
                 version = paddle.__version__
