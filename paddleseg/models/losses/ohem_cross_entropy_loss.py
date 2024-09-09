@@ -1,5 +1,3 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -19,6 +17,7 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 
 _IS_NPU = "npu" in paddle.get_device()
+_IS_MLU = "mlu" in paddle.get_device()
 
 
 @manager.LOSSES.add_component
@@ -100,6 +99,20 @@ class OhemCrossEntropyLoss(nn.Layer):
                               ignore_index=self.ignore_index,
                               reduction='none')
             loss = loss.unsqueeze(1)
+        elif _IS_MLU:
+            # mlu kernel does not deal with th parameter ignore_index
+            # so here manual solve it
+            logit_trans = logit.transpose((0, 2, 3, 1)).flatten(0, 2)
+            mask = label != self.ignore_index
+            label = paddle.where(mask, label, paddle.zeros_like(label))
+            label_trans = label.transpose((0, 2, 3, 1)).flatten(0, 2)
+            loss = F.cross_entropy(logit_trans,
+                                   label_trans,
+                                   weight=self.weight,
+                                   reduction='none',
+                                   axis=-1)
+            loss = loss.reshape([n, h, w, 1]).transpose([0, 3, 1, 2])
+            loss = loss * mask.astype("float32")
         else:
             loss = F.cross_entropy(logit,
                                    label,
