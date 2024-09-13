@@ -3,7 +3,7 @@ iters: 500
 
 train_dataset:
   type: MVTec_AD
-  dataset_root: /mnt/yys/dataset/mv_dataset
+  dataset_root: mv_dataset/bottle
   transforms:
     - type: Resize
       target_size: [256, 256]
@@ -14,7 +14,7 @@ train_dataset:
 
 val_dataset:
   type: MVTec_AD
-  dataset_root: /mnt/yys/dataset/mv_dataset
+  dataset_root: mv_dataset/bottle
   transforms:
     - type: Resize
       target_size: [256, 256]
