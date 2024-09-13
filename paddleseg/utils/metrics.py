@@ -62,7 +62,7 @@ def calculate_area(pred, label, num_classes, ignore_index=255, use_multilabel=Fa
     else:
         pred_area = pred.sum([0, 2, 3]).astype('int64')
         label_area = label.sum([0, 2, 3]).astype('int64')
-        intersect_area = (pred * label).sum([0, 2, 3]).astype('int64')
+        intersect_area = (pred.astype('int64') * label.astype('int64')).sum([0, 2, 3]).astype('int64')
 
     return intersect_area, pred_area, label_area
 
