@@ -19,6 +19,7 @@ import numpy as np
 import cv2
 import paddle
 import paddle.nn.functional as F
+from skimage import measure, morphology
 
 
 def reverse_transform(pred, trans_info, mode='nearest'):
@@ -67,6 +68,16 @@ def flip_combination(flip_horizontal=False, flip_vertical=False):
         if flip_horizontal:
             flip_comb.append((True, True))
     return flip_comb
+
+
+def stfpm_post_transform(score_map):
+    mask = score_map[0][0]
+    mask[mask > 0.01] = 1
+    mask[mask <= 0.01] = 0
+    kernel = morphology.disk(4)
+    mask = morphology.opening(mask, kernel)
+    mask = paddle.to_tensor(mask[None, None, :, :])
+    return paddle.concat([1 - mask, mask], axis=1)
 
 
 def tensor_flip(x, flip):
@@ -167,6 +178,8 @@ def inference(model,
         logit = slide_inference(model, im, crop_size=crop_size, stride=stride)
     if hasattr(model, 'data_format') and model.data_format == 'NHWC':
         logit = logit.transpose((0, 3, 1, 2))
+    if model.__class__.__name__ == 'STFPM':
+        logit = stfpm_post_transform(logit)
     if trans_info is not None:
         logit = reverse_transform(logit, trans_info, mode='bilinear')
         if not use_multilabel:
@@ -222,12 +235,11 @@ def aug_inference(model,
         im_scale = F.interpolate(im, [h, w], mode='bilinear')
         for flip in flip_comb:
             im_flip = tensor_flip(im_scale, flip)
-            logit = inference(
-                model,
-                im_flip,
-                is_slide=is_slide,
-                crop_size=crop_size,
-                stride=stride)
+            logit = inference(model,
+                              im_flip,
+                              is_slide=is_slide,
+                              crop_size=crop_size,
+                              stride=stride)
             logit = tensor_flip(logit, flip)
             logit = F.interpolate(logit, [h_input, w_input], mode='bilinear')
             # Accumulate final logits in place

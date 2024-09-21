@@ -1,0 +1,40 @@
+batch_size: 1
+iters: 500
+
+train_dataset:
+  type: MVTec_AD
+  dataset_root: mv_dataset/bottle
+  transforms:
+    - type: Resize
+      target_size: [256, 256]
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  mode: train
+
+val_dataset:
+  type: MVTec_AD
+  dataset_root: mv_dataset/bottle
+  transforms:
+    - type: Resize
+      target_size: [256, 256]
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  mode: val
+
+optimizer:
+  type: SGD
+  momentum: 0.9
+  weight_decay: 1.0e-4
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.4
+  end_lr: 0.4
+  power: 0.9
+
+loss:
+  types:
+    - type: DistillationLoss
+  coef: [1]

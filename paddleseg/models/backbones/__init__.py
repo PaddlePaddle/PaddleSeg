@@ -34,3 +34,4 @@ from .vit_adapter import *
 from .mscan import *
 from .seaformer import *
 from .pidnet import *
+from .resnet_ms3 import *
