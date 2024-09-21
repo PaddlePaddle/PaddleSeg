@@ -6,3 +6,4 @@ filelock
 scipy
 prettytable
 scikit-learn
+skimage
