@@ -96,7 +96,7 @@ def export(args, model=None, save_dir=None, use_ema=False):
         deploy_info["Global"]["model_name"] = cfg.dic["pdx_model_name"]
     if cfg.dic.get("hpi_config_path", None):
         with open(cfg.dic["hpi_config_path"], "r") as fp:
-            hpi_config = yaml.load(fp)
+            hpi_config = yaml.load(fp, Loader=yaml.SafeLoader)
         if hpi_config["Hpi"]["backend_config"].get("paddle_tensorrt", None):
             hpi_config["Hpi"]["supported_backends"]["gpu"].remove(
                 "paddle_tensorrt")
