@@ -104,6 +104,7 @@ def export(args, model=None, save_dir=None, use_ema=False):
         if hpi_config["Hpi"]["backend_config"].get("tensorrt", None):
             hpi_config["Hpi"]["supported_backends"]["gpu"].remove("tensorrt")
             del hpi_config['Hpi']['backend_config']['tensorrt']
+        hpi_config["Hpi"]["selected_backends"]["gpu"] = "paddle_infer"
         deploy_info["Hpi"] = hpi_config["Hpi"]
     msg = '\n---------------Deploy Information---------------\n'
     msg += str(yaml.dump(deploy_info))
