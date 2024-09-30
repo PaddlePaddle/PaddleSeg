@@ -27,7 +27,7 @@ python -m pip install paddlepaddle-gpu==3.0.0b1 -i https://www.paddlepaddle.org.
 pip install https://paddle-model-ecology.bj.bcebos.com/paddlex/whl/paddlex-3.0.0b1-py3-none-any.whl
 ```
 
-> ❗ 更多安装方式参考[PaddleX安装教程](https://github.com/PaddlePaddle/PaddleX/blob/release/3.0-beta1/docs/installation/installation.md)
+> ❗ 更多安装方式参考[PaddleX安装教程](https://github.com/PaddlePaddle/PaddleX/blob/develop/docs/installation/installation.md)
 ### 💻 命令行使用
 
 一行命令即可快速体验产线效果，统一的命令行格式为：
@@ -50,7 +50,7 @@ paddlex --pipeline semantic_segmentation --input https://paddle-model-ecology.bj
 运行后，得到的结果为：
 
 ```
-{'img_path': '/root/.paddlex/predict_input/general_object_detection_002.png'}
+{'img_path': '/root/.paddlex/predict_input/makassaridn-road_demo.png'}
 ```
 ![](https://raw.githubusercontent.com/cuicheng01/PaddleX_doc_images/main/images/pipelines/semantic_segmentation/03.png)
 
