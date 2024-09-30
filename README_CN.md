@@ -8,7 +8,6 @@
 
 **飞桨高性能图像分割开发套件，端到端完成从训练到部署的全流程图像分割应用。**
 
-
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
@@ -21,16 +20,19 @@
 </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
+
+- **🔥[2024-10-1] 发布PaddleSeg 2.9.2**:
+  *  飞桨一站式全流程开发工具PaddleX，依托于PaddleSeg的先进技术，支持了图像分割领域的**一站式全流程**开发能力：
+     * 🎨 [**模型丰富一键调用**](docs/paddlex/quick_start.md)：将通用语义分割和图像异常检测涉及的**19个模型**整合为2条模型产线，通过极简的**Python API一键调用**，快速体验模型效果。此外，同一套API，也支持图像分类、目标检测、文本图像智能分析、通用OCR、时序预测等共计**200+模型**，形成20+单功能模块，方便开发者进行**模型组合使用**。
+     * 🚀 [**提高效率降低门槛**](docs/paddlex/overview.md)：提供基于**统一命令**和**图形界面**两种方式，实现模型简洁高效的使用、组合与定制。支持**高性能部署、服务化部署和端侧部署**等多种部署方式。此外，对于各种主流硬件如**英伟达GPU、昆仑芯、昇腾、寒武纪和海光**等，进行模型开发时，都可以**无缝切换**。
+
+  *  增加图像异常检测算法[**SFTPM**](https://github.com/PaddlePaddle/PaddleX/blob/release/3.0-beta1/docs/module_usage/tutorials/cv_modules/anomaly_detection.md)
+
 * [2023-10-29] :fire:  PaddleSeg 2.9版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
   * 增加对多标签分割[Multi-label segmentation](./configs/multilabelseg)，提供数据转换代码及结果可视化，实现对一系列语义分割模型的多标签分割支持。
   * 发布轻量视觉大模型[MobileSAM](./contrib/SegmentAnything)，实现更快速的SAM推理。
   * 支持量化蒸馏训练压缩功能[Quant Aware Distillation Training Compression](./deploy/slim/act)，对PP-LiteSeg、PP-MobileSeg、OCRNet、SegFormer-B0增加量化训练压缩功能，提升推理速度。
-* [2023-09-01] :fire::fire: 飞桨AI套件 [PaddleX](https://aistudio.baidu.com/intro/paddlex) 发布全新版本，围绕飞桨精选模型提供了一站式、全流程、高效率的开发平台，希望助力AI技术快速落地、使人人成为AI Developer！欢迎大家使用和共建。
-* [2022-04-11] PaddleSeg 2.8版本发布视觉大模型[Segment Anything Model](./contrib/SegmentAnything)、轻量级语义分割SOTA模型[PP-MobileSeg](./configs/pp_mobileseg)、工业质检全流程解决方案[QualityInspector v0.5](./contrib/QualityInspector)、通用的全景分割解决方案[PanopticSeg v0.5](./contrib/PanopticSeg)。
-* [2022-11-30] PaddleSeg 2.7版本发布实时人像抠图模型[PP-MattingV2](./Matting/)、3D医疗影像分割方案[MedicalSegV2](./contrib/MedicalSeg/)、轻量级语义分割模型[RTFormer](./configs/rtformer/)。
-* [2022-07-20] PaddleSeg 2.6版本发布实时人像分割SOTA方案[PP-HumanSegV2](./contrib/PP-HumanSeg)、高性能智能标注工具[EISeg v1.0](./EISeg)正式版、ImageNet分割伪标签数据预训练方法PSSL，开源PP-MattingV1代码和预训练模型。
-* [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-MattingV1，3D医疗影像开发套件MedicalSegV1，交互式分割工具EISeg v0.5。
-* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSegV1，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
+
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> 简介
 
@@ -54,15 +56,9 @@
 <img src="https://user-images.githubusercontent.com/14087480/176379006-7f330e00-b6b0-480e-9df8-8fd1090da4cf.png" width = "800" />  
 </div>
 
-## <img src="./docs/images/chat.png" width="20"/> 技术交流
+## [⚡ 快速开始](docs/paddlex/quick_start.md)
 
-- 飞桨低代码开发工具（PaddleX）—— 面向国内外主流AI硬件的飞桨精选模型一站式开发工具。包含如下核心优势：
-  - 【产业高精度模型库】：覆盖10个主流AI任务 40+精选模型，丰富齐全。
-  - 【特色模型产线】：提供融合大小模型的特色模型产线，精度更高，效果更好。
-  - 【低代码开发模式】：图形化界面支持统一开发范式，便捷高效。
-  - 【私有化部署多硬件支持】：适配国内外主流AI硬件，支持本地纯离线使用，满足企业安全保密需要。
-
-- PaddleX官网地址：https://aistudio.baidu.com/intro/paddlex
+## 🔥 [一站式全流程开发](docs/paddlex/overview.md)
 
 ## <img src="./docs/images/model.png" width="20"/> 产品矩阵
 
