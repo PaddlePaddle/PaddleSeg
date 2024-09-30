@@ -1,9 +1,10 @@
 
 ## 目录
-- [一站式全流程开发简介](#1)
-- [图像分割相关能力支持](#2)
-- [图像分割相关模型产线列表和教程](#3)
-- [图像分割相关单功能模块列表和教程](#4)
+- [目录](#目录)
+- [1. 一站式全流程开发简介](#1-一站式全流程开发简介)
+- [2. 图像分割相关能力支持](#2-图像分割相关能力支持)
+- [3. 图像分割相关模型产线列表和教程](#3-图像分割相关模型产线列表和教程)
+- [4. 图像分割相关单功能模块列表和教程](#4-图像分割相关单功能模块列表和教程)
 
 <a name="1"></a>
 
@@ -37,8 +38,8 @@ PaddleX中图像分割相关的2条产线均支持本地**快速推理**，部�
         <td><a href = "https://aistudio.baidu.com/pipeline/mine">星河零代码产线</a></td>
     </tr>
     <tr>
-        <td>通用图像分类</td>
-        <td><a href = "https://aistudio.baidu.com/community/app/100061/webUI?source=appMineRecent">链接</a></td>
+        <td>通用语义分割</td>
+        <td><a href = "https://aistudio.baidu.com/community/app/100062/webUI?source=appMineRecent">链接</a></td>
         <td>✅</td>
         <td>✅</td>
         <td>✅</td>
