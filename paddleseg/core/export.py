@@ -41,8 +41,9 @@ def export(args, model=None, save_dir=None, use_ema=False):
         utils.show_env_info()
         utils.show_cfg_info(cfg)
     else:
+        pdx_model_name = cfg.dic.get("pdx_model_name", None)
         model = deepcopy(model)
-        if args.output_op != 'none':
+        if args.output_op != 'none' and pdx_model_name != "STFPM":
             model = WrappedModel(model, args.output_op)
     if save_dir is None:
         save_dir = args.save_dir
