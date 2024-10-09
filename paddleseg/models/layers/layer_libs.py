@@ -59,7 +59,7 @@ class NaiveSyncBatchNorm(nn.BatchNorm2D):
 
     def forward(self, input):
         if dist.get_world_size() == 1 or not self.training:
-            return super().forward(input)
+            return super(NaiveSyncBatchNorm, self).forward(input)
 
         B, C = input.shape[0], input.shape[1]
 
@@ -143,7 +143,7 @@ def SyncBatchNorm(*args, **kwargs):
         return nn.BatchNorm2D(*args, **kwargs)
     elif paddle.distributed.ParallelEnv().nranks == 1:
         return nn.BatchNorm2D(*args, **kwargs)
-    elif 'npu' in paddle.get_device():
+    elif 'npu' in paddle.get_device() or 'mlu' in paddle.get_device():
         return NaiveSyncBatchNorm(*args, **kwargs)
     else:
         return nn.SyncBatchNorm(*args, **kwargs)
