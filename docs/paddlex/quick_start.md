@@ -50,7 +50,7 @@ paddlex --pipeline semantic_segmentation --input https://paddle-model-ecology.bj
 运行后，得到的结果为：
 
 ```
-{'input_path': '/Users/chenghong01/.paddlex/predict_input/makassaridn-road_demo.png', 'pred': '...'}
+{'input_path': '/root/.paddlex/predict_input/makassaridn-road_demo.png', 'pred': '...'}
 ```
 ![](https://raw.githubusercontent.com/cuicheng01/PaddleX_doc_images/main/images/pipelines/semantic_segmentation/03.png)
 
