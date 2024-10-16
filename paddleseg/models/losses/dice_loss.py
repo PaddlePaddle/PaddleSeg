@@ -21,6 +21,10 @@ class DiceLoss(nn.Layer):
     """
     The implements of the dice loss.
 
+    The original article refers to
+    Wang, Zifu et. al. "Dice Semimetric Losses: Optimizing the Dice Score with Soft Labels"
+    (https://arxiv.org/abs/2303.16296)
+
     Args:
         weight (list[float], optional): The weight for each class. Default: None.
         ignore_index (int64): ignore_index (int64, optional): Specifies a target value that
@@ -70,8 +74,9 @@ def dice_loss_helper(logit, label, mask, smooth, eps):
     mask = paddle.reshape(mask, [0, -1])
     logit *= mask
     label *= mask
-    intersection = paddle.sum(logit * label, axis=1)
+    difference = paddle.sum(paddle.abs(logit - label), axis=1)
     cardinality = paddle.sum(logit + label, axis=1)
+    intersection = (cardinality - difference) / 2
     dice_loss = 1 - (2 * intersection + smooth) / (cardinality + smooth + eps)
     dice_loss = dice_loss.mean()
     return dice_loss
