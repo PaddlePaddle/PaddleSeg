@@ -42,7 +42,6 @@ def export(args, model=None, save_dir=None, use_ema=False):
         utils.show_cfg_info(cfg)
     else:
         pdx_model_name = cfg.dic.get("pdx_model_name", None)
-        model = deepcopy(model)
         if args.output_op != 'none' and pdx_model_name != "STFPM":
             model = WrappedModel(model, args.output_op)
     if save_dir is None:
@@ -74,6 +73,7 @@ def export(args, model=None, save_dir=None, use_ema=False):
         inference_model_path = os.path.join(save_dir, save_name)
         yml_file = os.path.join(save_dir, yaml_name)
     paddle.jit.save(model, inference_model_path)
+    model.forward.rollback()
 
     # save deploy.yaml
     val_dataset_cfg = cfg.val_dataset_cfg
