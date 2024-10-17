@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import gc
 import time
 import yaml
 import json
@@ -124,6 +125,7 @@ def train(model,
             param.stop_gradient = True
 
     uniform_output_enabled = kwargs.pop("uniform_output_enabled", False)
+    export_during_train = kwargs.pop("export_during_train", False)
     cli_args = kwargs.pop("cli_args", None)
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -365,15 +367,17 @@ def train(model,
                             os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
-                if uniform_output_enabled:
+                if export_during_train:
                     export(cli_args, model, current_save_dir)
+                    gc.collect()
 
                 if use_ema:
                     paddle.save(
                         ema_model.state_dict(),
                         os.path.join(current_save_dir, 'ema_model.pdparams'))
-                    if uniform_output_enabled:
+                    if export_during_train:
                         export(cli_args, ema_model, current_save_dir, use_ema)
+                        gc.collect()
 
                 save_models.append(current_save_dir)
                 if len(save_models) > keep_checkpoint_max > 0:
@@ -403,8 +407,10 @@ def train(model,
                         paddle.save(
                             states_dict,
                             os.path.join(best_model_dir, 'model.pdstates'))
-                        if uniform_output_enabled:
+                        if export_during_train:
                             export(cli_args, model, best_model_dir)
+                            gc.collect()
+                        if uniform_output_enabled:
                             save_model_info(states_dict, best_model_dir)
                             update_train_results(cli_args,
                                                  "best_model",
@@ -447,9 +453,11 @@ def train(model,
                                 ema_states_dict,
                                 os.path.join(best_ema_model_dir,
                                              'ema_model.pdstates'))
-                            if uniform_output_enabled:
+                            if export_during_train:
                                 export(cli_args, ema_model, best_ema_model_dir,
                                        use_ema)
+                                gc.collect()
+                            if uniform_output_enabled:
                                 save_model_info(ema_states_dict,
                                                 best_ema_model_dir)
                                 update_train_results(cli_args,
