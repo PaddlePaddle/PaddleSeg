@@ -54,15 +54,15 @@ def export(args, model=None, save_dir=None, use_ema=False):
     input_spec = [paddle.static.InputSpec(shape=shape, dtype='float32')]
     model.eval()
     model = paddle.jit.to_static(model, input_spec=input_spec)
-    uniform_output_enabled = cfg.dic.get('uniform_output_enabled', False)
-    if args.for_fd or uniform_output_enabled:
+    export_during_train = cfg.dic.get('export_during_train', False)
+    if args.for_fd or export_during_train:
         save_name = 'inference'
         yaml_name = 'inference.yml'
     else:
         save_name = 'model'
         yaml_name = 'deploy.yaml'
 
-    if uniform_output_enabled:
+    if export_during_train:
         inference_model_path = os.path.join(save_dir, "inference", save_name)
         yml_file = os.path.join(save_dir, "inference", yaml_name)
         if use_ema:

@@ -180,6 +180,7 @@ def main(args):
     utils.set_device(args.device)
     utils.set_cv2_num_threads(args.num_workers)
     uniform_output_enabled = cfg.dic.get("uniform_output_enabled", False)
+    export_during_train = cfg.dic.get("export_during_train", False)
     if uniform_output_enabled:
         if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
@@ -244,7 +245,9 @@ def main(args):
           print_mem_info=print_mem_info,
           shuffle=shuffle,
           uniform_output_enabled=uniform_output_enabled,
-          cli_args=None if not uniform_output_enabled else args)
+          export_during_train=export_during_train,
+          cli_args=args
+          if export_during_train or uniform_output_enabled else None)
 
 
 if __name__ == '__main__':
