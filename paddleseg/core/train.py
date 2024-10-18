@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import gc
 import time
 import yaml
 import json
@@ -367,6 +368,7 @@ def train(model,
                             os.path.join(current_save_dir, 'model.pdopt'))
                 if uniform_output_enabled:
                     export(cli_args, model, current_save_dir)
+                    gc.collect()
 
                 if use_ema:
                     paddle.save(
@@ -374,6 +376,7 @@ def train(model,
                         os.path.join(current_save_dir, 'ema_model.pdparams'))
                     if uniform_output_enabled:
                         export(cli_args, ema_model, current_save_dir, use_ema)
+                        gc.collect()
 
                 save_models.append(current_save_dir)
                 if len(save_models) > keep_checkpoint_max > 0:
@@ -405,6 +408,7 @@ def train(model,
                             os.path.join(best_model_dir, 'model.pdstates'))
                         if uniform_output_enabled:
                             export(cli_args, model, best_model_dir)
+                            gc.collect()
                             save_model_info(states_dict, best_model_dir)
                             update_train_results(cli_args,
                                                  "best_model",
@@ -450,6 +454,7 @@ def train(model,
                             if uniform_output_enabled:
                                 export(cli_args, ema_model, best_ema_model_dir,
                                        use_ema)
+                                gc.collect()
                                 save_model_info(ema_states_dict,
                                                 best_ema_model_dir)
                                 update_train_results(cli_args,
