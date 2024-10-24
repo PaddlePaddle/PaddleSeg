@@ -67,7 +67,7 @@ paddlex --pipeline semantic_segmentation --input https://paddle-model-ecology.bj
 
 ### 📝 Python脚本使用
 
-几行代码即可完成产线的快速推理，图像异常检测的Python示例代码如下：
+使用 [测试文件](https://paddle-model-ecology.bj.bcebos.com/paddlex/imgs/demo_image/uad_grid.png)，并将 `predict()`的参数替换为本地路径，几行代码即可完成产线的快速推理，图像异常检测的Python示例代码如下：
 ```python
 from paddlex import create_pipeline
 
@@ -88,7 +88,7 @@ for res in output:
 运行后，得到的结果为：
 
 ```
-{'img_path': '/root/.paddlex/predict_input/uad_grid.png'}
+{'input_path': 'uad_grid.png'}
 ```
 ![](https://raw.githubusercontent.com/cuicheng01/PaddleX_doc_images/main/images/pipelines/image_anomaly_detection/02.png)
 
