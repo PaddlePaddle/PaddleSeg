@@ -33,35 +33,32 @@ def parse_args():
         type=str)
     parser.add_argument(
         '--num_workers',
-        help='Number of workers for data loader. Bigger num_workers can speed up data processing.',
+        help=
+        'Number of workers for data loader. Bigger num_workers can speed up data processing.',
         type=int,
         default=0)
-    parser.add_argument(
-        '--device',
-        help='Set the device place for evaluating model.',
-        default='gpu',
-        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
-        type=str)
+    parser.add_argument('--device',
+                        help='Set the device place for evaluating model.',
+                        default='gpu',
+                        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu', 'gcu'],
+                        type=str)
 
     # Data augment params
     parser.add_argument(
         '--aug_eval',
         help='Whether to use mulit-scales and flip augment for evaluation.',
         action='store_true')
-    parser.add_argument(
-        '--scales',
-        nargs='+',
-        help='Scales for data augment.',
-        type=float,
-        default=1.0)
-    parser.add_argument(
-        '--flip_horizontal',
-        help='Whether to use flip horizontally augment.',
-        action='store_true')
-    parser.add_argument(
-        '--flip_vertical',
-        help='Whether to use flip vertically augment.',
-        action='store_true')
+    parser.add_argument('--scales',
+                        nargs='+',
+                        help='Scales for data augment.',
+                        type=float,
+                        default=1.0)
+    parser.add_argument('--flip_horizontal',
+                        help='Whether to use flip horizontally augment.',
+                        action='store_true')
+    parser.add_argument('--flip_vertical',
+                        help='Whether to use flip vertically augment.',
+                        action='store_true')
 
     # Sliding window evaluation params
     parser.add_argument(
@@ -71,32 +68,33 @@ def parse_args():
     parser.add_argument(
         '--crop_size',
         nargs=2,
-        help='The crop size of sliding window, the first is width and the second is height.'
+        help=
+        'The crop size of sliding window, the first is width and the second is height.'
         'For example, `--crop_size 512 512`',
         type=int)
     parser.add_argument(
         '--stride',
         nargs=2,
-        help='The stride of sliding window, the first is width and the second is height.'
+        help=
+        'The stride of sliding window, the first is width and the second is height.'
         'For example, `--stride 512 512`',
         type=int)
 
     # Other params
     parser.add_argument(
         '--data_format',
-        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        help=
+        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
         type=str,
         default='NCHW')
-    parser.add_argument(
-        '--auc_roc',
-        help='Whether to use auc_roc metric.',
-        type=bool,
-        default=False)
-    parser.add_argument(
-        '--opts',
-        help='Update the key-value pairs of all options.',
-        default=None,
-        nargs='+')
+    parser.add_argument('--auc_roc',
+                        help='Whether to use auc_roc metric.',
+                        type=bool,
+                        default=False)
+    parser.add_argument('--opts',
+                        help='Update the key-value pairs of all options.',
+                        default=None,
+                        nargs='+')
     # Set multi-label mode
     parser.add_argument(
         '--use_multilabel',

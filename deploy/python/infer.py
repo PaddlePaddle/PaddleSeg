@@ -104,6 +104,15 @@ class Predictor:
             self.pred_cfg.enable_custom_device('npu')
         elif args.device == 'mlu':
             self.pred_cfg.enable_custom_device('mlu')
+        elif args.device == 'gcu':
+            import paddle_custom_device.gcu.passes as gcu_passes
+            gcu_passes.setUp()
+            self.pred_cfg.enable_custom_device("gcu")
+            self.pred_cfg.enable_new_ir(True)
+            self.pred_cfg.enable_new_executor(True)
+            kPirGcuPasses = gcu_passes.inference_passes(use_pir=True,
+                                                        name="common")
+            self.pred_cfg.enable_custom_passes(kPirGcuPasses, True)
         elif args.device == 'xpu':
             self.pred_cfg.enable_xpu()
         else:
@@ -295,7 +304,7 @@ def parse_args():
                         default='./output')
     parser.add_argument(
         '--device',
-        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
+        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu', 'gcu'],
         default="gpu",
         help="Select which device to inference, defaults to gpu.")
 

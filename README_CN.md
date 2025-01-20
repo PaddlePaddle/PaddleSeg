@@ -16,7 +16,7 @@
 </div>
 
 <div align="center">
-<img src="https://github.com/shiyutang/files/blob/9590ea6bfc36139982ce75b00d3b9f26713934dd/teasor.gif"  width = "800" />  
+<img src="https://github.com/shiyutang/files/blob/9590ea6bfc36139982ce75b00d3b9f26713934dd/teasor.gif"  width = "800" />
 </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
@@ -24,7 +24,7 @@
 - **🔥[2024-10-1] 添加语义分割领域低代码全流程开发能力**:
   *  飞桨低代码开发工具PaddleX，依托于PaddleSeg的先进技术，支持了图像分割领域的**低代码全流程**开发能力：
      * 🎨 [**模型丰富一键调用**](docs/paddlex/quick_start.md)：将通用语义分割和图像异常检测涉及的**19个模型**整合为2条模型产线，通过极简的**Python API一键调用**，快速体验模型效果。此外，同一套API，也支持图像分类、目标检测、文本图像智能分析、通用OCR、时序预测等共计**200+模型**，形成20+单功能模块，方便开发者进行**模型组合使用**。
-     * 🚀 [**提高效率降低门槛**](docs/paddlex/overview.md)：提供基于**统一命令**和**图形界面**两种方式，实现模型简洁高效的使用、组合与定制。支持**高性能部署、服务化部署和端侧部署**等多种部署方式。此外，对于各种主流硬件如**英伟达GPU、昆仑芯、昇腾、寒武纪和海光**等，进行模型开发时，都可以**无缝切换**。
+     * 🚀 [**提高效率降低门槛**](docs/paddlex/overview.md)：提供基于**统一命令**和**图形界面**两种方式，实现模型简洁高效的使用、组合与定制。支持**高性能部署、服务化部署和端侧部署**等多种部署方式。此外，对于各种主流硬件如**英伟达GPU、昆仑芯、昇腾、寒武纪、海光、燧原**等，进行模型开发时，都可以**无缝切换**。
 
   *  增加图像异常检测算法[**SFTPM**](https://github.com/PaddlePaddle/PaddleX/blob/release/3.0-beta1/docs/module_usage/tutorials/cv_modules/anomaly_detection.md)
 
@@ -39,7 +39,7 @@
 **PaddleSeg**是基于飞桨PaddlePaddle的端到端图像分割套件，内置**45+模型算法**及**140+预训练模型**，支持**配置化驱动**和**API调用**开发方式，打通数据标注、模型开发、训练、压缩、部署的**全流程**，提供**语义分割、交互式分割、Matting、全景分割**四大分割能力，助力算法在医疗、工业、遥感、娱乐等场景落地应用。
 
 <div align="center">
-<img src="https://github.com/shiyutang/files/raw/main/teasor_new.gif"  width = "800" />  
+<img src="https://github.com/shiyutang/files/raw/main/teasor_new.gif"  width = "800" />
 </div>
 
 ## <img src="./docs/images/feature.png" width="20"/> 特性
@@ -53,7 +53,7 @@
 * **全流程**：打通数据标注、模型开发、模型训练、模型压缩、模型部署全流程，经过业务落地的验证，让开发者完成一站式开发工作。
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/14087480/176379006-7f330e00-b6b0-480e-9df8-8fd1090da4cf.png" width = "800" />  
+<img src="https://user-images.githubusercontent.com/14087480/176379006-7f330e00-b6b0-480e-9df8-8fd1090da4cf.png" width = "800" />
 </div>
 
 ## [⚡ 快速开始](docs/paddlex/quick_start.md)
@@ -215,18 +215,18 @@
             <li>Kappa</li>
             <li>Dice</li>
             <li>AUC_ROC</li>
-          </ul>  
+          </ul>
         </details>
       </td>
       <td>
         <details><summary><b>支持数据集</b></summary>
           <ul>
-            <li><a href="./paddleseg/datasets/ade.py">ADE20K</a></li>  
+            <li><a href="./paddleseg/datasets/ade.py">ADE20K</a></li>
             <li><a href="./paddleseg/datasets/cityscapes.py">Cityscapes</a></li>
             <li><a href="./paddleseg/datasets/cocostuff.py">COCO Stuff</a></li>
             <li><a href="./paddleseg/datasets/voc.py">Pascal VOC</a></li>
             <li><a href="./paddleseg/datasets/eg1800.py">EG1800</a></li>
-            <li><a href="./paddleseg/datasets/pascal_context.py">Pascal Context</a></li>  
+            <li><a href="./paddleseg/datasets/pascal_context.py">Pascal Context</a></li>
             <li><a href="./paddleseg/datasets/supervisely.py">SUPERVISELY</a></li>
             <li><a href="./paddleseg/datasets/optic_disc_seg.py">OPTIC DISC SEG</a></li>
             <li><a href="./paddleseg/datasets/chase_db1.py">CHASE_DB1</a></li>
@@ -239,25 +239,25 @@
         </details>
         <details><summary><b>数据增强</b></summary>
           <ul>
-            <li>Flipping</li>  
-            <li>Resize</li>  
+            <li>Flipping</li>
+            <li>Resize</li>
             <li>ResizeByLong</li>
             <li>ResizeByShort</li>
-            <li>LimitLong</li>  
-            <li>ResizeRangeScaling</li>  
+            <li>LimitLong</li>
+            <li>ResizeRangeScaling</li>
             <li>ResizeStepScaling</li>
             <li>Normalize</li>
             <li>Padding</li>
             <li>PaddingByAspectRatio</li>
-            <li>RandomPaddingCrop</li>  
+            <li>RandomPaddingCrop</li>
             <li>RandomCenterCrop</li>
             <li>ScalePadding</li>
-            <li>RandomNoise</li>  
-            <li>RandomBlur</li>  
-            <li>RandomRotation</li>  
-            <li>RandomScaleAspect</li>  
-            <li>RandomDistort</li>  
-            <li>RandomAffine</li>  
+            <li>RandomNoise</li>
+            <li>RandomBlur</li>
+            <li>RandomRotation</li>
+            <li>RandomScaleAspect</li>
+            <li>RandomDistort</li>
+            <li>RandomAffine</li>
           </ul>
         </details>
       </td>
@@ -303,7 +303,7 @@
               <li><a href="./contrib/DomainAdaptation">PixMatch</a></li>
           </ul>
         </details>
-      </td>  
+      </td>
     </tr>
 </td>
     </tr>

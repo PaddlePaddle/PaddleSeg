@@ -28,30 +28,27 @@ def parse_args():
 
     # Common params
     parser.add_argument("--config", help="The path of config file.", type=str)
-    parser.add_argument(
-        '--model_path',
-        help='The path of trained weights for prediction.',
-        type=str)
+    parser.add_argument('--model_path',
+                        help='The path of trained weights for prediction.',
+                        type=str)
     parser.add_argument(
         '--image_path',
-        help='The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
+        help=
+        'The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
         type=str)
-    parser.add_argument(
-        '--save_dir',
-        help='The directory for saving the predicted results.',
-        type=str,
-        default='./output/result')
-    parser.add_argument(
-        '--device',
-        help='Set the device place for predicting model.',
-        default='gpu',
-        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu'],
-        type=str)
-    parser.add_argument(
-        '--device_id',
-        help='Set the device id for predicting model.',
-        default=0,
-        type=int)
+    parser.add_argument('--save_dir',
+                        help='The directory for saving the predicted results.',
+                        type=str,
+                        default='./output/result')
+    parser.add_argument('--device',
+                        help='Set the device place for predicting model.',
+                        default='gpu',
+                        choices=['cpu', 'gpu', 'xpu', 'npu', 'mlu', 'gcu'],
+                        type=str)
+    parser.add_argument('--device_id',
+                        help='Set the device id for predicting model.',
+                        default=0,
+                        type=int)
 
     # Data augment params
     parser.add_argument(
@@ -64,14 +61,12 @@ def parse_args():
         help='Scales for augment, e.g., `--scales 0.75 1.0 1.25`.',
         type=float,
         default=1.0)
-    parser.add_argument(
-        '--flip_horizontal',
-        help='Whether to use flip horizontally augment',
-        action='store_true')
-    parser.add_argument(
-        '--flip_vertical',
-        help='Whether to use flip vertically augment',
-        action='store_true')
+    parser.add_argument('--flip_horizontal',
+                        help='Whether to use flip horizontally augment',
+                        action='store_true')
+    parser.add_argument('--flip_vertical',
+                        help='Whether to use flip vertically augment',
+                        action='store_true')
 
     # Sliding window evaluation params
     parser.add_argument(
@@ -81,13 +76,15 @@ def parse_args():
     parser.add_argument(
         '--crop_size',
         nargs=2,
-        help='The crop size of sliding window, the first is width and the second is height.'
+        help=
+        'The crop size of sliding window, the first is width and the second is height.'
         'For example, `--crop_size 512 512`',
         type=int)
     parser.add_argument(
         '--stride',
         nargs=2,
-        help='The stride of sliding window, the first is width and the second is height.'
+        help=
+        'The stride of sliding window, the first is width and the second is height.'
         'For example, `--stride 512 512`',
         type=int)
 
@@ -95,7 +92,8 @@ def parse_args():
     parser.add_argument(
         '--custom_color',
         nargs='+',
-        help='Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
+        help=
+        'Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
         type=int)
 
     # Set multi-label mode
@@ -150,14 +148,13 @@ def main(args):
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('The number of images: {}'.format(len(image_list)))
 
-    predict(
-        model,
-        model_path=args.model_path,
-        transforms=transforms,
-        image_list=image_list,
-        image_dir=image_dir,
-        save_dir=args.save_dir,
-        **test_config)
+    predict(model,
+            model_path=args.model_path,
+            transforms=transforms,
+            image_list=image_list,
+            image_dir=image_dir,
+            save_dir=args.save_dir,
+            **test_config)
 
 
 if __name__ == '__main__':

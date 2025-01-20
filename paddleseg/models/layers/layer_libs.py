@@ -139,7 +139,8 @@ class NaiveSyncBatchNorm(nn.BatchNorm2D):
 def SyncBatchNorm(*args, **kwargs):
     """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm2D instead"""
     if paddle.get_device() == 'cpu' or os.environ.get(
-            'PADDLESEG_EXPORT_STAGE') or 'xpu' in paddle.get_device():
+            'PADDLESEG_EXPORT_STAGE') or 'xpu' in paddle.get_device(
+            ) or 'gcu' in paddle.get_device():
         return nn.BatchNorm2D(*args, **kwargs)
     elif paddle.distributed.ParallelEnv().nranks == 1:
         return nn.BatchNorm2D(*args, **kwargs)

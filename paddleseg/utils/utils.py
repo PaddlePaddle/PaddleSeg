@@ -69,6 +69,8 @@ def set_device(device):
         place = device
     elif 'npu' in device and paddle.is_compiled_with_custom_device('npu'):
         place = device
+    elif 'gcu' in device and paddle.is_compiled_with_custom_device('gcu'):
+        place = device
     elif device in paddle.device.get_all_custom_device_type():
         place = device
     else:
