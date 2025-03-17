@@ -92,14 +92,10 @@ EISeg-Med3D 的使用整体流程如下图所示，我们将按照环境安装�
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 ```
 
-3. 安装Paddle，在slicer的python interpreter中，参考[快速安装文档](https://www.paddlepaddle.org.cn/install/quick)安装PaddlePaddle。 比如Windows、CUDA 11.1，安装GPU版本，执行如下命令：
+3. 安装Paddle，在slicer的python interpreter中，参考[快速安装文档](https://www.paddlepaddle.org.cn/install/quick)安装PaddlePaddle。 比如Windows、安装GPU版本，执行如下命令：
 ```
-import sys
-import os
-sys.executable # 'D:/slicer/Slicer 5.0.3/bin/PythonSlicer.exe'
-
-os.system(f"'{sys.executable}' -m pip install paddlepaddle-gpu==2.3.1.post111 -f  https://www.paddlepaddle.org.cn/whl/windows/mkl/avx/stable.html")
-
+import pip
+pip.main(['install','paddlepaddle-gpu'])
 ```
 <details>
 <summary><b> 常见问题 </b></summary>
