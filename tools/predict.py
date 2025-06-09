@@ -142,9 +142,15 @@ def main(args):
     else:
         device = args.device
     utils.set_device(device)
-
+    
+    in_channels = (
+        cfg.model_cfg.get("in_channels")
+        or cfg.train_dataset_cfg.get("im_channels")
+        or cfg.val_dataset_cfg.get("im_channels")
+        or 3
+    )
     model = builder.model
-    transforms = Compose(builder.val_transforms)
+    transforms = Compose(builder.val_transforms, img_channels=in_channels)
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('The number of images: {}'.format(len(image_list)))
 
