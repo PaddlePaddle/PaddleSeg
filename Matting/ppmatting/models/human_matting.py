@@ -396,11 +396,11 @@ class Refiner(nn.Layer):
 
         x = paddle.concat([hid, pha, tri], axis=1)
         x = F.interpolate(x,
-                          paddle.stack((h_half, w_half)).squeeze(),
+                          (h_half, w_half),
                           mode='bilinear',
                           align_corners=False)
         y = F.interpolate(src,
-                          paddle.stack((h_half, w_half)).squeeze(),
+                          (h_half, w_half),
                           mode='bilinear',
                           align_corners=False)
 
@@ -412,12 +412,11 @@ class Refiner(nn.Layer):
         x = self.conv2(x)
 
         if self.kernel_size == 3:
-            x = F.interpolate(x,
-                              paddle.stack((h_full + 4, w_full + 4)).squeeze())
+            x = F.interpolate(x,(h_full + 4, w_full + 4))
             y = F.pad(src, [2, 2, 2, 2])
         else:
             x = F.interpolate(x,
-                              paddle.stack((h_full, w_full)).squeeze(),
+                              (h_full, w_full),
                               mode='nearest')
             y = src
 
