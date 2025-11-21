@@ -782,10 +782,10 @@ class RandomReJpeg:
         q = np.random.randint(70, 95)
         img = data['img'].astype('uint8')
 
-        # Ensure no conflicts between processes
-        tmp_name = str(os.getpid()) + '.jpg'
-        tmp_name = os.path.join(seg_env.TMP_HOME, tmp_name)
-        cv2.imwrite(tmp_name, img, [int(cv2.IMWRITE_JPEG_QUALITY), q])
-        data['img'] = cv2.imread(tmp_name)
+        # 直接在内存上实现JPEG压缩
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), q]
+        result, encoded_img = cv2.imencode('.jpg', img, encode_param)
+        if result:
+            data['img'] = cv2.imdecode(encoded_img, cv2.IMREAD_COLOR)
 
         return data
