@@ -306,7 +306,7 @@ def get_sinusoid_encoding_table(n_position, d_hid, token=False):
 @manager.BACKBONES.add_component
 class CAE(nn.Layer):
     """
-    The Context Autoencoder for Self-Supervised Representation Learning implemetation based on PaddlePaddle
+    The Context Autoencoder for Self-Supervised Representation Learning implementation based on PaddlePaddle
 
     The original article refers to Chen, Xiaokang, Mingyu Ding, Xiaodi Wang, Ying Xin, Shentong Mo, Yunhao Wang, Shumin Han, Ping Luo, Gang Zeng, and Jingdong Wang. "Context autoencoder for self-supervised representation learning." arXiv preprint arXiv:2202.03026 (2022).
     (https://arxiv.org/abs/2202.03026)
